@@ -8,10 +8,10 @@
 <div class="planning-header">
     <h1>{{ year.year }} Crop Plan</h1>
     <div class="week-nav">
-        <a href="{% url 'planning:matrix_week' week_start|add:'-8' %}" 
+        <a href="{% url 'planning:matrix_date' prev_date.isoformat %}" 
            class="btn">← Earlier</a>
         <span>Weeks {{ week_start }}–{{ week_end }}</span>
-        <a href="{% url 'planning:matrix_week' week_end|add:'1' %}" 
+        <a href="{% url 'planning:matrix_date' next_date.isoformat %}" 
            class="btn">Later →</a>
         <a href="{% url 'planning:matrix' %}" class="btn">Today</a>
     </div>

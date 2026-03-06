@@ -8,6 +8,7 @@ app_name = "planning"
 urlpatterns = [
     # Main matrix
     path("", views.PlanningMatrixView.as_view(), name="matrix"),
+    path("date/<date>/", views.PlanningMatrixView.as_view(), name="matrix_date"),
     path("week/<int:week>/", views.PlanningMatrixView.as_view(), name="matrix_week"),
     # Planting CRUD
     path("planting/new/", views.PlantingCreateView.as_view(), name="planting_create"),

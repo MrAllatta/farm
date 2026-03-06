@@ -2,12 +2,12 @@
 
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.db.models import Q
+from django.db.models import Q, Sum
 from datetime import date
 from isoweek import Week
 
 from reference.models import Block, BlockType, CropInfo
-from .models import Planting, PlanningYear, Planting, HarvestEvent
+from .models import Planting, PlanningYear, Planting, HarvestEvent, NurseryEvent
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 
 from django.http import HttpResponse
@@ -31,34 +31,32 @@ class PlanningMatrixView(TemplateView):
         year = year_obj.year
 
         # Current or requested week
+        requested_date = kwargs.get("date")
         requested_week = kwargs.get("week")
-        if requested_week:
-            center_week = requested_week
+
+        if requested_date:
+            center_date = date.fromisoformat(requested_date)
+        elif requested_week:
+            center_date = Week(year, requested_week).monday()
         else:
-            today = date.today()
-            if today.year == year:
-                center_week = today.isocalendar()[1]
-            else:
-                center_week = 1
+            center_date = date.today()
+
+        window_start_date = center_date - timedelta(weeks=4)
+        window_end_date = center_date + timedelta(weeks=11) # 16 week window
+
+        weeks = []
+        current = window_start_date
+        while current <= window_end_date:
+            weeks.append({
+                'date': current,
+                'num': current.isocalendar()[1],
+                'is_current': current.isocalendar()[1] == date.today().isocalendar()[1]
+            })
+            current += timedelta(weeks=1)
 
         # Show 16-week window (scrollable)
-        week_start = max(1, center_week - 4)
-        week_end = min(52, week_start + 15)
-        weeks = list(range(week_start, week_end + 1))
-
-        # Week metadata (dates, events)
-        week_info = []
-        for w in weeks:
-            monday = Week(year, w).monday()
-            week_info.append(
-                {
-                    "num": w,
-                    "date": monday,
-                    "is_current": (
-                        w == date.today().isocalendar()[1] and year == date.today().year
-                    ),
-                }
-            )
+        week_start = Week.withdate(window_start_date).monday()
+        week_end = Week.withdate(window_end_date).monday()
 
         # All blocks, grouped by type
         blocks = Block.objects.all().order_by("walk_route_order", "name")
@@ -66,22 +64,14 @@ class PlanningMatrixView(TemplateView):
         tunnel_blocks = blocks.filter(block_type=BlockType.HIGH_TUNNEL)
         greenhouse_blocks = blocks.filter(block_type=BlockType.GREENHOUSE)
 
-        # All plantings this year that overlap the visible window
-        # Convert week range to dates for query
-        window_start = Week(year, week_start).monday()
-        window_end = Week(year, week_end).sunday()
-
+        # Query plantings that overlap the visible window
         plantings = (
             Planting.objects.filter(
                 planning_year=year_obj,
+                planned_plant_date__lte=window_end_date,
+                planned_last_harvest_date__gte=window_start_date,
             )
             .exclude(status="skipped")
-            .filter(
-                # Planting overlaps visible window:
-                # plant date before window end AND last harvest after window start
-                Q(planned_plant_date__lte=window_end)
-                & Q(planned_last_harvest_date__gte=window_start)
-            )
             .select_related("crop", "crop_season", "block")
             .order_by("block__name", "bed_start", "planned_plant_date")
         )
@@ -89,18 +79,22 @@ class PlanningMatrixView(TemplateView):
         # Build the matrix: block → list of plantings with week positions
         matrix = self._build_matrix(blocks, plantings, weeks, year)
 
+        # Extract week number range for display
+        week_nums = [w['num'] for w in weeks]
+
         ctx.update(
             {
                 "year": year_obj,
-                "weeks": week_info,
-                "week_start": week_start,
-                "week_end": week_end,
-                "center_week": center_week,
+                "weeks": weeks,
+                "week_start": week_nums[0],
+                "week_end": week_nums[-1],
                 "field_blocks": field_blocks,
                 "tunnel_blocks": tunnel_blocks,
                 "greenhouse_blocks": greenhouse_blocks,
                 "matrix": matrix,
                 "plantings": plantings,
+                "prev_date": window_start_date - timedelta(weeks=8),
+                "next_date": window_end_date + timedelta(days=1),
             }
         )
         return ctx
@@ -108,6 +102,11 @@ class PlanningMatrixView(TemplateView):
     def _build_matrix(self, blocks, plantings, weeks, year):
         """Build a dict: block_id → list of planting display objects."""
         matrix = {}
+
+        # Extract week numbers from weeks list
+        week_nums = [w['num'] for w in weeks]
+        first_week = week_nums[0]
+        last_week = week_nums[-1]
 
         for block in blocks:
             block_plantings = [p for p in plantings if p.block_id == block.id]
@@ -119,8 +118,8 @@ class PlanningMatrixView(TemplateView):
                 harvest_end = p.planned_last_harvest_date.isocalendar()[1]
 
                 # Position in the grid
-                first_visible = max(weeks[0], plant_week)
-                last_visible = min(weeks[-1], harvest_end)
+                first_visible = max(first_week, plant_week)
+                last_visible = min(last_week, harvest_end)
 
                 if last_visible < first_visible:
                     continue  # Not visible in current window
