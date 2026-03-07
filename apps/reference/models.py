@@ -25,6 +25,7 @@ class CropInfo(models.Model):
         max_length=10, choices=[("fresh", "Fresh"), ("storage", "Storage")]
     )
     storage_weeks = models.PositiveIntegerField(default=0)
+    can_hold_in_field = models.BooleanField(default=False)
     harvest_unit = models.CharField(max_length=20)  # "pounds", "bunches", "each"
     avg_unit_weight = models.DecimalField(max_digits=5, decimal_places=2)
     units_per_bin = models.PositiveIntegerField(null=True, blank=True)
