@@ -1,0 +1,5 @@
+Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed,Walk Route Order
+North Field,Field,12,3.0,100,1
+South Tunnel,High Tunnel,8,2.5,60,2
+East Greenhouse,Greenhouse,4,4.0,50,3
+West Pasture,Field,6,3.0,120,4

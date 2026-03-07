@@ -1,0 +1,20 @@
+Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation
+Tomato Beefsteak,Field,16,36,3.5,15,75,2,na,0.5,na,Cattle panel,Straw,Agribon 30,Drip
+Tomato Beefsteak,High Tunnel,12,42,4.2,20,70,2,na,0.5,na,Twine,Mulch,na,Drip
+Tomato Cherry,Field,16,36,2.8,14,65,2,na,0.4,na,Twine,Straw,Agribon 30,Drip
+Tomato Cherry,High Tunnel,12,42,3.5,18,60,2,na,0.4,na,Twine,Mulch,na,Drip
+Lettuce Mix,Field,8,30,1.2,8,50,3,8,na,na,None,Straw,Agribon 30,Overhead
+Lettuce Mix,High Tunnel,6,40,1.5,10,45,3,8,na,na,None,Mulch,na,Drip
+Spinach,Field,8,36,0.8,6,42,2,6,na,na,None,Straw,Agribon 30,Overhead
+Spinach,High Tunnel,6,42,1.0,8,38,2,6,na,na,None,Mulch,na,Drip
+Bell Pepper,Field,18,36,2.5,12,80,1,na,1.0,na,Cattle panel,Straw,Agribon 30,Drip
+Bell Pepper,High Tunnel,14,40,3.2,14,75,1,na,1.0,na,Twine,Mulch,na,Drip
+Carrot,Field,12,32,1.8,8,75,2,4,na,na,None,Straw,Agribon 30,Overhead
+Beet,Field,14,34,2.0,10,70,2,3,na,na,None,Straw,Agribon 30,Overhead
+Cucumber,Field,18,32,2.2,10,60,2,3,na,na,Cattle panel,Straw,Agribon 30,Drip
+Cucumber,High Tunnel,16,36,2.8,12,55,2,3,na,na,Twine,Mulch,na,Drip
+Basil,Field,18,32,0.5,8,50,2,na,0.2,na,None,Straw,Agribon 30,Drip
+Basil,High Tunnel,16,36,0.7,10,45,2,na,0.2,na,None,Mulch,na,Drip
+Garlic,Field,26,20,3.0,1,210,2,na,6.0,na,None,Straw,na,Overhead
+Potato,Field,14,28,2.5,8,90,1,na,12.0,na,Hilled,Straw,none,Drip
+Asparagus,Field,16,26,1.5,6,60,1,na,18.0,na,None,Straw,na,Drip

@@ -1,0 +1,19 @@
+Planting ID,Event Type,Planned Date,Planned Tray Count,Planned Tray Size,Actual Date,Actual Tray Count,Actual Tray Size,Actual Germination Rate,Notes
+P001,seed,2023-03-21,6,128,2023-03-22,6,128,0.95,Good germination San Marzano
+P001,pot_up,2023-04-25,6,72,2023-04-26,6,72,,Ready for potting
+P001,transplant,2023-05-15,6,1,2023-05-17,,,,Transplanted to field
+P002,seed,2023-04-07,6,128,2023-04-08,6,128,0.92,Early Girl - reliable germinator
+P002,pot_up,2023-05-11,6,72,2023-05-12,6,72,,Good pot-up rate
+P002,transplant,2023-06-01,6,1,2023-06-03,,,,Succession planting
+P003,seed,2023-02-15,3,128,2023-02-17,3,128,0.98,Cherry tomato excellent germination
+P003,pot_up,2023-03-22,3,72,2023-03-23,3,72,,Vigorous growth
+P003,transplant,2023-04-15,3,1,2023-04-17,,,,Tunnel planting
+P004,seed,2023-02-01,4,128,2023-02-02,4,128,0.90,Lettuce - direct seeded field
+P004,transplant,2023-03-20,1,1,2023-03-22,,,,Field transplant
+P006,seed,2023-01-15,2,128,2023-01-16,2,128,0.88,Early spinach
+P006,transplant,2023-02-27,2,1,2023-03-01,,,,Tunnel transplant
+P007,seed,2023-02-01,4,128,2023-02-02,4,128,0.94,Pepper germination
+P007,pot_up,2023-03-15,4,72,2023-03-16,4,72,,Good pot size
+P007,transplant,2023-04-01,4,1,2023-04-03,,,,Greenhouse transplant
+P010,seed,2023-02-15,2,128,2023-02-16,2,128,0.96,Basil germination excellent
+P010,transplant,2023-04-15,2,1,2023-04-17,,,,Greenhouse basil

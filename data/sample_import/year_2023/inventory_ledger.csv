@@ -1,0 +1,139 @@
+Crop Name,Event Date,Event Type,Quantity,Storage Location,Expiry Date,Notes
+Tomato Beefsteak,2023-07-31,harvest_in,145,Cold Room 1,2023-08-14,P001 week 1
+Tomato Beefsteak,2023-08-07,harvest_in,152,Cold Room 1,2023-08-21,P001 week 2
+Tomato Beefsteak,2023-08-14,harvest_in,148,Cold Room 1,2023-08-28,P001 week 3
+Tomato Beefsteak,2023-08-21,harvest_in,155,Cold Room 1,2023-09-04,P001 week 4
+Tomato Beefsteak,2023-08-28,sale_out,-150,Cold Room 1,,Wednesday market
+Tomato Beefsteak,2023-08-28,harvest_in,140,Cold Room 1,2023-09-11,P001 week 5
+Tomato Beefsteak,2023-09-04,sale_out,-140,Cold Room 1,,Saturday farmers market
+Tomato Beefsteak,2023-09-04,harvest_in,138,Cold Room 1,2023-09-18,P001 week 6
+Tomato Beefsteak,2023-09-11,sale_out,-150,Cold Room 1,,Wednesday market
+Tomato Beefsteak,2023-09-11,harvest_in,142,Cold Room 1,2023-09-25,P001 week 7
+Tomato Beefsteak,2023-09-18,sale_out,-140,Cold Room 1,,Saturday market
+Tomato Beefsteak,2023-09-18,harvest_in,135,Cold Room 1,2023-10-02,P001 week 8
+Tomato Beefsteak,2023-09-25,harvest_in,128,Cold Room 1,2023-10-09,P001 week 9
+Tomato Beefsteak,2023-10-02,sale_out,-130,Cold Room 1,,Farmers market
+Tomato Beefsteak,2023-10-02,harvest_in,112,Cold Room 1,2023-10-16,P001 week 10
+Tomato Beefsteak,2023-10-09,harvest_in,98,Cold Room 1,2023-10-23,P001 week 11
+Tomato Beefsteak,2023-10-16,sale_out,-120,Cold Room 1,,CSA program
+Tomato Beefsteak,2023-10-16,harvest_in,85,Cold Room 1,2023-10-30,P001 week 12
+Tomato Beefsteak,2023-10-23,harvest_in,65,Cold Room 1,2023-11-06,P001 week 13
+Tomato Beefsteak,2023-10-30,harvest_in,48,Cold Room 1,2023-11-13,P001 week 14
+Tomato Beefsteak,2023-11-06,sale_out,-80,Cold Room 1,,Final market
+Tomato Beefsteak,2023-11-06,harvest_in,32,Cold Room 1,2023-11-20,P001 week 15
+Tomato Beefsteak,2023-11-08,harvest_in,18,Cold Room 1,2023-11-22,P001 week 16 end
+Tomato Beefsteak,2023-11-15,waste_out,-15,Cold Room 1,,Spoilage
+Tomato Cherry,2023-06-21,harvest_in,48,Flat Storage,2023-06-28,P003 week 1
+Tomato Cherry,2023-06-28,harvest_in,52,Flat Storage,2023-07-05,P003 week 2
+Tomato Cherry,2023-07-05,harvest_in,50,Flat Storage,2023-07-12,P003 week 3
+Tomato Cherry,2023-07-05,sale_out,-50,Flat Storage,,Farmers market
+Tomato Cherry,2023-07-12,harvest_in,54,Flat Storage,2023-07-19,P003 week 4
+Tomato Cherry,2023-07-19,harvest_in,56,Flat Storage,2023-07-26,P003 week 5
+Tomato Cherry,2023-07-19,sale_out,-55,Flat Storage,,CSA
+Tomato Cherry,2023-07-26,harvest_in,58,Flat Storage,2023-08-02,P003 week 6
+Tomato Cherry,2023-08-02,harvest_in,60,Flat Storage,2023-08-09,P003 week 7
+Tomato Cherry,2023-08-02,sale_out,-60,Flat Storage,,Farmers market
+Tomato Cherry,2023-08-09,harvest_in,58,Flat Storage,2023-08-16,P003 week 8
+Tomato Cherry,2023-08-16,harvest_in,56,Flat Storage,2023-08-23,P003 week 9
+Tomato Cherry,2023-08-16,sale_out,-58,Flat Storage,,Wholesale
+Tomato Cherry,2023-08-23,harvest_in,52,Flat Storage,2023-08-30,P003 week 10
+Tomato Cherry,2023-08-30,harvest_in,48,Flat Storage,2023-09-06,P003 week 11
+Tomato Cherry,2023-09-06,sale_out,-50,Flat Storage,,CSA
+Tomato Cherry,2023-09-06,harvest_in,42,Flat Storage,2023-09-13,P003 week 12
+Tomato Cherry,2023-09-13,harvest_in,35,Flat Storage,2023-09-20,P003 week 13
+Tomato Cherry,2023-09-20,sale_out,-35,Flat Storage,,Farmers market
+Tomato Cherry,2023-09-25,harvest_in,28,Flat Storage,2023-10-02,P003 week 14
+Lettuce Mix,2023-05-10,harvest_in,102,Cooler 1,2023-05-13,P004 week 1
+Lettuce Mix,2023-05-10,sale_out,-100,Cooler 1,,Saturday market
+Lettuce Mix,2023-05-18,harvest_in,98,Cooler 1,2023-05-21,P004 week 2
+Lettuce Mix,2023-05-18,sale_out,-100,Cooler 1,,CSA
+Lettuce Mix,2023-05-25,harvest_in,105,Cooler 1,2023-05-28,P004 week 3
+Lettuce Mix,2023-06-01,harvest_in,95,Cooler 1,2023-06-04,P004 week 4
+Lettuce Mix,2023-06-01,sale_out,-100,Cooler 1,,Farmers market
+Lettuce Mix,2023-06-08,harvest_in,88,Cooler 1,2023-06-11,P004 week 5
+Lettuce Mix,2023-06-15,harvest_in,72,Cooler 1,2023-06-18,P004 week 6
+Lettuce Mix,2023-06-15,sale_out,-80,Cooler 1,,Farmers market
+Lettuce Mix,2023-08-02,harvest_in,98,Cooler 1,2023-08-05,P005 week 1
+Lettuce Mix,2023-08-02,sale_out,-90,Cooler 1,,CSA
+Lettuce Mix,2023-08-09,harvest_in,100,Cooler 1,2023-08-12,P005 week 2
+Lettuce Mix,2023-08-16,harvest_in,102,Cooler 1,2023-08-19,P005 week 3
+Lettuce Mix,2023-08-16,sale_out,-100,Cooler 1,,Farmers market
+Lettuce Mix,2023-08-23,harvest_in,95,Cooler 1,2023-08-26,P005 week 4
+Lettuce Mix,2023-08-30,harvest_in,88,Cooler 1,2023-09-02,P005 week 5
+Lettuce Mix,2023-08-30,sale_out,-90,Cooler 1,,Farmers market
+Lettuce Mix,2023-09-06,harvest_in,82,Cooler 1,2023-09-09,P005 week 6
+Spinach,2023-04-12,harvest_in,48,Cooler 1,2023-04-15,P006 week 1
+Spinach,2023-04-12,sale_out,-48,Cooler 1,,Farmers market
+Spinach,2023-04-19,harvest_in,52,Cooler 1,2023-04-22,P006 week 2
+Spinach,2023-04-19,sale_out,-50,Cooler 1,,Farm store
+Spinach,2023-04-26,harvest_in,50,Cooler 1,2023-04-29,P006 week 3
+Spinach,2023-05-03,harvest_in,45,Cooler 1,2023-05-06,P006 week 4
+Spinach,2023-05-03,sale_out,-48,Cooler 1,,CSA
+Spinach,2023-05-10,harvest_in,38,Cooler 1,2023-05-13,P006 week 5
+Spinach,2023-05-17,harvest_in,32,Cooler 1,2023-05-20,P006 week 6
+Spinach,2023-05-17,sale_out,-35,Cooler 1,,Farmers market
+Bell Pepper,2023-06-25,harvest_in,78,Tote,2023-09-25,P007 week 1
+Bell Pepper,2023-07-02,harvest_in,82,Tote,2023-10-02,P007 week 2
+Bell Pepper,2023-07-02,sale_out,-80,Tote,,Farmers market
+Bell Pepper,2023-07-09,harvest_in,85,Tote,2023-10-09,P007 week 3
+Bell Pepper,2023-07-16,harvest_in,88,Tote,2023-10-16,P007 week 4
+Bell Pepper,2023-07-16,sale_out,-85,Tote,,CSA
+Bell Pepper,2023-07-23,harvest_in,86,Tote,2023-10-23,P007 week 5
+Bell Pepper,2023-07-30,harvest_in,84,Tote,2023-10-30,P007 week 6
+Bell Pepper,2023-07-30,sale_out,-85,Tote,,Farmers market
+Bell Pepper,2023-08-06,harvest_in,82,Tote,2023-11-06,P007 week 7
+Bell Pepper,2023-08-13,harvest_in,78,Tote,2023-11-13,P007 week 8
+Bell Pepper,2023-08-13,sale_out,-80,Tote,,Farmers market
+Bell Pepper,2023-08-20,harvest_in,72,Tote,2023-11-20,P007 week 9
+Bell Pepper,2023-08-27,harvest_in,65,Tote,2023-11-27,P007 week 10
+Bell Pepper,2023-08-27,sale_out,-70,Tote,,CSA
+Bell Pepper,2023-09-03,harvest_in,58,Tote,2023-12-03,P007 week 11
+Bell Pepper,2023-09-10,harvest_in,50,Tote,2023-12-10,P007 week 12
+Bell Pepper,2023-09-10,sale_out,-55,Tote,,Farmers market
+Carrot,2023-06-26,harvest_in,102,Root Storage,2024-03-26,P008 week 1
+Carrot,2023-07-03,harvest_in,98,Root Storage,2024-04-02,P008 week 2
+Carrot,2023-07-03,sale_out,-100,Root Storage,,Farmers market
+Carrot,2023-07-10,harvest_in,100,Root Storage,2024-04-09,P008 week 3
+Carrot,2023-07-17,harvest_in,95,Root Storage,2024-04-16,P008 week 4
+Carrot,2023-07-17,sale_out,-95,Root Storage,,CSA
+Carrot,2023-07-24,harvest_in,92,Root Storage,2024-04-23,P008 week 5
+Carrot,2023-07-31,harvest_in,88,Root Storage,2024-04-30,P008 week 6
+Carrot,2023-07-31,sale_out,-90,Root Storage,,Farmers market
+Carrot,2023-08-07,harvest_in,82,Root Storage,2024-05-07,P008 week 7
+Carrot,2023-08-14,harvest_in,75,Root Storage,2024-05-14,P008 week 8
+Carrot,2023-08-14,sale_out,-75,Root Storage,,Farmers market
+Cucumber,2023-07-03,harvest_in,78,Cooler 1,,P009 week 1
+Cucumber,2023-07-03,sale_out,-75,Cooler 1,,Farmers market
+Cucumber,2023-07-10,harvest_in,76,Cooler 1,,P009 week 2
+Cucumber,2023-07-10,sale_out,-75,Cooler 1,,CSA
+Cucumber,2023-07-17,harvest_in,80,Cooler 1,,P009 week 3
+Cucumber,2023-07-24,harvest_in,82,Cooler 1,,P009 week 4
+Cucumber,2023-07-24,sale_out,-80,Cooler 1,,Farmers market
+Cucumber,2023-07-31,harvest_in,75,Cooler 1,,P009 week 5
+Cucumber,2023-08-07,harvest_in,68,Cooler 1,,P009 week 6
+Cucumber,2023-08-07,sale_out,-70,Cooler 1,,Farmers market
+Cucumber,2023-08-15,harvest_in,60,Cooler 1,,P009 week 7
+Basil,2023-06-06,harvest_in,5.2,Cooler 1,2023-06-13,P010 week 1
+Basil,2023-06-06,sale_out,-5,Cooler 1,,Farmers market
+Basil,2023-06-13,harvest_in,5.5,Cooler 1,2023-06-20,P010 week 2
+Basil,2023-06-20,harvest_in,5.8,Cooler 1,2023-06-27,P010 week 3
+Basil,2023-06-20,sale_out,-5.5,Cooler 1,,CSA
+Basil,2023-06-27,harvest_in,6.0,Cooler 1,2023-07-04,P010 week 4
+Basil,2023-07-04,harvest_in,6.2,Cooler 1,2023-07-11,P010 week 5
+Basil,2023-07-04,sale_out,-6,Cooler 1,,Farmers market
+Basil,2023-07-11,harvest_in,6.0,Cooler 1,2023-07-18,P010 week 6
+Basil,2023-07-18,harvest_in,5.8,Cooler 1,2023-07-25,P010 week 7
+Basil,2023-07-18,sale_out,-5.8,Cooler 1,,Farmers market
+Basil,2023-07-25,harvest_in,5.5,Cooler 1,2023-08-01,P010 week 8
+Basil,2023-08-01,harvest_in,5.2,Cooler 1,2023-08-08,P010 week 9
+Basil,2023-08-01,sale_out,-5.2,Cooler 1,,CSA
+Basil,2023-08-08,harvest_in,4.8,Cooler 1,2023-08-15,P010 week 10
+Basil,2023-08-15,harvest_in,4.5,Cooler 1,2023-08-22,P010 week 11
+Basil,2023-08-15,sale_out,-4.5,Cooler 1,,Farmers market
+Basil,2023-08-22,harvest_in,4.0,Cooler 1,2023-08-29,P010 week 12
+Basil,2023-08-29,harvest_in,3.8,Cooler 1,2023-09-05,P010 week 13
+Basil,2023-09-05,sale_out,-3.8,Cooler 1,,Farmers market
+Basil,2023-09-12,harvest_in,3.5,Cooler 1,2023-09-19,P010 week 14
+Basil,2023-09-19,harvest_in,3.2,Cooler 1,2023-09-26,P010 week 15
+Basil,2023-09-19,sale_out,-3.2,Cooler 1,,CSA
+Basil,2023-09-26,harvest_in,2.8,Cooler 1,2023-10-03,P010 week 16

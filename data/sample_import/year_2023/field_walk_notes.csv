@@ -1,0 +1,31 @@
+Planting ID,Walk Date,Condition,Adjusted First Harvest Date,Adjusted Last Harvest Date,Yield Adjust (%),Notes
+P001,2023-06-15,good,,,100,Plants looking vigorous
+P001,2023-07-20,good,,,100,Great flowering
+P001,2023-08-20,fair,,,95,Some early blight appearing
+P002,2023-07-10,good,,,100,Strong succession plantings
+P002,2023-08-15,fair,,,95,Mid-season slowdown
+P003,2023-05-28,good,,,100,Tunnel plants thriving
+P003,2023-06-25,good,,,105,Better than expected
+P003,2023-07-20,good,,,100,Consistent production
+P003,2023-08-25,fair,,,90,Late season fungal issues
+P004,2023-04-20,good,,,100,Spring lettuce excellent condition
+P004,2023-05-15,fair,2023-05-20,,95,Heat stress approaching - harvest moved earlier
+P004,2023-06-10,poor,,2023-06-10,50,Bolting due to heat - truncated season
+P005,2023-07-15,good,,,100,Summer succession off to good start
+P005,2023-08-10,fair,,,100,Steady growth
+P005,2023-09-01,fair,,,95,Cooling improves quality
+P006,2023-04-05,good,,,100,Early spinach vigorous
+P006,2023-05-01,fair,,,85,Late spring bolting
+P007,2023-05-28,good,,,105,Pepper plants ahead of schedule
+P007,2023-06-25,good,,,100,Continued strong growth
+P007,2023-07-25,good,,,100,Greenhouse management working well
+P007,2023-08-30,fair,,,95,End of season quality decline
+P008,2023-05-30,good,,,100,Carrot development on track
+P008,2023-07-10,good,,,100,Nice root sizing
+P008,2023-08-05,fair,,,98,Minor splitting observed
+P009,2023-06-20,good,,,100,Tunnel cucumber health
+P009,2023-07-15,good,,,100,Strong production
+P009,2023-08-10,fair,,,90,Disease pressure increasing
+P010,2023-05-25,good,,,100,Basil thriving
+P010,2023-07-15,good,,,100,Lush growth
+P010,2023-08-30,fair,,,95,Slowing as days shorten

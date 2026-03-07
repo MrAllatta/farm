@@ -1,0 +1,11 @@
+ID,Crop Name,Variety,Block Name,Bed Start,Bed End,Succession Group,Planned Bedfeet,Planned Plant Date,Planned First Harvest Date,Planned Last Harvest Date,Planned Total Yield,Actual Bedfeet,Actual Plant Date,Actual First Harvest Date,Actual Last Harvest Date,Actual Total Yield,Status,Revision Of,Notes
+P201,Tomato Beefsteak,San Marzano,North Field,1,4,,1200,2024-05-10,2024-07-24,2024-11-07,4200,,,,,,planned,,
+P202,Tomato Cherry,Sweet 100,South Tunnel,1,4,,600,2024-04-10,2024-06-14,2024-09-13,1680,,,,,,planned,,
+P203,Lettuce Mix,,North Field,9,10,,600,2024-03-15,2024-05-04,2024-06-08,720,,,,,,planned,,
+P204,Spinach,,South Tunnel,5,6,,300,2024-02-22,2024-04-05,2024-05-10,240,,,,,,planned,,
+P205,Bell Pepper,Red Beauty,East Greenhouse,1,2,,400,2024-03-27,2024-06-15,2024-09-27,1000,,,,,,planned,,
+P206,Carrot,Nantes,North Field,11,12,,600,2024-04-05,2024-06-19,2024-08-23,1080,,,,,,planned,,
+P207,Cucumber,Slicing,South Tunnel,7,8,,300,2024-04-26,2024-06-26,2024-08-07,660,,,,,,planned,,
+P208,Basil,Genovese,East Greenhouse,3,3,,200,2024-04-10,2024-05-30,2024-09-12,400,,,,,,planned,,
+P209,Garlic,German Extra Hardy,West Pasture,1,2,,900,2023-10-15,2024-07-19,2024-08-04,2700,,,,,,planned,,
+P210,Potato,Russet,West Pasture,3,4,,600,2024-03-10,2024-06-09,2024-08-17,1500,,,,,,planned,,
