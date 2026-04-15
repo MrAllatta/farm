@@ -3,7 +3,6 @@
 from django.db import models
 import math
 from decimal import Decimal
-from django.contrib.postgres.fields import ArrayField
 
 
 class CropInfo(models.Model):
@@ -136,9 +135,7 @@ class CropSalesFormat(models.Model):
 
 class SalesChannel(models.Model):
     name = models.CharField(max_length=100)
-    days_of_week = ArrayField(
-        models.CharField(max_length=10), default=list
-    )  # PostgreSQL array field
+    days_of_week = models.JSONField(default=list)
     start_week = models.PositiveIntegerField()
     end_week = models.PositiveIntegerField()
     weekly_target = models.DecimalField(max_digits=10, decimal_places=2)

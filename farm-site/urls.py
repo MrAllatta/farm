@@ -23,6 +23,6 @@ urlpatterns = [
     path("planning/", include("planning.urls")),
     path("reports/", include("reports.urls")),
     path("sales/", include("sales.urls")),
-    path("operations", include("operations.urls")),
+    path("operations/", include("operations.urls")),
     path("admin/", admin.site.urls),
 ]

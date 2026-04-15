@@ -8,7 +8,7 @@ import math
 
 from planning.models import HarvestEvent, PlanningYear, Planting
 from sales.models import SalesEvent, QuickSalesEntry
-from reference.models import Block, SalesChannel
+from reference.models import Block, SalesChannel, CropSalesFormat
 from decimal import Decimal
 
 
