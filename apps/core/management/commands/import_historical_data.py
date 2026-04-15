@@ -97,6 +97,7 @@ class Command(BaseCommand):
         self.run_started_at = datetime.utcnow()
         self.run_id = self.run_started_at.strftime("%Y%m%dT%H%M%S")
         self.summary_json_path = self._resolve_summary_json_path(requested_summary_path)
+        self.row_errors = []
 
         # Track statistics (legacy keys may still be populated in row paths).
         self.stats = defaultdict(
@@ -181,6 +182,18 @@ class Command(BaseCommand):
             return requested_path
         artifact_dir = Path(self.data_dir) / "_import_artifacts"
         return str(artifact_dir / f"historical-import-summary-{self.run_id}.json")
+
+    def _record_row_error(self, model_name, row_number, code, field_path, message):
+        """Capture structured row-level error details for summary artifacts."""
+        self.row_errors.append(
+            {
+                "model": model_name,
+                "row": row_number,
+                "code": code,
+                "field_path": field_path,
+                "message": str(message),
+            }
+        )
 
     # ============================================================================
     # TIER 1: Reference Data (Independent)
@@ -367,15 +380,29 @@ class Command(BaseCommand):
                     normalized_block_type = " ".join(block_type_raw.split()).casefold()
                     block_type = type_map.get(normalized_block_type)
                     if not block_type:
-                        self.stderr.write(
-                            f"    ERROR row {i}: unsupported block type '{block_type_raw}'"
+                        message = f"unsupported block type '{block_type_raw}'"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "CropBySeason",
+                            i,
+                            code="namespace_mismatch",
+                            field_path="crop_by_season.block_type",
+                            message=message,
                         )
                         self.stats["CropBySeason"]["errors"] += 1
                         continue
 
                     crop = self._get_crop(crop_name)
                     if not crop:
-                        self.stderr.write(f"    ERROR row {i}: crop not found '{crop_name}'")
+                        message = f"crop not found '{crop_name}'"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "CropBySeason",
+                            i,
+                            code="stale_fk",
+                            field_path="crop_by_season.crop",
+                            message=message,
+                        )
                         self.stats["CropBySeason"]["errors"] += 1
                         continue
 
@@ -527,7 +554,15 @@ class Command(BaseCommand):
 
                     crop = self._get_crop(crop_name)
                     if not crop:
-                        self.stderr.write(f"    ERROR row {i}: crop not found '{crop_name}'")
+                        message = f"crop not found '{crop_name}'"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "CropSalesFormat",
+                            i,
+                            code="stale_fk",
+                            field_path="crop_sales_formats.crop",
+                            message=message,
+                        )
                         self.stats["CropSalesFormat"]["errors"] += 1
                         continue
 
@@ -671,8 +706,16 @@ class Command(BaseCommand):
                     block = self._get_block(block_name)
 
                     if not planning_year or not crop or not block:
-                        self.stderr.write(
-                            f"    ERROR row {i}: missing FK (PY={planning_year}, crop={crop}, block={block})"
+                        message = (
+                            f"missing FK (PY={planning_year}, crop={crop}, block={block})"
+                        )
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "Planting",
+                            i,
+                            code="stale_fk",
+                            field_path="plantings",
+                            message=message,
                         )
                         self.stats["Planting"]["errors"] += 1
                         continue
@@ -1642,7 +1685,7 @@ class Command(BaseCommand):
                 totals[key] += normalized[key]
 
         payload = {
-            "schema_version": "1.0",
+            "schema_version": "1.1",
             "status": status,
             "fatal_error": fatal_error,
             "run": {
@@ -1659,6 +1702,7 @@ class Command(BaseCommand):
             "results": {
                 "models": per_model,
                 "totals": totals,
+                "row_errors": self.row_errors,
             },
         }
 

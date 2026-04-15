@@ -121,7 +121,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         return json.loads(summary_path.read_text(encoding="utf-8"))
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
-        self.assertEqual(summary["schema_version"], "1.0")
+        self.assertEqual(summary["schema_version"], "1.1")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
         self.assertEqual(
@@ -143,8 +143,9 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertTrue(summary["run"]["finished_at"])
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
-        self.assertEqual(set(summary["results"].keys()), {"models", "totals"})
+        self.assertEqual(set(summary["results"].keys()), {"models", "totals", "row_errors"})
         self.assertEqual(set(summary["results"]["totals"].keys()), {"created", "updated", "skipped", "error"})
+        self.assertIsInstance(summary["results"]["row_errors"], list)
 
         model_totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
         for model_counts in summary["results"]["models"].values():
@@ -229,6 +230,39 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(CropInfo.objects.count(), 1)
             self.assertEqual(SalesChannel.objects.count(), 1)
             self.assertEqual(CropSalesFormat.objects.count(), 1)
+
+    def test_known_mismatch_fixture_reports_structured_row_errors(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_known_mismatch_fixture(data_dir)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-row-errors.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            row_errors = summary["results"]["row_errors"]
+            self.assertEqual(len(row_errors), 2)
+            self.assertEqual(
+                {(item["code"], item["field_path"], item["row"]) for item in row_errors},
+                {
+                    ("namespace_mismatch", "crop_by_season.block_type", 1),
+                    ("stale_fk", "crop_by_season.crop", 2),
+                },
+            )
+            self.assertTrue(all(item["model"] == "CropBySeason" for item in row_errors))
+            self.assertTrue(all(isinstance(item["message"], str) and item["message"] for item in row_errors))
+
+    def test_repo_mismatch_fixture_matrix_has_stale_fk_and_namespace_mismatch_signals(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture.json",
+                "--validate-only",
+            )
+
+            self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 2)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
+            row_error_codes = {item["code"] for item in summary["results"]["row_errors"]}
+            self.assertEqual(row_error_codes, {"namespace_mismatch", "stale_fk"})
 
     def test_known_mismatch_fixture_has_deterministic_outcomes_across_apply_and_preflight(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -419,10 +453,15 @@ class ImportReferenceDataCommandTests(TestCase):
 class PrimaryRouteSmokeTests(TestCase):
     PRIMARY_ROUTES = [
         ("core:dashboard", {}),
+        ("reference:index", {}),
         ("planning:matrix", {}),
+        ("planning:matrix_week", {"week": 12}),
         ("operations:harvest_entry_current", {}),
+        ("operations:harvest_entry_week", {"week": 12}),
         ("operations:inventory", {}),
         ("sales:market_entry", {}),
+        ("reports:crop_map", {}),
+        ("reports:crop_performance", {}),
     ]
 
     @classmethod
