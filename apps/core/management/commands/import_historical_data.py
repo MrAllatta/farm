@@ -1788,6 +1788,41 @@ class Command(BaseCommand):
             )
         return signatures
 
+    def _build_escalation_summary(self, failure_signatures):
+        """Group failure signatures into operator-facing escalation buckets."""
+        grouped = {}
+        for item in failure_signatures:
+            key = (
+                item["owner_area"],
+                item["owner_team"],
+                item["severity"],
+                item["escalation_path"],
+            )
+            if key not in grouped:
+                grouped[key] = {
+                    "owner_area": item["owner_area"],
+                    "owner_team": item["owner_team"],
+                    "severity": item["severity"],
+                    "escalation_path": item["escalation_path"],
+                    "count": 0,
+                    "signatures": [],
+                }
+            grouped[key]["count"] += item["count"]
+            grouped[key]["signatures"].append(item["signature"])
+
+        escalation_summary = sorted(
+            grouped.values(),
+            key=lambda row: (
+                row["severity"],
+                row["owner_area"],
+                row["owner_team"],
+                row["escalation_path"],
+            ),
+        )
+        for row in escalation_summary:
+            row["signatures"].sort()
+        return escalation_summary
+
     def _write_summary_json(self, status="ok", fatal_error=None):
         """Write structured summary artifact when requested."""
         per_model = {}
@@ -1798,6 +1833,7 @@ class Command(BaseCommand):
             for key in totals:
                 totals[key] += normalized[key]
 
+        failure_signatures = self._build_failure_signatures(status, fatal_error)
         payload = {
             "schema_version": "1.2",
             "status": status,
@@ -1818,7 +1854,8 @@ class Command(BaseCommand):
                 "models": per_model,
                 "totals": totals,
                 "row_errors": self.row_errors,
-                "failure_signatures": self._build_failure_signatures(status, fatal_error),
+                "failure_signatures": failure_signatures,
+                "escalation_summary": self._build_escalation_summary(failure_signatures),
             },
         }
 
