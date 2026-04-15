@@ -311,9 +311,9 @@ class ImportHistoricalDataCommandTests(TestCase):
             )
 
             self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
-            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 4)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 5)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
-            self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 1)
+            self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 2)
             self.assertEqual(summary["results"]["models"]["Planting"]["error"], 2)
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
@@ -336,13 +336,20 @@ class ImportHistoricalDataCommandTests(TestCase):
                     (
                         "CropBySeason",
                         3,
+                        "namespace_mismatch",
+                        "crop_by_season.block_type",
+                        "unsupported block type 'Storage Barn'",
+                    ),
+                    (
+                        "CropBySeason",
+                        4,
                         "stale_fk",
                         "crop_by_season.crop",
                         "crop not found 'Ghost Crop'",
                     ),
                     (
                         "CropBySeason",
-                        4,
+                        5,
                         "stale_fk",
                         "crop_by_season.crop",
                         "crop not found 'Missing Crop'",
@@ -350,6 +357,13 @@ class ImportHistoricalDataCommandTests(TestCase):
                     (
                         "CropSalesFormat",
                         2,
+                        "stale_fk",
+                        "crop_sales_formats.crop",
+                        "crop not found 'Ghost Crop'",
+                    ),
+                    (
+                        "CropSalesFormat",
+                        3,
                         "stale_fk",
                         "crop_sales_formats.crop",
                         "crop not found 'Missing Crop'",
@@ -371,7 +385,55 @@ class ImportHistoricalDataCommandTests(TestCase):
                 ],
             )
             # Deterministic ordering from importer pass order helps gate snapshots stay stable.
-            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 2, 1, 2])
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 2, 3, 1, 2])
+
+    def test_repo_mismatch_fixture_matrix_validate_and_apply_have_identical_row_error_payloads(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            validate_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-validate-only-payload.json",
+                "--validate-only",
+            )
+            apply_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-apply-payload.json",
+            )
+
+        validate_errors = validate_summary["results"]["row_errors"]
+        apply_errors = apply_summary["results"]["row_errors"]
+        self._assert_row_error_payload_contract(validate_errors)
+        self._assert_row_error_payload_contract(apply_errors)
+        self.assertEqual(validate_errors, apply_errors)
+
+    def test_repo_mismatch_fixture_matrix_row_error_classes_and_counts_are_deterministic(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-error-classes.json",
+                "--validate-only",
+            )
+
+        row_errors = summary["results"]["row_errors"]
+        self._assert_row_error_payload_contract(row_errors)
+        classes = [item["code"] for item in row_errors]
+        self.assertEqual(
+            classes,
+            [
+                "namespace_mismatch",
+                "namespace_mismatch",
+                "namespace_mismatch",
+                "stale_fk",
+                "stale_fk",
+                "stale_fk",
+                "stale_fk",
+                "stale_fk",
+                "stale_fk",
+            ],
+        )
+        self.assertEqual(classes.count("namespace_mismatch"), 3)
+        self.assertEqual(classes.count("stale_fk"), 6)
 
     def test_repo_clean_fixture_pack_validate_only_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
@@ -731,6 +793,14 @@ class PrimaryRouteSmokeTests(TestCase):
         ("reports:channel_performance", {}),
         ("reports:block_utilization", {}),
     ]
+    MIN_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
+        "core": 1,
+        "reference": 1,
+        "planning": 3,
+        "operations": 3,
+        "sales": 3,
+        "reports": 5,
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -755,6 +825,22 @@ class PrimaryRouteSmokeTests(TestCase):
     def test_primary_navigation_routes_cover_required_namespaces(self):
         route_namespaces = {route_name.split(":")[0] for route_name, _ in self.PRIMARY_ROUTES}
         self.assertEqual(route_namespaces, self.REQUIRED_NAMESPACES)
+
+    def test_primary_navigation_routes_meet_smoke_breadth_by_namespace(self):
+        namespace_counts = {namespace: 0 for namespace in self.REQUIRED_NAMESPACES}
+        for route_name, _kwargs in self.PRIMARY_ROUTES:
+            namespace = route_name.split(":")[0]
+            namespace_counts[namespace] += 1
+        self.assertEqual(set(namespace_counts.keys()), self.REQUIRED_NAMESPACES)
+        for namespace, min_count in self.MIN_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE.items():
+            with self.subTest(namespace=namespace):
+                self.assertGreaterEqual(namespace_counts[namespace], min_count)
+
+    def test_primary_navigation_routes_are_unique_for_stable_smoke_gate_surface(self):
+        normalized_routes = {
+            (route_name, tuple(sorted(kwargs.items()))) for route_name, kwargs in self.PRIMARY_ROUTES
+        }
+        self.assertEqual(len(self.PRIMARY_ROUTES), len(normalized_routes))
 
     def test_registered_route_surface_meets_minimum_route_breadth_by_namespace(self):
         from core import urls as core_urls
@@ -812,6 +898,9 @@ class PrimaryRouteSmokeTests(TestCase):
         route_variants = [
             "/definitely-not-a-real-route/",
             "/definitely-not-a-real-route",
+            "/planning/definitely-not-a-real-route/",
+            "/operations/definitely-not-a-real-route/",
+            "/sales/definitely-not-a-real-route/",
             "/reports/definitely-not-a-real-route/",
         ]
         for route in route_variants:
