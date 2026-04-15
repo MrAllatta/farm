@@ -1588,6 +1588,23 @@ class AppBootGateTests(TestCase):
         self.assertTrue(namespace_dict)
         self.assertTrue({"core", "reference", "planning", "operations", "sales", "reports"} <= set(namespace_dict))
 
+    @override_settings(ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"])
+    def test_healthz_endpoint_reports_process_ok(self):
+        response = self.client.get("/healthz/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertEqual(response.json()["check"], "healthz")
+
+    @override_settings(ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"])
+    def test_readyz_endpoint_reports_db_and_urlconf_readiness(self):
+        response = self.client.get("/readyz/")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "ready")
+        self.assertEqual(payload["check"], "readyz")
+        self.assertEqual(payload["checks"]["db"], "ok")
+        self.assertEqual(payload["checks"]["urlconf"], "ok")
+
 
 class BetaGateEvidenceTests(TestCase):
     @classmethod

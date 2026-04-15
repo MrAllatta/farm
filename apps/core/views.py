@@ -5,6 +5,9 @@ from django.views.generic import TemplateView
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.db.models import Sum, Count, Q
+from django.db import connection, DatabaseError
+from django.http import JsonResponse
+from django.urls import get_resolver
 from isoweek import Week
 
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
@@ -14,6 +17,48 @@ from reference.models import SalesChannel
 
 from django.views.generic import FormView
 from django import forms
+
+
+def healthz(request):
+    """Lightweight process health signal for uptime checks."""
+    return JsonResponse({"status": "ok", "service": "farm", "check": "healthz"})
+
+
+def readyz(request):
+    """Readiness signal with DB and URL resolver checks."""
+    checks = {"db": "unknown", "urlconf": "unknown"}
+    failures = []
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        checks["db"] = "ok"
+    except DatabaseError as exc:
+        checks["db"] = "error"
+        failures.append(f"db:{exc.__class__.__name__}")
+
+    try:
+        resolver = get_resolver()
+        namespace_dict = getattr(resolver, "namespace_dict", {})
+        required = {"core", "reference", "planning", "operations", "sales", "reports"}
+        if required <= set(namespace_dict):
+            checks["urlconf"] = "ok"
+        else:
+            checks["urlconf"] = "error"
+            failures.append("urlconf:missing_namespaces")
+    except Exception as exc:  # pragma: no cover - defensive readiness guard
+        checks["urlconf"] = "error"
+        failures.append(f"urlconf:{exc.__class__.__name__}")
+
+    payload = {
+        "status": "ready" if not failures else "not_ready",
+        "service": "farm",
+        "check": "readyz",
+        "checks": checks,
+        "failures": failures,
+    }
+    return JsonResponse(payload, status=200 if not failures else 503)
 
 
 class DashboardView(TemplateView):
