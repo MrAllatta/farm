@@ -17,6 +17,7 @@ import sys
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from collections import defaultdict
+from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -81,18 +82,32 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.data_dir = options["data_dir"]
-        self.validate_only = bool(
-            options["validate_only"] or options["preflight"] or options["dry_run"]
-        )
-        self.dry_run = self.validate_only
+        self.validate_only = bool(options["validate_only"] or options["preflight"])
+        self.dry_run = bool(options["dry_run"])
+        if self.validate_only and self.dry_run:
+            # Preflight mode takes precedence when both flags are provided.
+            self.dry_run = False
+        # Dry-run keeps legacy parse-only behavior; validate-only executes full flow in a rollback txn.
+        self.write_disabled = self.dry_run
         self.verbose = options["verbose"]
         self.start_year = options["start_year"]
         self.end_year = options["end_year"]
-        self.summary_json_path = options.get("summary_json")
+        requested_summary_path = options.get("summary_json")
         self.run_started_at = datetime.utcnow()
+        self.run_id = self.run_started_at.strftime("%Y%m%dT%H%M%S")
+        self.summary_json_path = self._resolve_summary_json_path(requested_summary_path)
 
-        # Track statistics
-        self.stats = defaultdict(lambda: {"processed": 0, "created": 0, "skipped": 0, "errors": 0})
+        # Track statistics (legacy keys may still be populated in row paths).
+        self.stats = defaultdict(
+            lambda: {
+                "created": 0,
+                "updated": 0,
+                "skipped": 0,
+                "error": 0,
+                "processed": 0,
+                "errors": 0,
+            }
+        )
 
         # Cache for FK lookups
         self.crop_cache = {}
@@ -108,32 +123,17 @@ class Command(BaseCommand):
 
         if self.validate_only:
             self.stdout.write(self.style.WARNING("\n⚠️  VALIDATE-ONLY/PREFLIGHT — no data will be saved\n"))
+        elif self.dry_run:
+            self.stdout.write(self.style.WARNING("\n⚠️  DRY-RUN — parse/shape checks only, no data will be saved\n"))
 
         try:
-            self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
-            self.stdout.write("TIER 1: Reference Data (Independent)\n")
-            self.stdout.write("=" * 70)
-            self._import_reference_tier()
-
-            self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
-            self.stdout.write("TIER 2: Planning Years & Plantings\n")
-            self.stdout.write("=" * 70)
-            self._import_years_and_plantings()
-
-            self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
-            self.stdout.write("TIER 3: Nursery & Harvest Events\n")
-            self.stdout.write("=" * 70)
-            self._import_nursery_and_harvest()
-
-            self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
-            self.stdout.write("TIER 4: Operations (Field Walks, Inventory, Packing)\n")
-            self.stdout.write("=" * 70)
-            self._import_operations_tier()
-
-            self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
-            self.stdout.write("TIER 5: Sales & Rotation History\n")
-            self.stdout.write("=" * 70)
-            self._import_sales_and_rotation()
+            if self.validate_only:
+                # Preflight mode executes full mapping/validation path and then rolls back.
+                with transaction.atomic():
+                    self._run_import_pipeline()
+                    transaction.set_rollback(True)
+            else:
+                self._run_import_pipeline()
 
             self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
             self._print_summary()
@@ -147,6 +147,38 @@ class Command(BaseCommand):
                 import traceback
                 traceback.print_exc()
             sys.exit(1)
+
+    def _run_import_pipeline(self):
+        self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
+        self.stdout.write("TIER 1: Reference Data (Independent)\n")
+        self.stdout.write("=" * 70)
+        self._import_reference_tier()
+
+        self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
+        self.stdout.write("TIER 2: Planning Years & Plantings\n")
+        self.stdout.write("=" * 70)
+        self._import_years_and_plantings()
+
+        self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
+        self.stdout.write("TIER 3: Nursery & Harvest Events\n")
+        self.stdout.write("=" * 70)
+        self._import_nursery_and_harvest()
+
+        self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
+        self.stdout.write("TIER 4: Operations (Field Walks, Inventory, Packing)\n")
+        self.stdout.write("=" * 70)
+        self._import_operations_tier()
+
+        self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
+        self.stdout.write("TIER 5: Sales & Rotation History\n")
+        self.stdout.write("=" * 70)
+        self._import_sales_and_rotation()
+
+    def _resolve_summary_json_path(self, requested_path):
+        if requested_path:
+            return requested_path
+        artifact_dir = Path(self.data_dir) / "_import_artifacts"
+        return str(artifact_dir / f"historical-import-summary-{self.run_id}.json")
 
     # ============================================================================
     # TIER 1: Reference Data (Independent)
@@ -192,7 +224,7 @@ class Command(BaseCommand):
                         "bedfeet_per_bed": self._int(row["Bedfeet per Bed"] or 0),
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = Block.objects.update_or_create(name=name, defaults=data)
                         self.stats["Block"]["created" if created else "processed"] += 1
                         self.block_cache[name] = obj
@@ -272,7 +304,7 @@ class Command(BaseCommand):
                         "seeds_per_ounce": self._dec_or_none(row.get("Seeds Per Ounce")),
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = CropInfo.objects.update_or_create(name=name, defaults=data)
                         self.stats["CropInfo"]["created" if created else "processed"] += 1
                         self.crop_cache[name] = obj
@@ -364,7 +396,7 @@ class Command(BaseCommand):
                         "irrigation": row.get("Irrigation", "").strip(),
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = CropBySeason.objects.update_or_create(
                             crop=crop, block_type=block_type, defaults=data
                         )
@@ -417,7 +449,7 @@ class Command(BaseCommand):
                         "allocation_priority": self._int(row.get("Priority", i), i),
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = SalesChannel.objects.update_or_create(
                             name=name, defaults=data
                         )
@@ -474,7 +506,7 @@ class Command(BaseCommand):
                         "is_active": row.get("Is Active", "true").strip().lower() == "true",
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = CropSalesFormat.objects.update_or_create(
                             crop=crop, product_name=product_name, defaults=data
                         )
@@ -531,7 +563,7 @@ class Command(BaseCommand):
                         "overplant_factor": overplant,
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = PlanningYear.objects.update_or_create(
                             year=py_year, defaults=data
                         )
@@ -596,8 +628,8 @@ class Command(BaseCommand):
                         self.stats["Planting"]["errors"] += 1
                         continue
 
-                    # Get crop_season — skip in dry-run (no DB objects)
-                    if not self.dry_run:
+                    # Get crop_season — keep lookup active for validate-only preflight.
+                    if not self.write_disabled:
                         try:
                             crop_season = CropBySeason.objects.get(
                                 crop=crop, block_type=block.block_type
@@ -640,7 +672,7 @@ class Command(BaseCommand):
                     if actual_harvest_str:
                         data["actual_total_yield"] = self._dec_or_none(actual_harvest_str)
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = Planting.objects.update_or_create(
                             planning_year=planning_year,
                             crop=crop,
@@ -728,7 +760,7 @@ class Command(BaseCommand):
 
                     data["notes"] = row.get("Notes", "").strip()
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = NurseryEvent.objects.update_or_create(
                             planting=planting,
                             planned_date=data["planned_date"],
@@ -799,7 +831,7 @@ class Command(BaseCommand):
 
                     data["notes"] = row.get("Notes", "").strip()
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = HarvestEvent.objects.update_or_create(
                             planting=planting,
                             planned_date=planned_date,
@@ -887,7 +919,7 @@ class Command(BaseCommand):
                     if adj_last_str:
                         data["adjusted_last_harvest_date"] = self._parse_date(adj_last_str)
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = FieldWalkNote.objects.update_or_create(
                             planting=planting,
                             walk_date=data["walk_date"],
@@ -970,7 +1002,7 @@ class Command(BaseCommand):
                     if expiry_str:
                         data["expiry_date"] = self._parse_date(expiry_str)
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = InventoryLedger.objects.update_or_create(
                             crop=crop,
                             event_date=data["event_date"],
@@ -1037,7 +1069,7 @@ class Command(BaseCommand):
                         if he:
                             data["harvest_event"] = he
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = PackAllocation.objects.update_or_create(
                             channel=channel,
                             product=product,
@@ -1143,7 +1175,7 @@ class Command(BaseCommand):
 
                     data["notes"] = row.get("Notes", "").strip()
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = SalesEvent.objects.update_or_create(
                             channel=channel,
                             sale_date=data["sale_date"],
@@ -1199,7 +1231,7 @@ class Command(BaseCommand):
                         "notes": row.get("Notes", "").strip(),
                     }
 
-                    if not self.dry_run:
+                    if not self.write_disabled:
                         obj, created = QuickSalesEntry.objects.update_or_create(
                             channel=channel,
                             sale_date=data["sale_date"],
@@ -1237,7 +1269,7 @@ class Command(BaseCommand):
                 pass
 
         # Create rotation history records
-        if not self.dry_run:
+        if not self.write_disabled:
             for (block_id, year), family in rotation_map.items():
                 if family:
                     RotationHistory.objects.update_or_create(
@@ -1261,7 +1293,7 @@ class Command(BaseCommand):
         """Get or cache crop by name."""
         if crop_name not in self.crop_cache:
             try:
-                if not self.dry_run:
+                if not self.write_disabled:
                     self.crop_cache[crop_name] = CropInfo.objects.get(name=crop_name)
                 else:
                     self.crop_cache[crop_name] = crop_name
@@ -1273,7 +1305,7 @@ class Command(BaseCommand):
         """Get or cache block by name."""
         if block_name not in self.block_cache:
             try:
-                if not self.dry_run:
+                if not self.write_disabled:
                     self.block_cache[block_name] = Block.objects.get(name=block_name)
                 else:
                     self.block_cache[block_name] = block_name
@@ -1285,7 +1317,7 @@ class Command(BaseCommand):
         """Get or cache sales channel by name."""
         if channel_name not in self.channel_cache:
             try:
-                if not self.dry_run:
+                if not self.write_disabled:
                     self.channel_cache[channel_name] = SalesChannel.objects.get(name=channel_name)
                 else:
                     self.channel_cache[channel_name] = channel_name
@@ -1296,7 +1328,7 @@ class Command(BaseCommand):
     def _get_product_by_name(self, product_name):
         """Get crop sales format by product name."""
         try:
-            if not self.dry_run:
+            if not self.write_disabled:
                 return CropSalesFormat.objects.get(product_name=product_name)
             return product_name
         except CropSalesFormat.DoesNotExist:
@@ -1306,7 +1338,7 @@ class Command(BaseCommand):
         """Get or cache planning year."""
         if year not in self.planning_year_cache:
             try:
-                if not self.dry_run:
+                if not self.write_disabled:
                     self.planning_year_cache[year] = PlanningYear.objects.get(year=year)
                 else:
                     self.planning_year_cache[year] = year
@@ -1403,6 +1435,8 @@ class Command(BaseCommand):
 
         if self.validate_only:
             self.stdout.write(self.style.WARNING("\n⚠️  VALIDATE-ONLY/PREFLIGHT — no data saved"))
+        elif self.dry_run:
+            self.stdout.write(self.style.WARNING("\n⚠️  DRY-RUN — no data saved"))
         else:
             self.stdout.write(self.style.SUCCESS("\n✓ All data saved successfully"))
 
@@ -1411,11 +1445,12 @@ class Command(BaseCommand):
         created = model_stats.get("created", 0)
         skipped = model_stats.get("skipped", 0)
         error = model_stats.get("error", 0) + model_stats.get("errors", 0)
-
-        # Historical command used "processed" for update-or-create existing rows.
         updated = model_stats.get("updated", 0) + model_stats.get("processed", 0)
-        if self.validate_only:
-            skipped += updated
+
+        if self.dry_run or self.validate_only:
+            # Write-disabled modes report would-be writes as skipped.
+            skipped += created + updated
+            created = 0
             updated = 0
 
         return {
@@ -1427,9 +1462,6 @@ class Command(BaseCommand):
 
     def _write_summary_json(self, status="ok", fatal_error=None):
         """Write structured summary artifact when requested."""
-        if not self.summary_json_path:
-            return
-
         per_model = {}
         totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
         for model_name in sorted(self.stats.keys()):
@@ -1445,10 +1477,12 @@ class Command(BaseCommand):
             "run": {
                 "started_at": self.run_started_at.isoformat() + "Z",
                 "finished_at": datetime.utcnow().isoformat() + "Z",
+                "run_id": self.run_id,
                 "data_dir": self.data_dir,
                 "start_year": self.start_year,
                 "end_year": self.end_year,
                 "validate_only": self.validate_only,
+                "dry_run": self.dry_run,
                 "verbose": self.verbose,
             },
             "results": {
