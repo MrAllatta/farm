@@ -2,3 +2,4 @@ Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Act
 Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true
 Ghost Crop,Ghost Crop Bunch,4.10,bunch,1,GHO-CRP-BUN,true
 Missing Crop,Ghost Bunch,4.00,bunch,1,GHO-BUN,true
+Phantom Crop,Phantom Crop Bunch,4.50,bunch,1,PHA-CRP-BUN,true

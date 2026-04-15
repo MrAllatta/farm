@@ -22,7 +22,7 @@
       },
       "CropSalesFormat": {
         "created": 0,
-        "error": 2,
+        "error": 3,
         "skipped": 1,
         "updated": 0
       },
@@ -34,7 +34,7 @@
       },
       "Planting": {
         "created": 0,
-        "error": 2,
+        "error": 3,
         "skipped": 0,
         "updated": 0
       },
@@ -97,6 +97,13 @@
       },
       {
         "code": "stale_fk",
+        "field_path": "crop_sales_formats.crop",
+        "message": "crop not found 'Phantom Crop'",
+        "model": "CropSalesFormat",
+        "row": 4
+      },
+      {
+        "code": "stale_fk",
         "field_path": "plantings.crop",
         "message": "crop not found 'Missing Crop'",
         "model": "Planting",
@@ -108,11 +115,18 @@
         "message": "block not found 'Missing Block'",
         "model": "Planting",
         "row": 2
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "plantings.block",
+        "message": "block not found 'Ghost Block'",
+        "model": "Planting",
+        "row": 3
       }
     ],
     "totals": {
       "created": 0,
-      "error": 9,
+      "error": 11,
       "skipped": 13,
       "updated": 0
     }
@@ -121,10 +135,10 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-15T16:50:25.020956Z",
-    "run_id": "20260415T165025",
+    "finished_at": "2026-04-15T17:01:39.708927Z",
+    "run_id": "20260415T170139",
     "start_year": 2021,
-    "started_at": "2026-04-15T16:50:25.004222Z",
+    "started_at": "2026-04-15T17:01:39.690110Z",
     "validate_only": true,
     "verbose": false
   },

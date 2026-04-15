@@ -165,8 +165,11 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(summary["results"]["totals"], model_totals)
 
     def _assert_row_error_payload_contract(self, row_errors):
+        expected_key_set = {"model", "row", "code", "field_path", "message"}
+        expected_sorted_keys = ["code", "field_path", "message", "model", "row"]
         for item in row_errors:
-            self.assertEqual(set(item.keys()), {"model", "row", "code", "field_path", "message"})
+            self.assertEqual(set(item.keys()), expected_key_set)
+            self.assertEqual(sorted(item.keys()), expected_sorted_keys)
             self.assertTrue(isinstance(item["model"], str) and item["model"])
             self.assertIsInstance(item["row"], int)
             self.assertGreater(item["row"], 0)
@@ -313,8 +316,8 @@ class ImportHistoricalDataCommandTests(TestCase):
             self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 5)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
-            self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 2)
-            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 2)
+            self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 3)
+            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 3)
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
@@ -369,6 +372,13 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "crop not found 'Missing Crop'",
                     ),
                     (
+                        "CropSalesFormat",
+                        4,
+                        "stale_fk",
+                        "crop_sales_formats.crop",
+                        "crop not found 'Phantom Crop'",
+                    ),
+                    (
                         "Planting",
                         1,
                         "stale_fk",
@@ -382,10 +392,17 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "plantings.block",
                         "block not found 'Missing Block'",
                     ),
+                    (
+                        "Planting",
+                        3,
+                        "stale_fk",
+                        "plantings.block",
+                        "block not found 'Ghost Block'",
+                    ),
                 ],
             )
             # Deterministic ordering from importer pass order helps gate snapshots stay stable.
-            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 2, 3, 1, 2])
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 2, 3, 4, 1, 2, 3])
 
     def test_repo_mismatch_fixture_matrix_validate_and_apply_have_identical_row_error_payloads(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -405,6 +422,14 @@ class ImportHistoricalDataCommandTests(TestCase):
         self._assert_row_error_payload_contract(validate_errors)
         self._assert_row_error_payload_contract(apply_errors)
         self.assertEqual(validate_errors, apply_errors)
+
+    def test_repo_mismatch_fixture_manifest_row_errors_follow_payload_contract(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "mismatch"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        self._assert_row_error_payload_contract(manifest["expected"]["validate_only"]["row_errors"])
+        self._assert_row_error_payload_contract(manifest["expected"]["apply"]["row_errors"])
 
     def test_repo_mismatch_fixture_matrix_row_error_classes_and_counts_are_deterministic(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -430,10 +455,12 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "stale_fk",
                 "stale_fk",
                 "stale_fk",
+                "stale_fk",
+                "stale_fk",
             ],
         )
         self.assertEqual(classes.count("namespace_mismatch"), 3)
-        self.assertEqual(classes.count("stale_fk"), 6)
+        self.assertEqual(classes.count("stale_fk"), 8)
 
     def test_repo_clean_fixture_pack_validate_only_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
@@ -801,6 +828,14 @@ class PrimaryRouteSmokeTests(TestCase):
         "sales": 3,
         "reports": 5,
     }
+    EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
+        "core": 1,
+        "reference": 1,
+        "planning": 3,
+        "operations": 4,
+        "sales": 3,
+        "reports": 5,
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -835,6 +870,7 @@ class PrimaryRouteSmokeTests(TestCase):
         for namespace, min_count in self.MIN_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE.items():
             with self.subTest(namespace=namespace):
                 self.assertGreaterEqual(namespace_counts[namespace], min_count)
+        self.assertEqual(namespace_counts, self.EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE)
 
     def test_primary_navigation_routes_are_unique_for_stable_smoke_gate_surface(self):
         normalized_routes = {
@@ -903,12 +939,18 @@ class PrimaryRouteSmokeTests(TestCase):
             "/sales/definitely-not-a-real-route/",
             "/reports/definitely-not-a-real-route/",
         ]
+        query_variants = [
+            "?smoke_gate=1",
+            "?smoke_gate=1&depth=alpha-internal",
+            "?smoke_gate=true&smoke_gate=false",
+        ]
         for route in route_variants:
             with self.subTest(route=route, method="GET"):
                 self.assertEqual(self.client.get(route).status_code, 404)
             with self.subTest(route=route, method="HEAD"):
                 self.assertEqual(self.client.head(route).status_code, 404)
-            with self.subTest(route=route, method="GET+query"):
-                self.assertEqual(self.client.get(f"{route}?smoke_gate=1").status_code, 404)
-            with self.subTest(route=route, method="HEAD+query"):
-                self.assertEqual(self.client.head(f"{route}?smoke_gate=1").status_code, 404)
+            for query in query_variants:
+                with self.subTest(route=route, method="GET+query", query=query):
+                    self.assertEqual(self.client.get(f"{route}{query}").status_code, 404)
+                with self.subTest(route=route, method="HEAD+query", query=query):
+                    self.assertEqual(self.client.head(f"{route}{query}").status_code, 404)

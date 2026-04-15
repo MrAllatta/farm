@@ -12,10 +12,10 @@ Included files:
   - invalid maturity (`DTM=0`) -> `skipped` outcome
 - `crop_sales_formats.csv`: mixed valid + stale-FK rows:
   - valid `Carrot` product row remains importable in apply mode
-  - stale FK (`Missing Crop`) -> row-level `stale_fk` error on `crop_sales_formats.crop`
+  - stale FK (`Ghost Crop`, `Missing Crop`, `Phantom Crop`) -> row-level `stale_fk` errors on `crop_sales_formats.crop`
 - `year_2021/plantings.csv`: stale-FK matrix for planning-tier diagnostics:
   - stale FK (`Missing Crop`) -> row-level `stale_fk` error on `plantings.crop`
-  - stale FK (`Missing Block`) -> row-level `stale_fk` error on `plantings.block`
+  - stale FK (`Missing Block`, `Ghost Block`) -> row-level `stale_fk` errors on `plantings.block`
 - `year_2021/planning_year.csv`: creates year context so planting mismatch errors isolate to crop/block resolution.
 - `crop_info.csv`: contains `Carrot` so stale-FK and skip rows remain isolated and deterministic.
 - `blocks.csv`: baseline reference row to keep fixture shape aligned with importer reference expectations.
@@ -23,7 +23,7 @@ Included files:
 
 Expected canonical outcomes:
 
-- `CropBySeason.error=4` (`2x namespace_mismatch`, `2x stale_fk`)
-- `Planting.error=2` (`1x plantings.crop`, `1x plantings.block`)
+- `CropBySeason.error=5` (`3x namespace_mismatch`, `2x stale_fk`)
+- `Planting.error=3` (`1x plantings.crop`, `2x plantings.block`)
 - `skipped=1` in apply mode (`CropBySeason` DTM skip)
-- plus one additional `stale_fk` error from `CropSalesFormat`
+- plus three `stale_fk` errors from `CropSalesFormat`
