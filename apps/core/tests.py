@@ -1704,8 +1704,20 @@ class BetaGateEvidenceTests(TestCase):
             username="beta-operator",
             email="beta-operator@example.com",
             password="test-pass-123",
+            is_staff=True,
         )
         self.client.force_login(user)
+        return user
+
+    def _authenticate_non_staff_user(self):
+        user = get_user_model().objects.create_user(
+            username="beta-viewer",
+            email="beta-viewer@example.com",
+            password="test-pass-123",
+            is_staff=False,
+        )
+        self.client.force_login(user)
+        return user
 
     def test_critical_workflow_integration_path_persists_planning_operations_and_sales_records(self):
         planting, channel = self._bootstrap_core_workflow_records()
@@ -2156,3 +2168,170 @@ class BetaGateEvidenceTests(TestCase):
         )
         self.assertEqual(sales_response.status_code, 302)
         self.assertIn("/admin/login/", sales_response["Location"])
+
+    def test_authenticated_non_staff_mutations_are_forbidden_for_critical_write_routes(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        inventory_crop = planting.crop
+        self._authenticate_non_staff_user()
+
+        status_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(status_response.status_code, 403)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planned")
+
+        inventory_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": inventory_crop.id,
+                "event_type": "return_in",
+                "quantity": "2.00",
+                "notes": "non-staff boundary check",
+            },
+        )
+        self.assertEqual(inventory_response.status_code, 403)
+        self.assertEqual(InventoryLedger.objects.count(), 0)
+
+        sales_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "10.00",
+                "total_card": "5.00",
+                "notes": "non-staff boundary check",
+            },
+        )
+        self.assertEqual(sales_response.status_code, 403)
+        self.assertEqual(QuickSalesEntry.objects.count(), 0)
+
+    def test_staff_role_mutation_boundary_remains_green_after_non_staff_denial(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        inventory_crop = planting.crop
+        self._authenticate_non_staff_user()
+        self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": inventory_crop.id,
+                "event_type": "return_in",
+                "quantity": "2.00",
+                "notes": "non-staff boundary check",
+            },
+        )
+        self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "10.00",
+                "total_card": "5.00",
+                "notes": "non-staff boundary check",
+            },
+        )
+        self.client.logout()
+        self._authenticate_operator()
+
+        status_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(status_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planted")
+
+        inventory_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": inventory_crop.id,
+                "event_type": "return_in",
+                "quantity": "3.00",
+                "notes": "staff boundary check",
+            },
+        )
+        self.assertEqual(inventory_response.status_code, 302)
+        self.assertEqual(InventoryLedger.objects.count(), 1)
+
+        sales_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "20.00",
+                "total_card": "10.00",
+                "notes": "staff boundary check",
+            },
+        )
+        self.assertEqual(sales_response.status_code, 302)
+        self.assertEqual(QuickSalesEntry.objects.count(), 1)
+
+    def test_planting_status_replay_idempotence_preserves_initial_actual_plant_date(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        first_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(first_response.status_code, 302)
+        planting.refresh_from_db()
+        first_actual_plant_date = planting.actual_plant_date
+        self.assertIsNotNone(first_actual_plant_date)
+
+        second_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(second_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.actual_plant_date, first_actual_plant_date)
+
+    def test_inventory_write_replay_keeps_running_balance_sequence_deterministic(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+        crop_id = planting.crop_id
+
+        self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": crop_id,
+                "event_type": "return_in",
+                "quantity": "10.00",
+                "notes": "deterministic replay baseline",
+            },
+        )
+        self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": crop_id,
+                "event_type": "sale_out",
+                "quantity": "3.00",
+                "notes": "deterministic replay drawdown",
+            },
+        )
+        self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": crop_id,
+                "event_type": "sale_out",
+                "quantity": "3.00",
+                "notes": "deterministic replay drawdown",
+            },
+        )
+
+        entries = list(InventoryLedger.objects.filter(crop_id=crop_id).order_by("id"))
+        self.assertEqual(len(entries), 3)
+        self.assertEqual(str(entries[0].quantity), "10.00")
+        self.assertEqual(str(entries[0].running_balance), "10.00")
+        self.assertEqual(str(entries[1].quantity), "-3.00")
+        self.assertEqual(str(entries[1].running_balance), "7.00")
+        self.assertEqual(str(entries[2].quantity), "-3.00")
+        self.assertEqual(str(entries[2].running_balance), "4.00")

@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.db.models import Sum
+from django.http import HttpResponse
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -122,6 +123,8 @@ class MarketSalesEntryView(TemplateView):
     def post(self, request, **kwargs):
         if not request.user.is_authenticated:
             return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         channel_id = request.POST.get("channel_id")
         sale_date = date.fromisoformat(request.POST.get("sale_date"))
         entry_mode = request.POST.get("mode", "quick")

@@ -888,6 +888,8 @@ class PlantingReviseView(View):
     def post(self, request, pk):
         if not request.user.is_authenticated:
             return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         original = get_object_or_404(Planting, pk=pk)
         year_obj = original.planning_year
 
@@ -1000,6 +1002,8 @@ class PlantingStatusUpdateView(View):
     def post(self, request, pk):
         if not request.user.is_authenticated:
             return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         planting = get_object_or_404(Planting, pk=pk)
         new_status = request.POST.get("status")
 

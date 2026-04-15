@@ -4,6 +4,7 @@ from django.views.generic import TemplateView, FormView
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.db.models import Q, Max, Subquery, OuterRef, Sum
+from django.http import HttpResponse
 from datetime import date, timedelta
 from isoweek import Week
 from django import forms
@@ -122,6 +123,8 @@ class WeeklyHarvestEntryView(TemplateView):
         """Handle batch harvest entry submission."""
         if not request.user.is_authenticated:
             return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         year_obj = PlanningYear.objects.filter(status="active").first()
 
         updated = 0
@@ -336,6 +339,8 @@ class InventoryTransactionView(FormView):
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
             return redirect(f"/admin/login/?next={self.request.path}")
+        if not self.request.user.is_staff:
+            return HttpResponse(status=403)
         crop = form.cleaned_data["crop"]
         event_type = form.cleaned_data["event_type"]
         raw_qty = form.cleaned_data["quantity"]
@@ -478,6 +483,8 @@ class FieldWalkView(TemplateView):
         """Handle field walk note submissions."""
         if not request.user.is_authenticated:
             return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         year_obj = PlanningYear.objects.filter(status="active").first()
         today = date.today()
 
