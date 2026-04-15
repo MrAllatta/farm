@@ -1,0 +1,108 @@
+{
+  "fatal_error": null,
+  "results": {
+    "models": {
+      "Block": {
+        "created": 0,
+        "error": 0,
+        "skipped": 4,
+        "updated": 0
+      },
+      "CropBySeason": {
+        "created": 0,
+        "error": 0,
+        "skipped": 21,
+        "updated": 0
+      },
+      "CropInfo": {
+        "created": 0,
+        "error": 0,
+        "skipped": 12,
+        "updated": 0
+      },
+      "CropSalesFormat": {
+        "created": 0,
+        "error": 0,
+        "skipped": 20,
+        "updated": 0
+      },
+      "FieldWalkNote": {
+        "created": 0,
+        "error": 0,
+        "skipped": 30,
+        "updated": 0
+      },
+      "HarvestEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 106,
+        "updated": 0
+      },
+      "InventoryLedger": {
+        "created": 0,
+        "error": 0,
+        "skipped": 138,
+        "updated": 0
+      },
+      "NurseryEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 18,
+        "updated": 0
+      },
+      "PlanningYear": {
+        "created": 0,
+        "error": 0,
+        "skipped": 2,
+        "updated": 0
+      },
+      "Planting": {
+        "created": 0,
+        "error": 0,
+        "skipped": 22,
+        "updated": 0
+      },
+      "QuickSalesEntry": {
+        "created": 0,
+        "error": 0,
+        "skipped": 9,
+        "updated": 0
+      },
+      "RotationHistory": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesChannel": {
+        "created": 0,
+        "error": 0,
+        "skipped": 6,
+        "updated": 0
+      },
+      "SalesEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 33,
+        "updated": 0
+      }
+    },
+    "totals": {
+      "created": 0,
+      "error": 0,
+      "skipped": 421,
+      "updated": 0
+    }
+  },
+  "run": {
+    "data_dir": "farm/data/sample_import",
+    "end_year": 2025,
+    "finished_at": "2026-04-15T14:37:06.796097Z",
+    "start_year": 2021,
+    "started_at": "2026-04-15T14:37:06.785655Z",
+    "validate_only": true,
+    "verbose": false
+  },
+  "schema_version": "1.0",
+  "status": "ok"
+}

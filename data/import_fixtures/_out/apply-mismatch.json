@@ -1,0 +1,36 @@
+{
+  "fatal_error": null,
+  "results": {
+    "models": {
+      "CropBySeason": {
+        "created": 0,
+        "error": 1,
+        "skipped": 0,
+        "updated": 0
+      },
+      "RotationHistory": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      }
+    },
+    "totals": {
+      "created": 0,
+      "error": 1,
+      "skipped": 0,
+      "updated": 0
+    }
+  },
+  "run": {
+    "data_dir": "farm/data/import_fixtures/mismatch",
+    "end_year": 2025,
+    "finished_at": "2026-04-15T14:36:16.765249Z",
+    "start_year": 2021,
+    "started_at": "2026-04-15T14:36:16.760865Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.0",
+  "status": "ok"
+}

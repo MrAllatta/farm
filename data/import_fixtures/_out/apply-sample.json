@@ -1,0 +1,60 @@
+{
+  "fatal_error": "Planting has no crop_season.",
+  "results": {
+    "models": {
+      "Block": {
+        "created": 4,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "CropBySeason": {
+        "created": 21,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "CropInfo": {
+        "created": 12,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "CropSalesFormat": {
+        "created": 20,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "PlanningYear": {
+        "created": 1,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesChannel": {
+        "created": 6,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      }
+    },
+    "totals": {
+      "created": 64,
+      "error": 0,
+      "skipped": 0,
+      "updated": 0
+    }
+  },
+  "run": {
+    "data_dir": "farm/data/sample_import",
+    "end_year": 2025,
+    "finished_at": "2026-04-15T14:37:07.241447Z",
+    "start_year": 2021,
+    "started_at": "2026-04-15T14:37:06.923067Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.0",
+  "status": "failed"
+}
