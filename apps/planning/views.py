@@ -1,6 +1,6 @@
 """planning.views"""
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
@@ -10,7 +10,7 @@ from datetime import date
 from isoweek import Week
 
 from reference.models import Block, BlockType, CropInfo
-from .models import Planting, PlanningYear, Planting, HarvestEvent, NurseryEvent
+from .models import Planting, PlanningYear, Planting, HarvestEvent, NurseryEvent, PlantingStatus
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 
 from django.http import HttpResponse

@@ -89,6 +89,27 @@ class ImportHistoricalDataCommandTests(TestCase):
             ],
         )
 
+    def _write_edge_case_fixture(self, data_dir):
+        self._write_clean_fixture(data_dir)
+        self._write_csv(
+            data_dir,
+            "crop_by_season.csv",
+            [
+                "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                "Carrot,Field,10,40,1.2,6,0,3,30,na,,,,,",
+                "Carrot,Unknown Block,10,40,1.2,6,65,3,30,na,,,,,",
+            ],
+        )
+        self._write_csv(
+            data_dir,
+            "crop_sales_formats.csv",
+            [
+                "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                "Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true",
+                "Ghost Crop,Ghost Bunch,4.00,bunch,1,GHO-BUN,true",
+            ],
+        )
+
     def _write_year_fixture(self, data_dir, year=2021):
         year_dir = Path(data_dir) / f"year_{year}"
         year_dir.mkdir(parents=True, exist_ok=True)
@@ -647,6 +668,67 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(preflight_summary["results"]["totals"]["error"], 3)
             self.assertEqual(apply_summary["results"]["totals"]["error"], 3)
             self.assertEqual(CropBySeason.objects.count(), 0)
+
+    def test_edge_case_fixture_preflight_enforces_expected_error_and_skip_matrix(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_edge_case_fixture(data_dir)
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-edge-case-preflight.json",
+                "--preflight",
+            )
+
+            self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+            self.assertEqual(summary["status"], "ok")
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 1)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
+            self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 1)
+            self._assert_deterministic_row_errors(
+                summary["results"]["row_errors"],
+                [
+                    (
+                        "CropBySeason",
+                        2,
+                        "namespace_mismatch",
+                        "crop_by_season.block_type",
+                        "unsupported block type 'Unknown Block'",
+                    ),
+                    (
+                        "CropSalesFormat",
+                        2,
+                        "stale_fk",
+                        "crop_sales_formats.crop",
+                        "crop not found 'Ghost Crop'",
+                    ),
+                ],
+            )
+
+    def test_edge_case_fixture_apply_persists_valid_rows_and_preserves_error_payloads(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_edge_case_fixture(data_dir)
+            preflight_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-edge-case-preflight-compare.json",
+                "--validate-only",
+            )
+            apply_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-edge-case-apply.json",
+            )
+
+            self._assert_summary_contract(apply_summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(apply_summary["results"]["models"]["CropBySeason"]["error"], 1)
+            self.assertEqual(apply_summary["results"]["models"]["CropBySeason"]["skipped"], 1)
+            self.assertEqual(apply_summary["results"]["models"]["CropSalesFormat"]["error"], 1)
+            self.assertEqual(Block.objects.count(), 1)
+            self.assertEqual(CropInfo.objects.count(), 1)
+            self.assertEqual(SalesChannel.objects.count(), 1)
+            self.assertEqual(CropSalesFormat.objects.count(), 1)
+            self.assertEqual(CropBySeason.objects.count(), 0)
+            self.assertEqual(
+                preflight_summary["results"]["row_errors"],
+                apply_summary["results"]["row_errors"],
+            )
 
     def test_crop_by_season_block_type_normalization_accepts_case_and_spacing_variants(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
