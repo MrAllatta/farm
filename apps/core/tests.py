@@ -1,4 +1,6 @@
 import json
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from io import StringIO
@@ -8,7 +10,9 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import get_resolver, reverse
 
+from operations.models import InventoryLedger
 from planning.models import Planting, PlanningYear
+from sales.models import QuickSalesEntry
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 
 
@@ -168,7 +172,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         return summary, stdout.getvalue(), stderr.getvalue()
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
-        self.assertEqual(summary["schema_version"], "1.1")
+        self.assertEqual(summary["schema_version"], "1.2")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
         self.assertEqual(
@@ -190,10 +194,15 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertTrue(summary["run"]["finished_at"])
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
-        self.assertEqual(set(summary["results"].keys()), {"models", "totals", "row_errors"})
+        self.assertEqual(
+            set(summary["results"].keys()),
+            {"models", "totals", "row_errors", "failure_signatures"},
+        )
         self.assertEqual(set(summary["results"]["totals"].keys()), {"created", "updated", "skipped", "error"})
         self.assertIsInstance(summary["results"]["row_errors"], list)
+        self.assertIsInstance(summary["results"]["failure_signatures"], list)
         self._assert_row_error_payload_contract(summary["results"]["row_errors"])
+        self._assert_failure_signature_payload_contract(summary["results"]["failure_signatures"])
 
         model_totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
         for model_counts in summary["results"]["models"].values():
@@ -233,6 +242,24 @@ class ImportHistoricalDataCommandTests(TestCase):
             ],
             expected_entries,
         )
+
+    def _assert_failure_signature_payload_contract(self, failure_signatures):
+        expected_keys = {"signature", "count", "owner_area", "owner_team", "recovery", "example"}
+        example_keys = {"model", "field_path", "message"}
+        for item in failure_signatures:
+            self.assertEqual(set(item.keys()), expected_keys)
+            self.assertTrue(isinstance(item["signature"], str) and item["signature"])
+            self.assertIsInstance(item["count"], int)
+            self.assertGreater(item["count"], 0)
+            self.assertTrue(isinstance(item["owner_area"], str) and item["owner_area"])
+            self.assertTrue(isinstance(item["owner_team"], str) and item["owner_team"])
+            self.assertTrue(isinstance(item["recovery"], str) and item["recovery"])
+            self.assertEqual(set(item["example"].keys()), example_keys)
+            self.assertTrue(isinstance(item["example"]["model"], str) and item["example"]["model"])
+            self.assertTrue(
+                isinstance(item["example"]["field_path"], str) and item["example"]["field_path"]
+            )
+            self.assertTrue(isinstance(item["example"]["message"], str) and item["example"]["message"])
 
     def test_clean_fixture_validate_only_has_no_writes_and_canonical_outcomes(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -344,6 +371,24 @@ class ImportHistoricalDataCommandTests(TestCase):
                     ),
                 ],
             )
+
+    def test_known_mismatch_fixture_emits_failure_signature_ownership_mapping(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_known_mismatch_fixture(data_dir)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-signatures.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            signatures = {item["signature"]: item for item in summary["results"]["failure_signatures"]}
+            self.assertEqual(set(signatures.keys()), {"namespace_mismatch", "stale_fk"})
+            self.assertEqual(signatures["namespace_mismatch"]["count"], 1)
+            self.assertEqual(signatures["namespace_mismatch"]["owner_area"], "data-contracts")
+            self.assertEqual(signatures["namespace_mismatch"]["owner_team"], "import-pipeline")
+            self.assertEqual(
+                signatures["namespace_mismatch"]["example"]["field_path"], "crop_by_season.block_type"
+            )
+            self.assertEqual(signatures["stale_fk"]["count"], 2)
+            self.assertEqual(signatures["stale_fk"]["owner_area"], "reference-data")
+            self.assertEqual(signatures["stale_fk"]["owner_team"], "import-pipeline")
 
     def test_repo_mismatch_fixture_matrix_has_stale_fk_and_namespace_mismatch_signals(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -1153,3 +1198,154 @@ class AppBootGateTests(TestCase):
         namespace_dict = getattr(resolver, "namespace_dict", {})
         self.assertTrue(namespace_dict)
         self.assertTrue({"core", "reference", "planning", "operations", "sales", "reports"} <= set(namespace_dict))
+
+
+class BetaGateEvidenceTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+
+    def _bootstrap_core_workflow_records(self):
+        planning_year = PlanningYear.objects.create(year=2026, status="active")
+        block = Block.objects.create(
+            name="Field 1",
+            block_type="field",
+            num_beds=10,
+            bed_width_feet="3.0",
+            bedfeet_per_bed=100,
+        )
+        crop = CropInfo.objects.create(
+            name="Carrot",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=12,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        crop_season = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("1.20"),
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+        )
+        planting = Planting.objects.create(
+            planning_year=planning_year,
+            crop=crop,
+            crop_season=crop_season,
+            block=block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=100,
+            planned_plant_date=date(2026, 4, 1),
+            status="planned",
+        )
+        channel = SalesChannel.objects.create(
+            name="Farm Stand",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target="500.00",
+            is_csa=False,
+            allocation_priority=1,
+        )
+        return planting, channel
+
+    def _run_import(self, data_dir, summary_path, *extra_args):
+        call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
+        return json.loads(summary_path.read_text(encoding="utf-8"))
+
+    def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
+        self.assertIn(summary["schema_version"], {"1.1", "1.2"})
+        self.assertIn(summary["status"], {"ok", "failed"})
+        self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
+        self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
+        self.assertTrue({"models", "totals", "row_errors"} <= set(summary["results"].keys()))
+
+    def test_critical_workflow_integration_path_persists_planning_operations_and_sales_records(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+
+        status_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(status_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planted")
+
+        inventory_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": planting.crop_id,
+                "event_type": "return_in",
+                "quantity": "8.50",
+                "notes": "beta gate critical workflow check",
+            },
+        )
+        self.assertEqual(inventory_response.status_code, 302)
+        ledger_entry = InventoryLedger.objects.get(crop_id=planting.crop_id)
+        self.assertEqual(str(ledger_entry.quantity), "8.50")
+
+        sales_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "120.00",
+                "total_card": "80.00",
+                "notes": "beta gate critical workflow check",
+            },
+        )
+        self.assertEqual(sales_response.status_code, 302)
+        self.assertEqual(QuickSalesEntry.objects.count(), 1)
+        self.assertEqual(QuickSalesEntry.objects.get().channel_id, channel.id)
+
+    def test_importer_apply_repeated_runs_remain_idempotent_after_initial_write(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            first_summary = self._run_import(str(fixture_dir), Path(output_dir) / "summary-repeat-first.json")
+            second_summary = self._run_import(str(fixture_dir), Path(output_dir) / "summary-repeat-second.json")
+            third_summary = self._run_import(str(fixture_dir), Path(output_dir) / "summary-repeat-third.json")
+
+        self.assertGreater(first_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(second_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(third_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(second_summary["results"]["totals"]["updated"], third_summary["results"]["totals"]["updated"])
+        self.assertEqual(second_summary["results"]["totals"]["error"], third_summary["results"]["totals"]["error"])
+        self.assertEqual(second_summary["results"]["row_errors"], third_summary["results"]["row_errors"])
+
+    def test_failure_signatures_contract_maps_each_import_error_to_owner_and_escalation(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+        signature_contracts = manifest["expected"]["failure_signatures"]
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-failure-signature-contract.json",
+                "--validate-only",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        seen_signatures = set()
+        for row_error in summary["results"]["row_errors"]:
+            signature = f"{row_error['code']}:{row_error['field_path']}"
+            with self.subTest(signature=signature):
+                self.assertIn(signature, signature_contracts)
+                contract = signature_contracts[signature]
+                self.assertTrue(contract["owner_area"])
+                self.assertTrue(contract["escalation_path"])
+                self.assertIn(contract["severity"], {"high", "medium"})
+                seen_signatures.add(signature)
+
+        self.assertEqual(seen_signatures, set(signature_contracts.keys()))

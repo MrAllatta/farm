@@ -2,6 +2,38 @@
   "fixture_pack": "mismatch",
   "version": "1.1",
   "expected": {
+    "failure_signatures": {
+      "namespace_mismatch:crop_by_season.block_type": {
+        "owner_area": "reference-import-normalization",
+        "escalation_path": "Data Platform On-call -> Importer Maintainer",
+        "severity": "medium"
+      },
+      "stale_fk:crop_by_season.crop": {
+        "owner_area": "reference-import-fk-resolution",
+        "escalation_path": "Data Platform On-call -> Reference Domain Owner",
+        "severity": "high"
+      },
+      "stale_fk:crop_sales_formats.crop": {
+        "owner_area": "sales-catalog-import-fk-resolution",
+        "escalation_path": "Data Platform On-call -> Sales Domain Owner",
+        "severity": "high"
+      },
+      "stale_fk:plantings.crop": {
+        "owner_area": "planning-import-fk-resolution",
+        "escalation_path": "Planning On-call -> Importer Maintainer",
+        "severity": "high"
+      },
+      "stale_fk:plantings.block": {
+        "owner_area": "planning-import-fk-resolution",
+        "escalation_path": "Planning On-call -> Operations Domain Owner",
+        "severity": "high"
+      },
+      "stale_fk:plantings.planning_year": {
+        "owner_area": "planning-year-boundary-validation",
+        "escalation_path": "Planning On-call -> Release Manager",
+        "severity": "medium"
+      }
+    },
     "validate_only": {
       "status": "ok",
       "error_signals": [

@@ -36,6 +36,28 @@ class Command(BaseCommand):
     Imports reference data, planning years, plantings, operations, and sales in
     dependency-aware order. Handles FK resolution by name, calculated fields,
     choice field mapping, and running balance sequencing."""
+    FAILURE_SIGNATURE_OWNERSHIP = {
+        "namespace_mismatch": {
+            "owner_area": "data-contracts",
+            "owner_team": "import-pipeline",
+            "recovery": "correct source value namespaces and rerun --validate-only",
+        },
+        "stale_fk": {
+            "owner_area": "reference-data",
+            "owner_team": "import-pipeline",
+            "recovery": "seed missing reference rows and rerun --validate-only",
+        },
+        "fatal_import_exception": {
+            "owner_area": "import-runtime",
+            "owner_team": "platform",
+            "recovery": "review fatal_error and importer logs before retry",
+        },
+        "unknown": {
+            "owner_area": "triage",
+            "owner_team": "platform",
+            "recovery": "classify signature and add ownership mapping",
+        },
+    }
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -1699,6 +1721,46 @@ class Command(BaseCommand):
             "error": error,
         }
 
+    def _build_failure_signatures(self, status, fatal_error):
+        """Aggregate deterministic failure signatures with ownership mapping."""
+        signature_counts = defaultdict(int)
+        signature_examples = {}
+        for item in self.row_errors:
+            signature = item.get("code") or "unknown"
+            signature_counts[signature] += 1
+            signature_examples.setdefault(
+                signature,
+                {
+                    "model": item.get("model"),
+                    "field_path": item.get("field_path"),
+                    "message": item.get("message"),
+                },
+            )
+
+        if status == "failed" and fatal_error:
+            signature_counts["fatal_import_exception"] += 1
+            signature_examples.setdefault(
+                "fatal_import_exception",
+                {"model": "ImportRun", "field_path": "run", "message": str(fatal_error)},
+            )
+
+        signatures = []
+        for signature in sorted(signature_counts.keys()):
+            ownership = self.FAILURE_SIGNATURE_OWNERSHIP.get(
+                signature, self.FAILURE_SIGNATURE_OWNERSHIP["unknown"]
+            )
+            signatures.append(
+                {
+                    "signature": signature,
+                    "count": signature_counts[signature],
+                    "owner_area": ownership["owner_area"],
+                    "owner_team": ownership["owner_team"],
+                    "recovery": ownership["recovery"],
+                    "example": signature_examples[signature],
+                }
+            )
+        return signatures
+
     def _write_summary_json(self, status="ok", fatal_error=None):
         """Write structured summary artifact when requested."""
         per_model = {}
@@ -1710,7 +1772,7 @@ class Command(BaseCommand):
                 totals[key] += normalized[key]
 
         payload = {
-            "schema_version": "1.1",
+            "schema_version": "1.2",
             "status": status,
             "fatal_error": fatal_error,
             "run": {
@@ -1728,6 +1790,7 @@ class Command(BaseCommand):
                 "models": per_model,
                 "totals": totals,
                 "row_errors": self.row_errors,
+                "failure_signatures": self._build_failure_signatures(status, fatal_error),
             },
         }
 
