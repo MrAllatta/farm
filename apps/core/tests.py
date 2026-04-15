@@ -14,6 +14,7 @@ from django.test.utils import override_settings
 from django.urls import get_resolver, reverse
 
 from operations.models import InventoryLedger
+from core.planning_year import resolve_current_planning_year
 from planning.models import Planting, PlanningYear
 from sales.models import QuickSalesEntry
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
@@ -1624,6 +1625,34 @@ class AppBootGateTests(TestCase):
     def test_production_settings_check_accepts_explicit_hosts_and_strong_secret(self):
         with patch("sys.argv", ["manage.py", "check"]):
             call_command("check")
+
+
+class PlanningYearResolutionTests(TestCase):
+    def test_resolver_prefers_active_then_planning(self):
+        PlanningYear.objects.create(year=2025, status="planning")
+        PlanningYear.objects.create(year=2026, status="active")
+
+        year_obj = resolve_current_planning_year()
+
+        self.assertIsNotNone(year_obj)
+        self.assertEqual(year_obj.status, "active")
+        self.assertEqual(year_obj.year, 2026)
+
+    def test_resolver_falls_back_to_latest_year_when_enabled(self):
+        PlanningYear.objects.create(year=2024, status="complete")
+        PlanningYear.objects.create(year=2025, status="complete")
+
+        year_obj = resolve_current_planning_year(fallback_latest=True)
+
+        self.assertIsNotNone(year_obj)
+        self.assertEqual(year_obj.year, 2025)
+
+    def test_resolver_returns_none_without_matching_status_or_fallback(self):
+        PlanningYear.objects.create(year=2024, status="complete")
+
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+
+        self.assertIsNone(year_obj)
 
 
 class BetaGateEvidenceTests(TestCase):
