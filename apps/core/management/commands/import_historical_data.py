@@ -195,6 +195,18 @@ class Command(BaseCommand):
             }
         )
 
+    def _record_stale_fk(self, model_name, row_number, field_path, missing_label, raw_value):
+        """Record a stale FK row error with a consistent message shape."""
+        message = f"{missing_label} not found '{raw_value}'"
+        self.stderr.write(f"    ERROR row {row_number}: {message}")
+        self._record_row_error(
+            model_name,
+            row_number,
+            code="stale_fk",
+            field_path=field_path,
+            message=message,
+        )
+
     # ============================================================================
     # TIER 1: Reference Data (Independent)
     # ============================================================================
@@ -706,17 +718,30 @@ class Command(BaseCommand):
                     block = self._get_block(block_name)
 
                     if not planning_year or not crop or not block:
-                        message = (
-                            f"missing FK (PY={planning_year}, crop={crop}, block={block})"
-                        )
-                        self.stderr.write(f"    ERROR row {i}: {message}")
-                        self._record_row_error(
-                            "Planting",
-                            i,
-                            code="stale_fk",
-                            field_path="plantings",
-                            message=message,
-                        )
+                        if not planning_year:
+                            self._record_stale_fk(
+                                "Planting",
+                                i,
+                                "plantings.planning_year",
+                                "planning year",
+                                year,
+                            )
+                        if not crop:
+                            self._record_stale_fk(
+                                "Planting",
+                                i,
+                                "plantings.crop",
+                                "crop",
+                                crop_name,
+                            )
+                        if not block:
+                            self._record_stale_fk(
+                                "Planting",
+                                i,
+                                "plantings.block",
+                                "block",
+                                block_name,
+                            )
                         self.stats["Planting"]["errors"] += 1
                         continue
 

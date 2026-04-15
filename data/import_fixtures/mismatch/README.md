@@ -7,6 +7,7 @@ Included files:
 - `crop_by_season.csv`: mismatch matrix with deterministic outcomes:
   - namespace mismatch (`Unknown Block`) -> row-level `namespace_mismatch` error
 - namespace mismatch (`Unknown Tunnel`) -> row-level `namespace_mismatch` error
+  - stale FK (`Ghost Crop`) -> row-level `stale_fk` error on `crop_by_season.crop`
   - stale FK (`Missing Crop`) -> row-level `stale_fk` error
   - invalid maturity (`DTM=0`) -> `skipped` outcome
 - `crop_sales_formats.csv`: mixed valid + stale-FK rows:
@@ -18,6 +19,6 @@ Included files:
 
 Expected canonical outcomes:
 
-- `error=3`
+- `CropBySeason.error=4` (`2x namespace_mismatch`, `2x stale_fk`)
 - `skipped=1`
 - plus one additional `stale_fk` error from `CropSalesFormat`

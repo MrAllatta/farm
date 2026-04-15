@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 
 from django.core.management import call_command
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import get_resolver, reverse
 
 from planning.models import Planting, PlanningYear
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
@@ -155,6 +155,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(set(summary["results"].keys()), {"models", "totals", "row_errors"})
         self.assertEqual(set(summary["results"]["totals"].keys()), {"created", "updated", "skipped", "error"})
         self.assertIsInstance(summary["results"]["row_errors"], list)
+        self._assert_row_error_payload_contract(summary["results"]["row_errors"])
 
         model_totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
         for model_counts in summary["results"]["models"].values():
@@ -163,19 +164,20 @@ class ImportHistoricalDataCommandTests(TestCase):
                 model_totals[key] += model_counts[key]
         self.assertEqual(summary["results"]["totals"], model_totals)
 
-    def _assert_deterministic_row_errors(self, row_errors, expected_entries):
-        self.assertEqual(len(row_errors), len(expected_entries))
+    def _assert_row_error_payload_contract(self, row_errors):
         for item in row_errors:
-            self.assertEqual(
-                set(item.keys()),
-                {"model", "row", "code", "field_path", "message"},
-            )
+            self.assertEqual(set(item.keys()), {"model", "row", "code", "field_path", "message"})
+            self.assertTrue(isinstance(item["model"], str) and item["model"])
             self.assertIsInstance(item["row"], int)
             self.assertGreater(item["row"], 0)
+            self.assertTrue(isinstance(item["code"], str) and item["code"])
+            self.assertTrue(isinstance(item["field_path"], str) and item["field_path"])
             self.assertTrue(isinstance(item["message"], str) and item["message"])
 
+    def _assert_deterministic_row_errors(self, row_errors, expected_entries):
+        self._assert_row_error_payload_contract(row_errors)
         self.assertEqual(
-            {
+            [
                 (
                     item["model"],
                     item["row"],
@@ -184,7 +186,7 @@ class ImportHistoricalDataCommandTests(TestCase):
                     item["message"],
                 )
                 for item in row_errors
-            },
+            ],
             expected_entries,
         )
 
@@ -274,7 +276,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
-                {
+                [
                     (
                         "CropBySeason",
                         1,
@@ -296,7 +298,7 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "crop_sales_formats.crop",
                         "crop not found 'Ghost Crop'",
                     ),
-                },
+                ],
             )
 
     def test_repo_mismatch_fixture_matrix_has_stale_fk_and_namespace_mismatch_signals(self):
@@ -309,13 +311,14 @@ class ImportHistoricalDataCommandTests(TestCase):
             )
 
             self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
-            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 3)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 4)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
             self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 1)
+            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 2)
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
-                {
+                [
                     (
                         "CropBySeason",
                         1,
@@ -335,6 +338,13 @@ class ImportHistoricalDataCommandTests(TestCase):
                         3,
                         "stale_fk",
                         "crop_by_season.crop",
+                        "crop not found 'Ghost Crop'",
+                    ),
+                    (
+                        "CropBySeason",
+                        4,
+                        "stale_fk",
+                        "crop_by_season.crop",
                         "crop not found 'Missing Crop'",
                     ),
                     (
@@ -344,10 +354,24 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "crop_sales_formats.crop",
                         "crop not found 'Missing Crop'",
                     ),
-                },
+                    (
+                        "Planting",
+                        1,
+                        "stale_fk",
+                        "plantings.crop",
+                        "crop not found 'Missing Crop'",
+                    ),
+                    (
+                        "Planting",
+                        2,
+                        "stale_fk",
+                        "plantings.block",
+                        "block not found 'Missing Block'",
+                    ),
+                ],
             )
             # Deterministic ordering from importer pass order helps gate snapshots stay stable.
-            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 2])
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 2, 1, 2])
 
     def test_repo_clean_fixture_pack_validate_only_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
@@ -397,6 +421,29 @@ class ImportHistoricalDataCommandTests(TestCase):
                 (item["model"], item["code"], item["field_path"])
                 for item in expected["row_errors"]
             ),
+        )
+
+    def test_repo_mismatch_fixture_pack_validate_only_matches_manifest_expectations(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "mismatch"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-validate-only.json",
+                "--validate-only",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        expected = manifest["expected"]["validate_only"]
+        self.assertEqual(summary["status"], expected["status"])
+        self.assertEqual(summary["results"]["totals"], expected["totals"])
+        self.assertEqual(summary["results"]["models"]["Block"], expected["models"]["Block"])
+        self.assertEqual(summary["results"]["models"]["CropBySeason"], expected["models"]["CropBySeason"])
+        self.assertEqual(
+            summary["results"]["models"]["CropSalesFormat"],
+            expected["models"]["CropSalesFormat"],
         )
 
     def test_known_mismatch_fixture_has_deterministic_outcomes_across_apply_and_preflight(self):
@@ -595,6 +642,42 @@ class ImportReferenceDataCommandTests(TestCase):
 
 class PrimaryRouteSmokeTests(TestCase):
     REQUIRED_NAMESPACES = {"core", "reference", "planning", "operations", "sales", "reports"}
+    MIN_REGISTERED_ROUTES_BY_NAMESPACE = {
+        "core": 3,
+        "reference": 1,
+        "planning": 17,
+        "operations": 8,
+        "sales": 3,
+        "reports": 14,
+    }
+    CRITICAL_ROUTE_NAMES = {
+        "core:dashboard",
+        "core:clone_plan_ui",
+        "core:complete_season",
+        "planning:matrix",
+        "planning:planting_create",
+        "planning:planting_detail",
+        "planning:planting_edit",
+        "planning:planting_status",
+        "planning:nursery_schedule",
+        "planning:harvest_calendar",
+        "planning:field_schedule",
+        "operations:harvest_entry_current",
+        "operations:harvest_entry_week",
+        "operations:harvest_entry",
+        "operations:field_walk_current",
+        "operations:field_walk",
+        "operations:inventory",
+        "operations:inventory_add",
+        "sales:market_entry",
+        "sales:market_entry_channel",
+        "sales:market_entry_date",
+        "reports:crop_map",
+        "reports:crop_performance",
+        "reports:seed_order",
+        "reports:season_summary",
+        "reports:plan_vs_actual",
+    }
     PRIMARY_ROUTES = [
         ("core:dashboard", {}),
         ("reference:index", {}),
@@ -639,6 +722,22 @@ class PrimaryRouteSmokeTests(TestCase):
         route_namespaces = {route_name.split(":")[0] for route_name, _ in self.PRIMARY_ROUTES}
         self.assertEqual(route_namespaces, self.REQUIRED_NAMESPACES)
 
+    def test_primary_navigation_routes_meet_minimum_route_breadth_by_namespace(self):
+        namespace_counts = {}
+        for route_name, _ in self.PRIMARY_ROUTES:
+            namespace = route_name.split(":")[0]
+            namespace_counts[namespace] = namespace_counts.get(namespace, 0) + 1
+        self.assertEqual(set(namespace_counts.keys()), self.REQUIRED_NAMESPACES)
+        for namespace, min_count in self.MIN_ROUTE_BREADTH_BY_NAMESPACE.items():
+            with self.subTest(namespace=namespace):
+                self.assertGreaterEqual(namespace_counts.get(namespace, 0), min_count)
+
+    def test_primary_navigation_routes_include_named_urls_for_expected_surface(self):
+        resolver = get_resolver()
+        for route_name, _ in self.PRIMARY_ROUTES:
+            with self.subTest(route=route_name):
+                self.assertIn(route_name, resolver.reverse_dict)
+
     def test_primary_navigation_routes_support_head_without_server_errors(self):
         for route_name, kwargs in self.PRIMARY_ROUTES:
             with self.subTest(route=route_name):
@@ -665,11 +764,17 @@ class PrimaryRouteSmokeTests(TestCase):
         self.assertContains(response, "<form", status_code=200)
 
     def test_unknown_route_baseline_returns_404_for_get_head_and_query_variant(self):
-        route = "/definitely-not-a-real-route/"
-        responses = [
-            self.client.get(route),
-            self.client.head(route),
-            self.client.get(f"{route}?smoke_gate=1"),
+        route_variants = [
+            "/definitely-not-a-real-route/",
+            "/definitely-not-a-real-route",
+            "/reports/definitely-not-a-real-route/",
         ]
-        for response in responses:
-            self.assertEqual(response.status_code, 404)
+        for route in route_variants:
+            with self.subTest(route=route, method="GET"):
+                self.assertEqual(self.client.get(route).status_code, 404)
+            with self.subTest(route=route, method="HEAD"):
+                self.assertEqual(self.client.head(route).status_code, 404)
+            with self.subTest(route=route, method="GET+query"):
+                self.assertEqual(self.client.get(f"{route}?smoke_gate=1").status_code, 404)
+            with self.subTest(route=route, method="HEAD+query"):
+                self.assertEqual(self.client.head(f"{route}?smoke_gate=1").status_code, 404)
