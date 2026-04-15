@@ -172,7 +172,13 @@ class ImportHistoricalDataCommandTests(TestCase):
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
         return summary, stdout.getvalue(), stderr.getvalue()
 
-    def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
+    def _assert_summary_contract(
+        self,
+        summary,
+        expected_validate_only,
+        expected_dry_run=False,
+        expected_atomic_apply=None,
+    ):
         self.assertEqual(summary["schema_version"], "1.2")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
@@ -196,7 +202,9 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertTrue(summary["run"]["finished_at"])
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
-        self.assertTrue(summary["run"]["atomic_apply"])
+        if expected_atomic_apply is None:
+            expected_atomic_apply = expected_validate_only or not expected_dry_run
+        self.assertEqual(summary["run"]["atomic_apply"], expected_atomic_apply)
         self.assertEqual(
             set(summary["results"].keys()),
             {"models", "totals", "row_errors", "failure_signatures"},
@@ -972,6 +980,21 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(crop_by_season["error"], 2)
             self.assertEqual(crop_by_season["skipped"], 1)
             self.assertEqual(CropBySeason.objects.count(), 0)
+            self.assertEqual(Block.objects.count(), 0)
+            self.assertTrue(summary["run"]["atomic_apply"])
+
+    def test_validate_only_ignores_non_atomic_apply_override_and_remains_transactional(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_known_mismatch_fixture(data_dir)
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-validate-only-ignores-non-atomic.json",
+                "--validate-only",
+                "--non-atomic-apply",
+            )
+
+            self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+            self.assertTrue(summary["run"]["atomic_apply"])
             self.assertEqual(Block.objects.count(), 0)
 
     def test_apply_mode_rolls_back_all_writes_when_pipeline_raises_with_atomic_apply_enabled(self):

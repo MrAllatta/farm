@@ -120,10 +120,18 @@ class Command(BaseCommand):
         self.data_dir = options["data_dir"]
         self.validate_only = bool(options["validate_only"] or options["preflight"])
         self.dry_run = bool(options["dry_run"])
-        self.atomic_apply = not bool(options.get("non_atomic_apply"))
+        requested_non_atomic_apply = bool(options.get("non_atomic_apply"))
         if self.validate_only and self.dry_run:
             # Preflight mode takes precedence when both flags are provided.
             self.dry_run = False
+        if self.validate_only:
+            # Preflight always executes in a rollback transaction.
+            self.atomic_apply = True
+        elif self.dry_run:
+            # Dry-run performs parse-only checks and never writes.
+            self.atomic_apply = False
+        else:
+            self.atomic_apply = not requested_non_atomic_apply
         # Dry-run keeps legacy parse-only behavior; validate-only executes full flow in a rollback txn.
         self.write_disabled = self.dry_run
         self.verbose = options["verbose"]
