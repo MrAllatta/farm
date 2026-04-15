@@ -37,6 +37,13 @@ class Command(BaseCommand):
     dependency-aware order. Handles FK resolution by name, calculated fields,
     choice field mapping, and running balance sequencing."""
     FAILURE_SIGNATURE_OWNERSHIP = {
+        "missing_required": {
+            "owner_area": "data-contracts",
+            "owner_team": "import-pipeline",
+            "severity": "medium",
+            "escalation_path": "ops-oncall -> data-contracts",
+            "recovery": "populate required source fields and rerun --validate-only",
+        },
         "namespace_mismatch": {
             "owner_area": "data-contracts",
             "owner_team": "import-pipeline",
@@ -263,6 +270,18 @@ class Command(BaseCommand):
             model_name,
             row_number,
             code="stale_fk",
+            field_path=field_path,
+            message=message,
+        )
+
+    def _record_missing_required(self, model_name, row_number, field_path, field_label):
+        """Record deterministic required-field gaps as structured row errors."""
+        message = f"missing required value for '{field_label}'"
+        self.stderr.write(f"    ERROR row {row_number}: {message}")
+        self._record_row_error(
+            model_name,
+            row_number,
+            code="missing_required",
             field_path=field_path,
             message=message,
         )
@@ -1168,12 +1187,35 @@ class Command(BaseCommand):
                     crop_name = row.get("Crop Name", "").strip()
                     crop = self._get_crop(crop_name)
 
+                    if not crop_name:
+                        self._record_missing_required(
+                            "InventoryLedger",
+                            i,
+                            "inventory_ledger.crop",
+                            "Crop Name",
+                        )
+                        self.stats["InventoryLedger"]["skipped"] += 1
+                        continue
+
                     if not crop:
+                        self._record_stale_fk(
+                            "InventoryLedger",
+                            i,
+                            "inventory_ledger.crop",
+                            "crop",
+                            crop_name,
+                        )
                         self.stats["InventoryLedger"]["skipped"] += 1
                         continue
 
                     event_date_str = row.get("Event Date", "").strip()
                     if not event_date_str:
+                        self._record_missing_required(
+                            "InventoryLedger",
+                            i,
+                            "inventory_ledger.event_date",
+                            "Event Date",
+                        )
                         self.stats["InventoryLedger"]["skipped"] += 1
                         continue
 
@@ -1252,6 +1294,27 @@ class Command(BaseCommand):
                     pack_date_str = row.get("Pack Date", "").strip()
 
                     if not (channel_name and product_name and pack_date_str):
+                        if not channel_name:
+                            self._record_missing_required(
+                                "PackAllocation",
+                                i,
+                                "pack_allocations.channel",
+                                "Channel",
+                            )
+                        if not product_name:
+                            self._record_missing_required(
+                                "PackAllocation",
+                                i,
+                                "pack_allocations.product",
+                                "Product",
+                            )
+                        if not pack_date_str:
+                            self._record_missing_required(
+                                "PackAllocation",
+                                i,
+                                "pack_allocations.pack_date",
+                                "Pack Date",
+                            )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
 
@@ -1259,7 +1322,24 @@ class Command(BaseCommand):
                     channel = self._get_channel(channel_name)
                     product = self._get_product_by_name(product_name)
 
-                    if not (channel and product):
+                    if not channel:
+                        self._record_stale_fk(
+                            "PackAllocation",
+                            i,
+                            "pack_allocations.channel",
+                            "sales channel",
+                            channel_name,
+                        )
+                        self.stats["PackAllocation"]["skipped"] += 1
+                        continue
+                    if not product:
+                        self._record_stale_fk(
+                            "PackAllocation",
+                            i,
+                            "pack_allocations.product",
+                            "product",
+                            product_name,
+                        )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
 
@@ -1341,11 +1421,32 @@ class Command(BaseCommand):
                     sale_date_str = row.get("Sale Date", "").strip()
 
                     if not (channel_name and sale_date_str):
+                        if not channel_name:
+                            self._record_missing_required(
+                                "SalesEvent",
+                                i,
+                                "sales_events.channel",
+                                "Channel Name",
+                            )
+                        if not sale_date_str:
+                            self._record_missing_required(
+                                "SalesEvent",
+                                i,
+                                "sales_events.sale_date",
+                                "Sale Date",
+                            )
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
 
                     channel = self._get_channel(channel_name)
                     if not channel:
+                        self._record_stale_fk(
+                            "SalesEvent",
+                            i,
+                            "sales_events.channel",
+                            "sales channel",
+                            channel_name,
+                        )
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
 
@@ -1360,8 +1461,17 @@ class Command(BaseCommand):
                     ).strip()
                     if product_name:
                         product = self._get_product_by_name(product_name)
-                        if product:
-                            data["product"] = product
+                        if not product:
+                            self._record_stale_fk(
+                                "SalesEvent",
+                                i,
+                                "sales_events.product",
+                                "product",
+                                product_name,
+                            )
+                            self.stats["SalesEvent"]["skipped"] += 1
+                            continue
+                        data["product"] = product
 
                     # Planned fields
                     planned_qty = row.get("Planned Quantity", "").strip()
@@ -1438,11 +1548,32 @@ class Command(BaseCommand):
                     sale_date_str = row.get("Sale Date", "").strip()
 
                     if not (channel_name and sale_date_str):
+                        if not channel_name:
+                            self._record_missing_required(
+                                "QuickSalesEntry",
+                                i,
+                                "quick_sales_entries.channel",
+                                "Channel Name",
+                            )
+                        if not sale_date_str:
+                            self._record_missing_required(
+                                "QuickSalesEntry",
+                                i,
+                                "quick_sales_entries.sale_date",
+                                "Sale Date",
+                            )
                         self.stats["QuickSalesEntry"]["skipped"] += 1
                         continue
 
                     channel = self._get_channel(channel_name)
                     if not channel:
+                        self._record_stale_fk(
+                            "QuickSalesEntry",
+                            i,
+                            "quick_sales_entries.channel",
+                            "sales channel",
+                            channel_name,
+                        )
                         self.stats["QuickSalesEntry"]["skipped"] += 1
                         continue
 

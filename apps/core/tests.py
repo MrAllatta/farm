@@ -153,6 +153,49 @@ class ImportHistoricalDataCommandTests(TestCase):
             ],
         )
 
+    def _write_ops_sales_error_fixture(self, data_dir, year=2021):
+        year_dir = Path(data_dir) / f"year_{year}"
+        year_dir.mkdir(parents=True, exist_ok=True)
+        self._write_csv(
+            year_dir,
+            "inventory_ledger.csv",
+            [
+                "Crop Name,Event Date,Event Type,Quantity,Storage Location,Notes",
+                ",2021-06-01,Return In,2,Barn,missing crop",
+                "Ghost Crop,2021-06-02,Return In,3,Barn,stale crop",
+                "Carrot,,Return In,4,Barn,missing event date",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "pack_allocations.csv",
+            [
+                "Planting ID,Harvest Date,Channel,Product,Pack Date,Quantity,Notes",
+                "P1,,Farm Stand,,2021-06-03,2,missing product",
+                "P1,,Ghost Channel,Carrot Bunch,2021-06-03,2,stale channel",
+                "P1,,Farm Stand,Ghost Product,2021-06-03,2,stale product",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "sales_events.csv",
+            [
+                "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Brought Quantity,Returned Quantity,Notes",
+                "Farm Stand,,Carrot Bunch,1,3.5,1,3.5,3.5,1,0,missing sale date",
+                "Ghost Channel,2021-06-04,Carrot Bunch,1,3.5,1,3.5,3.5,1,0,stale channel",
+                "Farm Stand,2021-06-04,Ghost Product,1,3.5,1,3.5,3.5,1,0,stale product",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "quick_sales_entries.csv",
+            [
+                "Channel Name,Sale Date,Total Cash,Total Card,Notes",
+                ",2021-06-05,10,0,missing channel",
+                "Ghost Channel,2021-06-05,12,0,stale channel",
+            ],
+        )
+
     def _run_import(self, data_dir, summary_path, *extra_args):
         call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
         return json.loads(summary_path.read_text(encoding="utf-8"))
@@ -988,6 +1031,93 @@ class ImportHistoricalDataCommandTests(TestCase):
                 preflight_summary["results"]["row_errors"],
                 apply_summary["results"]["row_errors"],
             )
+
+    def test_operations_and_sales_invalid_rows_emit_structured_errors_instead_of_silent_skips(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_ops_sales_error_fixture(data_dir, year=2021)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-ops-sales-row-errors.json")
+
+        self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        observed = {
+            (item["model"], item["code"], item["field_path"], item["message"])
+            for item in summary["results"]["row_errors"]
+        }
+        expected_subset = {
+            (
+                "InventoryLedger",
+                "missing_required",
+                "inventory_ledger.crop",
+                "missing required value for 'Crop Name'",
+            ),
+            (
+                "InventoryLedger",
+                "stale_fk",
+                "inventory_ledger.crop",
+                "crop not found 'Ghost Crop'",
+            ),
+            (
+                "InventoryLedger",
+                "missing_required",
+                "inventory_ledger.event_date",
+                "missing required value for 'Event Date'",
+            ),
+            (
+                "PackAllocation",
+                "missing_required",
+                "pack_allocations.product",
+                "missing required value for 'Product'",
+            ),
+            (
+                "PackAllocation",
+                "stale_fk",
+                "pack_allocations.channel",
+                "sales channel not found 'Ghost Channel'",
+            ),
+            (
+                "PackAllocation",
+                "stale_fk",
+                "pack_allocations.product",
+                "product not found 'Ghost Product'",
+            ),
+            (
+                "SalesEvent",
+                "missing_required",
+                "sales_events.sale_date",
+                "missing required value for 'Sale Date'",
+            ),
+            (
+                "SalesEvent",
+                "stale_fk",
+                "sales_events.channel",
+                "sales channel not found 'Ghost Channel'",
+            ),
+            (
+                "SalesEvent",
+                "stale_fk",
+                "sales_events.product",
+                "product not found 'Ghost Product'",
+            ),
+            (
+                "QuickSalesEntry",
+                "missing_required",
+                "quick_sales_entries.channel",
+                "missing required value for 'Channel Name'",
+            ),
+            (
+                "QuickSalesEntry",
+                "stale_fk",
+                "quick_sales_entries.channel",
+                "sales channel not found 'Ghost Channel'",
+            ),
+        }
+        self.assertTrue(expected_subset <= observed)
+
+        signature_counts = {
+            item["signature"]: item["count"] for item in summary["results"]["failure_signatures"]
+        }
+        self.assertGreaterEqual(signature_counts.get("missing_required", 0), 4)
+        self.assertGreaterEqual(signature_counts.get("stale_fk", 0), 6)
 
     def test_crop_by_season_block_type_normalization_accepts_case_and_spacing_variants(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
