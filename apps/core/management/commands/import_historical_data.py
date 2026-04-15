@@ -40,21 +40,29 @@ class Command(BaseCommand):
         "namespace_mismatch": {
             "owner_area": "data-contracts",
             "owner_team": "import-pipeline",
+            "severity": "medium",
+            "escalation_path": "ops-oncall -> data-contracts",
             "recovery": "correct source value namespaces and rerun --validate-only",
         },
         "stale_fk": {
             "owner_area": "reference-data",
             "owner_team": "import-pipeline",
+            "severity": "high",
+            "escalation_path": "ops-oncall -> reference-data",
             "recovery": "seed missing reference rows and rerun --validate-only",
         },
         "fatal_import_exception": {
             "owner_area": "import-runtime",
             "owner_team": "platform",
+            "severity": "high",
+            "escalation_path": "ops-oncall -> platform",
             "recovery": "review fatal_error and importer logs before retry",
         },
         "unknown": {
             "owner_area": "triage",
             "owner_team": "platform",
+            "severity": "high",
+            "escalation_path": "ops-oncall -> platform",
             "recovery": "classify signature and add ownership mapping",
         },
     }
@@ -83,6 +91,11 @@ class Command(BaseCommand):
             help="Parse and validate without saving any data",
         )
         parser.add_argument(
+            "--non-atomic-apply",
+            action="store_true",
+            help="Disable atomic transaction wrapping for apply mode (rollback safety off)",
+        )
+        parser.add_argument(
             "--validate-only",
             action="store_true",
             help="Run full validation preflight without writing data",
@@ -107,6 +120,7 @@ class Command(BaseCommand):
         self.data_dir = options["data_dir"]
         self.validate_only = bool(options["validate_only"] or options["preflight"])
         self.dry_run = bool(options["dry_run"])
+        self.atomic_apply = not bool(options.get("non_atomic_apply"))
         if self.validate_only and self.dry_run:
             # Preflight mode takes precedence when both flags are provided.
             self.dry_run = False
@@ -157,6 +171,9 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     self._run_import_pipeline()
                     transaction.set_rollback(True)
+            elif self.atomic_apply and not self.dry_run:
+                with transaction.atomic():
+                    self._run_import_pipeline()
             else:
                 self._run_import_pipeline()
 
@@ -1755,6 +1772,8 @@ class Command(BaseCommand):
                     "count": signature_counts[signature],
                     "owner_area": ownership["owner_area"],
                     "owner_team": ownership["owner_team"],
+                    "severity": ownership["severity"],
+                    "escalation_path": ownership["escalation_path"],
                     "recovery": ownership["recovery"],
                     "example": signature_examples[signature],
                 }
@@ -1784,6 +1803,7 @@ class Command(BaseCommand):
                 "end_year": self.end_year,
                 "validate_only": self.validate_only,
                 "dry_run": self.dry_run,
+                "atomic_apply": self.atomic_apply,
                 "verbose": self.verbose,
             },
             "results": {
@@ -1795,7 +1815,20 @@ class Command(BaseCommand):
         }
 
         output_dir = os.path.dirname(os.path.abspath(self.summary_json_path))
-        if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-        with open(self.summary_json_path, "w") as handle:
-            json.dump(payload, handle, indent=2, sort_keys=True)
+        try:
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+            with open(self.summary_json_path, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle, indent=2, sort_keys=True)
+        except OSError as exc:
+            fallback_path = Path(self.data_dir) / "_import_artifacts" / f"historical-import-summary-{self.run_id}.json"
+            self.stderr.write(
+                self.style.WARNING(
+                    f"⚠ unable to write summary artifact at '{self.summary_json_path}' ({exc}); "
+                    f"falling back to '{fallback_path}'"
+                )
+            )
+            fallback_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(fallback_path, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle, indent=2, sort_keys=True)
+            self.summary_json_path = str(fallback_path)

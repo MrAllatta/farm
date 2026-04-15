@@ -244,7 +244,16 @@ class ImportHistoricalDataCommandTests(TestCase):
         )
 
     def _assert_failure_signature_payload_contract(self, failure_signatures):
-        expected_keys = {"signature", "count", "owner_area", "owner_team", "recovery", "example"}
+        expected_keys = {
+            "signature",
+            "count",
+            "owner_area",
+            "owner_team",
+            "severity",
+            "escalation_path",
+            "recovery",
+            "example",
+        }
         example_keys = {"model", "field_path", "message"}
         for item in failure_signatures:
             self.assertEqual(set(item.keys()), expected_keys)
@@ -253,6 +262,8 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertGreater(item["count"], 0)
             self.assertTrue(isinstance(item["owner_area"], str) and item["owner_area"])
             self.assertTrue(isinstance(item["owner_team"], str) and item["owner_team"])
+            self.assertIn(item["severity"], {"high", "medium"})
+            self.assertTrue(isinstance(item["escalation_path"], str) and item["escalation_path"])
             self.assertTrue(isinstance(item["recovery"], str) and item["recovery"])
             self.assertEqual(set(item["example"].keys()), example_keys)
             self.assertTrue(isinstance(item["example"]["model"], str) and item["example"]["model"])
@@ -383,12 +394,58 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(signatures["namespace_mismatch"]["count"], 1)
             self.assertEqual(signatures["namespace_mismatch"]["owner_area"], "data-contracts")
             self.assertEqual(signatures["namespace_mismatch"]["owner_team"], "import-pipeline")
+            self.assertEqual(signatures["namespace_mismatch"]["severity"], "medium")
+            self.assertEqual(
+                signatures["namespace_mismatch"]["escalation_path"],
+                "ops-oncall -> data-contracts",
+            )
             self.assertEqual(
                 signatures["namespace_mismatch"]["example"]["field_path"], "crop_by_season.block_type"
             )
             self.assertEqual(signatures["stale_fk"]["count"], 2)
             self.assertEqual(signatures["stale_fk"]["owner_area"], "reference-data")
             self.assertEqual(signatures["stale_fk"]["owner_team"], "import-pipeline")
+            self.assertEqual(signatures["stale_fk"]["severity"], "high")
+            self.assertEqual(signatures["stale_fk"]["escalation_path"], "ops-oncall -> reference-data")
+
+    def test_failure_signature_unknown_code_uses_fallback_ownership_mapping(self):
+        from core.management.commands.import_historical_data import Command
+
+        command = Command()
+        command.row_errors = [
+            {
+                "model": "Synthetic",
+                "row": 1,
+                "code": "unclassified_error",
+                "field_path": "synthetic.field",
+                "message": "synthetic error",
+            }
+        ]
+        signatures = command._build_failure_signatures(status="ok", fatal_error=None)
+        self.assertEqual(len(signatures), 1)
+        signature = signatures[0]
+        self.assertEqual(signature["signature"], "unclassified_error")
+        self.assertEqual(signature["owner_area"], "triage")
+        self.assertEqual(signature["owner_team"], "platform")
+        self.assertEqual(signature["severity"], "high")
+        self.assertEqual(signature["escalation_path"], "ops-oncall -> platform")
+
+    def test_failed_status_appends_fatal_import_exception_signature_with_platform_owner(self):
+        from core.management.commands.import_historical_data import Command
+
+        command = Command()
+        command.row_errors = []
+        signatures = command._build_failure_signatures(status="failed", fatal_error="boom")
+        self.assertEqual(len(signatures), 1)
+        signature = signatures[0]
+        self.assertEqual(signature["signature"], "fatal_import_exception")
+        self.assertEqual(signature["count"], 1)
+        self.assertEqual(signature["owner_area"], "import-runtime")
+        self.assertEqual(signature["owner_team"], "platform")
+        self.assertEqual(signature["severity"], "high")
+        self.assertEqual(signature["escalation_path"], "ops-oncall -> platform")
+        self.assertEqual(signature["example"]["model"], "ImportRun")
+        self.assertEqual(signature["example"]["field_path"], "run")
 
     def test_repo_mismatch_fixture_matrix_has_stale_fk_and_namespace_mismatch_signals(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -1324,6 +1381,53 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(second_summary["results"]["totals"]["updated"], third_summary["results"]["totals"]["updated"])
         self.assertEqual(second_summary["results"]["totals"]["error"], third_summary["results"]["totals"]["error"])
         self.assertEqual(second_summary["results"]["row_errors"], third_summary["results"]["row_errors"])
+        self.assertEqual(
+            second_summary["results"]["failure_signatures"],
+            third_summary["results"]["failure_signatures"],
+        )
+
+    def test_mismatch_preflight_emits_expected_failure_signature_aggregate_evidence(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-preflight-signatures.json",
+                "--preflight",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        signature_counts = {
+            item["signature"]: item["count"] for item in summary["results"]["failure_signatures"]
+        }
+        self.assertEqual(set(signature_counts.keys()), {"namespace_mismatch", "stale_fk"})
+        self.assertEqual(signature_counts["namespace_mismatch"], 4)
+        self.assertEqual(signature_counts["stale_fk"], 11)
+        self.assertEqual(Block.objects.count(), 0)
+        self.assertEqual(CropInfo.objects.count(), 0)
+        self.assertEqual(PlanningYear.objects.count(), 0)
+
+    def test_mismatch_validate_only_and_apply_have_identical_failure_signature_counts(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            validate_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-signatures-validate.json",
+                "--validate-only",
+            )
+            apply_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-signatures-apply.json",
+            )
+
+        validate_pairs = sorted(
+            (item["signature"], item["count"]) for item in validate_summary["results"]["failure_signatures"]
+        )
+        apply_pairs = sorted(
+            (item["signature"], item["count"]) for item in apply_summary["results"]["failure_signatures"]
+        )
+        self.assertEqual(validate_pairs, apply_pairs)
+        self.assertEqual(validate_summary["results"]["totals"]["created"], 0)
+        self.assertGreater(apply_summary["results"]["totals"]["created"], 0)
 
     def test_failure_signatures_contract_maps_each_import_error_to_owner_and_escalation(self):
         fixture_dir = self.fixture_root / "mismatch"
@@ -1349,3 +1453,10 @@ class BetaGateEvidenceTests(TestCase):
                 seen_signatures.add(signature)
 
         self.assertEqual(seen_signatures, set(signature_contracts.keys()))
+
+        emitted_signatures = {item["signature"] for item in summary["results"]["failure_signatures"]}
+        self.assertEqual(emitted_signatures, {"namespace_mismatch", "stale_fk"})
+        for item in summary["results"]["failure_signatures"]:
+            self.assertTrue(item["owner_area"])
+            self.assertTrue(item["escalation_path"])
+            self.assertIn(item["severity"], {"high", "medium"})
