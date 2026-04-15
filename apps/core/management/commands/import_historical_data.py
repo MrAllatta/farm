@@ -192,8 +192,20 @@ class Command(BaseCommand):
             self.stdout.write("=" * 70 + "\n")
 
         except Exception as e:
-            self.stderr.write(self.style.ERROR(f"\n❌ FATAL ERROR: {e}"))
-            self._write_summary_json(status="failed", fatal_error=str(e))
+            fatal_error = self._format_fatal_error(e)
+            self.stderr.write(self.style.ERROR(f"\n❌ FATAL ERROR: {fatal_error}"))
+            self._write_summary_json(status="failed", fatal_error=fatal_error)
+            self.stderr.write(
+                self.style.WARNING(
+                    f"   ↳ recovery: inspect '{self.summary_json_path}' for row/failure signatures before retry"
+                )
+            )
+            if self.atomic_apply and not self.validate_only:
+                self.stderr.write(
+                    self.style.WARNING(
+                        "   ↳ recovery: rerun with --non-atomic-apply to preserve partial writes for diagnostics"
+                    )
+                )
             if self.verbose:
                 import traceback
                 traceback.print_exc()
@@ -1738,11 +1750,21 @@ class Command(BaseCommand):
         self.stdout.write("\n🚨 ESCALATION HANDOFF")
         for bucket in escalation_summary:
             signatures = ",".join(bucket["signatures"])
+            recovery_steps = " || ".join(bucket["recovery_steps"])
             self.stdout.write(
                 "  - "
                 f"{bucket['severity']} | {bucket['owner_area']} | {bucket['owner_team']} | "
-                f"{bucket['escalation_path']} | count={bucket['count']} | signatures={signatures}"
+                f"{bucket['escalation_path']} | count={bucket['count']} | signatures={signatures} | "
+                f"recovery={recovery_steps}"
             )
+
+    def _format_fatal_error(self, exc):
+        """Build deterministic fatal error details for recovery handoff."""
+        mode = "validate-only" if self.validate_only else "apply"
+        return (
+            f"{exc.__class__.__name__}: {exc} "
+            f"[mode={mode}, atomic_apply={self.atomic_apply}, dry_run={self.dry_run}]"
+        )
 
     def _normalized_outcomes(self, model_stats):
         """Normalize legacy counters to canonical outcomes."""

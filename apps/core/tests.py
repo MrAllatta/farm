@@ -730,7 +730,15 @@ class ImportHistoricalDataCommandTests(TestCase):
             stdout,
         )
         self.assertIn(
+            "recovery=seed missing reference rows and rerun --validate-only",
+            stdout,
+        )
+        self.assertIn(
             "medium | data-contracts | import-pipeline | ops-oncall -> data-contracts | count=4 | signatures=namespace_mismatch",
+            stdout,
+        )
+        self.assertIn(
+            "recovery=correct source value namespaces and rerun --validate-only",
             stdout,
         )
 
@@ -1117,6 +1125,29 @@ class ImportHistoricalDataCommandTests(TestCase):
             failed_summary = json.loads(summary_path.read_text(encoding="utf-8"))
             self.assertEqual(failed_summary["status"], "failed")
             self.assertTrue(failed_summary["run"]["atomic_apply"])
+            self.assertIn(
+                "RuntimeError: simulated pipeline failure [mode=apply, atomic_apply=True, dry_run=False]",
+                failed_summary["fatal_error"],
+            )
+            self.assertEqual(
+                failed_summary["results"]["failure_signatures"],
+                [
+                    {
+                        "signature": "fatal_import_exception",
+                        "count": 1,
+                        "owner_area": "import-runtime",
+                        "owner_team": "platform",
+                        "severity": "high",
+                        "escalation_path": "ops-oncall -> platform",
+                        "recovery": "review fatal_error and importer logs before retry",
+                        "example": {
+                            "model": "ImportRun",
+                            "field_path": "run",
+                            "message": "RuntimeError: simulated pipeline failure [mode=apply, atomic_apply=True, dry_run=False]",
+                        },
+                    }
+                ],
+            )
 
     def test_apply_mode_can_disable_atomic_rollback_for_recovery_diagnostics(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -1600,6 +1631,36 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(validate_summary["results"]["totals"]["created"], 0)
         self.assertGreater(apply_summary["results"]["totals"]["created"], 0)
 
+    def test_mismatch_preflight_alias_matches_validate_only_full_gate_payload(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            validate_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-validate-only-full-gate.json",
+                "--validate-only",
+            )
+            preflight_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-preflight-full-gate.json",
+                "--preflight",
+            )
+
+        self._assert_summary_contract(validate_summary, expected_validate_only=True, expected_dry_run=False)
+        self._assert_summary_contract(preflight_summary, expected_validate_only=True, expected_dry_run=False)
+        self.assertEqual(validate_summary["status"], preflight_summary["status"])
+        self.assertEqual(validate_summary["fatal_error"], preflight_summary["fatal_error"])
+        self.assertEqual(validate_summary["results"]["totals"], preflight_summary["results"]["totals"])
+        self.assertEqual(validate_summary["results"]["models"], preflight_summary["results"]["models"])
+        self.assertEqual(validate_summary["results"]["row_errors"], preflight_summary["results"]["row_errors"])
+        self.assertEqual(
+            validate_summary["results"]["failure_signatures"],
+            preflight_summary["results"]["failure_signatures"],
+        )
+        self.assertEqual(
+            validate_summary["results"]["escalation_summary"],
+            preflight_summary["results"]["escalation_summary"],
+        )
+
     def test_mismatch_repeated_preflight_runs_emit_stable_escalation_summary(self):
         fixture_dir = self.fixture_root / "mismatch"
         with TemporaryDirectory() as output_dir:
@@ -1787,3 +1848,95 @@ class BetaGateEvidenceTests(TestCase):
             with self.subTest(route=route_name):
                 response = self.client.get(reverse(route_name, kwargs=kwargs))
                 self.assertEqual(response.status_code, 200)
+
+    def test_import_seeded_workflow_path_supports_planning_operations_and_sales_posts(self):
+        fixture_dir = self.fixture_root / "clean"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-clean-apply-critical-workflow-seed.json",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        self.assertEqual(summary["status"], "ok")
+
+        seeded_block = Block.objects.get(name="Field 1")
+        seeded_crop = CropInfo.objects.create(
+            name="Carrot",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=12,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        seeded_crop_season = CropBySeason.objects.create(
+            crop=seeded_crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("1.20"),
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+        )
+        seeded_channel = SalesChannel.objects.create(
+            name="Farm Stand",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target="500.00",
+            is_csa=False,
+            allocation_priority=1,
+        )
+        planning_year = PlanningYear.objects.create(year=2027, status="active")
+        planting = Planting.objects.create(
+            planning_year=planning_year,
+            crop=seeded_crop,
+            crop_season=seeded_crop_season,
+            block=seeded_block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=100,
+            planned_plant_date=date(2027, 4, 1),
+            status="planned",
+        )
+        channel = seeded_channel
+
+        status_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(status_response.status_code, 302)
+
+        inventory_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": planting.crop_id,
+                "event_type": "return_in",
+                "quantity": "6.00",
+                "notes": "import-seeded workflow check",
+            },
+        )
+        self.assertEqual(inventory_response.status_code, 302)
+        self.assertTrue(InventoryLedger.objects.filter(crop_id=planting.crop_id).exists())
+
+        sales_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2027-06-07",
+                "total_cash": "75.00",
+                "total_card": "25.00",
+                "notes": "import-seeded workflow check",
+            },
+        )
+        self.assertEqual(sales_response.status_code, 302)
+        self.assertEqual(QuickSalesEntry.objects.count(), 1)
