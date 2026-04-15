@@ -20,7 +20,8 @@ from collections import defaultdict
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.db import transaction, DatabaseError, IntegrityError
 
 from reference.models import CropInfo, Block, CropBySeason, CropSalesFormat, SalesChannel
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
@@ -117,6 +118,7 @@ class Command(BaseCommand):
         self.planning_year_cache = {}
         self.planting_cache = {}
         self.harvest_event_cache = {}
+        self.normalized_lookup_indexes = {}
 
         if not os.path.isdir(self.data_dir):
             raise CommandError(f"Data directory not found: {self.data_dir}")
@@ -232,7 +234,14 @@ class Command(BaseCommand):
                         self.block_cache[name] = name
                         self.stats["Block"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["Block"]["errors"] += 1
 
@@ -312,7 +321,14 @@ class Command(BaseCommand):
                         self.crop_cache[name] = name
                         self.stats["CropInfo"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["CropInfo"]["errors"] += 1
 
@@ -404,7 +420,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["CropBySeason"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["CropBySeason"]["errors"] += 1
 
@@ -459,7 +482,14 @@ class Command(BaseCommand):
                         self.channel_cache[name] = name
                         self.stats["SalesChannel"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["SalesChannel"]["errors"] += 1
 
@@ -516,7 +546,14 @@ class Command(BaseCommand):
                         self.product_cache[(crop_name, product_name)] = (crop_name, product_name)
                         self.stats["CropSalesFormat"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["CropSalesFormat"]["errors"] += 1
 
@@ -573,7 +610,14 @@ class Command(BaseCommand):
                         self.planning_year_cache[py_year] = py_year
                         self.stats["PlanningYear"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["PlanningYear"]["errors"] += 1
 
@@ -628,20 +672,16 @@ class Command(BaseCommand):
                         self.stats["Planting"]["errors"] += 1
                         continue
 
-                    # Get crop_season — keep lookup active for validate-only preflight.
-                    if not self.write_disabled:
-                        try:
-                            crop_season = CropBySeason.objects.get(
-                                crop=crop, block_type=block.block_type
+                    # Crop season is required for Planting in all modes.
+                    crop_season = self._get_crop_season(crop, block.block_type)
+                    if not crop_season:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"   ⚠  row {i}: no crop_season for {crop_name}/{block.block_type} — skipping planting"
                             )
-                        except CropBySeason.DoesNotExist:
-                            self.stdout.write(
-                                self.style.WARNING(
-                                    f"   ⚠  row {i}: no crop_season for {crop_name}/{block.block_type} — skipping planting"
-                                )
-                            )
-                            self.stats["Planting"]["skipped"] += 1
-                            continue
+                        )
+                        self.stats["Planting"]["skipped"] += 1
+                        continue
 
                     # Parse dates
                     plant_date_str = row.get("Planned Plant Date", "").strip()
@@ -652,6 +692,7 @@ class Command(BaseCommand):
                     plant_date = self._parse_date(plant_date_str)
 
                     data = {
+                        "crop_season": crop_season,
                         "variety": row.get("Variety", "").strip(),
                         "bed_start": self._int(row.get("Bed Start", 1)),
                         "bed_end": self._int(row.get("Bed End", 1)),
@@ -689,7 +730,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["Planting"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["Planting"]["errors"] += 1
 
@@ -771,7 +819,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["NurseryEvent"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["NurseryEvent"]["errors"] += 1
 
@@ -844,7 +899,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["HarvestEvent"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["HarvestEvent"]["errors"] += 1
 
@@ -929,7 +991,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["FieldWalkNote"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["FieldWalkNote"]["errors"] += 1
 
@@ -1014,7 +1083,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["InventoryLedger"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["InventoryLedger"]["errors"] += 1
 
@@ -1080,7 +1156,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["PackAllocation"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["PackAllocation"]["errors"] += 1
 
@@ -1186,7 +1269,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["SalesEvent"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["SalesEvent"]["errors"] += 1
 
@@ -1241,7 +1331,14 @@ class Command(BaseCommand):
                     else:
                         self.stats["QuickSalesEntry"]["processed"] += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["QuickSalesEntry"]["errors"] += 1
 
@@ -1292,47 +1389,116 @@ class Command(BaseCommand):
     def _get_crop(self, crop_name):
         """Get or cache crop by name."""
         if crop_name not in self.crop_cache:
-            try:
-                if not self.write_disabled:
-                    self.crop_cache[crop_name] = CropInfo.objects.get(name=crop_name)
-                else:
-                    self.crop_cache[crop_name] = crop_name
-            except CropInfo.DoesNotExist:
-                self.crop_cache[crop_name] = None
+            self.crop_cache[crop_name] = self._resolve_fk_by_text(
+                CropInfo,
+                "name",
+                crop_name,
+                label="crop",
+            )
         return self.crop_cache[crop_name]
 
     def _get_block(self, block_name):
         """Get or cache block by name."""
         if block_name not in self.block_cache:
-            try:
-                if not self.write_disabled:
-                    self.block_cache[block_name] = Block.objects.get(name=block_name)
-                else:
-                    self.block_cache[block_name] = block_name
-            except Block.DoesNotExist:
-                self.block_cache[block_name] = None
+            self.block_cache[block_name] = self._resolve_fk_by_text(
+                Block,
+                "name",
+                block_name,
+                label="block",
+            )
         return self.block_cache[block_name]
 
     def _get_channel(self, channel_name):
         """Get or cache sales channel by name."""
         if channel_name not in self.channel_cache:
-            try:
-                if not self.write_disabled:
-                    self.channel_cache[channel_name] = SalesChannel.objects.get(name=channel_name)
-                else:
-                    self.channel_cache[channel_name] = channel_name
-            except SalesChannel.DoesNotExist:
-                self.channel_cache[channel_name] = None
+            self.channel_cache[channel_name] = self._resolve_fk_by_text(
+                SalesChannel,
+                "name",
+                channel_name,
+                label="sales channel",
+            )
         return self.channel_cache[channel_name]
 
     def _get_product_by_name(self, product_name):
         """Get crop sales format by product name."""
-        try:
-            if not self.write_disabled:
-                return CropSalesFormat.objects.get(product_name=product_name)
-            return product_name
-        except CropSalesFormat.DoesNotExist:
+        if product_name in self.product_cache:
+            return self.product_cache[product_name]
+        resolved = self._resolve_fk_by_text(
+            CropSalesFormat,
+            "product_name",
+            product_name,
+            label="product",
+        )
+        self.product_cache[product_name] = resolved
+        return resolved
+
+    def _get_crop_season(self, crop, block_type):
+        """Resolve crop season with deterministic duplicate handling."""
+        if self.write_disabled:
+            return {"crop": getattr(crop, "id", crop), "block_type": block_type}
+        queryset = CropBySeason.objects.filter(crop=crop, block_type=block_type).order_by("id")
+        crop_season = queryset.first()
+        if crop_season and queryset.count() > 1:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"   ⚠  Multiple crop_season matches for {crop}/{block_type}; using id={crop_season.id}"
+                )
+            )
+        return crop_season
+
+    def _normalize_lookup_value(self, raw_value):
+        """Normalize lookup text by trimming, collapsing spaces, and casefolding."""
+        if raw_value is None:
+            return ""
+        return " ".join(str(raw_value).strip().split()).casefold()
+
+    def _build_normalized_lookup_index(self, model, field_name):
+        """Build cached normalized lookup index for a model field."""
+        cache_key = f"{model._meta.label_lower}:{field_name}"
+        if cache_key in self.normalized_lookup_indexes:
+            return self.normalized_lookup_indexes[cache_key]
+
+        normalized_index = defaultdict(list)
+        for obj in model.objects.all().only("id", field_name).order_by("id"):
+            normalized_index[self._normalize_lookup_value(getattr(obj, field_name))].append(obj.id)
+        self.normalized_lookup_indexes[cache_key] = normalized_index
+        return normalized_index
+
+    def _resolve_fk_by_text(self, model, field_name, raw_value, label):
+        """Resolve FK using exact match first, normalized fallback second."""
+        if self.write_disabled:
+            return raw_value
+        if not raw_value:
             return None
+
+        exact_value = str(raw_value).strip()
+        exact_matches = model.objects.filter(**{field_name: exact_value}).order_by("id")
+        first_exact = exact_matches.first()
+        if first_exact:
+            if exact_matches.count() > 1:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"   ⚠  Multiple {label} matches for '{raw_value}'; using id={first_exact.id}"
+                    )
+                )
+            return first_exact
+
+        normalized_value = self._normalize_lookup_value(raw_value)
+        if not normalized_value:
+            return None
+        normalized_index = self._build_normalized_lookup_index(model, field_name)
+        candidate_ids = normalized_index.get(normalized_value, [])
+        if not candidate_ids:
+            return None
+
+        candidate = model.objects.filter(id=candidate_ids[0]).first()
+        if candidate and len(candidate_ids) > 1:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"   ⚠  Multiple normalized {label} matches for '{raw_value}'; using id={candidate.id}"
+                )
+            )
+        return candidate
 
     def _get_planning_year(self, year):
         """Get or cache planning year."""

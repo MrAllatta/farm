@@ -4,6 +4,8 @@ import csv
 import os
 from decimal import Decimal, InvalidOperation
 from django.core.management.base import BaseCommand
+from django.core.exceptions import ValidationError
+from django.db import DatabaseError, IntegrityError
 from reference.models import CropInfo, CropBySeason, Block, SalesChannel
 
 
@@ -299,39 +301,51 @@ class Command(BaseCommand):
         self.stdout.write("Importing sales channels...\n")
 
         count = 0
+        errors = 0
 
         with open(path, "r") as f:
             reader = csv.DictReader(f)
-            for row in reader:
-                name = row["Channel Name"].strip()
-                if not name:
-                    continue
+            for i, row in enumerate(reader, 1):
+                try:
+                    name = row["Channel Name"].strip()
+                    if not name:
+                        continue
 
-                # Parse days of week
-                days_raw = row.get("Days of the Week", "").strip()
-                days = [d.strip() for d in days_raw.replace("+", ",").split(",")]
+                    # Parse days of week
+                    days_raw = row.get("Days of the Week", "").strip()
+                    days = [d.strip() for d in days_raw.replace("+", ",").split(",") if d.strip()]
 
-                # Parse money values
-                target_raw = row.get("$ Target per week", "0")
-                target = Decimal(target_raw.replace("$", "").replace(",", "").strip())
+                    # Parse money values
+                    target_raw = row.get("$ Target per week", "0")
+                    target = Decimal(target_raw.replace("$", "").replace(",", "").strip() or "0")
 
-                is_csa = row.get("is_csa", "false").strip().lower() == "true"
+                    is_csa = row.get("is_csa", "false").strip().lower() == "true"
 
-                data = {
-                    "days_of_week": days,
-                    "start_week": self._int(row.get("Start Week Num", 1)),
-                    "end_week": self._int(row.get("End Week Num", 52)),
-                    "weekly_target": target,
-                    "is_csa": is_csa,
-                    "allocation_priority": count + 1,
-                }
+                    data = {
+                        "days_of_week": days,
+                        "start_week": self._int(row.get("Start Week Num", 1)),
+                        "end_week": self._int(row.get("End Week Num", 52)),
+                        "weekly_target": target,
+                        "is_csa": is_csa,
+                        "allocation_priority": self._int(row.get("Priority", count + 1), count + 1),
+                    }
 
-                if not dry_run:
-                    SalesChannel.objects.update_or_create(name=name, defaults=data)
+                    if not dry_run:
+                        SalesChannel.objects.update_or_create(name=name, defaults=data)
 
-                count += 1
+                    count += 1
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
+                    self.stderr.write(f"  Error on channel row {i}: {e}\n")
+                    errors += 1
 
-        self.stdout.write(f"  Channels: {count} imported\n")
+        self.stdout.write(f"  Channels: {count} imported, {errors} errors\n")
 
     # Helper methods for parsing messy spreadsheet data
 

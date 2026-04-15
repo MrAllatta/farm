@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 from django.core.management import call_command
 from django.test import TestCase
 
+from planning.models import Planting, PlanningYear
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 
 
@@ -64,6 +65,42 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "Carrot,Unknown Block,10,40,1.2,6,65,3,30,na,,,,,",
                 "Ghost Crop,Field,10,40,1.2,6,65,3,30,na,,,,,",
                 "Carrot,Field,10,40,1.2,6,0,3,30,na,,,,,",
+            ],
+        )
+
+    def _write_year_fixture(self, data_dir, year=2021):
+        year_dir = Path(data_dir) / f"year_{year}"
+        year_dir.mkdir(parents=True, exist_ok=True)
+        self._write_csv(
+            year_dir,
+            "planning_year.csv",
+            [
+                "Year,Status,Overplant Factor",
+                f"{year},planning,1.10",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "plantings.csv",
+            [
+                "ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status",
+                "P1,Carrot,Field 1,Nantes,1,1,100,2021-04-01,Planned",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "sales_events.csv",
+            [
+                "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Brought Quantity,Returned Quantity,Notes",
+                "  FARM   STAND  ,2021-06-01,  CARROT   BUNCH  ,10,35,9,31.5,3.5,10,1,normalized lookup test",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "pack_allocations.csv",
+            [
+                "Planting ID,Harvest Date,Channel,Product,Pack Date,Quantity,Notes",
+                "P1,, farm stand , carrot bunch ,2021-06-02,5,duplicate-safe lookup test",
             ],
         )
 
@@ -132,6 +169,19 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(CropBySeason.objects.count(), 1)
             self.assertEqual(SalesChannel.objects.count(), 1)
             self.assertEqual(CropSalesFormat.objects.count(), 1)
+
+    def test_apply_with_year_fixture_creates_planting_without_crop_season_error(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-year-apply.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["status"], "ok")
+            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 0)
+            self.assertEqual(summary["results"]["models"]["Planting"]["created"], 1)
+            self.assertEqual(PlanningYear.objects.count(), 1)
+            self.assertEqual(Planting.objects.count(), 1)
 
     def test_known_mismatch_fixture_validate_only_reports_expected_skips_and_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -219,3 +269,68 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(Block.objects.count(), 0)
             self.assertEqual(CropInfo.objects.count(), 0)
             self.assertEqual(CropBySeason.objects.count(), 0)
+
+    def test_historical_import_resolves_normalized_and_duplicate_channel_product_lookups(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            # Duplicate channel names are allowed; this verifies deterministic fallback.
+            SalesChannel.objects.create(
+                name="farm stand",
+                days_of_week=["Saturday"],
+                start_week=1,
+                end_week=52,
+                weekly_target="100.00",
+                is_csa=False,
+                allocation_priority=9,
+            )
+            carrot = CropInfo.objects.create(
+                name="Backup Carrot",
+                crop_type="Vegetables",
+                botanical_family="Apiaceae",
+                propagation_type="seed",
+                is_perennial=False,
+                fresh_or_storage="fresh",
+                storage_weeks=0,
+                harvest_unit="pounds",
+                avg_unit_weight="1.00",
+                nursery_weeks=0,
+                weeks_until_pot_up=0,
+                seeds_per_cell=1,
+                thinned_plants=0,
+            )
+            CropSalesFormat.objects.create(
+                crop=carrot,
+                product_name="carrot bunch",
+                sale_price="2.00",
+                sale_unit="bunch",
+                harvest_qty_per_sale_unit="1.00",
+                is_active=True,
+            )
+            self._write_year_fixture(data_dir, year=2021)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-normalized-lookup.json")
+
+            self.assertEqual(summary["status"], "ok")
+            self.assertEqual(summary["results"]["models"]["SalesEvent"]["error"], 0)
+            self.assertEqual(summary["results"]["models"]["PackAllocation"]["error"], 0)
+            self.assertEqual(summary["results"]["models"]["SalesEvent"]["created"], 1)
+            self.assertEqual(summary["results"]["models"]["PackAllocation"]["created"], 1)
+
+
+class ImportReferenceDataCommandTests(TestCase):
+    def _write_csv(self, data_dir, name, lines):
+        Path(data_dir, name).write_text("\n".join(lines), encoding="utf-8")
+
+    def test_import_channels_continues_after_malformed_row(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "sales_channels.csv",
+                [
+                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                    "Farm Stand,Saturday,1,52,$500,false,1",
+                    "Broken Channel,Friday,1,52,$not-a-number,false,2",
+                    "CSA,Tuesday + Friday,1,40,$250,true,3",
+                ],
+            )
+            call_command("import_reference_data", data_dir)
+            self.assertEqual(SalesChannel.objects.count(), 2)
