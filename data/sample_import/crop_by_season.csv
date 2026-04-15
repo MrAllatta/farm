@@ -18,3 +18,5 @@ Basil,High Tunnel,16,36,0.7,10,45,2,na,0.2,na,None,Mulch,na,Drip
 Garlic,Field,26,20,3.0,1,210,2,na,6.0,na,None,Straw,na,Overhead
 Potato,Field,14,28,2.5,8,90,1,na,12.0,na,Hilled,Straw,none,Drip
 Asparagus,Field,16,26,1.5,6,60,1,na,18.0,na,None,Straw,na,Drip
+Basil,Greenhouse,16,26,1.5,6,60,1,na,18.0,na,None,Straw,na,Drip
+Bell Pepper,Greenhouse,16,26,1.6,6,60,1,na,18,0,ns,None,Straw,na,Drip

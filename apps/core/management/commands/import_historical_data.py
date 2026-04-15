@@ -580,10 +580,12 @@ class Command(BaseCommand):
                                 crop=crop, block_type=block.block_type
                             )
                         except CropBySeason.DoesNotExist:
-                            self.stderr.write(
-                                f"    ERROR row {i}: no crop_season for {crop_name}/{block.block_type}"
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"   ⚠  row {i}: no crop_season for {crop_name}/{block.block_type} — skipping planting"
+                                )
                             )
-                            self.stats["Planting"]["errors"] += 1
+                            self.stats["Planting"]["skipped"] += 1
                             continue
 
                     # Parse dates
