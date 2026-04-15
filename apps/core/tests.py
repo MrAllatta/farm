@@ -334,3 +334,42 @@ class ImportReferenceDataCommandTests(TestCase):
             )
             call_command("import_reference_data", data_dir)
             self.assertEqual(SalesChannel.objects.count(), 2)
+
+
+class PrimaryRouteSmokeTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        PlanningYear.objects.create(year=2026, status="active")
+        SalesChannel.objects.create(
+            name="Farm Stand",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target="500.00",
+            is_csa=False,
+            allocation_priority=1,
+        )
+
+    def test_primary_navigation_routes_do_not_raise_server_errors(self):
+        routes = [
+            "/",
+            "/planning/",
+            "/operations/harvest/",
+            "/operations/inventory/",
+            "/sales/",
+        ]
+
+        for route in routes:
+            with self.subTest(route=route):
+                response = self.client.get(route)
+                self.assertLess(response.status_code, 500)
+                self.assertNotEqual(response.status_code, 404)
+
+    def test_admin_route_redirects_to_login_boundary(self):
+        response = self.client.get("/admin/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])
+
+    def test_unknown_route_returns_404(self):
+        response = self.client.get("/definitely-not-a-real-route/")
+        self.assertEqual(response.status_code, 404)
