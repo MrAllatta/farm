@@ -176,6 +176,9 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertTrue(isinstance(item["code"], str) and item["code"])
             self.assertTrue(isinstance(item["field_path"], str) and item["field_path"])
             self.assertTrue(isinstance(item["message"], str) and item["message"])
+            self.assertEqual(item["model"], item["model"].strip())
+            self.assertEqual(item["code"], item["code"].strip())
+            self.assertEqual(item["field_path"], item["field_path"].strip())
 
     def _assert_deterministic_row_errors(self, row_errors, expected_entries):
         self._assert_row_error_payload_contract(row_errors)
@@ -314,10 +317,10 @@ class ImportHistoricalDataCommandTests(TestCase):
             )
 
             self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
-            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 5)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 6)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
             self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 3)
-            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 3)
+            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 4)
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
@@ -346,13 +349,20 @@ class ImportHistoricalDataCommandTests(TestCase):
                     (
                         "CropBySeason",
                         4,
+                        "namespace_mismatch",
+                        "crop_by_season.block_type",
+                        "unsupported block type 'Container Yard'",
+                    ),
+                    (
+                        "CropBySeason",
+                        5,
                         "stale_fk",
                         "crop_by_season.crop",
                         "crop not found 'Ghost Crop'",
                     ),
                     (
                         "CropBySeason",
-                        5,
+                        6,
                         "stale_fk",
                         "crop_by_season.crop",
                         "crop not found 'Missing Crop'",
@@ -399,10 +409,17 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "plantings.block",
                         "block not found 'Ghost Block'",
                     ),
+                    (
+                        "Planting",
+                        4,
+                        "stale_fk",
+                        "plantings.block",
+                        "block not found 'Shadow Block'",
+                    ),
                 ],
             )
             # Deterministic ordering from importer pass order helps gate snapshots stay stable.
-            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 2, 3, 4, 1, 2, 3])
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 6, 2, 3, 4, 1, 2, 3, 4])
 
     def test_repo_mismatch_fixture_matrix_validate_and_apply_have_identical_row_error_payloads(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -449,6 +466,8 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "namespace_mismatch",
                 "namespace_mismatch",
                 "namespace_mismatch",
+                "namespace_mismatch",
+                "stale_fk",
                 "stale_fk",
                 "stale_fk",
                 "stale_fk",
@@ -459,8 +478,31 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "stale_fk",
             ],
         )
-        self.assertEqual(classes.count("namespace_mismatch"), 3)
-        self.assertEqual(classes.count("stale_fk"), 8)
+        self.assertEqual(classes.count("namespace_mismatch"), 4)
+        self.assertEqual(classes.count("stale_fk"), 9)
+
+    def test_repo_mismatch_fixture_matrix_row_error_model_distribution_is_deterministic(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-model-distribution.json",
+                "--validate-only",
+            )
+
+        row_errors = summary["results"]["row_errors"]
+        self._assert_row_error_payload_contract(row_errors)
+        model_counts = {}
+        for item in row_errors:
+            model_counts[item["model"]] = model_counts.get(item["model"], 0) + 1
+        self.assertEqual(
+            model_counts,
+            {
+                "CropBySeason": 6,
+                "CropSalesFormat": 3,
+                "Planting": 4,
+            },
+        )
 
     def test_repo_clean_fixture_pack_validate_only_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
@@ -807,6 +849,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("planning:matrix", {}),
         ("planning:matrix_date", {"date": "2026-03-15"}),
         ("planning:matrix_week", {"week": 12}),
+        ("planning:nursery_schedule", {}),
         ("operations:harvest_entry_current", {}),
         ("operations:harvest_entry_week", {"week": 12}),
         ("operations:field_walk_current", {}),
@@ -819,22 +862,23 @@ class PrimaryRouteSmokeTests(TestCase):
         ("reports:crop_performance", {}),
         ("reports:channel_performance", {}),
         ("reports:block_utilization", {}),
+        ("reports:season_summary", {}),
     ]
     MIN_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
         "core": 1,
         "reference": 1,
-        "planning": 3,
+        "planning": 4,
         "operations": 3,
         "sales": 3,
-        "reports": 5,
+        "reports": 6,
     }
     EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
         "core": 1,
         "reference": 1,
-        "planning": 3,
+        "planning": 4,
         "operations": 4,
         "sales": 3,
-        "reports": 5,
+        "reports": 6,
     }
 
     @classmethod

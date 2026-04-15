@@ -8,7 +8,7 @@
         "created": 0,
         "updated": 0,
         "skipped": 5,
-        "error": 11
+        "error": 13
       },
       "models": {
         "Block": {
@@ -21,7 +21,7 @@
           "created": 0,
           "updated": 0,
           "skipped": 1,
-          "error": 5
+          "error": 6
         },
         "CropSalesFormat": {
           "created": 0,
@@ -39,7 +39,7 @@
           "created": 0,
           "updated": 0,
           "skipped": 0,
-          "error": 3
+          "error": 4
         }
       },
       "row_errors": [
@@ -67,13 +67,20 @@
         {
           "model": "CropBySeason",
           "row": 4,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Container Yard'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 5,
           "code": "stale_fk",
           "field_path": "crop_by_season.crop",
           "message": "crop not found 'Ghost Crop'"
         },
         {
           "model": "CropBySeason",
-          "row": 5,
+          "row": 6,
           "code": "stale_fk",
           "field_path": "crop_by_season.crop",
           "message": "crop not found 'Missing Crop'"
@@ -119,6 +126,13 @@
           "code": "stale_fk",
           "field_path": "plantings.block",
           "message": "block not found 'Ghost Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 4,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Shadow Block'"
         }
       ]
     },
@@ -128,7 +142,7 @@
         "created": 4,
         "updated": 0,
         "skipped": 1,
-        "error": 11
+        "error": 13
       },
       "models": {
         "Block": {
@@ -141,7 +155,7 @@
           "created": 0,
           "updated": 0,
           "skipped": 1,
-          "error": 5
+          "error": 6
         },
         "CropSalesFormat": {
           "created": 1,
@@ -159,7 +173,7 @@
           "created": 0,
           "updated": 0,
           "skipped": 0,
-          "error": 3
+          "error": 4
         }
       },
       "row_errors": [
@@ -187,13 +201,20 @@
         {
           "model": "CropBySeason",
           "row": 4,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Container Yard'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 5,
           "code": "stale_fk",
           "field_path": "crop_by_season.crop",
           "message": "crop not found 'Ghost Crop'"
         },
         {
           "model": "CropBySeason",
-          "row": 5,
+          "row": 6,
           "code": "stale_fk",
           "field_path": "crop_by_season.crop",
           "message": "crop not found 'Missing Crop'"
@@ -239,6 +260,13 @@
           "code": "stale_fk",
           "field_path": "plantings.block",
           "message": "block not found 'Ghost Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 4,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Shadow Block'"
         }
       ]
     }
