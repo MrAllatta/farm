@@ -1,6 +1,7 @@
 {
   "fatal_error": null,
   "results": {
+    "escalation_summary": [],
     "failure_signatures": [],
     "models": {
       "Block": {
@@ -29,10 +30,10 @@
     "data_dir": "farm/data/import_fixtures/clean",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-15T19:19:40.655958Z",
-    "run_id": "20260415T191940",
+    "finished_at": "2026-04-15T19:20:45.016777Z",
+    "run_id": "20260415T192045",
     "start_year": 2021,
-    "started_at": "2026-04-15T19:19:40.645043Z",
+    "started_at": "2026-04-15T19:20:45.005535Z",
     "validate_only": true,
     "verbose": false
   },
