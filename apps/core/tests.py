@@ -7,6 +7,7 @@ from io import StringIO
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.management.base import SystemCheckError
 from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -1604,6 +1605,25 @@ class AppBootGateTests(TestCase):
         self.assertEqual(payload["check"], "readyz")
         self.assertEqual(payload["checks"]["db"], "ok")
         self.assertEqual(payload["checks"]["urlconf"], "ok")
+
+    @override_settings(DEBUG=False, SECRET_KEY="dev-insecure-key", ALLOWED_HOSTS=["farm.example.com"])
+    def test_production_settings_check_rejects_insecure_secret_key(self):
+        with patch("sys.argv", ["manage.py", "check"]):
+            with self.assertRaises(SystemCheckError) as exc_info:
+                call_command("check")
+        self.assertIn("core.E001", str(exc_info.exception))
+
+    @override_settings(DEBUG=False, SECRET_KEY="strong-secret-key", ALLOWED_HOSTS=["*"])
+    def test_production_settings_check_rejects_wildcard_allowed_hosts(self):
+        with patch("sys.argv", ["manage.py", "check"]):
+            with self.assertRaises(SystemCheckError) as exc_info:
+                call_command("check")
+        self.assertIn("core.E003", str(exc_info.exception))
+
+    @override_settings(DEBUG=False, SECRET_KEY="strong-secret-key", ALLOWED_HOSTS=["farm.example.com"])
+    def test_production_settings_check_accepts_explicit_hosts_and_strong_secret(self):
+        with patch("sys.argv", ["manage.py", "check"]):
+            call_command("check")
 
 
 class BetaGateEvidenceTests(TestCase):
