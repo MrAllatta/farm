@@ -4,6 +4,7 @@ from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from io import StringIO
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -186,6 +187,7 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "end_year",
                 "validate_only",
                 "dry_run",
+                "atomic_apply",
                 "verbose",
             },
         )
@@ -194,6 +196,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertTrue(summary["run"]["finished_at"])
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
+        self.assertTrue(summary["run"]["atomic_apply"])
         self.assertEqual(
             set(summary["results"].keys()),
             {"models", "totals", "row_errors", "failure_signatures"},
@@ -971,6 +974,52 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(CropBySeason.objects.count(), 0)
             self.assertEqual(Block.objects.count(), 0)
 
+    def test_apply_mode_rolls_back_all_writes_when_pipeline_raises_with_atomic_apply_enabled(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            summary_path = Path(output_dir) / "summary-failed-atomic.json"
+            with patch(
+                "core.management.commands.import_historical_data.Command._import_years_and_plantings",
+                side_effect=RuntimeError("simulated pipeline failure"),
+            ):
+                with self.assertRaises(SystemExit):
+                    call_command(
+                        "import_historical_data",
+                        data_dir,
+                        "--summary-json",
+                        str(summary_path),
+                    )
+
+            self.assertEqual(Block.objects.count(), 0)
+            self.assertEqual(CropInfo.objects.count(), 0)
+            self.assertEqual(CropBySeason.objects.count(), 0)
+            failed_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertEqual(failed_summary["status"], "failed")
+            self.assertTrue(failed_summary["run"]["atomic_apply"])
+
+    def test_apply_mode_can_disable_atomic_rollback_for_recovery_diagnostics(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            summary_path = Path(output_dir) / "summary-failed-non-atomic.json"
+            with patch(
+                "core.management.commands.import_historical_data.Command._import_years_and_plantings",
+                side_effect=RuntimeError("simulated pipeline failure"),
+            ):
+                with self.assertRaises(SystemExit):
+                    call_command(
+                        "import_historical_data",
+                        data_dir,
+                        "--non-atomic-apply",
+                        "--summary-json",
+                        str(summary_path),
+                    )
+
+            self.assertEqual(Block.objects.count(), 1)
+            self.assertEqual(CropInfo.objects.count(), 1)
+            failed_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertEqual(failed_summary["status"], "failed")
+            self.assertFalse(failed_summary["run"]["atomic_apply"])
+
     def test_historical_import_resolves_normalized_and_duplicate_channel_product_lookups(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_clean_fixture(data_dir)
@@ -1327,6 +1376,7 @@ class BetaGateEvidenceTests(TestCase):
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
+        self.assertIn("atomic_apply", summary["run"])
         self.assertTrue({"models", "totals", "row_errors"} <= set(summary["results"].keys()))
 
     def test_critical_workflow_integration_path_persists_planning_operations_and_sales_records(self):
