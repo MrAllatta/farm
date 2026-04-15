@@ -1,6 +1,7 @@
 {
   "fatal_error": null,
   "results": {
+    "failure_signatures": [],
     "models": {
       "Block": {
         "created": 0,
@@ -96,16 +97,17 @@
     }
   },
   "run": {
+    "atomic_apply": true,
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-15T18:56:41.296860Z",
-    "run_id": "20260415T185640",
+    "finished_at": "2026-04-15T19:12:08.676169Z",
+    "run_id": "20260415T191208",
     "start_year": 2021,
-    "started_at": "2026-04-15T18:56:40.206581Z",
+    "started_at": "2026-04-15T19:12:08.280889Z",
     "validate_only": false,
     "verbose": false
   },
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "status": "ok"
 }

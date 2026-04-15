@@ -1,6 +1,7 @@
 {
   "fatal_error": null,
   "results": {
+    "failure_signatures": [],
     "models": {
       "Block": {
         "created": 0,
@@ -24,16 +25,17 @@
     }
   },
   "run": {
+    "atomic_apply": true,
     "data_dir": "farm/data/import_fixtures/clean",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-15T18:56:38.078308Z",
-    "run_id": "20260415T185638",
+    "finished_at": "2026-04-15T19:12:06.114557Z",
+    "run_id": "20260415T191206",
     "start_year": 2021,
-    "started_at": "2026-04-15T18:56:38.067278Z",
+    "started_at": "2026-04-15T19:12:06.103482Z",
     "validate_only": true,
     "verbose": false
   },
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "status": "ok"
 }
