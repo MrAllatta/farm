@@ -179,7 +179,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         expected_dry_run=False,
         expected_atomic_apply=None,
     ):
-        self.assertEqual(summary["schema_version"], "1.2")
+        self.assertEqual(summary["schema_version"], "1.3")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
         self.assertEqual(
@@ -293,6 +293,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             "escalation_path",
             "count",
             "signatures",
+            "recovery_steps",
         }
         for item in escalation_summary:
             self.assertEqual(set(item.keys()), expected_keys)
@@ -307,6 +308,11 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(item["signatures"], sorted(item["signatures"]))
             for signature in item["signatures"]:
                 self.assertTrue(isinstance(signature, str) and signature)
+            self.assertIsInstance(item["recovery_steps"], list)
+            self.assertTrue(item["recovery_steps"])
+            self.assertEqual(item["recovery_steps"], sorted(item["recovery_steps"]))
+            for recovery_step in item["recovery_steps"]:
+                self.assertTrue(isinstance(recovery_step, str) and recovery_step)
 
     def test_clean_fixture_validate_only_has_no_writes_and_canonical_outcomes(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -462,6 +468,9 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "escalation_path": "ops-oncall -> reference-data",
                         "count": 2,
                         "signatures": ["stale_fk"],
+                        "recovery_steps": [
+                            "seed missing reference rows and rerun --validate-only",
+                        ],
                     },
                     {
                         "owner_area": "data-contracts",
@@ -470,6 +479,9 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "escalation_path": "ops-oncall -> data-contracts",
                         "count": 1,
                         "signatures": ["namespace_mismatch"],
+                        "recovery_steps": [
+                            "correct source value namespaces and rerun --validate-only",
+                        ],
                     },
                 ],
             )
@@ -1450,7 +1462,7 @@ class BetaGateEvidenceTests(TestCase):
         return json.loads(summary_path.read_text(encoding="utf-8"))
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
-        self.assertIn(summary["schema_version"], {"1.1", "1.2"})
+        self.assertIn(summary["schema_version"], {"1.1", "1.2", "1.3"})
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
@@ -1556,6 +1568,34 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(validate_pairs, apply_pairs)
         self.assertEqual(validate_summary["results"]["totals"]["created"], 0)
         self.assertGreater(apply_summary["results"]["totals"]["created"], 0)
+
+    def test_mismatch_repeated_preflight_runs_emit_stable_escalation_summary(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            first_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-escalation-first.json",
+                "--validate-only",
+            )
+            second_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-escalation-second.json",
+                "--validate-only",
+            )
+            third_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-escalation-third.json",
+                "--validate-only",
+            )
+
+        self.assertEqual(
+            first_summary["results"]["escalation_summary"],
+            second_summary["results"]["escalation_summary"],
+        )
+        self.assertEqual(
+            second_summary["results"]["escalation_summary"],
+            third_summary["results"]["escalation_summary"],
+        )
 
     def test_failure_signatures_contract_maps_each_import_error_to_owner_and_escalation(self):
         fixture_dir = self.fixture_root / "mismatch"

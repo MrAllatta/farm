@@ -1806,9 +1806,11 @@ class Command(BaseCommand):
                     "escalation_path": item["escalation_path"],
                     "count": 0,
                     "signatures": [],
+                    "recovery_steps": [],
                 }
             grouped[key]["count"] += item["count"]
             grouped[key]["signatures"].append(item["signature"])
+            grouped[key]["recovery_steps"].append(item["recovery"])
 
         escalation_summary = sorted(
             grouped.values(),
@@ -1821,6 +1823,8 @@ class Command(BaseCommand):
         )
         for row in escalation_summary:
             row["signatures"].sort()
+            # Keep deterministic unique recovery hints for operator handoff.
+            row["recovery_steps"] = sorted(set(row["recovery_steps"]))
         return escalation_summary
 
     def _write_summary_json(self, status="ok", fatal_error=None):
@@ -1835,7 +1839,7 @@ class Command(BaseCommand):
 
         failure_signatures = self._build_failure_signatures(status, fatal_error)
         payload = {
-            "schema_version": "1.2",
+            "schema_version": "1.3",
             "status": status,
             "fatal_error": fatal_error,
             "run": {
