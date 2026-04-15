@@ -320,7 +320,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 6)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
             self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 3)
-            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 5)
+            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 6)
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
@@ -418,6 +418,13 @@ class ImportHistoricalDataCommandTests(TestCase):
                     ),
                     (
                         "Planting",
+                        5,
+                        "stale_fk",
+                        "plantings.crop",
+                        "crop not found 'Phantom Crop'",
+                    ),
+                    (
+                        "Planting",
                         1,
                         "stale_fk",
                         "plantings.planning_year",
@@ -426,7 +433,7 @@ class ImportHistoricalDataCommandTests(TestCase):
                 ],
             )
             # Deterministic ordering from importer pass order helps gate snapshots stay stable.
-            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 6, 2, 3, 4, 1, 2, 3, 4, 1])
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 6, 2, 3, 4, 1, 2, 3, 4, 5, 1])
 
     def test_repo_mismatch_fixture_matrix_validate_and_apply_have_identical_row_error_payloads(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -484,10 +491,11 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "stale_fk",
                 "stale_fk",
                 "stale_fk",
+                "stale_fk",
             ],
         )
         self.assertEqual(classes.count("namespace_mismatch"), 4)
-        self.assertEqual(classes.count("stale_fk"), 10)
+        self.assertEqual(classes.count("stale_fk"), 11)
 
     def test_repo_mismatch_fixture_matrix_row_error_model_distribution_is_deterministic(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -508,7 +516,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             {
                 "CropBySeason": 6,
                 "CropSalesFormat": 3,
-                "Planting": 5,
+                "Planting": 6,
             },
         )
 
@@ -551,39 +559,8 @@ class ImportHistoricalDataCommandTests(TestCase):
             summary["results"]["models"]["CropSalesFormat"],
             expected["models"]["CropSalesFormat"],
         )
-        self.assertEqual(
-            [
-                (
-                    item["model"],
-                    item["row"],
-                    item["code"],
-                    item["field_path"],
-                    item["message"],
-                )
-                for item in summary["results"]["row_errors"]
-            ],
-            [
-                (
-                    item["model"],
-                    item["row"],
-                    item["code"],
-                    item["field_path"],
-                    item["message"],
-                )
-                for item in expected["row_errors"]
-            ],
-        )
-        self.assertEqual(
-            [
-                (
-                    item["model"],
-                    item["row"],
-                    item["code"],
-                    item["field_path"],
-                    item["message"],
-                )
-                for item in summary["results"]["row_errors"]
-            ],
+        self._assert_deterministic_row_errors(
+            summary["results"]["row_errors"],
             [
                 (
                     item["model"],
@@ -617,6 +594,19 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(
             summary["results"]["models"]["CropSalesFormat"],
             expected["models"]["CropSalesFormat"],
+        )
+        self._assert_deterministic_row_errors(
+            summary["results"]["row_errors"],
+            [
+                (
+                    item["model"],
+                    item["row"],
+                    item["code"],
+                    item["field_path"],
+                    item["message"],
+                )
+                for item in expected["row_errors"]
+            ],
         )
 
     def test_known_mismatch_fixture_has_deterministic_outcomes_across_apply_and_preflight(self):

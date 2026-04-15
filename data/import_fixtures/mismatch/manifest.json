@@ -8,7 +8,7 @@
         "created": 0,
         "updated": 0,
         "skipped": 5,
-        "error": 14
+        "error": 15
       },
       "models": {
         "Block": {
@@ -39,7 +39,7 @@
           "created": 0,
           "updated": 0,
           "skipped": 0,
-          "error": 5
+          "error": 6
         }
       },
       "row_errors": [
@@ -133,6 +133,13 @@
           "code": "stale_fk",
           "field_path": "plantings.block",
           "message": "block not found 'Shadow Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 5,
+          "code": "stale_fk",
+          "field_path": "plantings.crop",
+          "message": "crop not found 'Phantom Crop'"
         },
         {
           "model": "Planting",
@@ -149,7 +156,7 @@
         "created": 4,
         "updated": 0,
         "skipped": 1,
-        "error": 14
+        "error": 15
       },
       "models": {
         "Block": {
@@ -180,7 +187,7 @@
           "created": 0,
           "updated": 0,
           "skipped": 0,
-          "error": 5
+          "error": 6
         }
       },
       "row_errors": [
@@ -274,6 +281,13 @@
           "code": "stale_fk",
           "field_path": "plantings.block",
           "message": "block not found 'Shadow Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 5,
+          "code": "stale_fk",
+          "field_path": "plantings.crop",
+          "message": "crop not found 'Phantom Crop'"
         },
         {
           "model": "Planting",
