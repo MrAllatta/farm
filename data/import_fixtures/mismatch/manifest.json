@@ -4,6 +4,14 @@
   "expected": {
     "validate_only": {
       "status": "ok",
+      "error_signals": [
+        "unsupported block type 'Unknown Block'",
+        "unsupported block type 'Unknown Tunnel'",
+        "crop not found 'Ghost Crop'",
+        "crop not found 'Missing Crop'",
+        "block not found 'Missing Block'",
+        "planning year not found '2022'"
+      ],
       "totals": {
         "created": 0,
         "updated": 0,
@@ -152,6 +160,14 @@
     },
     "apply": {
       "status": "ok",
+      "error_signals": [
+        "unsupported block type 'Unknown Block'",
+        "unsupported block type 'Unknown Tunnel'",
+        "crop not found 'Ghost Crop'",
+        "crop not found 'Missing Crop'",
+        "block not found 'Missing Block'",
+        "planning year not found '2022'"
+      ],
       "totals": {
         "created": 4,
         "updated": 0,

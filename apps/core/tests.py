@@ -1,9 +1,11 @@
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from io import StringIO
 
 from django.core.management import call_command
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.urls import get_resolver, reverse
 
 from planning.models import Planting, PlanningYear
@@ -149,6 +151,21 @@ class ImportHistoricalDataCommandTests(TestCase):
     def _run_import(self, data_dir, summary_path, *extra_args):
         call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
         return json.loads(summary_path.read_text(encoding="utf-8"))
+
+    def _run_import_with_output(self, data_dir, summary_path, *extra_args):
+        stdout = StringIO()
+        stderr = StringIO()
+        call_command(
+            "import_historical_data",
+            data_dir,
+            "--summary-json",
+            str(summary_path),
+            *extra_args,
+            stdout=stdout,
+            stderr=stderr,
+        )
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        return summary, stdout.getvalue(), stderr.getvalue()
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
         self.assertEqual(summary["schema_version"], "1.1")
@@ -482,6 +499,39 @@ class ImportHistoricalDataCommandTests(TestCase):
 
         self._assert_row_error_payload_contract(manifest["expected"]["validate_only"]["row_errors"])
         self._assert_row_error_payload_contract(manifest["expected"]["apply"]["row_errors"])
+
+    def test_repo_mismatch_fixture_validate_only_emits_expected_error_signals(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "mismatch"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        with TemporaryDirectory() as output_dir:
+            summary, _stdout, stderr = self._run_import_with_output(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-validate-signals.json",
+                "--validate-only",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        for message in manifest["expected"]["validate_only"]["error_signals"]:
+            with self.subTest(signal=message):
+                self.assertIn(message, stderr)
+
+    def test_repo_mismatch_fixture_apply_emits_expected_error_signals(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "mismatch"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        with TemporaryDirectory() as output_dir:
+            summary, _stdout, stderr = self._run_import_with_output(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-apply-signals.json",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        for message in manifest["expected"]["apply"]["error_signals"]:
+            with self.subTest(signal=message):
+                self.assertIn(message, stderr)
 
     def test_repo_mismatch_fixture_matrix_row_error_classes_and_counts_are_deterministic(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -1081,3 +1131,25 @@ class PrimaryRouteSmokeTests(TestCase):
                     self.assertEqual(self.client.get(f"{route}{query}").status_code, 404)
                 with self.subTest(route=route, method="HEAD+query", query=query):
                     self.assertEqual(self.client.head(f"{route}{query}").status_code, 404)
+
+    @override_settings(ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"])
+    def test_primary_smoke_suite_includes_app_boot_checks(self):
+        # Keep app boot assertions in the same suite operators already run for route smoke gates.
+        call_command("check")
+        resolver = get_resolver()
+        namespace_dict = getattr(resolver, "namespace_dict", {})
+        self.assertTrue(namespace_dict)
+        self.assertTrue(self.REQUIRED_NAMESPACES <= set(namespace_dict))
+
+
+class AppBootGateTests(TestCase):
+    @override_settings(ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"])
+    def test_django_check_passes_for_release_gate(self):
+        call_command("check")
+
+    @override_settings(ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"])
+    def test_root_urlconf_loads_and_exposes_expected_namespaces(self):
+        resolver = get_resolver()
+        namespace_dict = getattr(resolver, "namespace_dict", {})
+        self.assertTrue(namespace_dict)
+        self.assertTrue({"core", "reference", "planning", "operations", "sales", "reports"} <= set(namespace_dict))
