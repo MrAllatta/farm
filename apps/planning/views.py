@@ -10,7 +10,8 @@ from datetime import date
 from isoweek import Week
 
 from reference.models import Block, BlockType, CropInfo
-from .models import Planting, PlanningYear, Planting, HarvestEvent, NurseryEvent, PlantingStatus
+from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus
+from core.planning_year import resolve_current_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 
 from django.http import HttpResponse
@@ -25,7 +26,7 @@ class PlanningMatrixView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
 
         if not year_obj:
             ctx["no_year"] = True
@@ -233,7 +234,7 @@ class PlantingCreateView(CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         initial["planning_year"] = year_obj
 
         # Pre-fill from URL params (clicked cell in matrix)
@@ -253,7 +254,7 @@ class PlantingCreateView(CreateView):
 
     def form_valid(self, form):
         planting = form.save(commit=False)
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         planting.planning_year = year_obj
 
         # Auto-calculate bedfeet
@@ -296,7 +297,7 @@ class PlantingUpdateView(UpdateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         initial["planning_year"] = year_obj
 
         # Pre-fill from URL params (clicked cell in matrix)
@@ -316,7 +317,7 @@ class PlantingUpdateView(UpdateView):
 
     def form_valid(self, form):
         planting = form.save(commit=False)
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         planting.planning_year = year_obj
 
         # Auto-calculate bedfeet
@@ -377,7 +378,7 @@ class SuccessionPreviewView(View):
                 "</span>"
             )
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year if year_obj else date.today().year
 
         beds_per = math.ceil(bf_per / block.bedfeet_per_bed)
@@ -508,7 +509,7 @@ class SuccessionCreateView(FormView):
 
     def form_valid(self, form):
         data = form.cleaned_data
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
 
         crop = data["crop"]
         crop_season = data["crop_season"]
@@ -657,7 +658,7 @@ class NurseryScheduleView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year
 
         requested_week = kwargs.get("week")
@@ -792,7 +793,7 @@ class HarvestCalendarView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year
 
         # Build week range
@@ -1051,7 +1052,7 @@ class FieldScheduleView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year
 
         week_num = kwargs.get("week", date.today().isocalendar()[1])
@@ -1331,7 +1332,7 @@ class WeekToDateView(View):
 
     def get(self, request):
         week_num = request.GET.get("plant_week_input")
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
 
         if not week_num or not year_obj:
             return HttpResponse("")
@@ -1379,7 +1380,7 @@ class BedConflictCheckView(View):
             first_harvest = plant_date + timedelta(days=cs.dtm_days)
             last_harvest = first_harvest + timedelta(weeks=cs.harvest_weeks - 1)
 
-            year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+            year_obj = resolve_current_planning_year()
 
             conflicts = (
                 Planting.objects.filter(

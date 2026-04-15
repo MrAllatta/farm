@@ -14,6 +14,7 @@ from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
 from operations.models import InventoryLedger
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel
+from core.planning_year import resolve_current_planning_year
 
 from django.views.generic import FormView
 from django import forms
@@ -67,7 +68,7 @@ class DashboardView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
 
         if not year_obj:
             ctx["no_year"] = True
@@ -430,7 +431,7 @@ class CompleteSeasonView(TemplateView):
     """Mark a planning year as complete and update rotation history."""
 
     def post(self, request, **kwargs):
-        year_obj = PlanningYear.objects.filter(status="active").first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
 
         if not year_obj:
             messages.error(request, "No active planning year found.")

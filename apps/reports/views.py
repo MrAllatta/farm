@@ -6,7 +6,8 @@ from datetime import date, timedelta
 from isoweek import Week
 import math
 
-from planning.models import HarvestEvent, PlanningYear, Planting
+from planning.models import HarvestEvent, Planting
+from core.planning_year import resolve_current_planning_year
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import Block, SalesChannel, CropSalesFormat
 from decimal import Decimal
@@ -56,7 +57,7 @@ class HarvestListPrintView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         week_num = kwargs["week"]
         year = year_obj.year
 
@@ -133,7 +134,7 @@ class RevenueProjectionView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year
 
         channels = SalesChannel.objects.all()
@@ -251,7 +252,7 @@ class CropPerformanceView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["active", "complete"]).first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
 
         plantings = (
             Planting.objects.filter(
@@ -378,7 +379,7 @@ class ChannelPerformanceView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["active", "complete"]).first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
         year = year_obj.year
 
         channels = SalesChannel.objects.all()
@@ -571,7 +572,7 @@ class SeasonSummaryView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["active", "complete"]).first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
         year = year_obj.year
 
         # All plantings
@@ -761,7 +762,7 @@ class CropMapView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year
 
         week_num = kwargs.get("week", date.today().isocalendar()[1])
@@ -915,7 +916,7 @@ class BlockUtilizationView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["active", "complete"]).first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
 
         blocks = Block.objects.all().order_by("walk_route_order", "name")
 
@@ -1049,7 +1050,7 @@ class PlanVsActualView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["active", "complete"]).first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
 
         plantings = (
             Planting.objects.filter(
@@ -1159,7 +1160,7 @@ class CropMapPrintView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
         year = year_obj.year
 
         week_num = kwargs.get("week", date.today().isocalendar()[1])

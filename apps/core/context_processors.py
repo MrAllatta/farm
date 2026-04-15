@@ -1,7 +1,7 @@
 """core/context_processors.py"""
 
 from datetime import date
-from planning.models import PlanningYear
+from core.planning_year import resolve_current_planning_year
 
 CROP_TYPE_COLORS = {
     "Tomatoes": "#fee2e2",
@@ -25,7 +25,7 @@ CROP_TYPE_COLORS = {
 
 def planning_context(request):
     """Add current planning year, week, and crop colors to every template."""
-    year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+    year_obj = resolve_current_planning_year()
 
     today = date.today()
     current_week = today.isocalendar()[1]

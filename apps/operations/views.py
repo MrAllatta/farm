@@ -10,7 +10,8 @@ from isoweek import Week
 from django import forms
 from reference.models import CropInfo, CropSalesFormat
 from operations.models import InventoryLedger
-from planning.models import Planting, HarvestEvent, PlanningYear
+from planning.models import Planting, HarvestEvent
+from core.planning_year import resolve_current_planning_year
 from decimal import Decimal
 
 
@@ -44,7 +45,7 @@ class WeeklyHarvestEntryView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status="active").first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
         week_num = kwargs.get("week", date.today().isocalendar()[1])
         year = year_obj.year if year_obj else date.today().year
 
@@ -125,7 +126,7 @@ class WeeklyHarvestEntryView(TemplateView):
             return redirect(f"/admin/login/?next={request.path}")
         if not request.user.is_staff:
             return HttpResponse(status=403)
-        year_obj = PlanningYear.objects.filter(status="active").first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
 
         updated = 0
         for key, value in request.POST.items():
@@ -397,7 +398,7 @@ class FieldWalkView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status="active").first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
         today = date.today()
 
         # Active plantings ordered by walk route
@@ -485,7 +486,7 @@ class FieldWalkView(TemplateView):
             return redirect(f"/admin/login/?next={request.path}")
         if not request.user.is_staff:
             return HttpResponse(status=403)
-        year_obj = PlanningYear.objects.filter(status="active").first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
         today = date.today()
 
         notes_created = 0
@@ -549,7 +550,7 @@ class SeedOrderReportView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = resolve_current_planning_year()
 
         plantings = (
             Planting.objects.filter(
