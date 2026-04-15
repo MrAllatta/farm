@@ -139,7 +139,8 @@ class Command(BaseCommand):
         self.end_year = options["end_year"]
         requested_summary_path = options.get("summary_json")
         self.run_started_at = datetime.utcnow()
-        self.run_id = self.run_started_at.strftime("%Y%m%dT%H%M%S")
+        # Use microsecond precision to avoid artifact path collisions on rapid retries.
+        self.run_id = self.run_started_at.strftime("%Y%m%dT%H%M%S%f")
         self.summary_json_path = self._resolve_summary_json_path(requested_summary_path)
         self.row_errors = []
 
@@ -1718,6 +1719,12 @@ class Command(BaseCommand):
             f"\n  TOTALS: created={total_created:3} updated={total_updated:3} "
             f"skipped={total_skipped:3} error={total_error:3}\n"
         )
+        if total_error > 0:
+            # Print deterministic owner/escalation routing so operators can triage
+            # directly from terminal output without opening JSON artifacts first.
+            failure_signatures = self._build_failure_signatures(status="ok", fatal_error=None)
+            escalation_summary = self._build_escalation_summary(failure_signatures)
+            self._print_escalation_handoff(escalation_summary)
 
         if self.validate_only:
             self.stdout.write(self.style.WARNING("\n⚠️  VALIDATE-ONLY/PREFLIGHT — no data saved"))
@@ -1725,6 +1732,17 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("\n⚠️  DRY-RUN — no data saved"))
         else:
             self.stdout.write(self.style.SUCCESS("\n✓ All data saved successfully"))
+
+    def _print_escalation_handoff(self, escalation_summary):
+        """Emit operator-facing escalation buckets for rapid incident routing."""
+        self.stdout.write("\n🚨 ESCALATION HANDOFF")
+        for bucket in escalation_summary:
+            signatures = ",".join(bucket["signatures"])
+            self.stdout.write(
+                "  - "
+                f"{bucket['severity']} | {bucket['owner_area']} | {bucket['owner_team']} | "
+                f"{bucket['escalation_path']} | count={bucket['count']} | signatures={signatures}"
+            )
 
     def _normalized_outcomes(self, model_stats):
         """Normalize legacy counters to canonical outcomes."""

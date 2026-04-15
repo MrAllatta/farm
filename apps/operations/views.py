@@ -3,7 +3,7 @@
 from django.views.generic import TemplateView, FormView
 from django.shortcuts import redirect
 from django.contrib import messages
-from django.db.models import Q, Max, Subquery, OuterRef
+from django.db.models import Q, Max, Subquery, OuterRef, Sum
 from datetime import date, timedelta
 from isoweek import Week
 from django import forms

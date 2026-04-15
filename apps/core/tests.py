@@ -713,6 +713,27 @@ class ImportHistoricalDataCommandTests(TestCase):
             with self.subTest(signal=message):
                 self.assertIn(message, stderr)
 
+    def test_repo_mismatch_fixture_validate_only_prints_escalation_handoff_buckets(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary, stdout, _stderr = self._run_import_with_output(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-validate-escalation-handoff.json",
+                "--validate-only",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        self.assertIn("🚨 ESCALATION HANDOFF", stdout)
+        self.assertIn(
+            "high | reference-data | import-pipeline | ops-oncall -> reference-data | count=11 | signatures=stale_fk",
+            stdout,
+        )
+        self.assertIn(
+            "medium | data-contracts | import-pipeline | ops-oncall -> data-contracts | count=4 | signatures=namespace_mismatch",
+            stdout,
+        )
+
     def test_repo_mismatch_fixture_matrix_row_error_classes_and_counts_are_deterministic(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
         with TemporaryDirectory() as output_dir:
@@ -1031,6 +1052,16 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(Block.objects.count(), 0)
             self.assertEqual(CropInfo.objects.count(), 0)
             self.assertEqual(CropBySeason.objects.count(), 0)
+
+    def test_summary_run_id_uses_microsecond_precision_for_retry_safety(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            first_summary = self._run_import(data_dir, Path(output_dir) / "summary-first-run-id.json", "--validate-only")
+            second_summary = self._run_import(data_dir, Path(output_dir) / "summary-second-run-id.json", "--validate-only")
+
+        self.assertEqual(len(first_summary["run"]["run_id"]), 21)
+        self.assertEqual(len(second_summary["run"]["run_id"]), 21)
+        self.assertNotEqual(first_summary["run"]["run_id"], second_summary["run"]["run_id"])
 
     def test_validate_only_takes_precedence_when_dry_run_flag_is_also_passed(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -1597,6 +1628,63 @@ class BetaGateEvidenceTests(TestCase):
             third_summary["results"]["escalation_summary"],
         )
 
+    def test_mismatch_preflight_is_readonly_against_existing_seed_data(self):
+        CropInfo.objects.create(
+            name="Baseline Crop",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        Block.objects.create(
+            name="Baseline Block",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet="3.0",
+            bedfeet_per_bed=50,
+        )
+        baseline_counts = {
+            "blocks": Block.objects.count(),
+            "crops": CropInfo.objects.count(),
+            "crop_seasons": CropBySeason.objects.count(),
+            "channels": SalesChannel.objects.count(),
+            "products": CropSalesFormat.objects.count(),
+            "years": PlanningYear.objects.count(),
+            "plantings": Planting.objects.count(),
+        }
+
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-preflight-readonly-seeded.json",
+                "--preflight",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        self.assertEqual(summary["results"]["totals"]["error"], 15)
+        self.assertEqual(summary["results"]["totals"]["created"], 0)
+        self.assertEqual(
+            baseline_counts,
+            {
+                "blocks": Block.objects.count(),
+                "crops": CropInfo.objects.count(),
+                "crop_seasons": CropBySeason.objects.count(),
+                "channels": SalesChannel.objects.count(),
+                "products": CropSalesFormat.objects.count(),
+                "years": PlanningYear.objects.count(),
+                "plantings": Planting.objects.count(),
+            },
+        )
+
     def test_failure_signatures_contract_maps_each_import_error_to_owner_and_escalation(self):
         fixture_dir = self.fixture_root / "mismatch"
         manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
@@ -1630,3 +1718,72 @@ class BetaGateEvidenceTests(TestCase):
             self.assertTrue(item["escalation_path"])
             self.assertTrue(item["recovery"])
             self.assertIn(item["severity"], {"high", "medium"})
+
+    def test_mismatch_apply_repeats_preserve_reference_and_planning_model_counts(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            self._run_import(str(fixture_dir), Path(output_dir) / "summary-mismatch-apply-first-counts.json")
+            counts_after_first = {
+                "blocks": Block.objects.count(),
+                "crops": CropInfo.objects.count(),
+                "crop_seasons": CropBySeason.objects.count(),
+                "channels": SalesChannel.objects.count(),
+                "products": CropSalesFormat.objects.count(),
+                "years": PlanningYear.objects.count(),
+                "plantings": Planting.objects.count(),
+            }
+            second_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-apply-second-counts.json",
+            )
+            third_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-apply-third-counts.json",
+            )
+
+        self.assertEqual(second_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(third_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(
+            counts_after_first,
+            {
+                "blocks": Block.objects.count(),
+                "crops": CropInfo.objects.count(),
+                "crop_seasons": CropBySeason.objects.count(),
+                "channels": SalesChannel.objects.count(),
+                "products": CropSalesFormat.objects.count(),
+                "years": PlanningYear.objects.count(),
+                "plantings": Planting.objects.count(),
+            },
+        )
+
+    def test_critical_workflow_integration_keeps_operational_views_reachable_after_writes(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": planting.crop_id,
+                "event_type": "return_in",
+                "quantity": "5.00",
+                "notes": "gate workflow views smoke",
+            },
+        )
+        self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "90.00",
+                "total_card": "40.00",
+                "notes": "gate workflow views smoke",
+            },
+        )
+
+        for route_name, kwargs in [
+            ("operations:inventory", {}),
+            ("sales:market_entry_date", {"channel_id": channel.id, "sale_date": "2026-06-14"}),
+            ("reports:season_summary", {}),
+        ]:
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name, kwargs=kwargs))
+                self.assertEqual(response.status_code, 200)
