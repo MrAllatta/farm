@@ -207,13 +207,15 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(summary["run"]["atomic_apply"], expected_atomic_apply)
         self.assertEqual(
             set(summary["results"].keys()),
-            {"models", "totals", "row_errors", "failure_signatures"},
+            {"models", "totals", "row_errors", "failure_signatures", "escalation_summary"},
         )
         self.assertEqual(set(summary["results"]["totals"].keys()), {"created", "updated", "skipped", "error"})
         self.assertIsInstance(summary["results"]["row_errors"], list)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
+        self.assertIsInstance(summary["results"]["escalation_summary"], list)
         self._assert_row_error_payload_contract(summary["results"]["row_errors"])
         self._assert_failure_signature_payload_contract(summary["results"]["failure_signatures"])
+        self._assert_escalation_summary_payload_contract(summary["results"]["escalation_summary"])
 
         model_totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
         for model_counts in summary["results"]["models"].values():
@@ -282,6 +284,29 @@ class ImportHistoricalDataCommandTests(TestCase):
                 isinstance(item["example"]["field_path"], str) and item["example"]["field_path"]
             )
             self.assertTrue(isinstance(item["example"]["message"], str) and item["example"]["message"])
+
+    def _assert_escalation_summary_payload_contract(self, escalation_summary):
+        expected_keys = {
+            "owner_area",
+            "owner_team",
+            "severity",
+            "escalation_path",
+            "count",
+            "signatures",
+        }
+        for item in escalation_summary:
+            self.assertEqual(set(item.keys()), expected_keys)
+            self.assertTrue(isinstance(item["owner_area"], str) and item["owner_area"])
+            self.assertTrue(isinstance(item["owner_team"], str) and item["owner_team"])
+            self.assertIn(item["severity"], {"high", "medium"})
+            self.assertTrue(isinstance(item["escalation_path"], str) and item["escalation_path"])
+            self.assertIsInstance(item["count"], int)
+            self.assertGreater(item["count"], 0)
+            self.assertIsInstance(item["signatures"], list)
+            self.assertTrue(item["signatures"])
+            self.assertEqual(item["signatures"], sorted(item["signatures"]))
+            for signature in item["signatures"]:
+                self.assertTrue(isinstance(signature, str) and signature)
 
     def test_clean_fixture_validate_only_has_no_writes_and_canonical_outcomes(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -418,6 +443,36 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(signatures["stale_fk"]["owner_team"], "import-pipeline")
             self.assertEqual(signatures["stale_fk"]["severity"], "high")
             self.assertEqual(signatures["stale_fk"]["escalation_path"], "ops-oncall -> reference-data")
+
+    def test_known_mismatch_fixture_emits_grouped_escalation_summary(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_known_mismatch_fixture(data_dir)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-escalation-summary.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            escalation_summary = summary["results"]["escalation_summary"]
+            self._assert_escalation_summary_payload_contract(escalation_summary)
+            self.assertEqual(
+                escalation_summary,
+                [
+                    {
+                        "owner_area": "reference-data",
+                        "owner_team": "import-pipeline",
+                        "severity": "high",
+                        "escalation_path": "ops-oncall -> reference-data",
+                        "count": 2,
+                        "signatures": ["stale_fk"],
+                    },
+                    {
+                        "owner_area": "data-contracts",
+                        "owner_team": "import-pipeline",
+                        "severity": "medium",
+                        "escalation_path": "ops-oncall -> data-contracts",
+                        "count": 1,
+                        "signatures": ["namespace_mismatch"],
+                    },
+                ],
+            )
 
     def test_failure_signature_unknown_code_uses_fallback_ownership_mapping(self):
         from core.management.commands.import_historical_data import Command
