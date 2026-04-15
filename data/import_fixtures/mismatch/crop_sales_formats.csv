@@ -1,0 +1,3 @@
+Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active
+Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true
+Missing Crop,Ghost Bunch,4.00,bunch,1,GHO-BUN,true

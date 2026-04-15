@@ -1,0 +1,23 @@
+{
+  "fixture_pack": "clean",
+  "version": "1.0",
+  "expected": {
+    "validate_only": {
+      "status": "ok",
+      "totals": {
+        "created": 0,
+        "updated": 0,
+        "skipped": 1,
+        "error": 0
+      },
+      "models": {
+        "Block": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 0
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation
 Carrot,Unknown Block,10,30,2.5,4,70,2,12,0.5,,,,,
+Carrot,Unknown Tunnel,10,30,2.5,4,70,2,12,0.5,,,,,
 Missing Crop,Field,10,30,2.5,4,70,2,12,0.5,,,,,
 Carrot,Field,10,30,2.5,4,0,2,12,0.5,,,,,

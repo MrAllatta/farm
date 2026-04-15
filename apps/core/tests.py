@@ -68,6 +68,15 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "Carrot,Field,10,40,1.2,6,0,3,30,na,,,,,",
             ],
         )
+        self._write_csv(
+            data_dir,
+            "crop_sales_formats.csv",
+            [
+                "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                "Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true",
+                "Ghost Crop,Ghost Bunch,4.00,bunch,1,GHO-BUN,true",
+            ],
+        )
 
     def _write_block_type_normalization_fixture(self, data_dir):
         self._write_clean_fixture(data_dir)
@@ -154,6 +163,31 @@ class ImportHistoricalDataCommandTests(TestCase):
                 model_totals[key] += model_counts[key]
         self.assertEqual(summary["results"]["totals"], model_totals)
 
+    def _assert_deterministic_row_errors(self, row_errors, expected_entries):
+        self.assertEqual(len(row_errors), len(expected_entries))
+        for item in row_errors:
+            self.assertEqual(
+                set(item.keys()),
+                {"model", "row", "code", "field_path", "message"},
+            )
+            self.assertIsInstance(item["row"], int)
+            self.assertGreater(item["row"], 0)
+            self.assertTrue(isinstance(item["message"], str) and item["message"])
+
+        self.assertEqual(
+            {
+                (
+                    item["model"],
+                    item["row"],
+                    item["code"],
+                    item["field_path"],
+                    item["message"],
+                )
+                for item in row_errors
+            },
+            expected_entries,
+        )
+
     def test_clean_fixture_validate_only_has_no_writes_and_canonical_outcomes(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_clean_fixture(data_dir)
@@ -238,16 +272,32 @@ class ImportHistoricalDataCommandTests(TestCase):
 
             self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
             row_errors = summary["results"]["row_errors"]
-            self.assertEqual(len(row_errors), 2)
-            self.assertEqual(
-                {(item["code"], item["field_path"], item["row"]) for item in row_errors},
+            self._assert_deterministic_row_errors(
+                row_errors,
                 {
-                    ("namespace_mismatch", "crop_by_season.block_type", 1),
-                    ("stale_fk", "crop_by_season.crop", 2),
+                    (
+                        "CropBySeason",
+                        1,
+                        "namespace_mismatch",
+                        "crop_by_season.block_type",
+                        "unsupported block type 'Unknown Block'",
+                    ),
+                    (
+                        "CropBySeason",
+                        2,
+                        "stale_fk",
+                        "crop_by_season.crop",
+                        "crop not found 'Ghost Crop'",
+                    ),
+                    (
+                        "CropSalesFormat",
+                        2,
+                        "stale_fk",
+                        "crop_sales_formats.crop",
+                        "crop not found 'Ghost Crop'",
+                    ),
                 },
             )
-            self.assertTrue(all(item["model"] == "CropBySeason" for item in row_errors))
-            self.assertTrue(all(isinstance(item["message"], str) and item["message"] for item in row_errors))
 
     def test_repo_mismatch_fixture_matrix_has_stale_fk_and_namespace_mismatch_signals(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -259,10 +309,95 @@ class ImportHistoricalDataCommandTests(TestCase):
             )
 
             self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
-            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 2)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 3)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
-            row_error_codes = {item["code"] for item in summary["results"]["row_errors"]}
-            self.assertEqual(row_error_codes, {"namespace_mismatch", "stale_fk"})
+            self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 1)
+            row_errors = summary["results"]["row_errors"]
+            self._assert_deterministic_row_errors(
+                row_errors,
+                {
+                    (
+                        "CropBySeason",
+                        1,
+                        "namespace_mismatch",
+                        "crop_by_season.block_type",
+                        "unsupported block type 'Unknown Block'",
+                    ),
+                    (
+                        "CropBySeason",
+                        2,
+                        "namespace_mismatch",
+                        "crop_by_season.block_type",
+                        "unsupported block type 'Unknown Tunnel'",
+                    ),
+                    (
+                        "CropBySeason",
+                        3,
+                        "stale_fk",
+                        "crop_by_season.crop",
+                        "crop not found 'Missing Crop'",
+                    ),
+                    (
+                        "CropSalesFormat",
+                        2,
+                        "stale_fk",
+                        "crop_sales_formats.crop",
+                        "crop not found 'Missing Crop'",
+                    ),
+                },
+            )
+            # Deterministic ordering from importer pass order helps gate snapshots stay stable.
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 2])
+
+    def test_repo_clean_fixture_pack_validate_only_matches_manifest_expectations(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "clean"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-clean-fixture-preflight.json",
+                "--validate-only",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+        expected = manifest["expected"]["validate_only"]
+        self.assertEqual(summary["status"], expected["status"])
+        self.assertEqual(summary["results"]["totals"], expected["totals"])
+        self.assertEqual(summary["results"]["models"]["Block"], expected["models"]["Block"])
+
+    def test_repo_mismatch_fixture_pack_apply_matches_manifest_expectations(self):
+        fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
+        fixture_dir = fixture_root / "mismatch"
+        manifest = json.loads((fixture_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-mismatch-fixture-apply.json",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        expected = manifest["expected"]["apply"]
+        self.assertEqual(summary["status"], expected["status"])
+        self.assertEqual(summary["results"]["totals"], expected["totals"])
+        self.assertEqual(summary["results"]["models"]["Block"], expected["models"]["Block"])
+        self.assertEqual(summary["results"]["models"]["CropBySeason"], expected["models"]["CropBySeason"])
+        self.assertEqual(
+            summary["results"]["models"]["CropSalesFormat"],
+            expected["models"]["CropSalesFormat"],
+        )
+        self.assertEqual(
+            sorted(
+                (item["model"], item["code"], item["field_path"])
+                for item in summary["results"]["row_errors"]
+            ),
+            sorted(
+                (item["model"], item["code"], item["field_path"])
+                for item in expected["row_errors"]
+            ),
+        )
 
     def test_known_mismatch_fixture_has_deterministic_outcomes_across_apply_and_preflight(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -291,8 +426,16 @@ class ImportHistoricalDataCommandTests(TestCase):
                 apply_summary["results"]["models"]["CropBySeason"],
                 {"created": 0, "updated": 0, "skipped": 1, "error": 2},
             )
-            self.assertEqual(preflight_summary["results"]["totals"]["error"], 2)
-            self.assertEqual(apply_summary["results"]["totals"]["error"], 2)
+            self.assertEqual(
+                preflight_summary["results"]["models"]["CropSalesFormat"],
+                {"created": 0, "updated": 0, "skipped": 1, "error": 1},
+            )
+            self.assertEqual(
+                apply_summary["results"]["models"]["CropSalesFormat"],
+                {"created": 1, "updated": 0, "skipped": 0, "error": 1},
+            )
+            self.assertEqual(preflight_summary["results"]["totals"]["error"], 3)
+            self.assertEqual(apply_summary["results"]["totals"]["error"], 3)
             self.assertEqual(CropBySeason.objects.count(), 0)
 
     def test_crop_by_season_block_type_normalization_accepts_case_and_spacing_variants(self):
@@ -451,17 +594,25 @@ class ImportReferenceDataCommandTests(TestCase):
 
 
 class PrimaryRouteSmokeTests(TestCase):
+    REQUIRED_NAMESPACES = {"core", "reference", "planning", "operations", "sales", "reports"}
     PRIMARY_ROUTES = [
         ("core:dashboard", {}),
         ("reference:index", {}),
         ("planning:matrix", {}),
+        ("planning:matrix_date", {"date": "2026-03-15"}),
         ("planning:matrix_week", {"week": 12}),
         ("operations:harvest_entry_current", {}),
         ("operations:harvest_entry_week", {"week": 12}),
+        ("operations:field_walk_current", {}),
         ("operations:inventory", {}),
         ("sales:market_entry", {}),
+        ("sales:market_entry_channel", {"channel_id": 1}),
+        ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
         ("reports:crop_map", {}),
+        ("reports:crop_map_week", {"week": 12}),
         ("reports:crop_performance", {}),
+        ("reports:channel_performance", {}),
+        ("reports:block_utilization", {}),
     ]
 
     @classmethod
@@ -482,7 +633,11 @@ class PrimaryRouteSmokeTests(TestCase):
             with self.subTest(route=route_name):
                 response = self.client.get(reverse(route_name, kwargs=kwargs))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, "<html", status_code=200)
+                self.assertIn("text/html", response.headers.get("Content-Type", ""))
+
+    def test_primary_navigation_routes_cover_required_namespaces(self):
+        route_namespaces = {route_name.split(":")[0] for route_name, _ in self.PRIMARY_ROUTES}
+        self.assertEqual(route_namespaces, self.REQUIRED_NAMESPACES)
 
     def test_primary_navigation_routes_support_head_without_server_errors(self):
         for route_name, kwargs in self.PRIMARY_ROUTES:
@@ -504,6 +659,17 @@ class PrimaryRouteSmokeTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response["Location"])
 
-    def test_unknown_route_returns_404(self):
-        response = self.client.get("/definitely-not-a-real-route/")
-        self.assertEqual(response.status_code, 404)
+    def test_admin_login_boundary_is_reachable(self):
+        response = self.client.get("/admin/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<form", status_code=200)
+
+    def test_unknown_route_baseline_returns_404_for_get_head_and_query_variant(self):
+        route = "/definitely-not-a-real-route/"
+        responses = [
+            self.client.get(route),
+            self.client.head(route),
+            self.client.get(f"{route}?smoke_gate=1"),
+        ]
+        for response in responses:
+            self.assertEqual(response.status_code, 404)

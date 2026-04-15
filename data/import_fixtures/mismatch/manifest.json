@@ -1,0 +1,57 @@
+{
+  "fixture_pack": "mismatch",
+  "version": "1.0",
+  "expected": {
+    "apply": {
+      "status": "ok",
+      "totals": {
+        "created": 3,
+        "updated": 0,
+        "skipped": 1,
+        "error": 4
+      },
+      "models": {
+        "Block": {
+          "created": 1,
+          "updated": 0,
+          "skipped": 0,
+          "error": 0
+        },
+        "CropBySeason": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 3
+        },
+        "CropSalesFormat": {
+          "created": 1,
+          "updated": 0,
+          "skipped": 0,
+          "error": 1
+        }
+      },
+      "row_errors": [
+        {
+          "model": "CropBySeason",
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type"
+        },
+        {
+          "model": "CropBySeason",
+          "code": "stale_fk",
+          "field_path": "crop_by_season.crop"
+        },
+        {
+          "model": "CropBySeason",
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type"
+        },
+        {
+          "model": "CropSalesFormat",
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop"
+        }
+      ]
+    }
+  }
+}
