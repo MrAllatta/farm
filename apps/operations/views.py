@@ -120,6 +120,8 @@ class WeeklyHarvestEntryView(TemplateView):
 
     def post(self, request, **kwargs):
         """Handle batch harvest entry submission."""
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
         year_obj = PlanningYear.objects.filter(status="active").first()
 
         updated = 0
@@ -332,6 +334,8 @@ class InventoryTransactionView(FormView):
     form_class = TransactionForm
 
     def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={self.request.path}")
         crop = form.cleaned_data["crop"]
         event_type = form.cleaned_data["event_type"]
         raw_qty = form.cleaned_data["quantity"]
@@ -472,6 +476,8 @@ class FieldWalkView(TemplateView):
 
     def post(self, request, **kwargs):
         """Handle field walk note submissions."""
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
         year_obj = PlanningYear.objects.filter(status="active").first()
         today = date.today()
 

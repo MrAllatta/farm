@@ -886,6 +886,8 @@ class PlantingReviseView(View):
         return render(request, self.template_name, ctx)
 
     def post(self, request, pk):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
         original = get_object_or_404(Planting, pk=pk)
         year_obj = original.planning_year
 
@@ -996,6 +998,8 @@ class PlantingStatusUpdateView(View):
     """HTMX: quick status update without full form."""
 
     def post(self, request, pk):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
         planting = get_object_or_404(Planting, pk=pk)
         new_status = request.POST.get("status")
 

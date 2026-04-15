@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from io import StringIO
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -1661,8 +1662,17 @@ class BetaGateEvidenceTests(TestCase):
         self.assertIn("atomic_apply", summary["run"])
         self.assertTrue({"models", "totals", "row_errors"} <= set(summary["results"].keys()))
 
+    def _authenticate_operator(self):
+        user = get_user_model().objects.create_user(
+            username="beta-operator",
+            email="beta-operator@example.com",
+            password="test-pass-123",
+        )
+        self.client.force_login(user)
+
     def test_critical_workflow_integration_path_persists_planning_operations_and_sales_records(self):
         planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
 
         status_response = self.client.post(
             reverse("planning:planting_status", kwargs={"pk": planting.pk}),
@@ -1949,6 +1959,7 @@ class BetaGateEvidenceTests(TestCase):
 
     def test_critical_workflow_integration_keeps_operational_views_reachable_after_writes(self):
         planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
         self.client.post(
             reverse("operations:inventory_add"),
             {
@@ -2038,6 +2049,7 @@ class BetaGateEvidenceTests(TestCase):
             status="planned",
         )
         channel = seeded_channel
+        self._authenticate_operator()
 
         status_response = self.client.post(
             reverse("planning:planting_status", kwargs={"pk": planting.pk}),
@@ -2070,3 +2082,40 @@ class BetaGateEvidenceTests(TestCase):
         )
         self.assertEqual(sales_response.status_code, 302)
         self.assertEqual(QuickSalesEntry.objects.count(), 1)
+
+    def test_anonymous_mutations_redirect_to_admin_login_boundary(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        inventory_crop = planting.crop
+
+        status_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(status_response.status_code, 302)
+        self.assertIn("/admin/login/", status_response["Location"])
+
+        inventory_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": inventory_crop.id,
+                "event_type": "return_in",
+                "quantity": "2.00",
+                "notes": "anonymous boundary check",
+            },
+        )
+        self.assertEqual(inventory_response.status_code, 302)
+        self.assertIn("/admin/login/", inventory_response["Location"])
+
+        sales_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "10.00",
+                "total_card": "5.00",
+                "notes": "anonymous boundary check",
+            },
+        )
+        self.assertEqual(sales_response.status_code, 302)
+        self.assertIn("/admin/login/", sales_response["Location"])

@@ -120,6 +120,8 @@ class MarketSalesEntryView(TemplateView):
         return ctx
 
     def post(self, request, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
         channel_id = request.POST.get("channel_id")
         sale_date = date.fromisoformat(request.POST.get("sale_date"))
         entry_mode = request.POST.get("mode", "quick")
