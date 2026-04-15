@@ -1586,5 +1586,7 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(emitted_signatures, {"namespace_mismatch", "stale_fk"})
         for item in summary["results"]["failure_signatures"]:
             self.assertTrue(item["owner_area"])
+            self.assertTrue(item["owner_team"])
             self.assertTrue(item["escalation_path"])
+            self.assertTrue(item["recovery"])
             self.assertIn(item["severity"], {"high", "medium"})
