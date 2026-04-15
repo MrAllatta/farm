@@ -27,10 +27,10 @@
     "data_dir": "farm/data/import_fixtures/clean",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-15T17:20:21.868673Z",
-    "run_id": "20260415T172021",
+    "finished_at": "2026-04-15T17:22:43.246106Z",
+    "run_id": "20260415T172243",
     "start_year": 2021,
-    "started_at": "2026-04-15T17:20:21.857478Z",
+    "started_at": "2026-04-15T17:22:43.235308Z",
     "validate_only": true,
     "verbose": false
   },
