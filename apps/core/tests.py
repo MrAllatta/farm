@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 
 from django.core.management import call_command
 from django.test import TestCase
+from django.urls import reverse
 
 from planning.models import Planting, PlanningYear
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
@@ -65,6 +66,17 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "Carrot,Unknown Block,10,40,1.2,6,65,3,30,na,,,,,",
                 "Ghost Crop,Field,10,40,1.2,6,65,3,30,na,,,,,",
                 "Carrot,Field,10,40,1.2,6,0,3,30,na,,,,,",
+            ],
+        )
+
+    def _write_block_type_normalization_fixture(self, data_dir):
+        self._write_clean_fixture(data_dir)
+        self._write_csv(
+            data_dir,
+            "crop_by_season.csv",
+            [
+                "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                "Carrot,  high    tunnel  ,10,40,1.2,6,65,3,30,na,,,,,",
             ],
         )
 
@@ -195,6 +207,10 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(crop_by_season["created"], 0)
             self.assertEqual(crop_by_season["updated"], 0)
             self.assertEqual(CropBySeason.objects.count(), 0)
+            self.assertEqual(Block.objects.count(), 0)
+            self.assertEqual(CropInfo.objects.count(), 0)
+            self.assertEqual(SalesChannel.objects.count(), 0)
+            self.assertEqual(CropSalesFormat.objects.count(), 0)
 
     def test_known_mismatch_fixture_apply_reports_expected_skips_and_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -208,6 +224,53 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(crop_by_season["created"], 0)
             self.assertEqual(crop_by_season["updated"], 0)
             self.assertEqual(CropBySeason.objects.count(), 0)
+            # Apply mode should still persist valid non-dependent reference rows.
+            self.assertEqual(Block.objects.count(), 1)
+            self.assertEqual(CropInfo.objects.count(), 1)
+            self.assertEqual(SalesChannel.objects.count(), 1)
+            self.assertEqual(CropSalesFormat.objects.count(), 1)
+
+    def test_known_mismatch_fixture_has_deterministic_outcomes_across_apply_and_preflight(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_known_mismatch_fixture(data_dir)
+            preflight_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mismatch-preflight-deterministic.json",
+                "--preflight",
+            )
+            apply_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mismatch-apply-deterministic.json",
+            )
+
+            self.assertEqual(preflight_summary["status"], "ok")
+            self.assertEqual(apply_summary["status"], "ok")
+            self.assertEqual(preflight_summary["fatal_error"], None)
+            self.assertEqual(apply_summary["fatal_error"], None)
+            self.assertEqual(preflight_summary["run"]["validate_only"], True)
+            self.assertEqual(apply_summary["run"]["validate_only"], False)
+            self.assertEqual(
+                preflight_summary["results"]["models"]["CropBySeason"],
+                {"created": 0, "updated": 0, "skipped": 1, "error": 2},
+            )
+            self.assertEqual(
+                apply_summary["results"]["models"]["CropBySeason"],
+                {"created": 0, "updated": 0, "skipped": 1, "error": 2},
+            )
+            self.assertEqual(preflight_summary["results"]["totals"]["error"], 2)
+            self.assertEqual(apply_summary["results"]["totals"]["error"], 2)
+            self.assertEqual(CropBySeason.objects.count(), 0)
+
+    def test_crop_by_season_block_type_normalization_accepts_case_and_spacing_variants(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_block_type_normalization_fixture(data_dir)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-block-type-normalized.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 0)
+            self.assertEqual(summary["results"]["models"]["CropBySeason"]["created"], 1)
+            self.assertEqual(CropBySeason.objects.count(), 1)
+            self.assertEqual(CropBySeason.objects.first().block_type, "high_tunnel")
 
     def test_clean_fixture_apply_is_idempotent_on_repeat_runs(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -269,6 +332,23 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(Block.objects.count(), 0)
             self.assertEqual(CropInfo.objects.count(), 0)
             self.assertEqual(CropBySeason.objects.count(), 0)
+
+    def test_validate_only_takes_precedence_when_dry_run_flag_is_also_passed(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_known_mismatch_fixture(data_dir)
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-validate-precedence.json",
+                "--validate-only",
+                "--dry-run",
+            )
+
+            self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+            crop_by_season = summary["results"]["models"]["CropBySeason"]
+            self.assertEqual(crop_by_season["error"], 2)
+            self.assertEqual(crop_by_season["skipped"], 1)
+            self.assertEqual(CropBySeason.objects.count(), 0)
+            self.assertEqual(Block.objects.count(), 0)
 
     def test_historical_import_resolves_normalized_and_duplicate_channel_product_lookups(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -337,6 +417,14 @@ class ImportReferenceDataCommandTests(TestCase):
 
 
 class PrimaryRouteSmokeTests(TestCase):
+    PRIMARY_ROUTES = [
+        ("core:dashboard", {}),
+        ("planning:matrix", {}),
+        ("operations:harvest_entry_current", {}),
+        ("operations:inventory", {}),
+        ("sales:market_entry", {}),
+    ]
+
     @classmethod
     def setUpTestData(cls):
         PlanningYear.objects.create(year=2026, status="active")
@@ -351,17 +439,24 @@ class PrimaryRouteSmokeTests(TestCase):
         )
 
     def test_primary_navigation_routes_do_not_raise_server_errors(self):
-        routes = [
-            "/",
-            "/planning/",
-            "/operations/harvest/",
-            "/operations/inventory/",
-            "/sales/",
-        ]
+        for route_name, kwargs in self.PRIMARY_ROUTES:
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name, kwargs=kwargs))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "<html", status_code=200)
 
-        for route in routes:
-            with self.subTest(route=route):
-                response = self.client.get(route)
+    def test_primary_navigation_routes_support_head_without_server_errors(self):
+        for route_name, kwargs in self.PRIMARY_ROUTES:
+            with self.subTest(route=route_name):
+                response = self.client.head(reverse(route_name, kwargs=kwargs))
+                self.assertLess(response.status_code, 500)
+                self.assertNotEqual(response.status_code, 404)
+
+    def test_primary_navigation_routes_accept_query_params_without_server_errors(self):
+        for route_name, kwargs in self.PRIMARY_ROUTES:
+            with self.subTest(route=route_name):
+                route = reverse(route_name, kwargs=kwargs)
+                response = self.client.get(f"{route}?smoke_gate=1")
                 self.assertLess(response.status_code, 500)
                 self.assertNotEqual(response.status_code, 404)
 

@@ -132,7 +132,7 @@ class PlanningMatrixView(TemplateView):
                         "planting": p,
                         "label": f"{p.crop.name}",
                         "sublabel": f"b{p.bed_start}-{p.bed_end}",
-                        "col_start": first_visible - weeks[0],
+                        "col_start": first_visible - first_week,
                         "col_span": last_visible - first_visible + 1,
                         "plant_week": plant_week,
                         "harvest_start": harvest_start,

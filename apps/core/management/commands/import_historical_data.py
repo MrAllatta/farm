@@ -204,9 +204,9 @@ class Command(BaseCommand):
         self.stdout.write("Importing blocks...")
 
         type_map = {
-            "Field": "field",
-            "High Tunnel": "high_tunnel",
-            "Greenhouse": "greenhouse",
+            "field": "field",
+            "high tunnel": "high_tunnel",
+            "greenhouse": "greenhouse",
         }
 
         with open(path, "r") as f:
@@ -347,10 +347,11 @@ class Command(BaseCommand):
 
         self.stdout.write("Importing crop by season...")
 
+        # Keys stay normalized because incoming values are casefolded/collapsed.
         type_map = {
-            "Field": "field",
-            "High Tunnel": "high_tunnel",
-            "Greenhouse": "greenhouse",
+            "field": "field",
+            "high tunnel": "high_tunnel",
+            "greenhouse": "greenhouse",
         }
 
         with open(path, "r") as f:
@@ -363,8 +364,12 @@ class Command(BaseCommand):
                     if not crop_name:
                         continue
 
-                    block_type = type_map.get(block_type_raw)
+                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                    block_type = type_map.get(normalized_block_type)
                     if not block_type:
+                        self.stderr.write(
+                            f"    ERROR row {i}: unsupported block type '{block_type_raw}'"
+                        )
                         self.stats["CropBySeason"]["errors"] += 1
                         continue
 
