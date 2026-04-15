@@ -413,14 +413,48 @@ class ImportHistoricalDataCommandTests(TestCase):
             expected["models"]["CropSalesFormat"],
         )
         self.assertEqual(
-            sorted(
-                (item["model"], item["code"], item["field_path"])
+            [
+                (
+                    item["model"],
+                    item["row"],
+                    item["code"],
+                    item["field_path"],
+                    item["message"],
+                )
                 for item in summary["results"]["row_errors"]
-            ),
-            sorted(
-                (item["model"], item["code"], item["field_path"])
+            ],
+            [
+                (
+                    item["model"],
+                    item["row"],
+                    item["code"],
+                    item["field_path"],
+                    item["message"],
+                )
                 for item in expected["row_errors"]
-            ),
+            ],
+        )
+        self.assertEqual(
+            [
+                (
+                    item["model"],
+                    item["row"],
+                    item["code"],
+                    item["field_path"],
+                    item["message"],
+                )
+                for item in summary["results"]["row_errors"]
+            ],
+            [
+                (
+                    item["model"],
+                    item["row"],
+                    item["code"],
+                    item["field_path"],
+                    item["message"],
+                )
+                for item in expected["row_errors"]
+            ],
         )
 
     def test_repo_mismatch_fixture_pack_validate_only_matches_manifest_expectations(self):
@@ -650,34 +684,34 @@ class PrimaryRouteSmokeTests(TestCase):
         "sales": 3,
         "reports": 14,
     }
-    CRITICAL_ROUTE_NAMES = {
-        "core:dashboard",
-        "core:clone_plan_ui",
-        "core:complete_season",
-        "planning:matrix",
-        "planning:planting_create",
-        "planning:planting_detail",
-        "planning:planting_edit",
-        "planning:planting_status",
-        "planning:nursery_schedule",
-        "planning:harvest_calendar",
-        "planning:field_schedule",
-        "operations:harvest_entry_current",
-        "operations:harvest_entry_week",
-        "operations:harvest_entry",
-        "operations:field_walk_current",
-        "operations:field_walk",
-        "operations:inventory",
-        "operations:inventory_add",
-        "sales:market_entry",
-        "sales:market_entry_channel",
-        "sales:market_entry_date",
-        "reports:crop_map",
-        "reports:crop_performance",
-        "reports:seed_order",
-        "reports:season_summary",
-        "reports:plan_vs_actual",
-    }
+    CRITICAL_ROUTES = [
+        ("core:dashboard", {}),
+        ("core:clone_plan_ui", {"source_year": 2026}),
+        ("core:complete_season", {}),
+        ("planning:matrix", {}),
+        ("planning:planting_create", {}),
+        ("planning:planting_detail", {"pk": 1}),
+        ("planning:planting_edit", {"pk": 1}),
+        ("planning:planting_status", {"pk": 1}),
+        ("planning:nursery_schedule", {}),
+        ("planning:harvest_calendar", {}),
+        ("planning:field_schedule", {}),
+        ("operations:harvest_entry_current", {}),
+        ("operations:harvest_entry_week", {"week": 12}),
+        ("operations:harvest_entry", {"pk": 1}),
+        ("operations:field_walk_current", {}),
+        ("operations:field_walk", {"pk": 1}),
+        ("operations:inventory", {}),
+        ("operations:inventory_add", {}),
+        ("sales:market_entry", {}),
+        ("sales:market_entry_channel", {"channel_id": 1}),
+        ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
+        ("reports:crop_map", {}),
+        ("reports:crop_performance", {}),
+        ("reports:seed_order", {}),
+        ("reports:season_summary", {}),
+        ("reports:plan_vs_actual", {}),
+    ]
     PRIMARY_ROUTES = [
         ("core:dashboard", {}),
         ("reference:index", {}),
@@ -722,21 +756,32 @@ class PrimaryRouteSmokeTests(TestCase):
         route_namespaces = {route_name.split(":")[0] for route_name, _ in self.PRIMARY_ROUTES}
         self.assertEqual(route_namespaces, self.REQUIRED_NAMESPACES)
 
-    def test_primary_navigation_routes_meet_minimum_route_breadth_by_namespace(self):
-        namespace_counts = {}
-        for route_name, _ in self.PRIMARY_ROUTES:
-            namespace = route_name.split(":")[0]
-            namespace_counts[namespace] = namespace_counts.get(namespace, 0) + 1
+    def test_registered_route_surface_meets_minimum_route_breadth_by_namespace(self):
+        from core import urls as core_urls
+        from operations import urls as operations_urls
+        from planning import urls as planning_urls
+        from reference import urls as reference_urls
+        from reports import urls as reports_urls
+        from sales import urls as sales_urls
+
+        namespace_counts = {
+            "core": len(core_urls.urlpatterns),
+            "reference": len(reference_urls.urlpatterns),
+            "planning": len(planning_urls.urlpatterns),
+            "operations": len(operations_urls.urlpatterns),
+            "sales": len(sales_urls.urlpatterns),
+            "reports": len(reports_urls.urlpatterns),
+        }
         self.assertEqual(set(namespace_counts.keys()), self.REQUIRED_NAMESPACES)
-        for namespace, min_count in self.MIN_ROUTE_BREADTH_BY_NAMESPACE.items():
+        for namespace, min_count in self.MIN_REGISTERED_ROUTES_BY_NAMESPACE.items():
             with self.subTest(namespace=namespace):
                 self.assertGreaterEqual(namespace_counts.get(namespace, 0), min_count)
 
     def test_primary_navigation_routes_include_named_urls_for_expected_surface(self):
-        resolver = get_resolver()
-        for route_name, _ in self.PRIMARY_ROUTES:
+        for route_name, kwargs in self.CRITICAL_ROUTES:
             with self.subTest(route=route_name):
-                self.assertIn(route_name, resolver.reverse_dict)
+                resolved = reverse(route_name, kwargs=kwargs)
+                self.assertTrue(resolved)
 
     def test_primary_navigation_routes_support_head_without_server_errors(self):
         for route_name, kwargs in self.PRIMARY_ROUTES:
