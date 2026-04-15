@@ -1,3 +1,6 @@
-from django.test import TestCase
+from django.test import SimpleTestCase
 
-# Create your tests here.
+
+class PlanningSmokeTests(SimpleTestCase):
+    def test_smoke(self):
+        self.assertTrue(True)

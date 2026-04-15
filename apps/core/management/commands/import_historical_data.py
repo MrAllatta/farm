@@ -11,6 +11,7 @@ Usage:
 """
 
 import csv
+import json
 import os
 import sys
 from decimal import Decimal, InvalidOperation
@@ -58,6 +59,21 @@ class Command(BaseCommand):
             help="Parse and validate without saving any data",
         )
         parser.add_argument(
+            "--validate-only",
+            action="store_true",
+            help="Run full validation preflight without writing data",
+        )
+        parser.add_argument(
+            "--preflight",
+            action="store_true",
+            help="Alias for --validate-only",
+        )
+        parser.add_argument(
+            "--summary-json",
+            type=str,
+            help="Write structured import summary artifact to this path",
+        )
+        parser.add_argument(
             "--verbose",
             action="store_true",
             help="Detailed per-row output",
@@ -65,10 +81,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.data_dir = options["data_dir"]
-        self.dry_run = options["dry_run"]
+        self.validate_only = bool(
+            options["validate_only"] or options["preflight"] or options["dry_run"]
+        )
+        self.dry_run = self.validate_only
         self.verbose = options["verbose"]
         self.start_year = options["start_year"]
         self.end_year = options["end_year"]
+        self.summary_json_path = options.get("summary_json")
+        self.run_started_at = datetime.utcnow()
 
         # Track statistics
         self.stats = defaultdict(lambda: {"processed": 0, "created": 0, "skipped": 0, "errors": 0})
@@ -85,8 +106,8 @@ class Command(BaseCommand):
         if not os.path.isdir(self.data_dir):
             raise CommandError(f"Data directory not found: {self.data_dir}")
 
-        if self.dry_run:
-            self.stdout.write(self.style.WARNING("\n⚠️  DRY RUN — no data will be saved\n"))
+        if self.validate_only:
+            self.stdout.write(self.style.WARNING("\n⚠️  VALIDATE-ONLY/PREFLIGHT — no data will be saved\n"))
 
         try:
             self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
@@ -116,10 +137,12 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
             self._print_summary()
+            self._write_summary_json(status="ok")
             self.stdout.write("=" * 70 + "\n")
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"\n❌ FATAL ERROR: {e}"))
+            self._write_summary_json(status="failed", fatal_error=str(e))
             if self.verbose:
                 import traceback
                 traceback.print_exc()
@@ -1350,35 +1373,92 @@ class Command(BaseCommand):
         """Print summary statistics."""
         self.stdout.write("\n📊 SUMMARY\n")
 
-        total_processed = 0
         total_created = 0
+        total_updated = 0
         total_skipped = 0
-        total_errors = 0
+        total_error = 0
 
         for model_name in sorted(self.stats.keys()):
-            s = self.stats[model_name]
-            processed = s.get("processed", 0)
-            created = s.get("created", 0)
-            skipped = s.get("skipped", 0)
-            errors = s.get("errors", 0)
+            normalized = self._normalized_outcomes(self.stats[model_name])
+            created = normalized["created"]
+            updated = normalized["updated"]
+            skipped = normalized["skipped"]
+            error = normalized["error"]
 
-            total_processed += processed
             total_created += created
+            total_updated += updated
             total_skipped += skipped
-            total_errors += errors
+            total_error += error
 
-            status = "✓" if errors == 0 else "⚠"
+            status = "✓" if error == 0 else "⚠"
             self.stdout.write(
-                f"  {status} {model_name:25} processed={processed:3} created={created:3} "
-                f"skipped={skipped:3} errors={errors:3}"
+                f"  {status} {model_name:25} created={created:3} updated={updated:3} "
+                f"skipped={skipped:3} error={error:3}"
             )
 
         self.stdout.write(
-            f"\n  TOTALS: processed={total_processed:3} created={total_created:3} "
-            f"skipped={total_skipped:3} errors={total_errors:3}\n"
+            f"\n  TOTALS: created={total_created:3} updated={total_updated:3} "
+            f"skipped={total_skipped:3} error={total_error:3}\n"
         )
 
-        if self.dry_run:
-            self.stdout.write(self.style.WARNING("\n⚠️  DRY RUN — no data saved"))
+        if self.validate_only:
+            self.stdout.write(self.style.WARNING("\n⚠️  VALIDATE-ONLY/PREFLIGHT — no data saved"))
         else:
             self.stdout.write(self.style.SUCCESS("\n✓ All data saved successfully"))
+
+    def _normalized_outcomes(self, model_stats):
+        """Normalize legacy counters to canonical outcomes."""
+        created = model_stats.get("created", 0)
+        skipped = model_stats.get("skipped", 0)
+        error = model_stats.get("error", 0) + model_stats.get("errors", 0)
+
+        # Historical command used "processed" for update-or-create existing rows.
+        updated = model_stats.get("updated", 0) + model_stats.get("processed", 0)
+        if self.validate_only:
+            skipped += updated
+            updated = 0
+
+        return {
+            "created": created,
+            "updated": updated,
+            "skipped": skipped,
+            "error": error,
+        }
+
+    def _write_summary_json(self, status="ok", fatal_error=None):
+        """Write structured summary artifact when requested."""
+        if not self.summary_json_path:
+            return
+
+        per_model = {}
+        totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
+        for model_name in sorted(self.stats.keys()):
+            normalized = self._normalized_outcomes(self.stats[model_name])
+            per_model[model_name] = normalized
+            for key in totals:
+                totals[key] += normalized[key]
+
+        payload = {
+            "schema_version": "1.0",
+            "status": status,
+            "fatal_error": fatal_error,
+            "run": {
+                "started_at": self.run_started_at.isoformat() + "Z",
+                "finished_at": datetime.utcnow().isoformat() + "Z",
+                "data_dir": self.data_dir,
+                "start_year": self.start_year,
+                "end_year": self.end_year,
+                "validate_only": self.validate_only,
+                "verbose": self.verbose,
+            },
+            "results": {
+                "models": per_model,
+                "totals": totals,
+            },
+        }
+
+        output_dir = os.path.dirname(os.path.abspath(self.summary_json_path))
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+        with open(self.summary_json_path, "w") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
