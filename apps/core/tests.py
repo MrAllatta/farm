@@ -320,7 +320,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["error"], 6)
             self.assertEqual(summary["results"]["models"]["CropBySeason"]["skipped"], 1)
             self.assertEqual(summary["results"]["models"]["CropSalesFormat"]["error"], 3)
-            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 4)
+            self.assertEqual(summary["results"]["models"]["Planting"]["error"], 5)
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
@@ -416,10 +416,17 @@ class ImportHistoricalDataCommandTests(TestCase):
                         "plantings.block",
                         "block not found 'Shadow Block'",
                     ),
+                    (
+                        "Planting",
+                        1,
+                        "stale_fk",
+                        "plantings.planning_year",
+                        "planning year not found '2022'",
+                    ),
                 ],
             )
             # Deterministic ordering from importer pass order helps gate snapshots stay stable.
-            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 6, 2, 3, 4, 1, 2, 3, 4])
+            self.assertEqual([item["row"] for item in row_errors], [1, 2, 3, 4, 5, 6, 2, 3, 4, 1, 2, 3, 4, 1])
 
     def test_repo_mismatch_fixture_matrix_validate_and_apply_have_identical_row_error_payloads(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -476,10 +483,11 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "stale_fk",
                 "stale_fk",
                 "stale_fk",
+                "stale_fk",
             ],
         )
         self.assertEqual(classes.count("namespace_mismatch"), 4)
-        self.assertEqual(classes.count("stale_fk"), 9)
+        self.assertEqual(classes.count("stale_fk"), 10)
 
     def test_repo_mismatch_fixture_matrix_row_error_model_distribution_is_deterministic(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
@@ -500,7 +508,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             {
                 "CropBySeason": 6,
                 "CropSalesFormat": 3,
-                "Planting": 4,
+                "Planting": 5,
             },
         )
 
