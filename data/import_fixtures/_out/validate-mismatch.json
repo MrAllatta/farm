@@ -163,10 +163,10 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-15T18:31:57.615267Z",
-    "run_id": "20260415T183157",
+    "finished_at": "2026-04-15T18:56:38.774175Z",
+    "run_id": "20260415T185638",
     "start_year": 2021,
-    "started_at": "2026-04-15T18:31:57.597520Z",
+    "started_at": "2026-04-15T18:56:38.756142Z",
     "validate_only": true,
     "verbose": false
   },
