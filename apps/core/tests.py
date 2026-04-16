@@ -1904,6 +1904,78 @@ class StageA2OfflineConnectorTests(TestCase):
             ["Spinach", "Corvair", "D1", "", "", "2026-05-11", "50", "Planned"],
         )
 
+    def test_normalizer_can_merge_multiple_source_regions_with_region_defaults(self):
+        rows = [
+            ["Choose Your Sales Channels"],
+            ["CSA Channels"],
+            ["Channel Name", "Days of the Week", "Start Week Num", "End Week Num", "$ Target per week"],
+            ["Farm Share", "Tuesday", "1", "40", "300"],
+            ["", "", "", "", ""],
+            ["Other Channels"],
+            ["Channel Name", "Days of the Week", "Start Week Num", "End Week Num", "$ Target per week"],
+            ["Farm Stand", "Saturday", "1", "52", "500"],
+        ]
+
+        normalized = normalize_rows(
+            rows,
+            required_headers=[
+                "Channel Name",
+                "Days of the Week",
+                "Start Week Num",
+                "End Week Num",
+                "$ Target per week",
+            ],
+            output_headers=[
+                "Channel Name",
+                "Days of the Week",
+                "Start Week Num",
+                "End Week Num",
+                "$ Target per week",
+                "is_csa",
+                "Priority",
+            ],
+            column_map={
+                "Channel Name": "Channel Name",
+                "Days of the Week": "Days of the Week",
+                "Start Week Num": "Start Week Num",
+                "End Week Num": "End Week Num",
+                "$ Target per week": "$ Target per week",
+            },
+            source_regions=[
+                {
+                    "anchor_token": "CSA Channels",
+                    "default_values": {"is_csa": "true", "Priority": "100"},
+                    "stop_on_blank_in": ["Channel Name"],
+                    "prefer_anchor_token": True,
+                },
+                {
+                    "anchor_token": "Other Channels",
+                    "default_values": {"is_csa": "false", "Priority": "100"},
+                    "stop_on_blank_in": ["Channel Name"],
+                    "prefer_anchor_token": True,
+                },
+            ],
+        )
+
+        self.assertEqual(normalized["strategy"], "multi_region")
+        self.assertEqual(normalized["header_row_indexes"], [2, 6])
+        self.assertEqual(
+            normalized["rows"],
+            [
+                [
+                    "Channel Name",
+                    "Days of the Week",
+                    "Start Week Num",
+                    "End Week Num",
+                    "$ Target per week",
+                    "is_csa",
+                    "Priority",
+                ],
+                ["Farm Share", "Tuesday", "1", "40", "300", "true", "100"],
+                ["Farm Stand", "Saturday", "1", "52", "500", "false", "100"],
+            ],
+        )
+
     def test_snapshot_stage_a2_bundle_command_writes_normalized_bundle_and_manifest(self):
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -2182,6 +2254,110 @@ class StageA2OfflineConnectorTests(TestCase):
                     "Status",
                 ],
                 ["Arugula", "Astro", "B1", "11", "11", "2026-04-06", "100", "Planned"],
+            ],
+        )
+
+    def test_snapshot_stage_a2_bundle_can_merge_multi_region_sales_channel_tables(self):
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            raw_dir = temp_path / "raw"
+            raw_dir.mkdir()
+            (raw_dir / "sales-channels.csv").write_text(
+                "\n".join(
+                    [
+                        "Choose Your Sales Channels",
+                        "CSA Channels",
+                        "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week",
+                        "Farm Share,Tuesday,1,40,300",
+                        ",,,,",
+                        "Other Channels",
+                        "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week",
+                        "Farm Stand,Saturday,1,52,500",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            config_path = temp_path / "stage-a2-config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "offline-fixture",
+                        "tabs": [
+                            {
+                                "source_csv": "raw/sales-channels.csv",
+                                "output_path": "reference/sales_channels.csv",
+                                "required_headers": [
+                                    "Channel Name",
+                                    "Days of the Week",
+                                    "Start Week Num",
+                                    "End Week Num",
+                                    "$ Target per week",
+                                ],
+                                "output_headers": [
+                                    "Channel Name",
+                                    "Days of the Week",
+                                    "Start Week Num",
+                                    "End Week Num",
+                                    "$ Target per week",
+                                    "is_csa",
+                                    "Priority",
+                                ],
+                                "column_map": {
+                                    "Channel Name": "Channel Name",
+                                    "Days of the Week": "Days of the Week",
+                                    "Start Week Num": "Start Week Num",
+                                    "End Week Num": "End Week Num",
+                                    "$ Target per week": "$ Target per week",
+                                },
+                                "source_regions": [
+                                    {
+                                        "anchor_token": "CSA Channels",
+                                        "default_values": {"is_csa": "true", "Priority": "100"},
+                                        "stop_on_blank_in": ["Channel Name"],
+                                        "prefer_anchor_token": True,
+                                    },
+                                    {
+                                        "anchor_token": "Other Channels",
+                                        "default_values": {"is_csa": "false", "Priority": "100"},
+                                        "stop_on_blank_in": ["Channel Name"],
+                                        "prefer_anchor_token": True,
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output_dir = temp_path / "bundle"
+            call_command(
+                "snapshot_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            with (output_dir / "reference" / "sales_channels.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                rows = list(csv.reader(handle))
+
+        self.assertEqual(
+            rows,
+            [
+                [
+                    "Channel Name",
+                    "Days of the Week",
+                    "Start Week Num",
+                    "End Week Num",
+                    "$ Target per week",
+                    "is_csa",
+                    "Priority",
+                ],
+                ["Farm Share", "Tuesday", "1", "40", "300", "true", "100"],
+                ["Farm Stand", "Saturday", "1", "52", "500", "false", "100"],
             ],
         )
 

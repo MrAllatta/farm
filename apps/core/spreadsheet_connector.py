@@ -144,6 +144,79 @@ def _apply_row_transforms(rows, row_transforms=None, source_rows=None):
     return transformed_rows
 
 
+def _truncate_source_rows(source_rows, stop_on_blank_in=None):
+    if not stop_on_blank_in or not source_rows:
+        return source_rows
+
+    header = source_rows[0]
+    rows = source_rows[1:]
+    header_index = {_normalize_text(value): index for index, value in enumerate(header)}
+    stop_indexes = []
+    for header_name in stop_on_blank_in:
+        index = header_index.get(_normalize_text(header_name))
+        if index is not None:
+            stop_indexes.append(index)
+
+    if not stop_indexes:
+        return source_rows
+
+    truncated_rows = [header]
+    for row in rows:
+        should_stop = False
+        for index in stop_indexes:
+            value = row[index] if index < len(row) else ""
+            if value == "":
+                should_stop = True
+                break
+        if should_stop:
+            break
+        truncated_rows.append(row)
+    return truncated_rows
+
+
+def _normalize_single_region(
+    rows,
+    required_headers,
+    aliases=None,
+    max_scan_rows=200,
+    anchor_token=None,
+    header_row_index=None,
+    output_headers=None,
+    column_map=None,
+    default_values=None,
+    row_transforms=None,
+    stop_on_blank_in=None,
+    prefer_anchor_token=False,
+):
+    header_index, canonical_header, strategy = detect_header_row(
+        rows,
+        required_headers=required_headers,
+        aliases=aliases,
+        max_scan_rows=max_scan_rows,
+        anchor_token=anchor_token,
+        header_row_index=header_row_index,
+        prefer_anchor_token=prefer_anchor_token,
+    )
+    source_rows = [canonical_header] + rows[header_index + 1 :]
+    source_rows = _truncate_source_rows(source_rows, stop_on_blank_in=stop_on_blank_in)
+    normalized_rows = _project_rows(
+        source_rows,
+        output_headers=output_headers,
+        column_map=column_map,
+        default_values=default_values,
+    )
+    normalized_rows = _apply_row_transforms(
+        normalized_rows,
+        row_transforms=row_transforms,
+        source_rows=source_rows,
+    )
+    return {
+        "header_row_index": header_index,
+        "strategy": strategy,
+        "rows": normalized_rows,
+    }
+
+
 def detect_header_row(
     rows,
     required_headers,
@@ -151,9 +224,20 @@ def detect_header_row(
     max_scan_rows=200,
     anchor_token=None,
     header_row_index=None,
+    prefer_anchor_token=False,
 ):
     normalized_required = {_normalize_text(value) for value in required_headers}
     scan_limit = min(len(rows), max_scan_rows)
+
+    if anchor_token and prefer_anchor_token:
+        normalized_anchor = _normalize_text(anchor_token)
+        for index in range(scan_limit):
+            first_cell = rows[index][0] if rows[index] else ""
+            if normalized_anchor in _normalize_text(first_cell):
+                candidate_index = index + 1
+                if candidate_index < len(rows):
+                    canonical = canonicalize_header_row(rows[candidate_index], aliases=aliases)
+                    return candidate_index, canonical, "anchor_token"
 
     for index in range(scan_limit):
         canonical = canonicalize_header_row(rows[index], aliases=aliases)
@@ -192,31 +276,56 @@ def normalize_rows(
     column_map=None,
     default_values=None,
     row_transforms=None,
+    source_regions=None,
+    stop_on_blank_in=None,
+    prefer_anchor_token=False,
 ):
-    header_index, canonical_header, strategy = detect_header_row(
-        rows,
-        required_headers=required_headers,
-        aliases=aliases,
-        max_scan_rows=max_scan_rows,
-        anchor_token=anchor_token,
-        header_row_index=header_row_index,
-    )
-    source_rows = [canonical_header] + rows[header_index + 1 :]
-    normalized_rows = _project_rows(
-        source_rows,
-        output_headers=output_headers,
-        column_map=column_map,
-        default_values=default_values,
-    )
-    normalized_rows = _apply_row_transforms(
-        normalized_rows,
-        row_transforms=row_transforms,
-        source_rows=source_rows,
-    )
+    if not source_regions:
+        return _normalize_single_region(
+            rows,
+            required_headers=required_headers,
+            aliases=aliases,
+            max_scan_rows=max_scan_rows,
+            anchor_token=anchor_token,
+            header_row_index=header_row_index,
+            output_headers=output_headers,
+            column_map=column_map,
+            default_values=default_values,
+            row_transforms=row_transforms,
+            stop_on_blank_in=stop_on_blank_in,
+            prefer_anchor_token=prefer_anchor_token,
+        )
+
+    region_results = []
+    for region in source_regions:
+        region_results.append(
+            _normalize_single_region(
+                rows,
+                required_headers=region.get("required_headers", required_headers),
+                aliases=region.get("aliases", aliases),
+                max_scan_rows=region.get("max_scan_rows", max_scan_rows),
+                anchor_token=region.get("anchor_token", anchor_token),
+                header_row_index=region.get("header_row_index", header_row_index),
+                output_headers=region.get("output_headers", output_headers),
+                column_map=region.get("column_map", column_map),
+                default_values=region.get("default_values", default_values),
+                row_transforms=region.get("row_transforms", row_transforms),
+                stop_on_blank_in=region.get("stop_on_blank_in", stop_on_blank_in),
+                prefer_anchor_token=region.get("prefer_anchor_token", prefer_anchor_token),
+            )
+        )
+
+    first_rows = region_results[0]["rows"]
+    merged_rows = [first_rows[0]]
+    for result in region_results:
+        rows_without_header = result["rows"][1:]
+        merged_rows.extend(rows_without_header)
+
     return {
-        "header_row_index": header_index,
-        "strategy": strategy,
-        "rows": normalized_rows,
+        "header_row_index": region_results[0]["header_row_index"],
+        "header_row_indexes": [result["header_row_index"] for result in region_results],
+        "strategy": "multi_region",
+        "rows": merged_rows,
     }
 
 
@@ -232,6 +341,9 @@ def normalize_csv_file(
     column_map=None,
     default_values=None,
     row_transforms=None,
+    source_regions=None,
+    stop_on_blank_in=None,
+    prefer_anchor_token=False,
 ):
     with Path(source_path).open("r", encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.reader(handle))
@@ -247,6 +359,9 @@ def normalize_csv_file(
         column_map=column_map,
         default_values=default_values,
         row_transforms=row_transforms,
+        source_regions=source_regions,
+        stop_on_blank_in=stop_on_blank_in,
+        prefer_anchor_token=prefer_anchor_token,
     )
 
     output_path = Path(output_path)

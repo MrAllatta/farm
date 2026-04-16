@@ -51,6 +51,8 @@ class Command(BaseCommand):
                 column_map=tab.get("column_map"),
                 default_values=tab.get("default_values"),
                 row_transforms=tab.get("row_transforms"),
+                source_regions=tab.get("source_regions"),
+                stop_on_blank_in=tab.get("stop_on_blank_in"),
             )
             manifest["tabs"].append(
                 {
