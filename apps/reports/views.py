@@ -113,8 +113,12 @@ class HarvestListPrintView(TemplateView):
 
         ctx.update(
             {
+                "view_title": "Harvest List",
                 "year": year_obj,
                 "week_num": week_num,
+                "prev_week_num": 52 if week_num == 1 else week_num - 1,
+                "next_week_num": 1 if week_num == 52 else week_num + 1,
+                "show_week_navigation": True,
                 "harvest_day": harvest_day,
                 "items": items,
                 "bin_totals": sorted(bin_totals.items()),
