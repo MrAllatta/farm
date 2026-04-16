@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -11,6 +11,7 @@ from django.core.management.base import SystemCheckError
 from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils import timezone
 from django.urls import get_resolver, reverse
 
 from operations.models import InventoryLedger
@@ -21,6 +22,48 @@ from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, Sal
 
 
 class ImportHistoricalDataCommandTests(TestCase):
+    SUMMARY_TOP_LEVEL_KEYS = {"schema_version", "status", "fatal_error", "run", "results"}
+    SUMMARY_RUN_KEYS = {
+        "run_id",
+        "started_at",
+        "finished_at",
+        "data_dir",
+        "start_year",
+        "end_year",
+        "validate_only",
+        "dry_run",
+        "atomic_apply",
+        "verbose",
+    }
+    SUMMARY_RESULTS_KEYS = {
+        "models",
+        "totals",
+        "row_errors",
+        "failure_signatures",
+        "escalation_summary",
+    }
+    MODEL_TOTAL_KEYS = {"created", "updated", "skipped", "error"}
+    ROW_ERROR_KEYS = {"model", "row", "code", "field_path", "message"}
+    FAILURE_SIGNATURE_KEYS = {
+        "signature",
+        "count",
+        "owner_area",
+        "owner_team",
+        "severity",
+        "escalation_path",
+        "recovery",
+        "example",
+    }
+    ESCALATION_SUMMARY_KEYS = {
+        "owner_area",
+        "owner_team",
+        "severity",
+        "escalation_path",
+        "count",
+        "signatures",
+        "recovery_steps",
+    }
+
     def _write_csv(self, data_dir, name, lines):
         Path(data_dir, name).write_text("\n".join(lines), encoding="utf-8")
 
@@ -199,6 +242,54 @@ class ImportHistoricalDataCommandTests(TestCase):
             ],
         )
 
+    def _write_mixed_batch_fixture(self, data_dir, year=2021):
+        self._write_clean_fixture(data_dir)
+        self._write_year_fixture(data_dir, year=year)
+        year_dir = Path(data_dir) / f"year_{year}"
+        self._write_csv(
+            year_dir,
+            "inventory_ledger.csv",
+            [
+                "Crop Name,Event Date,Event Type,Quantity,Storage Location,Notes",
+                "Carrot,2021-06-01,Return In,5,Barn,valid inventory row",
+                ",2021-06-02,Return In,2,Barn,missing crop",
+                "Ghost Crop,2021-06-03,Return In,3,Barn,stale crop",
+                "Carrot,,Return In,4,Barn,missing event date",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "pack_allocations.csv",
+            [
+                "Planting ID,Harvest Date,Channel,Product,Pack Date,Quantity,Notes",
+                "P1,,Farm Stand,Carrot Bunch,2021-06-03,2,valid pack allocation",
+                "P1,,Farm Stand,,2021-06-03,2,missing product",
+                "P1,,Ghost Channel,Carrot Bunch,2021-06-03,2,stale channel",
+                "P1,,Farm Stand,Ghost Product,2021-06-03,2,stale product",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "sales_events.csv",
+            [
+                "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Brought Quantity,Returned Quantity,Notes",
+                "Farm Stand,2021-06-04,Carrot Bunch,1,3.5,1,3.5,3.5,1,0,valid sales event",
+                "Farm Stand,,Carrot Bunch,1,3.5,1,3.5,3.5,1,0,missing sale date",
+                "Ghost Channel,2021-06-04,Carrot Bunch,1,3.5,1,3.5,3.5,1,0,stale channel",
+                "Farm Stand,2021-06-04,Ghost Product,1,3.5,1,3.5,3.5,1,0,stale product",
+            ],
+        )
+        self._write_csv(
+            year_dir,
+            "quick_sales_entries.csv",
+            [
+                "Channel Name,Sale Date,Total Cash,Total Card,Notes",
+                "Farm Stand,2021-06-05,10,5,valid quick sale",
+                ",2021-06-05,10,0,missing channel",
+                "Ghost Channel,2021-06-05,12,0,stale channel",
+            ],
+        )
+
     def _run_import(self, data_dir, summary_path, *extra_args):
         call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
         return json.loads(summary_path.read_text(encoding="utf-8"))
@@ -225,24 +316,11 @@ class ImportHistoricalDataCommandTests(TestCase):
         expected_dry_run=False,
         expected_atomic_apply=None,
     ):
+        self.assertEqual(set(summary.keys()), self.SUMMARY_TOP_LEVEL_KEYS)
         self.assertEqual(summary["schema_version"], "1.3")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
-        self.assertEqual(
-            set(summary["run"].keys()),
-            {
-                "run_id",
-                "started_at",
-                "finished_at",
-                "data_dir",
-                "start_year",
-                "end_year",
-                "validate_only",
-                "dry_run",
-                "atomic_apply",
-                "verbose",
-            },
-        )
+        self.assertEqual(set(summary["run"].keys()), self.SUMMARY_RUN_KEYS)
         self.assertTrue(summary["run"]["run_id"])
         self.assertTrue(summary["run"]["started_at"])
         self.assertTrue(summary["run"]["finished_at"])
@@ -251,11 +329,8 @@ class ImportHistoricalDataCommandTests(TestCase):
         if expected_atomic_apply is None:
             expected_atomic_apply = expected_validate_only or not expected_dry_run
         self.assertEqual(summary["run"]["atomic_apply"], expected_atomic_apply)
-        self.assertEqual(
-            set(summary["results"].keys()),
-            {"models", "totals", "row_errors", "failure_signatures", "escalation_summary"},
-        )
-        self.assertEqual(set(summary["results"]["totals"].keys()), {"created", "updated", "skipped", "error"})
+        self.assertEqual(set(summary["results"].keys()), self.SUMMARY_RESULTS_KEYS)
+        self.assertEqual(set(summary["results"]["totals"].keys()), self.MODEL_TOTAL_KEYS)
         self.assertIsInstance(summary["results"]["row_errors"], list)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
         self.assertIsInstance(summary["results"]["escalation_summary"], list)
@@ -271,10 +346,9 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(summary["results"]["totals"], model_totals)
 
     def _assert_row_error_payload_contract(self, row_errors):
-        expected_key_set = {"model", "row", "code", "field_path", "message"}
         expected_sorted_keys = ["code", "field_path", "message", "model", "row"]
         for item in row_errors:
-            self.assertEqual(set(item.keys()), expected_key_set)
+            self.assertEqual(set(item.keys()), self.ROW_ERROR_KEYS)
             self.assertEqual(sorted(item.keys()), expected_sorted_keys)
             self.assertTrue(isinstance(item["model"], str) and item["model"])
             self.assertIsInstance(item["row"], int)
@@ -303,19 +377,9 @@ class ImportHistoricalDataCommandTests(TestCase):
         )
 
     def _assert_failure_signature_payload_contract(self, failure_signatures):
-        expected_keys = {
-            "signature",
-            "count",
-            "owner_area",
-            "owner_team",
-            "severity",
-            "escalation_path",
-            "recovery",
-            "example",
-        }
         example_keys = {"model", "field_path", "message"}
         for item in failure_signatures:
-            self.assertEqual(set(item.keys()), expected_keys)
+            self.assertEqual(set(item.keys()), self.FAILURE_SIGNATURE_KEYS)
             self.assertTrue(isinstance(item["signature"], str) and item["signature"])
             self.assertIsInstance(item["count"], int)
             self.assertGreater(item["count"], 0)
@@ -332,17 +396,8 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertTrue(isinstance(item["example"]["message"], str) and item["example"]["message"])
 
     def _assert_escalation_summary_payload_contract(self, escalation_summary):
-        expected_keys = {
-            "owner_area",
-            "owner_team",
-            "severity",
-            "escalation_path",
-            "count",
-            "signatures",
-            "recovery_steps",
-        }
         for item in escalation_summary:
-            self.assertEqual(set(item.keys()), expected_keys)
+            self.assertEqual(set(item.keys()), self.ESCALATION_SUMMARY_KEYS)
             self.assertTrue(isinstance(item["owner_area"], str) and item["owner_area"])
             self.assertTrue(isinstance(item["owner_team"], str) and item["owner_team"])
             self.assertIn(item["severity"], {"high", "medium"})
@@ -1144,6 +1199,122 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertGreaterEqual(signature_counts.get("missing_required", 0), 4)
         self.assertGreaterEqual(signature_counts.get("stale_fk", 0), 6)
 
+    def test_mixed_batch_fixture_validate_only_and_apply_keep_partial_failure_evidence_identical(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_mixed_batch_fixture(data_dir, year=2021)
+            validate_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mixed-batch-validate.json",
+                "--validate-only",
+            )
+            apply_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mixed-batch-apply.json",
+            )
+
+        self._assert_summary_contract(validate_summary, expected_validate_only=True, expected_dry_run=False)
+        self._assert_summary_contract(apply_summary, expected_validate_only=False, expected_dry_run=False)
+        self.assertEqual(validate_summary["results"]["row_errors"], apply_summary["results"]["row_errors"])
+        self.assertEqual(
+            validate_summary["results"]["failure_signatures"],
+            apply_summary["results"]["failure_signatures"],
+        )
+        self.assertEqual(
+            validate_summary["results"]["escalation_summary"],
+            apply_summary["results"]["escalation_summary"],
+        )
+        self.assertEqual(validate_summary["results"]["totals"]["error"], 0)
+        self.assertEqual(validate_summary["results"]["totals"]["skipped"], 23)
+        self.assertEqual(apply_summary["results"]["totals"]["error"], 0)
+        self.assertEqual(apply_summary["results"]["totals"]["skipped"], 11)
+        self.assertEqual(apply_summary["results"]["models"]["InventoryLedger"]["created"], 1)
+        self.assertEqual(apply_summary["results"]["models"]["InventoryLedger"]["skipped"], 3)
+        self.assertEqual(apply_summary["results"]["models"]["InventoryLedger"]["error"], 0)
+        self.assertEqual(apply_summary["results"]["models"]["PackAllocation"]["created"], 1)
+        self.assertEqual(apply_summary["results"]["models"]["PackAllocation"]["skipped"], 3)
+        self.assertEqual(apply_summary["results"]["models"]["PackAllocation"]["error"], 0)
+        self.assertEqual(apply_summary["results"]["models"]["SalesEvent"]["created"], 1)
+        self.assertEqual(apply_summary["results"]["models"]["SalesEvent"]["skipped"], 3)
+        self.assertEqual(apply_summary["results"]["models"]["SalesEvent"]["error"], 0)
+        self.assertEqual(apply_summary["results"]["models"]["QuickSalesEntry"]["created"], 1)
+        self.assertEqual(apply_summary["results"]["models"]["QuickSalesEntry"]["skipped"], 2)
+        self.assertEqual(apply_summary["results"]["models"]["QuickSalesEntry"]["error"], 0)
+        self.assertEqual(InventoryLedger.objects.count(), 1)
+        self.assertEqual(SalesEvent.objects.count(), 1)
+        self.assertEqual(QuickSalesEntry.objects.count(), 1)
+        self.assertEqual(
+            [(item["signature"], item["count"]) for item in apply_summary["results"]["failure_signatures"]],
+            [("missing_required", 5), ("stale_fk", 6)],
+        )
+        self.assertEqual(
+            apply_summary["results"]["escalation_summary"],
+            [
+                {
+                    "owner_area": "reference-data",
+                    "owner_team": "import-pipeline",
+                    "severity": "high",
+                    "escalation_path": "ops-oncall -> reference-data",
+                    "count": 6,
+                    "signatures": ["stale_fk"],
+                    "recovery_steps": [
+                        "seed missing reference rows and rerun --validate-only",
+                    ],
+                },
+                {
+                    "owner_area": "data-contracts",
+                    "owner_team": "import-pipeline",
+                    "severity": "medium",
+                    "escalation_path": "ops-oncall -> data-contracts",
+                    "count": 5,
+                    "signatures": ["missing_required"],
+                    "recovery_steps": [
+                        "populate required source fields and rerun --validate-only",
+                    ],
+                },
+            ],
+        )
+
+    def test_mixed_batch_fixture_apply_replays_keep_partial_failure_totals_stable(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_mixed_batch_fixture(data_dir, year=2021)
+            first_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mixed-batch-first.json",
+            )
+            second_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mixed-batch-second.json",
+            )
+            third_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mixed-batch-third.json",
+            )
+
+        self.assertGreater(first_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(second_summary["results"]["totals"], third_summary["results"]["totals"])
+        self.assertEqual(second_summary["results"]["row_errors"], third_summary["results"]["row_errors"])
+        self.assertEqual(
+            second_summary["results"]["failure_signatures"],
+            third_summary["results"]["failure_signatures"],
+        )
+        self.assertEqual(
+            second_summary["results"]["escalation_summary"],
+            third_summary["results"]["escalation_summary"],
+        )
+        self.assertEqual(second_summary["results"]["totals"]["error"], 0)
+        self.assertEqual(second_summary["results"]["totals"]["skipped"], 11)
+        self.assertEqual(second_summary["results"]["models"]["InventoryLedger"]["skipped"], 3)
+        self.assertEqual(second_summary["results"]["models"]["InventoryLedger"]["error"], 0)
+        self.assertEqual(second_summary["results"]["models"]["PackAllocation"]["skipped"], 3)
+        self.assertEqual(second_summary["results"]["models"]["PackAllocation"]["error"], 0)
+        self.assertEqual(second_summary["results"]["models"]["SalesEvent"]["skipped"], 3)
+        self.assertEqual(second_summary["results"]["models"]["SalesEvent"]["error"], 0)
+        self.assertEqual(second_summary["results"]["models"]["QuickSalesEntry"]["skipped"], 2)
+        self.assertEqual(second_summary["results"]["models"]["QuickSalesEntry"]["error"], 0)
+        self.assertEqual(InventoryLedger.objects.count(), 1)
+        self.assertEqual(SalesEvent.objects.count(), 1)
+        self.assertEqual(QuickSalesEntry.objects.count(), 1)
+
     def test_crop_by_season_block_type_normalization_accepts_case_and_spacing_variants(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_block_type_normalization_fixture(data_dir)
@@ -1692,6 +1863,137 @@ class PlanningYearResolutionTests(TestCase):
         self.assertIsNone(year_obj)
 
 
+class DomainModelInvariantTests(TestCase):
+    def test_crop_by_season_computed_metrics_are_deterministic(self):
+        crop = CropInfo.objects.create(
+            name="Storage Beet",
+            crop_type="Roots",
+            botanical_family="Amaranthaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=10,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        profile = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=12,
+            field_week_end=30,
+            total_yield_per_bedfoot=Decimal("1.50"),
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+        )
+
+        self.assertEqual(profile.wtm_weeks, 10)
+        self.assertEqual(profile.weekly_yield_per_bedfoot, Decimal("0.25"))
+
+    def test_sales_channel_wraparound_weeks_and_annual_target_are_deterministic(self):
+        wrap_channel = SalesChannel.objects.create(
+            name="Winter CSA",
+            days_of_week=["Tuesday"],
+            start_week=48,
+            end_week=4,
+            weekly_target=Decimal("125.00"),
+            is_csa=True,
+            allocation_priority=2,
+        )
+        standard_channel = SalesChannel.objects.create(
+            name="Farm Stand",
+            days_of_week=["Saturday"],
+            start_week=10,
+            end_week=20,
+            weekly_target=Decimal("200.00"),
+            is_csa=False,
+            allocation_priority=1,
+        )
+
+        self.assertEqual(wrap_channel.num_weeks, 9)
+        self.assertEqual(wrap_channel.annual_target, Decimal("1125.00"))
+        self.assertEqual(standard_channel.num_weeks, 11)
+        self.assertEqual(standard_channel.annual_target, Decimal("2200.00"))
+
+    def test_sales_event_sell_through_pct_uses_actual_quantity_then_return_fallback(self):
+        crop = CropInfo.objects.create(
+            name="Carrot",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="bunches",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        product = CropSalesFormat.objects.create(
+            crop=crop,
+            product_name="Carrot Bunch",
+            sale_price=Decimal("3.50"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            is_active=True,
+        )
+        channel = SalesChannel.objects.create(
+            name="Farm Stand",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("300.00"),
+            is_csa=False,
+            allocation_priority=1,
+        )
+
+        explicit_actual = SalesEvent.objects.create(
+            channel=channel,
+            sale_date=date(2026, 6, 14),
+            product=product,
+            actual_quantity=Decimal("6.00"),
+            brought_quantity=Decimal("10.00"),
+            returned_quantity=Decimal("4.00"),
+        )
+        fallback_actual = SalesEvent.objects.create(
+            channel=channel,
+            sale_date=date(2026, 6, 21),
+            product=product,
+            actual_quantity=None,
+            brought_quantity=Decimal("10.00"),
+            returned_quantity=Decimal("3.00"),
+        )
+
+        self.assertEqual(explicit_actual.sell_through_pct, Decimal("60.0"))
+        self.assertEqual(fallback_actual.sell_through_pct, Decimal("70.0"))
+        self.assertEqual(explicit_actual.sale_week, 24)
+
+    def test_quick_sales_entry_total_revenue_sums_cash_and_card(self):
+        channel = SalesChannel.objects.create(
+            name="Market",
+            days_of_week=["Sunday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("150.00"),
+            is_csa=False,
+            allocation_priority=1,
+        )
+        quick_entry = QuickSalesEntry.objects.create(
+            channel=channel,
+            sale_date=date(2026, 6, 14),
+            total_cash=Decimal("120.00"),
+            total_card=Decimal("80.50"),
+        )
+
+        self.assertEqual(quick_entry.total_revenue, Decimal("200.50"))
+
+
 class BetaGateEvidenceTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -1785,6 +2087,12 @@ class BetaGateEvidenceTests(TestCase):
         )
         self.client.force_login(user)
         return user
+
+    def _post_planting_status(self, planting, status):
+        return self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": status},
+        )
 
     def _authenticate_non_staff_user(self):
         user = get_user_model().objects.create_user(
@@ -2388,6 +2696,44 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(InventoryLedger.objects.count(), 0)
 
+    def test_inventory_add_rejects_missing_crop_and_invalid_event_type_payloads_with_400(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        missing_crop_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "event_type": "return_in",
+                "quantity": "1.00",
+                "notes": "missing crop malformed payload gate check",
+            },
+        )
+        self.assertEqual(missing_crop_response.status_code, 400)
+
+        invalid_event_type_response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": planting.crop_id,
+                "event_type": "definitely-not-a-valid-event",
+                "quantity": "1.00",
+                "notes": "invalid event type malformed payload gate check",
+            },
+        )
+        self.assertEqual(invalid_event_type_response.status_code, 400)
+        self.assertEqual(InventoryLedger.objects.count(), 0)
+
+    def test_planting_status_rejects_missing_status_payload_with_400(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {},
+        )
+        self.assertEqual(response.status_code, 400)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planned")
+
     def test_sales_market_entry_rejects_missing_or_unknown_channel_payloads(self):
         _planting, channel = self._bootstrap_core_workflow_records()
         self._authenticate_operator()
@@ -2427,6 +2773,24 @@ class BetaGateEvidenceTests(TestCase):
                 "channel_id": channel.id,
                 "total_cash": "10.00",
                 "total_card": "5.00",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(QuickSalesEntry.objects.count(), 0)
+
+    def test_sales_market_entry_quick_rejects_invalid_decimal_totals_with_400(self):
+        _planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                "total_cash": "cash??",
+                "total_card": "card??",
+                "notes": "invalid decimal totals malformed payload gate check",
             },
         )
         self.assertEqual(response.status_code, 400)
@@ -2603,21 +2967,99 @@ class BetaGateEvidenceTests(TestCase):
         planting, _channel = self._bootstrap_core_workflow_records()
         self._authenticate_operator()
 
-        fail_response = self.client.post(
-            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
-            {"status": "failed"},
-        )
+        fail_response = self._post_planting_status(planting, "failed")
         self.assertEqual(fail_response.status_code, 302)
         planting.refresh_from_db()
         self.assertEqual(planting.status, "failed")
 
-        invalid_recovery_response = self.client.post(
-            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
-            {"status": "harvesting"},
-        )
+        invalid_recovery_response = self._post_planting_status(planting, "harvesting")
         self.assertEqual(invalid_recovery_response.status_code, 400)
         planting.refresh_from_db()
         self.assertEqual(planting.status, "failed")
+
+    def test_planting_status_replay_matrix_keeps_dates_stable_across_legal_transition_paths(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        expected_dates = {
+            "actual_plant_date": None,
+            "actual_first_harvest_date": None,
+            "actual_last_harvest_date": None,
+        }
+        transition_steps = [
+            ("planned", None),
+            ("seeded", None),
+            ("seeded", None),
+            ("planted", None),
+            ("planted", None),
+            ("growing", None),
+            ("growing", None),
+            ("harvesting", "actual_first_harvest_date"),
+            ("harvesting", None),
+            ("complete", "actual_last_harvest_date"),
+            ("complete", None),
+            ("revised", None),
+            ("revised", None),
+            ("planned", None),
+            ("planned", None),
+            ("skipped", None),
+            ("skipped", None),
+            ("revised", None),
+            ("planned", None),
+            ("failed", None),
+            ("failed", None),
+            ("revised", None),
+            ("planned", None),
+        ]
+
+        for next_status, date_field_to_set in transition_steps:
+            response = self._post_planting_status(planting, next_status)
+            self.assertEqual(response.status_code, 302)
+            planting.refresh_from_db()
+            self.assertEqual(planting.status, next_status)
+            if date_field_to_set and expected_dates[date_field_to_set] is None:
+                expected_dates[date_field_to_set] = getattr(planting, date_field_to_set)
+                self.assertIsNotNone(expected_dates[date_field_to_set])
+            for field_name, expected_value in expected_dates.items():
+                self.assertEqual(getattr(planting, field_name), expected_value)
+
+        self.assertIsNone(planting.actual_plant_date)
+        self.assertIsNotNone(planting.actual_first_harvest_date)
+        self.assertIsNotNone(planting.actual_last_harvest_date)
+
+    def test_planting_status_revised_return_path_can_reenter_full_legal_sequence_without_date_drift(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        first_leg = ("planted", "harvesting", "complete", "revised", "planned")
+        for next_status in first_leg:
+            response = self._post_planting_status(planting, next_status)
+            self.assertEqual(response.status_code, 302)
+
+        planting.refresh_from_db()
+        original_dates = (
+            planting.actual_plant_date,
+            planting.actual_first_harvest_date,
+            planting.actual_last_harvest_date,
+        )
+        self.assertTrue(all(original_dates))
+        self.assertEqual(planting.status, "planned")
+
+        replay_leg = ("planted", "growing", "harvesting", "complete")
+        for next_status in replay_leg:
+            response = self._post_planting_status(planting, next_status)
+            self.assertEqual(response.status_code, 302)
+
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "complete")
+        self.assertEqual(
+            (
+                planting.actual_plant_date,
+                planting.actual_first_harvest_date,
+                planting.actual_last_harvest_date,
+            ),
+            original_dates,
+        )
 
     def test_inventory_write_replay_keeps_running_balance_sequence_deterministic(self):
         planting, _channel = self._bootstrap_core_workflow_records()
@@ -2719,6 +3161,41 @@ class BetaGateEvidenceTests(TestCase):
 
         entries = list(InventoryLedger.objects.filter(crop=crop).order_by("event_date", "created_at", "id"))
         self.assertEqual([entry.id for entry in entries], [first.id, second.id, third.id])
+        self.assertEqual([str(entry.quantity) for entry in entries], ["5.00", "-2.00", "1.00"])
+        self.assertEqual([str(entry.running_balance) for entry in entries], ["5.00", "3.00", "4.00"])
+
+    def test_inventory_same_day_identical_timestamp_writes_keep_running_balance_order_deterministic(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        crop = planting.crop
+        event_day = date(2026, 6, 15)
+        fixed_created_at = timezone.make_aware(datetime(2026, 6, 15, 12, 0, 0))
+
+        with patch("django.utils.timezone.now", return_value=fixed_created_at):
+            first = InventoryLedger.objects.create(
+                crop=crop,
+                event_date=event_day,
+                event_type="return_in",
+                quantity=Decimal("5.00"),
+                notes="same-timestamp deterministic step 1",
+            )
+            second = InventoryLedger.objects.create(
+                crop=crop,
+                event_date=event_day,
+                event_type="sale_out",
+                quantity=Decimal("-2.00"),
+                notes="same-timestamp deterministic step 2",
+            )
+            third = InventoryLedger.objects.create(
+                crop=crop,
+                event_date=event_day,
+                event_type="return_in",
+                quantity=Decimal("1.00"),
+                notes="same-timestamp deterministic step 3",
+            )
+
+        entries = list(InventoryLedger.objects.filter(crop=crop).order_by("event_date", "created_at", "id"))
+        self.assertEqual([entry.id for entry in entries], [first.id, second.id, third.id])
+        self.assertEqual([entry.created_at for entry in entries], [fixed_created_at] * 3)
         self.assertEqual([str(entry.quantity) for entry in entries], ["5.00", "-2.00", "1.00"])
         self.assertEqual([str(entry.running_balance) for entry in entries], ["5.00", "3.00", "4.00"])
 

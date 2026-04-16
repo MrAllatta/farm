@@ -69,7 +69,7 @@ class InventoryLedger(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["crop__name", "event_date", "created_at"]
+        ordering = ["crop__name", "event_date", "created_at", "id"]
 
     def save(self, *args, **kwargs):
         if not self.running_balance:
@@ -77,7 +77,7 @@ class InventoryLedger(models.Model):
             last = (
                 InventoryLedger.objects.filter(crop=self.crop, event_date__lte=self.event_date)
                 .exclude(pk=self.pk)
-                .order_by("-event_date", "-created_at")
+                .order_by("-event_date", "-created_at", "-id")
                 .first()
             )
 
