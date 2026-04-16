@@ -1,0 +1,85 @@
+{
+  "source_id": "operator-tier-contract-closure",
+  "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+  "tabs": [
+    {
+      "spreadsheet_id": "1mM9pkhqmmU9ze1M5_tBoZeA8zfuGiJv8YdXdFAh1xi4",
+      "worksheet_title": "Harvest Plan",
+      "output_path": "year_2026/harvest_events.csv",
+      "required_headers": [
+        "Planting ID",
+        "Planned Date",
+        "Planned Quantity",
+        "Planned Units"
+      ],
+      "output_headers": [
+        "Planting ID",
+        "Planned Date",
+        "Planned Quantity",
+        "Planned Units",
+        "Actual Date",
+        "Actual Quantity",
+        "Actual Units",
+        "Actual Bins",
+        "Actual Bin Type",
+        "Actual Hours",
+        "Actual Workers",
+        "Quality Grade",
+        "Notes"
+      ],
+      "column_map": {
+        "Planting ID": "Planting ID",
+        "Planned Date": "Planned Date",
+        "Planned Quantity": "Planned Quantity",
+        "Planned Units": "Planned Units",
+        "Actual Date": "Actual Date",
+        "Actual Quantity": "Actual Quantity",
+        "Actual Units": "Actual Units",
+        "Actual Bins": "Actual Bins",
+        "Actual Bin Type": "Actual Bin Type",
+        "Actual Hours": "Actual Hours",
+        "Actual Workers": "Actual Workers",
+        "Quality Grade": "Quality Grade",
+        "Notes": "Notes"
+      }
+    },
+    {
+      "spreadsheet_id": "1aVIqZZPZhAG9YxbV-LYxeLV069bPlmOXaDCeKmOjvmI",
+      "worksheet_title": "Nursery Schedule",
+      "output_path": "year_2026/nursery_events.csv",
+      "required_headers": [
+        "Planting ID",
+        "Planned Date",
+        "Planned Tray Count",
+        "Planned Tray Size"
+      ],
+      "output_headers": [
+        "Planting ID",
+        "Planned Date",
+        "Event Type",
+        "Planned Tray Count",
+        "Planned Tray Size",
+        "Actual Date",
+        "Actual Tray Count",
+        "Actual Tray Size",
+        "Actual Germination Rate",
+        "Notes"
+      ],
+      "column_map": {
+        "Planting ID": "Planting ID",
+        "Planned Date": "Planned Date",
+        "Event Type": "Event Type",
+        "Planned Tray Count": "Planned Tray Count",
+        "Planned Tray Size": "Planned Tray Size",
+        "Actual Date": "Actual Date",
+        "Actual Tray Count": "Actual Tray Count",
+        "Actual Tray Size": "Actual Tray Size",
+        "Actual Germination Rate": "Actual Germination Rate",
+        "Notes": "Notes"
+      },
+      "default_values": {
+        "Event Type": "seed"
+      }
+    }
+  ]
+}

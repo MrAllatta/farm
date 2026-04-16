@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import google.auth
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -51,8 +52,13 @@ def extract_spreadsheet_id(value):
 
 def get_service_account_credentials(scopes=None):
     credentials_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    requested_scopes = scopes or [SHEETS_READONLY_SCOPE]
+
+    # Cloud runtimes can use Application Default Credentials from the attached
+    # service account without mounting a JSON key file.
     if not credentials_path:
-        raise ValueError("GOOGLE_APPLICATION_CREDENTIALS is not set")
+        credentials, _ = google.auth.default(scopes=requested_scopes)
+        return credentials
 
     credentials_file = Path(credentials_path).expanduser()
     if not credentials_file.exists():
@@ -60,7 +66,7 @@ def get_service_account_credentials(scopes=None):
 
     return service_account.Credentials.from_service_account_file(
         credentials_file,
-        scopes=scopes or [SHEETS_READONLY_SCOPE],
+        scopes=requested_scopes,
     )
 
 

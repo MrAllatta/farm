@@ -1270,6 +1270,8 @@ class Command(BaseCommand):
                 try:
                     planting_id = row.get("Planting ID", "").strip()
                     planting = self._get_planting(planting_id)
+                    if not planting:
+                        planting = self._resolve_field_walk_planting_from_context(row, year)
 
                     if not planting:
                         self.stats["FieldWalkNote"]["skipped"] += 1
@@ -1325,6 +1327,65 @@ class Command(BaseCommand):
             f"{self.stats['FieldWalkNote']['skipped']} skipped, "
             f"{self.stats['FieldWalkNote']['errors']} errors\n"
         )
+
+    def _resolve_field_walk_planting_from_context(self, row, year):
+        """Resolve FieldWalkNote planting when Planting ID is missing.
+
+        Policy: match a unique planting by (`Crop // Variety`, `Block`, `Bed`,
+        `Plan Field Year`, `Plan Field Week`).
+        """
+        crop_variety = (row.get("Crop // Variety") or "").strip()
+        block_name = (row.get("Block") or "").strip()
+        bed_raw = (row.get("Bed") or "").strip()
+        plan_year_raw = (row.get("Plan Field Year") or "").strip()
+        plan_week_raw = (row.get("Plan Field Week") or "").strip()
+
+        if not (crop_variety and block_name and bed_raw and plan_year_raw and plan_week_raw):
+            return None
+
+        crop_name, variety = self._split_crop_variety(crop_variety)
+        if not crop_name:
+            return None
+
+        plan_year = self._int(plan_year_raw, 0)
+        plan_week = self._int(plan_week_raw, 0)
+        if plan_year <= 0 or plan_week <= 0:
+            return None
+        if plan_year != year:
+            return None
+
+        bed_number = self._int(bed_raw, 0)
+        if bed_number <= 0:
+            return None
+
+        block = self._get_block(block_name)
+        crop = self._get_crop(crop_name)
+        if not block or not crop:
+            return None
+
+        candidates = (
+            Planting.objects.filter(
+                planning_year__year=plan_year,
+                crop=crop,
+                block=block,
+                bed_start__lte=bed_number,
+                bed_end__gte=bed_number,
+            )
+            .order_by("id")
+        )
+
+        if variety:
+            candidates = candidates.filter(variety__iexact=variety)
+
+        matches = []
+        for planting in candidates:
+            iso_year, iso_week, _ = planting.planned_plant_date.isocalendar()
+            if iso_year == plan_year and iso_week == plan_week:
+                matches.append(planting)
+
+        if len(matches) == 1:
+            return matches[0]
+        return None
 
     def _import_inventory_ledger(self, year, year_dir):
         """Import inventory ledger entries."""
@@ -1945,6 +2006,13 @@ class Command(BaseCommand):
     def _get_planting(self, planting_id):
         """Get planting from cache."""
         return self.planting_cache.get(planting_id)
+
+    def _split_crop_variety(self, crop_variety):
+        """Split 'Crop // Variety' text into normalized crop and variety."""
+        if "//" not in crop_variety:
+            return crop_variety.strip(), ""
+        left, right = crop_variety.split("//", 1)
+        return left.strip(), right.strip()
 
     def _parse_date(self, date_str):
         """Parse ISO date string YYYY-MM-DD."""
