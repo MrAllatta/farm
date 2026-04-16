@@ -29,32 +29,36 @@
     {% if not channel %}
     <p>Select a channel to begin.</p>
     {% else %}
-    <div style="overflow:auto; border:1px solid #ddd;">
-        <table style="min-width:1600px; border-collapse:collapse; width:100%;">
+    <div class="sales-plan-matrix-wrap">
+        <table class="sales-plan-matrix">
             <thead>
                 <tr>
-                    <th style="position:sticky; left:0; background:#fff; border:1px solid #ddd; padding:0.4rem;">Product</th>
+                    <th class="sales-plan-sticky-col sales-plan-product-col">Product</th>
+                    <th class="sales-plan-sticky-col sales-plan-window-col">Harvest Window</th>
                     {% for week in weeks %}
-                    <th style="border:1px solid #ddd; padding:0.3rem; text-align:center;">W{{ week }}</th>
+                    <th class="sales-plan-week-col">W{{ week }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for row in product_rows %}
                 <tr>
-                    <td style="position:sticky; left:0; background:#fff; border:1px solid #ddd; padding:0.4rem; white-space:nowrap;">
+                    <td class="sales-plan-sticky-col sales-plan-product-col">
                         {{ row.product.product_name }}<br>
                         <small>{{ row.product.crop.name }} · {{ row.product.sale_unit }}</small>
                     </td>
+                    <td class="sales-plan-sticky-col sales-plan-window-col">
+                        <small>{{ row.season_window_label }}</small>
+                    </td>
                     {% for cell in row.week_cells %}
-                    <td style="border:1px solid #eee; padding:0.2rem;">
+                    <td class="{{ cell.css_class }}" title="{{ cell.title }}">
                         <input
                             type="number"
                             step="0.01"
                             min="0"
                             name="qty_{{ row.product.id }}_{{ cell.week }}"
                             value="{% if cell.planned_quantity %}{{ cell.planned_quantity }}{% endif %}"
-                            style="width:5rem;"
+                            class="sales-plan-qty-input"
                         >
                     </td>
                     {% endfor %}

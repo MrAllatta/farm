@@ -240,11 +240,69 @@ class SalesPlanViewTests(TestCase):
             harvest_qty_per_sale_unit="1.00",
             is_active=True,
         )
+        winter_crop = CropInfo.objects.create(
+            name="Spinach",
+            crop_type="Vegetables",
+            botanical_family="Amaranthaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        CropBySeason.objects.create(
+            crop=winter_crop,
+            block_type="field",
+            field_week_start=48,
+            field_week_end=6,
+            total_yield_per_bedfoot="0.80",
+            harvest_weeks=8,
+            dtm_days=45,
+            rows_per_bed=4,
+        )
+        cls.winter_product = CropSalesFormat.objects.create(
+            crop=winter_crop,
+            product_name="Spinach Bag",
+            sale_price="4.00",
+            sale_unit="bag",
+            harvest_qty_per_sale_unit="1.00",
+            is_active=True,
+        )
+        no_profile_crop = CropInfo.objects.create(
+            name="Mystery Herb",
+            crop_type="Herbs",
+            botanical_family="Lamiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="bunches",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        cls.no_profile_product = CropSalesFormat.objects.create(
+            crop=no_profile_crop,
+            product_name="Mystery Herb Bunch",
+            sale_price="2.50",
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit="1.00",
+            is_active=True,
+        )
 
     def test_sales_plan_route_renders(self):
         response = self.client.get(reverse("planning:sales_plan"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sales Plan")
+        self.assertContains(response, "sales-plan-cell--harvest")
+        self.assertContains(response, "sales-plan-cell--off")
 
     def test_sales_plan_save_creates_plan_rows(self):
         user = get_user_model().objects.create_user(
@@ -269,3 +327,22 @@ class SalesPlanViewTests(TestCase):
                 product=self.product,
             ).exists()
         )
+
+    def test_sales_plan_week_cell_states_include_wraparound_and_unknown_profiles(self):
+        response = self.client.get(reverse("planning:sales_plan"))
+        self.assertEqual(response.status_code, 200)
+
+        rows = response.context["product_rows"]
+        carrot_row = next(r for r in rows if r["product"].id == self.product.id)
+        spinach_row = next(r for r in rows if r["product"].id == self.winter_product.id)
+        mystery_row = next(r for r in rows if r["product"].id == self.no_profile_product.id)
+
+        carrot_week_12 = next(c for c in carrot_row["week_cells"] if c["week"] == 12)
+        carrot_week_1 = next(c for c in carrot_row["week_cells"] if c["week"] == 1)
+        spinach_week_2 = next(c for c in spinach_row["week_cells"] if c["week"] == 2)
+        mystery_week_20 = next(c for c in mystery_row["week_cells"] if c["week"] == 20)
+
+        self.assertEqual(carrot_week_12["window_state"], "harvest")
+        self.assertEqual(carrot_week_1["window_state"], "off")
+        self.assertEqual(spinach_week_2["window_state"], "harvest")
+        self.assertEqual(mystery_week_20["window_state"], "unknown")

@@ -9,7 +9,7 @@ from django.db.models import Q, Sum
 from datetime import date
 from isoweek import Week
 
-from reference.models import Block, BlockType, CropInfo, CropSalesFormat, SalesChannel
+from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus
 from core.planning_year import resolve_current_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
@@ -20,6 +20,7 @@ from django import forms
 from django.template.loader import render_to_string
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
+from typing import Optional
 
 
 class PlanningMatrixView(TemplateView):
@@ -955,6 +956,34 @@ class SalesPlanView(TemplateView):
                 updated += 1
         return updated
 
+    @staticmethod
+    def _week_in_window(week: int, start_week: int, end_week: int) -> bool:
+        """Return True when week falls within [start_week, end_week], handling wrap-around."""
+        if start_week <= end_week:
+            return start_week <= week <= end_week
+        return week >= start_week or week <= end_week
+
+    @classmethod
+    def _window_state(
+        cls,
+        week: int,
+        season_start_week: Optional[int],
+        season_end_week: Optional[int],
+        shoulder_weeks: int = 2,
+    ) -> str:
+        if not season_start_week or not season_end_week:
+            return "unknown"
+        if cls._week_in_window(week, season_start_week, season_end_week):
+            return "harvest"
+        for offset in range(1, shoulder_weeks + 1):
+            before_week = ((week - offset - 1) % 52) + 1
+            after_week = ((week + offset - 1) % 52) + 1
+            if cls._week_in_window(before_week, season_start_week, season_end_week) or cls._week_in_window(
+                after_week, season_start_week, season_end_week
+            ):
+                return "shoulder"
+        return "off"
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         channel = kwargs.get("channel")
@@ -967,6 +996,15 @@ class SalesPlanView(TemplateView):
             "crop__crop_type", "crop__name", "product_name"
         )
         weeks = list(range(1, 53))
+        crop_ids = [product.crop_id for product in products]
+        season_profiles = (
+            CropBySeason.objects.filter(crop_id__in=crop_ids)
+            .order_by("crop_id", "block_type", "id")
+        )
+        seasons_by_crop = {}
+        for profile in season_profiles:
+            seasons_by_crop.setdefault(profile.crop_id, []).append(profile)
+
         planned_lookup = {}
         summary_qty = Decimal("0")
         summary_revenue = Decimal("0")
@@ -986,16 +1024,41 @@ class SalesPlanView(TemplateView):
 
         product_rows = []
         for product in products:
+            crop_profiles = seasons_by_crop.get(product.crop_id, [])
+            selected_profile = next(
+                (profile for profile in crop_profiles if profile.block_type == BlockType.FIELD),
+                crop_profiles[0] if crop_profiles else None,
+            )
+            season_start = selected_profile.field_week_start if selected_profile else None
+            season_end = selected_profile.field_week_end if selected_profile else None
+            window_label = (
+                f"Wk {season_start}-{season_end}" if season_start and season_end else "No harvest profile"
+            )
+
             week_cells = []
             for week in weeks:
                 plan = planned_lookup.get((product.id, week))
+                window_state = self._window_state(week, season_start, season_end)
+                css_class = f"sales-plan-cell sales-plan-cell--{window_state}"
+                if plan and plan.planned_quantity:
+                    css_class += " sales-plan-cell--planned"
                 week_cells.append(
                     {
                         "week": week,
                         "planned_quantity": plan.planned_quantity if plan else None,
+                        "window_state": window_state,
+                        "css_class": css_class,
+                        "title": f"{window_label} · Week {week}",
                     }
                 )
-            product_rows.append({"product": product, "week_cells": week_cells})
+            product_rows.append(
+                {
+                    "product": product,
+                    "week_cells": week_cells,
+                    "season_profile": selected_profile,
+                    "season_window_label": window_label,
+                }
+            )
 
         ctx.update(
             {

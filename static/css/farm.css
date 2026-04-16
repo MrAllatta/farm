@@ -1045,3 +1045,73 @@ body {
     justify-content: center;
     gap: 0.5rem;
 }
+
+/* ── Sales Plan Matrix ── */
+
+.sales-plan-matrix-wrap {
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+
+.sales-plan-matrix {
+    min-width: 2200px;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.sales-plan-matrix th,
+.sales-plan-matrix td {
+    border: 1px solid #e5e7eb;
+    padding: 0.25rem;
+}
+
+.sales-plan-sticky-col {
+    position: sticky;
+    background: #fff;
+    z-index: 5;
+}
+
+.sales-plan-product-col {
+    left: 0;
+    min-width: 220px;
+    white-space: nowrap;
+    padding: 0.4rem;
+}
+
+.sales-plan-window-col {
+    left: 220px;
+    min-width: 120px;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.sales-plan-week-col {
+    min-width: 72px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.sales-plan-cell--harvest {
+    background: #dcfce7;
+}
+
+.sales-plan-cell--shoulder {
+    background: #fef9c3;
+}
+
+.sales-plan-cell--off {
+    background: #f9fafb;
+}
+
+.sales-plan-cell--unknown {
+    background: #f3f4f6;
+}
+
+.sales-plan-cell--planned {
+    box-shadow: inset 0 0 0 2px #14532d;
+}
+
+.sales-plan-qty-input {
+    width: 5rem;
+}
