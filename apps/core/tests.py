@@ -389,6 +389,28 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(SalesChannel.objects.count(), 1)
             self.assertEqual(CropSalesFormat.objects.count(), 1)
 
+    def test_summary_artifact_defaults_to_import_artifacts_directory_when_unspecified(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_clean_fixture(data_dir)
+            call_command("import_historical_data", data_dir, "--validate-only")
+
+            artifact_dir = Path(data_dir) / "_import_artifacts"
+            artifacts = list(artifact_dir.glob("historical-import-summary-*.json"))
+            self.assertEqual(len(artifacts), 1)
+            summary = json.loads(artifacts[0].read_text(encoding="utf-8"))
+            self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+
+    def test_summary_artifact_honors_explicit_output_path(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            summary_path = Path(output_dir) / "explicit-summary.json"
+
+            call_command("import_historical_data", data_dir, "--validate-only", "--summary-json", str(summary_path))
+
+            self.assertTrue(summary_path.exists())
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            self._assert_summary_contract(summary, expected_validate_only=True, expected_dry_run=False)
+
     def test_apply_with_year_fixture_creates_planting_without_crop_season_error(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_clean_fixture(data_dir)
@@ -2453,3 +2475,93 @@ class ImportReferenceDataCommandTests(TestCase):
             channel = SalesChannel.objects.get(name="Farm Stand")
             self.assertEqual(channel.days_of_week, ["Saturday", "Sunday"])
             self.assertEqual(str(channel.weekly_target), "500.00")
+
+    def test_reference_import_detects_header_after_variable_preamble(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "blocks.csv",
+                [
+                    "Farm Planning Export",
+                    "Generated,2026-04-15",
+                    "",
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed",
+                    "Field 1,Field,10,3,100",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Notes,Reference crop table",
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "crop_by_season.csv",
+                [
+                    "Instructions,Pick one row per crop profile",
+                    "",
+                    "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                    "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "sales_channels.csv",
+                [
+                    "Title,Sales channels for season",
+                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                    "Farm Stand,Saturday + Sunday,1,52,$500.00,false,1",
+                ],
+            )
+
+            call_command("import_reference_data", data_dir)
+
+            self.assertEqual(Block.objects.count(), 1)
+            self.assertEqual(CropInfo.objects.count(), 1)
+            self.assertEqual(CropBySeason.objects.count(), 1)
+            self.assertEqual(SalesChannel.objects.count(), 1)
+
+    def test_reference_import_applies_alias_headers(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "blocks.csv",
+                [
+                    "Block Name,Block Type,Number of Beds,Bed Width Feet,Bedfeet per Bed",
+                    "Field 1,Field,10,3,100",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Crop Name,Type,Botanical Family,Fresh/Storage,Storage Weeks,Harvest Units,Average Unit Wt,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate Units Per Hour,Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "crop_by_season.csv",
+                [
+                    "Crop Name,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM,Rows Per Bed,DS Seed Rate Seeds Rowfoot,TP Inrow Spacing Ft,Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                    "Carrot,High Tunnel,10,40,1.2,6,65,3,30,na,,,,,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "sales_channels.csv",
+                [
+                    "Channel,Days of Week,Start Week,End Week,Target per Week,is_csa,Priority",
+                    "Farm Stand,Saturday + Sunday,1,52,$500.00,false,1",
+                ],
+            )
+
+            call_command("import_reference_data", data_dir)
+
+            season = CropBySeason.objects.get()
+            self.assertEqual(season.block_type, "high_tunnel")
+            self.assertEqual(SalesChannel.objects.get().days_of_week, ["Saturday", "Sunday"])

@@ -11,6 +11,97 @@ from reference.models import CropInfo, CropBySeason, Block, SalesChannel
 
 class Command(BaseCommand):
     help = "Import reference data from CSV files exported from org-mode tables"
+    HEADER_SCAN_LIMIT = 200
+    CSV_CONTRACTS = {
+        "blocks.csv": {
+            "required": [
+                "Block",
+                "Block Type",
+                "# of Beds",
+                "Bed Width (feet)",
+                "Bedfeet per Bed",
+            ],
+            "aliases": {
+                "block name": "Block",
+                "block type": "Block Type",
+                "number of beds": "# of Beds",
+                "bed width feet": "Bed Width (feet)",
+                "bedfeet per bed": "Bedfeet per Bed",
+            },
+        },
+        "crop_info.csv": {
+            "required": [
+                "Crop",
+                "Type",
+                "Botanical Family",
+                "Fresh or Storage",
+                "Storage Weeks",
+                "Harvest Units",
+                "Average Unit Weight",
+                "Units Per Bin",
+                "Harvest Bin",
+                "Harvest Tools",
+                "Harvest Rate (units per hour)",
+                "Nursery Weeks",
+                "Weeks Until Pot Up",
+                "Pot Up Tray Size",
+                "Seeded Tray Size",
+                "Seeds Per Cell",
+                "Thinned Plants",
+                "Seeds Per Ounce",
+            ],
+            "aliases": {
+                "crop name": "Crop",
+                "fresh/storage": "Fresh or Storage",
+                "average unit wt": "Average Unit Weight",
+                "harvest rate units per hour": "Harvest Rate (units per hour)",
+            },
+        },
+        "crop_by_season.csv": {
+            "required": [
+                "Crop",
+                "Block Type",
+                "Field Week Start",
+                "Field Week End",
+                "Total Yield Per Bedfoot",
+                "Harvest Weeks",
+                "DTM Days To Maturity",
+                "Rows Per Bed",
+                "DS Seed Rate (seeds/ rowfoot)",
+                "TP Inrow Spacing (ft)",
+                "Seeder Settings",
+                "Trellis System",
+                "Mulch",
+                "Row Cover",
+                "Irrigation",
+            ],
+            "aliases": {
+                "crop name": "Crop",
+                "block type": "Block Type",
+                "ds seed rate seeds rowfoot": "DS Seed Rate (seeds/ rowfoot)",
+                "tp inrow spacing ft": "TP Inrow Spacing (ft)",
+                "dtm": "DTM Days To Maturity",
+            },
+        },
+        "sales_channels.csv": {
+            "required": [
+                "Channel Name",
+                "Days of the Week",
+                "Start Week Num",
+                "End Week Num",
+                "$ Target per week",
+                "is_csa",
+                "Priority",
+            ],
+            "aliases": {
+                "channel": "Channel Name",
+                "days of week": "Days of the Week",
+                "start week": "Start Week Num",
+                "end week": "End Week Num",
+                "target per week": "$ Target per week",
+            },
+        },
+    }
 
     def add_arguments(self, parser):
         parser.add_argument("data_dir", type=str, help="Directory containing CSV files")
@@ -31,7 +122,8 @@ class Command(BaseCommand):
         self._import_channels(data_dir, dry_run)
 
     def _import_blocks(self, data_dir, dry_run):
-        path = os.path.join(data_dir, "blocks.csv")
+        filename = "blocks.csv"
+        path = os.path.join(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping blocks — {path} not found\n")
             return
@@ -47,8 +139,8 @@ class Command(BaseCommand):
         count = 0
         errors = 0
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
+        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = self._build_contract_reader(f, filename)
             for row in reader:
                 try:
                     name = row["Block"].strip()
@@ -76,7 +168,8 @@ class Command(BaseCommand):
         self.stdout.write(f"  Blocks: {count} processed, {errors} errors\n")
 
     def _import_crops(self, data_dir, dry_run):
-        path = os.path.join(data_dir, "crop_info.csv")
+        filename = "crop_info.csv"
+        path = os.path.join(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping crops — {path} not found\n")
             return
@@ -97,8 +190,8 @@ class Command(BaseCommand):
         errors = 0
         skipped = 0
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
+        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = self._build_contract_reader(f, filename)
             for row in reader:
                 try:
                     name = row["Crop"].strip()
@@ -182,7 +275,8 @@ class Command(BaseCommand):
         )
 
     def _import_crop_by_season(self, data_dir, dry_run):
-        path = os.path.join(data_dir, "crop_by_season.csv")
+        filename = "crop_by_season.csv"
+        path = os.path.join(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping crop_by_season — {path} not found\n")
             return
@@ -199,8 +293,8 @@ class Command(BaseCommand):
         errors = 0
         skipped = 0
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
+        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = self._build_contract_reader(f, filename)
             for row in reader:
                 try:
                     crop_name = row["Crop"].strip()
@@ -293,7 +387,8 @@ class Command(BaseCommand):
         )
 
     def _import_channels(self, data_dir, dry_run):
-        path = os.path.join(data_dir, "sales_channels.csv")
+        filename = "sales_channels.csv"
+        path = os.path.join(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping channels — {path} not found\n")
             return
@@ -303,8 +398,8 @@ class Command(BaseCommand):
         count = 0
         errors = 0
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
+        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = self._build_contract_reader(f, filename)
             for i, row in enumerate(reader, 1):
                 try:
                     name = row["Channel Name"].strip()
@@ -384,3 +479,48 @@ class Command(BaseCommand):
             return result if result > 0 else None
         except (InvalidOperation, TypeError):
             return None
+
+    def _normalize_header_value(self, value):
+        normalized = " ".join(str(value or "").strip().split()).casefold()
+        normalized = normalized.replace("(", " ").replace(")", " ")
+        normalized = normalized.replace("/", " ").replace("-", " ")
+        normalized = normalized.replace("#", "number ")
+        normalized = " ".join(normalized.split())
+        return normalized
+
+    def _build_contract_reader(self, file_handle, filename):
+        contract = self.CSV_CONTRACTS.get(filename)
+        if not contract:
+            return csv.DictReader(file_handle)
+
+        rows = list(csv.reader(file_handle))
+        if not rows:
+            raise KeyError(f"{filename}: file is empty")
+
+        aliases = contract.get("aliases", {})
+        normalized_aliases = {self._normalize_header_value(k): v for k, v in aliases.items()}
+        for canonical_name in contract["required"]:
+            normalized_aliases[self._normalize_header_value(canonical_name)] = canonical_name
+
+        canonical_required = set(contract["required"])
+        max_scan = min(self.HEADER_SCAN_LIMIT, len(rows))
+        header_idx = None
+        canonical_headers = None
+        for idx in range(max_scan):
+            row = rows[idx]
+            mapped_headers = [normalized_aliases.get(self._normalize_header_value(cell), "") for cell in row]
+            if canonical_required.issubset(set(mapped_headers)):
+                header_idx = idx
+                canonical_headers = mapped_headers
+                break
+
+        if header_idx is None:
+            raise KeyError(
+                f"{filename}: no header row matching contract in first {max_scan} rows"
+            )
+
+        data_rows = rows[header_idx + 1 :]
+        return (
+            {canonical_headers[idx]: value for idx, value in enumerate(row) if idx < len(canonical_headers)}
+            for row in data_rows
+        )

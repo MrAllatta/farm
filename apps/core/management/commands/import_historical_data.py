@@ -73,6 +73,23 @@ class Command(BaseCommand):
             "recovery": "classify signature and add ownership mapping",
         },
     }
+    # Stage A2 scaffold: declarative live-source normalizer contract.
+    # Not wired to provider APIs yet; kept here to lock contract shape
+    # without changing fixture-based offline workflow.
+    LIVE_SOURCE_NORMALIZER_CONTRACT = {
+        "schema_version": "a2-draft-1",
+        "header_detection": {
+            "strategy": "required_header_set_scan",
+            "max_scan_rows": 200,
+            "normalization": ["trim", "collapse_spaces", "casefold", "alias_lookup"],
+            "fallbacks": ["anchor_token", "header_row_index"],
+        },
+        "output_layout": {
+            "reference": "reference/*.csv",
+            "yearly": "year_YYYY/*.csv",
+            "manifest": "manifest.json",
+        },
+    }
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -285,6 +302,10 @@ class Command(BaseCommand):
             field_path=field_path,
             message=message,
         )
+
+    def get_live_source_normalizer_contract(self):
+        """Expose Stage A2 normalizer contract scaffold for future connector work."""
+        return self.LIVE_SOURCE_NORMALIZER_CONTRACT
 
     # ============================================================================
     # TIER 1: Reference Data (Independent)
