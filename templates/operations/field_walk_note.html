@@ -1,0 +1,84 @@
+{# operations/field_walk_note.html #}
+{% extends "base.html" %}
+
+{% block title %}Field Walk Note{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Field Walk Note</h1>
+    <p>
+        {{ planting.crop.name }} in {{ planting.block.name }} beds {{ planting.bed_start }}-{{ planting.bed_end }}
+        ({{ planting.planning_year.year }})
+    </p>
+    <p><a href="{% url 'operations:field_walk_current' %}" class="btn">Back to Field Walk</a></p>
+</section>
+
+<section class="panel">
+    <h2>Add Field Walk Note</h2>
+    <p>Each save appends a new note for this planting (same behavior as the batch field-walk form).</p>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label for="id_condition">Condition</label>
+            <select name="condition" id="id_condition" required>
+                <option value="">-</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="poor">Poor</option>
+                <option value="failed">Failed</option>
+            </select>
+        </p>
+        <p>
+            <label for="id_yield_adjust">Yield adjustment %</label>
+            <input type="number" name="yield_adjust" id="id_yield_adjust" min="0" max="200" step="5" value="100">
+        </p>
+        <p>
+            <label for="id_adj_harvest">Adjusted first harvest (ISO week, optional)</label>
+            <input type="number" name="adj_harvest" id="id_adj_harvest" min="1" max="53" placeholder="e.g. 24">
+        </p>
+        <p>
+            <label for="id_notes">Notes</label>
+            <textarea name="notes" id="id_notes" rows="3" cols="60"></textarea>
+        </p>
+        <p><button type="submit" class="btn btn-primary">Save Note</button></p>
+    </form>
+</section>
+
+{% if latest_note %}
+<section class="panel">
+    <h2>Latest Note</h2>
+    <p>Date: {{ latest_note.walk_date|date:"Y-m-d" }}</p>
+    <p>Condition: {{ latest_note.get_condition_display }}</p>
+    <p>Yield adjustment: {{ latest_note.yield_adjust_pct }}%</p>
+    <p>{{ latest_note.notes|default:"No note text." }}</p>
+</section>
+{% endif %}
+
+<section class="panel">
+    <h2>Recent Field Walk Notes</h2>
+    {% if recent_notes %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Condition</th>
+                <th>Yield %</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for note in recent_notes %}
+            <tr>
+                <td>{{ note.walk_date|date:"Y-m-d" }}</td>
+                <td>{{ note.get_condition_display }}</td>
+                <td>{{ note.yield_adjust_pct }}</td>
+                <td>{{ note.notes|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No field walk notes have been recorded for this planting yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

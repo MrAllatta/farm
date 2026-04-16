@@ -1,0 +1,53 @@
+{# operations/planting_harvest_entry.html #}
+{% extends "base.html" %}
+
+{% block title %}Planting Harvest Entry{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Planting Harvest Entry</h1>
+    <p>
+        {{ planting.crop.name }} in {{ planting.block.name }} beds {{ planting.bed_start }}-{{ planting.bed_end }}
+        ({{ planting.planning_year.year }})
+    </p>
+    <p>Recorded events: {{ recorded_count }} / {{ event_count }}</p>
+    <p><a href="{% url 'operations:harvest_entry_current' %}" class="btn">Back to Weekly Harvest Entry</a></p>
+</section>
+
+{% if harvest_events %}
+<section class="panel">
+    <h2>Harvest Events</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Planned Date</th>
+                <th>Target</th>
+                <th>Actual</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in harvest_events %}
+            <tr>
+                <td>{{ event.planned_date|date:"Y-m-d" }}</td>
+                <td>{{ event.planned_quantity|floatformat:2 }} {{ event.planned_units }}</td>
+                <td>
+                    {% if event.actual_quantity %}
+                    {{ event.actual_quantity|floatformat:2 }} {{ event.actual_units|default:event.planned_units }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ event.notes|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% else %}
+<section class="panel">
+    <h2>No harvest events yet</h2>
+    <p>No harvest events are scheduled for this planting.</p>
+</section>
+{% endif %}
+{% endblock %}

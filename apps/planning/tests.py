@@ -384,6 +384,81 @@ class PlantingLifecycleTransitionTests(TestCase):
         self.assertContains(response, "Carrot")
         self.assertContains(response, "Field 1")
 
+    def test_planting_create_rejects_invalid_bed_range(self):
+        response = self.client.post(
+            reverse("planning:planting_create"),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "variety": "",
+                "block": str(self.block.pk),
+                "bed_start": "3",
+                "bed_end": "1",
+                "planned_plant_date": "2026-04-08",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bed end must be greater than or equal to bed start.")
+        self.assertEqual(Planting.objects.filter(planning_year=self.planning_year).count(), 0)
+
+    def test_planting_create_htmx_success_returns_trigger_headers(self):
+        response = self.client.post(
+            reverse("planning:planting_create"),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "variety": "",
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "1",
+                "planned_plant_date": "2026-04-08",
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.headers["HX-Trigger"], "plantingCreated")
+        self.assertEqual(response.headers["HX-Redirect"], reverse("planning:matrix"))
+
+    def test_planting_edit_rejects_bed_end_beyond_block_capacity(self):
+        planting = self._create_planting(status="planned")
+
+        response = self.client.post(
+            reverse("planning:planting_edit", kwargs={"pk": planting.pk}),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "variety": "",
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "99",
+                "planned_plant_date": "2026-04-08",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "only has 10 beds")
+        planting.refresh_from_db()
+        self.assertEqual(planting.bed_end, 1)
+
+    def test_planting_edit_htmx_success_returns_trigger_headers(self):
+        planting = self._create_planting(status="planned")
+
+        response = self.client.post(
+            reverse("planning:planting_edit", kwargs={"pk": planting.pk}),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "variety": "",
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "1",
+                "planned_plant_date": "2026-04-08",
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.headers["HX-Trigger"], "plantingCreated")
+        self.assertEqual(response.headers["HX-Redirect"], reverse("planning:matrix"))
+
     def test_planting_edit_replaces_pending_generated_events_instead_of_duplicating(self):
         self.crop.nursery_weeks = 2
         self.crop.weeks_until_pot_up = 1

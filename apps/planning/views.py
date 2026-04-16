@@ -269,20 +269,48 @@ class PlantingFormContextMixin:
         return ctx
 
 
+class PlantingForm(forms.ModelForm):
+    class Meta:
+        model = Planting
+        fields = [
+            "crop",
+            "crop_season",
+            "variety",
+            "block",
+            "bed_start",
+            "bed_end",
+            "planned_plant_date",
+        ]
+
+    def clean(self):
+        cleaned = super().clean()
+        block = cleaned.get("block")
+        bed_start = cleaned.get("bed_start")
+        bed_end = cleaned.get("bed_end")
+        crop = cleaned.get("crop")
+        crop_season = cleaned.get("crop_season")
+
+        if bed_start and bed_end and bed_end < bed_start:
+            self.add_error("bed_end", "Bed end must be greater than or equal to bed start.")
+
+        if block and bed_end and bed_end > block.num_beds:
+            self.add_error("bed_end", f"{block.name} only has {block.num_beds} beds.")
+
+        if block and crop and crop_season:
+            if crop_season.crop_id != crop.id:
+                self.add_error("crop_season", "Season profile must match the selected crop.")
+            if crop_season.block_type != block.block_type:
+                self.add_error("crop_season", "Season profile must match the selected block type.")
+
+        return cleaned
+
+
 class PlantingCreateView(ActivePlanningYearMixin, PlantingFormContextMixin, CreateView):
     """Create a new planting. Handles both full-page and HTMX partial."""
 
     model = Planting
     template_name = "planning/partials/planting_form.html"
-    fields = [
-        "crop",
-        "crop_season",
-        "variety",
-        "block",
-        "bed_start",
-        "bed_end",
-        "planned_plant_date",
-    ]
+    form_class = PlantingForm
 
     def get_initial(self):
         initial = super().get_initial()
@@ -335,15 +363,7 @@ class PlantingUpdateView(PlantingFormContextMixin, UpdateView):
 
     model = Planting
     template_name = "planning/partials/planting_form.html"
-    fields = [
-        "crop",
-        "crop_season",
-        "variety",
-        "block",
-        "bed_start",
-        "bed_end",
-        "planned_plant_date",
-    ]
+    form_class = PlantingForm
 
     def get_initial(self):
         initial = super().get_initial()

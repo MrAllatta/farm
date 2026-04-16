@@ -1,0 +1,56 @@
+{# operations/inventory_harvest_in.html #}
+{% extends "base.html" %}
+
+{% block title %}Harvest to Inventory{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Harvest to Inventory</h1>
+    <p>
+        {{ crop.name }} from {{ planting.block.name }} beds {{ planting.bed_start }}-{{ planting.bed_end }}
+        (event {{ harvest_event.id }})
+    </p>
+    <p>
+        Planned: {{ harvest_event.planned_quantity|floatformat:2 }} {{ harvest_event.planned_units }}
+        on {{ harvest_event.planned_date|date:"Y-m-d" }}
+    </p>
+    {% if harvest_event.actual_quantity %}
+    <p>
+        Recorded harvest: {{ harvest_event.actual_quantity|floatformat:2 }}
+        {{ harvest_event.actual_units|default:harvest_event.planned_units }}
+    </p>
+    {% endif %}
+    <p>Current inventory balance: {{ current_balance|floatformat:2 }} {{ crop.harvest_unit }}</p>
+    <p><a href="{% url 'operations:inventory' %}" class="btn">Back to Inventory Dashboard</a></p>
+</section>
+
+<section class="panel">
+    <h2>Recent Inventory Entries</h2>
+    {% if recent_ledger_entries %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Running Balance</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in recent_ledger_entries %}
+            <tr>
+                <td>{{ entry.event_date|date:"Y-m-d" }}</td>
+                <td>{{ entry.get_event_type_display }}</td>
+                <td>{{ entry.quantity|floatformat:2 }}</td>
+                <td>{{ entry.running_balance|floatformat:2 }}</td>
+                <td>{{ entry.notes|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No inventory history for this crop yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

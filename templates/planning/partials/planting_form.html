@@ -24,6 +24,16 @@
           hx-swap="innerHTML"
           {% endif %}>
         {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="message message-error">
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            {{ error }}<br>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
         
         {# Crop selection — the most important field #}
         <div class="form-group">
