@@ -4318,3 +4318,506 @@ class GoogleSheetsStageA2ConnectorTests(TestCase):
                     "Arugula,Astro,B1,11,11,2026-04-06,100,Planned",
                 ],
             )
+
+
+class StageA2BaselineBundleTests(TestCase):
+    def _write_csv(self, parent, name, lines):
+        Path(parent, name).write_text("\n".join(lines), encoding="utf-8")
+
+    def test_snapshot_stage_a2_bundle_can_emit_baseline_live_rehearsal_bundle(self):
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            source_dir = temp_path / "source-tabs"
+            output_dir = temp_path / "bundle"
+            source_dir.mkdir(parents=True, exist_ok=True)
+
+            self._write_csv(
+                source_dir,
+                "blocks.csv",
+                [
+                    "Define Your Farm",
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed,Bedfeet in Block",
+                    "Field 1,Field,10,3,100,1000",
+                ],
+            )
+            self._write_csv(
+                source_dir,
+                "crop_info.csv",
+                [
+                    "Crop Catalog",
+                    "Crop,PRODUCT Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Unit,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Name,Seeded Tray Name,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                ],
+            )
+            self._write_csv(
+                source_dir,
+                "crop_sales_formats.csv",
+                [
+                    "Product Formats",
+                    "Format,Product,Sale price,Sale Units,Harvest Qty,Product SKU",
+                    "Arugula - 1/3 lb,Arugula,$7.00,1/3 lb,0.33,ARU-13",
+                ],
+            )
+            self._write_csv(
+                source_dir,
+                "crop_planner.csv",
+                [
+                    "Yellow Columns - Enter Your Information",
+                    "Crop // Variety,Block,Bed #,Harvest Safety Factor,Plan Field Year,Plan Field Week,Plan Bedft",
+                    "Arugula // Astro,Field 1,11,1.3,2026,15,100",
+                ],
+            )
+
+            config_path = temp_path / "snapshot-config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "baseline-live-rehearsal-bundle",
+                        "tabs": [
+                            {
+                                "source_csv": "source-tabs/blocks.csv",
+                                "output_path": "reference/blocks.csv",
+                                "required_headers": [
+                                    "Block",
+                                    "Block Type",
+                                    "# of Beds",
+                                    "Bed Width (feet)",
+                                    "Bedfeet per Bed",
+                                ],
+                            },
+                            {
+                                "source_csv": "source-tabs/crop_info.csv",
+                                "output_path": "reference/crop_info.csv",
+                                "required_headers": [
+                                    "Crop",
+                                    "PRODUCT Type",
+                                    "Botanical Family",
+                                    "Fresh or Storage",
+                                    "Storage Weeks",
+                                    "Harvest Unit",
+                                    "Average Unit Weight",
+                                    "Units Per Bin",
+                                    "Harvest Bin",
+                                    "Harvest Tools",
+                                    "Harvest Rate (units per hour)",
+                                    "Nursery Weeks",
+                                    "Weeks Until Pot Up",
+                                    "Pot Up Tray Name",
+                                    "Seeded Tray Name",
+                                    "Seeds Per Cell",
+                                    "Thinned Plants",
+                                    "Seeds Per Ounce",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Type",
+                                    "Botanical Family",
+                                    "Fresh or Storage",
+                                    "Storage Weeks",
+                                    "Harvest Units",
+                                    "Average Unit Weight",
+                                    "Units Per Bin",
+                                    "Harvest Bin",
+                                    "Harvest Tools",
+                                    "Harvest Rate (units per hour)",
+                                    "Nursery Weeks",
+                                    "Weeks Until Pot Up",
+                                    "Pot Up Tray Size",
+                                    "Seeded Tray Size",
+                                    "Seeds Per Cell",
+                                    "Thinned Plants",
+                                    "Seeds Per Ounce",
+                                ],
+                                "column_map": {
+                                    "Type": "PRODUCT Type",
+                                    "Harvest Units": "Harvest Unit",
+                                    "Pot Up Tray Size": "Pot Up Tray Name",
+                                    "Seeded Tray Size": "Seeded Tray Name",
+                                },
+                            },
+                            {
+                                "source_csv": "source-tabs/crop_sales_formats.csv",
+                                "output_path": "reference/crop_sales_formats.csv",
+                                "required_headers": [
+                                    "Format",
+                                    "Product",
+                                    "Sale price",
+                                    "Sale Units",
+                                    "Harvest Qty",
+                                    "Product SKU",
+                                ],
+                                "output_headers": [
+                                    "Crop Name",
+                                    "Product Name",
+                                    "Sale Price",
+                                    "Sale Unit",
+                                    "Harvest Qty Per Sale Unit",
+                                    "SKU",
+                                    "Is Active",
+                                ],
+                                "column_map": {
+                                    "Crop Name": "Product",
+                                    "Product Name": "Format",
+                                    "Sale Price": "Sale price",
+                                    "Sale Unit": "Sale Units",
+                                    "Harvest Qty Per Sale Unit": "Harvest Qty",
+                                    "SKU": "Product SKU",
+                                },
+                                "default_values": {"Is Active": "true"},
+                            },
+                            {
+                                "source_csv": "source-tabs/crop_planner.csv",
+                                "output_path": "year_2026/plantings.csv",
+                                "required_headers": [
+                                    "Crop // Variety",
+                                    "Block",
+                                    "Bed #",
+                                    "Plan Field Year",
+                                    "Plan Field Week",
+                                    "Plan Bedft",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Variety",
+                                    "Block",
+                                    "Bed Start",
+                                    "Bed End",
+                                    "Planned Plant Date",
+                                    "Planned Bedfeet",
+                                    "Status",
+                                ],
+                                "column_map": {
+                                    "Crop": "Crop // Variety",
+                                    "Variety": "Crop // Variety",
+                                    "Block": "Block",
+                                    "Bed Start": "Bed #",
+                                    "Bed End": "Bed #",
+                                    "Planned Bedfeet": "Plan Bedft",
+                                },
+                                "default_values": {"Status": "Planned"},
+                                "row_transforms": [
+                                    {
+                                        "type": "split",
+                                        "source": "Crop",
+                                        "delimiter": "//",
+                                        "left_target": "Crop",
+                                        "right_target": "Variety",
+                                    },
+                                    {
+                                        "type": "copy",
+                                        "source": "Bed Start",
+                                        "targets": ["Bed End"],
+                                    },
+                                    {
+                                        "type": "week_monday",
+                                        "year_source": "Plan Field Year",
+                                        "week_source": "Plan Field Week",
+                                        "target": "Planned Plant Date",
+                                    },
+                                ],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "snapshot_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            self.assertEqual(
+                (output_dir / "reference" / "blocks.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed,Bedfeet in Block",
+                    "Field 1,Field,10,3,100,1000",
+                ],
+            )
+            self.assertEqual(
+                (output_dir / "reference" / "crop_info.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                ],
+            )
+            self.assertEqual(
+                (output_dir / "reference" / "crop_sales_formats.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                    "Arugula,Arugula - 1/3 lb,$7.00,1/3 lb,0.33,ARU-13,true",
+                ],
+            )
+            self.assertEqual(
+                (output_dir / "year_2026" / "plantings.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop,Variety,Block,Bed Start,Bed End,Planned Plant Date,Planned Bedfeet,Status",
+                    "Arugula,Astro,Field 1,11,11,2026-04-06,100,Planned",
+                ],
+            )
+
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["source_id"], "baseline-live-rehearsal-bundle")
+            self.assertEqual(
+                [tab["output_path"] for tab in manifest["tabs"]],
+                [
+                    "reference/blocks.csv",
+                    "reference/crop_info.csv",
+                    "reference/crop_sales_formats.csv",
+                    "year_2026/plantings.csv",
+                ],
+            )
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_can_emit_baseline_live_rehearsal_bundle(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.side_effect = [
+            {
+                "spreadsheet_id": "sheet-103",
+                "spreadsheet_name": "Define Your Farm 2026",
+                "modified_time": "2026-04-16T10:00:00Z",
+            },
+            {
+                "spreadsheet_id": "sheet-201",
+                "spreadsheet_name": "Crop List 2026",
+                "modified_time": "2026-04-16T10:05:00Z",
+            },
+            {
+                "spreadsheet_id": "sheet-202",
+                "spreadsheet_name": "Product Formats 2026",
+                "modified_time": "2026-04-16T10:10:00Z",
+            },
+            {
+                "spreadsheet_id": "sheet-402",
+                "spreadsheet_name": "Crop Plan 2026",
+                "modified_time": "2026-04-16T10:15:00Z",
+            },
+        ]
+        fetch_tab_rows_mock.side_effect = [
+            [
+                ["Define Your Farm"],
+                ["Block", "Block Type", "# of Beds", "Bed Width (feet)", "Bedfeet per Bed", "Bedfeet in Block"],
+                ["Field 1", "Field", "10", "3", "100", "1000"],
+            ],
+            [
+                ["Crop Catalog"],
+                ["Crop", "PRODUCT Type", "Botanical Family", "Fresh or Storage", "Storage Weeks", "Harvest Unit", "Average Unit Weight", "Units Per Bin", "Harvest Bin", "Harvest Tools", "Harvest Rate (units per hour)", "Nursery Weeks", "Weeks Until Pot Up", "Pot Up Tray Name", "Seeded Tray Name", "Seeds Per Cell", "Thinned Plants", "Seeds Per Ounce"],
+                ["Arugula", "Greens", "Brassicaceae", "Fresh", "0", "bunch", "0.25", "40", "Tote", "Knife", "30", "0", "0", "", "", "1", "0", "12000"],
+            ],
+            [
+                ["Product Formats"],
+                ["Format", "Product", "Sale price", "Sale Units", "Harvest Qty", "Product SKU"],
+                ["Arugula - 1/3 lb", "Arugula", "$7.00", "1/3 lb", "0.33", "ARU-13"],
+            ],
+            [
+                ["Yellow Columns - Enter Your Information"],
+                ["Crop // Variety", "Block", "Bed #", "Harvest Safety Factor", "Plan Field Year", "Plan Field Week", "Plan Bedft"],
+                ["Arugula // Astro", "Field 1", "11", "1.3", "2026", "15", "100"],
+            ],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "live-config.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "baseline-live-rehearsal-bundle",
+                        "drive_folder_url": "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Define Your Farm 2026",
+                                "worksheet_title": "Define Field Blocks",
+                                "output_path": "reference/blocks.csv",
+                                "required_headers": [
+                                    "Block",
+                                    "Block Type",
+                                    "# of Beds",
+                                    "Bed Width (feet)",
+                                    "Bedfeet per Bed",
+                                ],
+                            },
+                            {
+                                "spreadsheet_name": "Crop List 2026",
+                                "worksheet_title": "Crop Info",
+                                "output_path": "reference/crop_info.csv",
+                                "required_headers": [
+                                    "Crop",
+                                    "PRODUCT Type",
+                                    "Botanical Family",
+                                    "Fresh or Storage",
+                                    "Storage Weeks",
+                                    "Harvest Unit",
+                                    "Average Unit Weight",
+                                    "Units Per Bin",
+                                    "Harvest Bin",
+                                    "Harvest Tools",
+                                    "Harvest Rate (units per hour)",
+                                    "Nursery Weeks",
+                                    "Weeks Until Pot Up",
+                                    "Pot Up Tray Name",
+                                    "Seeded Tray Name",
+                                    "Seeds Per Cell",
+                                    "Thinned Plants",
+                                    "Seeds Per Ounce",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Type",
+                                    "Botanical Family",
+                                    "Fresh or Storage",
+                                    "Storage Weeks",
+                                    "Harvest Units",
+                                    "Average Unit Weight",
+                                    "Units Per Bin",
+                                    "Harvest Bin",
+                                    "Harvest Tools",
+                                    "Harvest Rate (units per hour)",
+                                    "Nursery Weeks",
+                                    "Weeks Until Pot Up",
+                                    "Pot Up Tray Size",
+                                    "Seeded Tray Size",
+                                    "Seeds Per Cell",
+                                    "Thinned Plants",
+                                    "Seeds Per Ounce",
+                                ],
+                                "column_map": {
+                                    "Type": "PRODUCT Type",
+                                    "Harvest Units": "Harvest Unit",
+                                    "Pot Up Tray Size": "Pot Up Tray Name",
+                                    "Seeded Tray Size": "Seeded Tray Name",
+                                },
+                            },
+                            {
+                                "spreadsheet_name": "Product Formats 2026",
+                                "worksheet_title": "Farm Crop Formats",
+                                "output_path": "reference/crop_sales_formats.csv",
+                                "required_headers": [
+                                    "Format",
+                                    "Product",
+                                    "Sale price",
+                                    "Sale Units",
+                                    "Harvest Qty",
+                                    "Product SKU",
+                                ],
+                                "output_headers": [
+                                    "Crop Name",
+                                    "Product Name",
+                                    "Sale Price",
+                                    "Sale Unit",
+                                    "Harvest Qty Per Sale Unit",
+                                    "SKU",
+                                    "Is Active",
+                                ],
+                                "column_map": {
+                                    "Crop Name": "Product",
+                                    "Product Name": "Format",
+                                    "Sale Price": "Sale price",
+                                    "Sale Unit": "Sale Units",
+                                    "Harvest Qty Per Sale Unit": "Harvest Qty",
+                                    "SKU": "Product SKU",
+                                },
+                                "default_values": {"Is Active": "true"},
+                            },
+                            {
+                                "spreadsheet_name": "Crop Plan 2026",
+                                "worksheet_title": "Crop Planner",
+                                "output_path": "year_2026/plantings.csv",
+                                "required_headers": [
+                                    "Crop // Variety",
+                                    "Block",
+                                    "Bed #",
+                                    "Plan Field Year",
+                                    "Plan Field Week",
+                                    "Plan Bedft",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Variety",
+                                    "Block",
+                                    "Bed Start",
+                                    "Bed End",
+                                    "Planned Plant Date",
+                                    "Planned Bedfeet",
+                                    "Status",
+                                ],
+                                "column_map": {
+                                    "Crop": "Crop // Variety",
+                                    "Variety": "Crop // Variety",
+                                    "Block": "Block",
+                                    "Bed Start": "Bed #",
+                                    "Bed End": "Bed #",
+                                    "Planned Bedfeet": "Plan Bedft",
+                                },
+                                "default_values": {"Status": "Planned"},
+                                "row_transforms": [
+                                    {
+                                        "type": "split",
+                                        "source": "Crop",
+                                        "delimiter": "//",
+                                        "left_target": "Crop",
+                                        "right_target": "Variety",
+                                    },
+                                    {
+                                        "type": "copy",
+                                        "source": "Bed Start",
+                                        "targets": ["Bed End"],
+                                    },
+                                    {
+                                        "type": "week_monday",
+                                        "year_source": "Plan Field Year",
+                                        "week_source": "Plan Field Week",
+                                        "target": "Planned Plant Date",
+                                    },
+                                ],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["source_id"], "baseline-live-rehearsal-bundle")
+            self.assertEqual(
+                [tab["output_path"] for tab in manifest["tabs"]],
+                [
+                    "reference/blocks.csv",
+                    "reference/crop_info.csv",
+                    "reference/crop_sales_formats.csv",
+                    "year_2026/plantings.csv",
+                ],
+            )
+            self.assertEqual(
+                (output_dir / "reference" / "crop_info.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                ],
+            )
+            self.assertEqual(
+                (output_dir / "year_2026" / "plantings.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop,Variety,Block,Bed Start,Bed End,Planned Plant Date,Planned Bedfeet,Status",
+                    "Arugula,Astro,Field 1,11,11,2026-04-06,100,Planned",
+                ],
+            )
