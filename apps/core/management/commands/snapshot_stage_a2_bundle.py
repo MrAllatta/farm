@@ -47,6 +47,10 @@ class Command(BaseCommand):
                 ),
                 anchor_token=tab.get("anchor_token"),
                 header_row_index=tab.get("header_row_index"),
+                output_headers=tab.get("output_headers"),
+                column_map=tab.get("column_map"),
+                default_values=tab.get("default_values"),
+                row_transforms=tab.get("row_transforms"),
             )
             manifest["tabs"].append(
                 {

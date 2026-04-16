@@ -77,6 +77,10 @@ class Command(BaseCommand):
                 max_scan_rows=tab.get("max_scan_rows", default_scan_rows),
                 anchor_token=tab.get("anchor_token"),
                 header_row_index=tab.get("header_row_index"),
+                output_headers=tab.get("output_headers"),
+                column_map=tab.get("column_map"),
+                default_values=tab.get("default_values"),
+                row_transforms=tab.get("row_transforms"),
             )
 
             output_path = output_dir / tab["output_path"]

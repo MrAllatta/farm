@@ -1758,6 +1758,152 @@ class StageA2OfflineConnectorTests(TestCase):
         self.assertEqual(normalized["strategy"], "anchor_token")
         self.assertEqual(normalized["rows"][1], ["Field 9", "4", "150"])
 
+    def test_normalizer_can_project_live_tab_columns_into_importer_contract(self):
+        rows = [
+            ["Choose Formats To Sell Your Crops"],
+            [
+                "Format",
+                "Product",
+                "Sale price",
+                "Sale Units",
+                "Harvest Qty",
+                "Harvest Unit",
+                "Product SKU",
+            ],
+            ["Arugula - 1/3 lb", "Arugula", "$7.00", "1/3 lb", "0.33", "pounds", "-1/3 lb"],
+        ]
+
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Format", "Product", "Sale price", "Sale Units", "Harvest Qty", "Product SKU"],
+            output_headers=[
+                "Crop Name",
+                "Product Name",
+                "Sale Price",
+                "Sale Unit",
+                "Harvest Qty Per Sale Unit",
+                "SKU",
+                "Is Active",
+            ],
+            column_map={
+                "Crop Name": "Product",
+                "Product Name": "Format",
+                "Sale Price": "Sale price",
+                "Sale Unit": "Sale Units",
+                "Harvest Qty Per Sale Unit": "Harvest Qty",
+                "SKU": "Product SKU",
+            },
+            default_values={"Is Active": "true"},
+        )
+
+        self.assertEqual(normalized["header_row_index"], 1)
+        self.assertEqual(
+            normalized["rows"][0],
+            [
+                "Crop Name",
+                "Product Name",
+                "Sale Price",
+                "Sale Unit",
+                "Harvest Qty Per Sale Unit",
+                "SKU",
+                "Is Active",
+            ],
+        )
+        self.assertEqual(
+            normalized["rows"][1],
+            ["Arugula", "Arugula - 1/3 lb", "$7.00", "1/3 lb", "0.33", "-1/3 lb", "true"],
+        )
+
+    def test_normalizer_can_transform_crop_planner_into_plantings_contract(self):
+        rows = [
+            ["Yellow Columns - Enter Your Information"],
+            [
+                "Crop // Variety",
+                "Block",
+                "Bed #",
+                "Harvest Safety Factor",
+                "Plan Field Year",
+                "Plan Field Week",
+                "Plan Bedft",
+            ],
+            ["Arugula // Astro", "B1", "11", "1.3", "2026", "15", "100"],
+            ["Spinach // Corvair", "D1", "", "1.3", "2026", "20", "50"],
+        ]
+
+        normalized = normalize_rows(
+            rows,
+            required_headers=[
+                "Crop // Variety",
+                "Block",
+                "Bed #",
+                "Plan Field Year",
+                "Plan Field Week",
+                "Plan Bedft",
+            ],
+            output_headers=[
+                "Crop",
+                "Variety",
+                "Block",
+                "Bed Start",
+                "Bed End",
+                "Planned Plant Date",
+                "Planned Bedfeet",
+                "Status",
+            ],
+            column_map={
+                "Crop": "Crop // Variety",
+                "Variety": "Crop // Variety",
+                "Block": "Block",
+                "Bed Start": "Bed #",
+                "Bed End": "Bed #",
+                "Planned Bedfeet": "Plan Bedft",
+            },
+            default_values={"Status": "Planned"},
+            row_transforms=[
+                {
+                    "type": "split",
+                    "source": "Crop",
+                    "delimiter": "//",
+                    "left_target": "Crop",
+                    "right_target": "Variety",
+                },
+                {
+                    "type": "copy",
+                    "source": "Bed Start",
+                    "targets": ["Bed End"],
+                },
+                {
+                    "type": "week_monday",
+                    "year_source": "Plan Field Year",
+                    "week_source": "Plan Field Week",
+                    "target": "Planned Plant Date",
+                },
+            ],
+        )
+
+        self.assertEqual(normalized["header_row_index"], 1)
+        self.assertEqual(
+            normalized["rows"][0],
+            [
+                "Crop",
+                "Variety",
+                "Block",
+                "Bed Start",
+                "Bed End",
+                "Planned Plant Date",
+                "Planned Bedfeet",
+                "Status",
+            ],
+        )
+        self.assertEqual(
+            normalized["rows"][1],
+            ["Arugula", "Astro", "B1", "11", "11", "2026-04-06", "100", "Planned"],
+        )
+        self.assertEqual(
+            normalized["rows"][2],
+            ["Spinach", "Corvair", "D1", "", "", "2026-05-11", "50", "Planned"],
+        )
+
     def test_snapshot_stage_a2_bundle_command_writes_normalized_bundle_and_manifest(self):
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -1836,6 +1982,206 @@ class StageA2OfflineConnectorTests(TestCase):
                     "source_csv": "raw/blocks-tab.csv",
                     "strategy": "required_header_set_scan",
                 }
+            ],
+        )
+
+    def test_snapshot_stage_a2_bundle_can_translate_live_reference_tab_shape(self):
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            raw_dir = temp_path / "raw"
+            raw_dir.mkdir()
+            (raw_dir / "farm-crop-formats.csv").write_text(
+                "\n".join(
+                    [
+                        "Choose Formats To Sell Your Crops",
+                        "Format,Product,Sale price,Sale Units,Harvest Qty,Harvest Unit,Product SKU",
+                        "Arugula - 1/3 lb,Arugula,$7.00,1/3 lb,0.33,pounds,-1/3 lb",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            config_path = temp_path / "stage-a2-config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "offline-fixture",
+                        "tabs": [
+                            {
+                                "source_csv": "raw/farm-crop-formats.csv",
+                                "output_path": "reference/crop_sales_formats.csv",
+                                "required_headers": [
+                                    "Format",
+                                    "Product",
+                                    "Sale price",
+                                    "Sale Units",
+                                    "Harvest Qty",
+                                    "Product SKU",
+                                ],
+                                "output_headers": [
+                                    "Crop Name",
+                                    "Product Name",
+                                    "Sale Price",
+                                    "Sale Unit",
+                                    "Harvest Qty Per Sale Unit",
+                                    "SKU",
+                                    "Is Active",
+                                ],
+                                "column_map": {
+                                    "Crop Name": "Product",
+                                    "Product Name": "Format",
+                                    "Sale Price": "Sale price",
+                                    "Sale Unit": "Sale Units",
+                                    "Harvest Qty Per Sale Unit": "Harvest Qty",
+                                    "SKU": "Product SKU",
+                                },
+                                "default_values": {
+                                    "Is Active": "true",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output_dir = temp_path / "bundle"
+            call_command(
+                "snapshot_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            with (output_dir / "reference" / "crop_sales_formats.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                rows = list(csv.reader(handle))
+
+        self.assertEqual(
+            rows,
+            [
+                [
+                    "Crop Name",
+                    "Product Name",
+                    "Sale Price",
+                    "Sale Unit",
+                    "Harvest Qty Per Sale Unit",
+                    "SKU",
+                    "Is Active",
+                ],
+                ["Arugula", "Arugula - 1/3 lb", "$7.00", "1/3 lb", "0.33", "-1/3 lb", "true"],
+            ],
+        )
+
+    def test_snapshot_stage_a2_bundle_can_translate_crop_planner_rows(self):
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            raw_dir = temp_path / "raw"
+            raw_dir.mkdir()
+            (raw_dir / "crop-planner.csv").write_text(
+                "\n".join(
+                    [
+                        "Yellow Columns - Enter Your Information",
+                        "Crop // Variety,Block,Bed #,Harvest Safety Factor,Plan Field Year,Plan Field Week,Plan Bedft",
+                        "Arugula // Astro,B1,11,1.3,2026,15,100",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            config_path = temp_path / "stage-a2-config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "offline-fixture",
+                        "tabs": [
+                            {
+                                "source_csv": "raw/crop-planner.csv",
+                                "output_path": "year_2026/plantings.csv",
+                                "required_headers": [
+                                    "Crop // Variety",
+                                    "Block",
+                                    "Bed #",
+                                    "Plan Field Year",
+                                    "Plan Field Week",
+                                    "Plan Bedft",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Variety",
+                                    "Block",
+                                    "Bed Start",
+                                    "Bed End",
+                                    "Planned Plant Date",
+                                    "Planned Bedfeet",
+                                    "Status",
+                                ],
+                                "column_map": {
+                                    "Crop": "Crop // Variety",
+                                    "Variety": "Crop // Variety",
+                                    "Block": "Block",
+                                    "Bed Start": "Bed #",
+                                    "Bed End": "Bed #",
+                                    "Planned Bedfeet": "Plan Bedft",
+                                },
+                                "default_values": {
+                                    "Status": "Planned",
+                                },
+                                "row_transforms": [
+                                    {
+                                        "type": "split",
+                                        "source": "Crop",
+                                        "delimiter": "//",
+                                        "left_target": "Crop",
+                                        "right_target": "Variety",
+                                    },
+                                    {
+                                        "type": "copy",
+                                        "source": "Bed Start",
+                                        "targets": ["Bed End"],
+                                    },
+                                    {
+                                        "type": "week_monday",
+                                        "year_source": "Plan Field Year",
+                                        "week_source": "Plan Field Week",
+                                        "target": "Planned Plant Date",
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output_dir = temp_path / "bundle"
+            call_command(
+                "snapshot_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            with (output_dir / "year_2026" / "plantings.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                rows = list(csv.reader(handle))
+
+        self.assertEqual(
+            rows,
+            [
+                [
+                    "Crop",
+                    "Variety",
+                    "Block",
+                    "Bed Start",
+                    "Bed End",
+                    "Planned Plant Date",
+                    "Planned Bedfeet",
+                    "Status",
+                ],
+                ["Arugula", "Astro", "B1", "11", "11", "2026-04-06", "100", "Planned"],
             ],
         )
 
@@ -3779,3 +4125,196 @@ class GoogleSheetsStageA2ConnectorTests(TestCase):
             self.assertEqual(manifest["tabs"][0]["strategy"], "required_header_set_scan")
             self.assertEqual(manifest["tabs"][0]["rows_written"], 1)
             self.assertIn("pulled Archive 2025:Growing Space -> reference/blocks.csv", stdout.getvalue())
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_can_project_live_reference_columns(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-202",
+            "spreadsheet_name": "Product Formats 2026",
+            "modified_time": "2026-04-16T10:00:00Z",
+        }
+        fetch_tab_rows_mock.return_value = [
+            ["Choose Formats To Sell Your Crops"],
+            ["Format", "Product", "Sale price", "Sale Units", "Harvest Qty", "Product SKU"],
+            ["Arugula - 1/3 lb", "Arugula", "$7.00", "1/3 lb", "0.33", "-1/3 lb"],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "live-config.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "drive-folder-stage-a2",
+                        "drive_folder_url": "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Product Formats 2026",
+                                "worksheet_title": "Farm Crop Formats",
+                                "output_path": "reference/crop_sales_formats.csv",
+                                "required_headers": [
+                                    "Format",
+                                    "Product",
+                                    "Sale price",
+                                    "Sale Units",
+                                    "Harvest Qty",
+                                    "Product SKU",
+                                ],
+                                "output_headers": [
+                                    "Crop Name",
+                                    "Product Name",
+                                    "Sale Price",
+                                    "Sale Unit",
+                                    "Harvest Qty Per Sale Unit",
+                                    "SKU",
+                                    "Is Active",
+                                ],
+                                "column_map": {
+                                    "Crop Name": "Product",
+                                    "Product Name": "Format",
+                                    "Sale Price": "Sale price",
+                                    "Sale Unit": "Sale Units",
+                                    "Harvest Qty Per Sale Unit": "Harvest Qty",
+                                    "SKU": "Product SKU",
+                                },
+                                "default_values": {
+                                    "Is Active": "true",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            self.assertEqual(
+                (output_dir / "reference" / "crop_sales_formats.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                    "Arugula,Arugula - 1/3 lb,$7.00,1/3 lb,0.33,-1/3 lb,true",
+                ],
+            )
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_can_translate_crop_planner_rows(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-402",
+            "spreadsheet_name": "Crop Plan 2026",
+            "modified_time": "2026-04-16T10:00:00Z",
+        }
+        fetch_tab_rows_mock.return_value = [
+            ["Yellow Columns - Enter Your Information"],
+            ["Crop // Variety", "Block", "Bed #", "Harvest Safety Factor", "Plan Field Year", "Plan Field Week", "Plan Bedft"],
+            ["Arugula // Astro", "B1", "11", "1.3", "2026", "15", "100"],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "live-config.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "drive-folder-stage-a2",
+                        "drive_folder_url": "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Crop Plan 2026",
+                                "worksheet_title": "Crop Planner",
+                                "output_path": "year_2026/plantings.csv",
+                                "required_headers": [
+                                    "Crop // Variety",
+                                    "Block",
+                                    "Bed #",
+                                    "Plan Field Year",
+                                    "Plan Field Week",
+                                    "Plan Bedft",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Variety",
+                                    "Block",
+                                    "Bed Start",
+                                    "Bed End",
+                                    "Planned Plant Date",
+                                    "Planned Bedfeet",
+                                    "Status",
+                                ],
+                                "column_map": {
+                                    "Crop": "Crop // Variety",
+                                    "Variety": "Crop // Variety",
+                                    "Block": "Block",
+                                    "Bed Start": "Bed #",
+                                    "Bed End": "Bed #",
+                                    "Planned Bedfeet": "Plan Bedft",
+                                },
+                                "default_values": {
+                                    "Status": "Planned",
+                                },
+                                "row_transforms": [
+                                    {
+                                        "type": "split",
+                                        "source": "Crop",
+                                        "delimiter": "//",
+                                        "left_target": "Crop",
+                                        "right_target": "Variety",
+                                    },
+                                    {
+                                        "type": "copy",
+                                        "source": "Bed Start",
+                                        "targets": ["Bed End"],
+                                    },
+                                    {
+                                        "type": "week_monday",
+                                        "year_source": "Plan Field Year",
+                                        "week_source": "Plan Field Week",
+                                        "target": "Planned Plant Date",
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            self.assertEqual(
+                (output_dir / "year_2026" / "plantings.csv").read_text(encoding="utf-8").splitlines(),
+                [
+                    "Crop,Variety,Block,Bed Start,Bed End,Planned Plant Date,Planned Bedfeet,Status",
+                    "Arugula,Astro,B1,11,11,2026-04-06,100,Planned",
+                ],
+            )

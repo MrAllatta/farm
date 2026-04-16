@@ -1,4 +1,5 @@
 import csv
+from datetime import date
 from pathlib import Path
 
 
@@ -15,6 +16,129 @@ def canonicalize_header_row(header_row, aliases=None):
         normalized = _normalize_text(cell)
         canonical.append(alias_map.get(normalized, " ".join(str(cell).strip().split())))
     return canonical
+
+
+def _project_rows(rows, output_headers=None, column_map=None, default_values=None):
+    if not output_headers:
+        return rows
+
+    source_header = rows[0] if rows else []
+    source_index = {_normalize_text(value): index for index, value in enumerate(source_header)}
+    column_map = column_map or {}
+    default_values = default_values or {}
+
+    projected_rows = [output_headers]
+    for row in rows[1:]:
+        projected_row = []
+        for output_header in output_headers:
+            source_header_name = column_map.get(output_header, output_header)
+            source_idx = source_index.get(_normalize_text(source_header_name))
+            if source_idx is None:
+                projected_row.append(default_values.get(output_header, ""))
+                continue
+            value = row[source_idx] if source_idx < len(row) else ""
+            if value == "":
+                value = default_values.get(output_header, "")
+            projected_row.append(value)
+        projected_rows.append(projected_row)
+    return projected_rows
+
+
+def _split_value(value, delimiter):
+    if delimiter not in value:
+        return value.strip(), ""
+    left, right = value.split(delimiter, 1)
+    return left.strip(), right.strip()
+
+
+def _monday_for_iso_week(year_value, week_value):
+    if year_value in ("", None) or week_value in ("", None):
+        return ""
+    try:
+        year = int(str(year_value).strip())
+        week = int(str(week_value).strip())
+    except ValueError:
+        return ""
+    return date.fromisocalendar(year, week, 1).isoformat()
+
+
+def _value_for_transform(source_name, transformed_row, transformed_index, source_row, source_index):
+    projected_idx = transformed_index.get(_normalize_text(source_name))
+    if projected_idx is not None:
+        return transformed_row[projected_idx]
+    original_idx = source_index.get(_normalize_text(source_name))
+    if original_idx is not None and original_idx < len(source_row):
+        return source_row[original_idx]
+    return ""
+
+
+def _apply_row_transforms(rows, row_transforms=None, source_rows=None):
+    if not row_transforms:
+        return rows
+
+    output_headers = rows[0] if rows else []
+    transformed_index = {_normalize_text(value): index for index, value in enumerate(output_headers)}
+    source_headers = source_rows[0] if source_rows else []
+    source_index = {_normalize_text(value): index for index, value in enumerate(source_headers)}
+    transformed_rows = [output_headers]
+
+    for row_number, row in enumerate(rows[1:], start=1):
+        transformed_row = list(row)
+        source_row = source_rows[row_number] if source_rows and row_number < len(source_rows) else []
+        for transform in row_transforms:
+            transform_type = transform["type"]
+            if transform_type == "split":
+                left_value, right_value = _split_value(
+                    _value_for_transform(
+                        transform["source"],
+                        transformed_row,
+                        transformed_index,
+                        source_row,
+                        source_index,
+                    ),
+                    transform.get("delimiter", "//"),
+                )
+                left_target = transformed_index.get(_normalize_text(transform["left_target"]))
+                right_target = transformed_index.get(_normalize_text(transform["right_target"]))
+                if left_target is not None:
+                    transformed_row[left_target] = left_value
+                if right_target is not None:
+                    transformed_row[right_target] = right_value
+            elif transform_type == "copy":
+                value = _value_for_transform(
+                    transform["source"],
+                    transformed_row,
+                    transformed_index,
+                    source_row,
+                    source_index,
+                )
+                for target in transform.get("targets", []):
+                    target_index = transformed_index.get(_normalize_text(target))
+                    if target_index is not None:
+                        transformed_row[target_index] = value
+            elif transform_type == "week_monday":
+                target_index = transformed_index.get(_normalize_text(transform["target"]))
+                if target_index is None:
+                    continue
+                transformed_row[target_index] = _monday_for_iso_week(
+                    _value_for_transform(
+                        transform["year_source"],
+                        transformed_row,
+                        transformed_index,
+                        source_row,
+                        source_index,
+                    ),
+                    _value_for_transform(
+                        transform["week_source"],
+                        transformed_row,
+                        transformed_index,
+                        source_row,
+                        source_index,
+                    ),
+                )
+        transformed_rows.append(transformed_row)
+
+    return transformed_rows
 
 
 def detect_header_row(
@@ -61,6 +185,10 @@ def normalize_rows(
     max_scan_rows=200,
     anchor_token=None,
     header_row_index=None,
+    output_headers=None,
+    column_map=None,
+    default_values=None,
+    row_transforms=None,
 ):
     header_index, canonical_header, strategy = detect_header_row(
         rows,
@@ -70,10 +198,22 @@ def normalize_rows(
         anchor_token=anchor_token,
         header_row_index=header_row_index,
     )
+    source_rows = [canonical_header] + rows[header_index + 1 :]
+    normalized_rows = _project_rows(
+        source_rows,
+        output_headers=output_headers,
+        column_map=column_map,
+        default_values=default_values,
+    )
+    normalized_rows = _apply_row_transforms(
+        normalized_rows,
+        row_transforms=row_transforms,
+        source_rows=source_rows,
+    )
     return {
         "header_row_index": header_index,
         "strategy": strategy,
-        "rows": [canonical_header] + rows[header_index + 1 :],
+        "rows": normalized_rows,
     }
 
 
@@ -85,6 +225,10 @@ def normalize_csv_file(
     max_scan_rows=200,
     anchor_token=None,
     header_row_index=None,
+    output_headers=None,
+    column_map=None,
+    default_values=None,
+    row_transforms=None,
 ):
     with Path(source_path).open("r", encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.reader(handle))
@@ -96,6 +240,10 @@ def normalize_csv_file(
         max_scan_rows=max_scan_rows,
         anchor_token=anchor_token,
         header_row_index=header_row_index,
+        output_headers=output_headers,
+        column_map=column_map,
+        default_values=default_values,
+        row_transforms=row_transforms,
     )
 
     output_path = Path(output_path)
