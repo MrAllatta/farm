@@ -319,9 +319,16 @@ class Command(BaseCommand):
         self._import_sales_channels()
         self._import_crop_sales_formats()
 
+    def _resolve_reference_path(self, filename):
+        """Support both legacy root-level fixtures and Stage A2 `reference/` bundles."""
+        root_path = os.path.join(self.data_dir, filename)
+        if os.path.exists(root_path):
+            return root_path
+        return os.path.join(self.data_dir, "reference", filename)
+
     def _import_blocks(self):
         """Import block definitions."""
-        path = os.path.join(self.data_dir, "blocks.csv")
+        path = self._resolve_reference_path("blocks.csv")
         if not os.path.exists(path):
             self.stdout.write(f"  ⊘ blocks.csv not found\n")
             return
@@ -377,7 +384,7 @@ class Command(BaseCommand):
 
     def _import_crops(self):
         """Import crop info."""
-        path = os.path.join(self.data_dir, "crop_info.csv")
+        path = self._resolve_reference_path("crop_info.csv")
         if not os.path.exists(path):
             self.stdout.write(f"  ⊘ crop_info.csv not found\n")
             return
@@ -465,7 +472,7 @@ class Command(BaseCommand):
 
     def _import_crop_by_season(self):
         """Import crop-by-season profiles."""
-        path = os.path.join(self.data_dir, "crop_by_season.csv")
+        path = self._resolve_reference_path("crop_by_season.csv")
         if not os.path.exists(path):
             self.stdout.write(f"  ⊘ crop_by_season.csv not found\n")
             return
@@ -583,7 +590,7 @@ class Command(BaseCommand):
 
     def _import_sales_channels(self):
         """Import sales channels."""
-        path = os.path.join(self.data_dir, "sales_channels.csv")
+        path = self._resolve_reference_path("sales_channels.csv")
         if not os.path.exists(path):
             self.stdout.write(f"  ⊘ sales_channels.csv not found\n")
             return
@@ -644,7 +651,7 @@ class Command(BaseCommand):
 
     def _import_crop_sales_formats(self):
         """Import crop sales formats (products)."""
-        path = os.path.join(self.data_dir, "crop_sales_formats.csv")
+        path = self._resolve_reference_path("crop_sales_formats.csv")
         if not os.path.exists(path):
             self.stdout.write(f"  ⊘ crop_sales_formats.csv not found\n")
             return

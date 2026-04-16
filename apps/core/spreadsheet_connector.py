@@ -31,8 +31,11 @@ def _project_rows(rows, output_headers=None, column_map=None, default_values=Non
     for row in rows[1:]:
         projected_row = []
         for output_header in output_headers:
-            source_header_name = column_map.get(output_header, output_header)
-            source_idx = source_index.get(_normalize_text(source_header_name))
+            source_reference = column_map.get(output_header, output_header)
+            if isinstance(source_reference, int):
+                source_idx = source_reference
+            else:
+                source_idx = source_index.get(_normalize_text(source_reference))
             if source_idx is None:
                 projected_row.append(default_values.get(output_header, ""))
                 continue
