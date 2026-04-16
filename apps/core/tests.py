@@ -2364,3 +2364,92 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(str(entries[1].running_balance), "7.00")
         self.assertEqual(str(entries[2].quantity), "-3.00")
         self.assertEqual(str(entries[2].running_balance), "4.00")
+
+
+class ImportReferenceDataCommandTests(TestCase):
+    def _write_csv(self, data_dir, name, lines):
+        Path(data_dir, name).write_text("\n".join(lines), encoding="utf-8")
+
+    def _write_reference_fixture(self, data_dir):
+        self._write_csv(
+            data_dir,
+            "blocks.csv",
+            [
+                "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed",
+                "Field 1,Field,10,3,100",
+            ],
+        )
+        self._write_csv(
+            data_dir,
+            "crop_info.csv",
+            [
+                "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+            ],
+        )
+        self._write_csv(
+            data_dir,
+            "crop_by_season.csv",
+            [
+                "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,",
+                "choose crop,Field,10,40,1.2,6,65,3,30,na,,,,,",
+            ],
+        )
+        self._write_csv(
+            data_dir,
+            "sales_channels.csv",
+            [
+                "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                "Farm Stand,Saturday + Sunday,1,52,$500.00,false,1",
+            ],
+        )
+        # Not consumed by import_reference_data today; included to prove extra files are ignored.
+        self._write_csv(
+            data_dir,
+            "crop_sales_formats.csv",
+            [
+                "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                "Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true",
+            ],
+        )
+
+    def test_dry_run_parses_reference_fixture_without_writing(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_reference_fixture(data_dir)
+            stdout = StringIO()
+
+            call_command("import_reference_data", data_dir, "--dry-run", stdout=stdout)
+
+            self.assertIn("DRY RUN", stdout.getvalue())
+            self.assertEqual(Block.objects.count(), 0)
+            self.assertEqual(CropInfo.objects.count(), 0)
+            self.assertEqual(CropBySeason.objects.count(), 0)
+            self.assertEqual(SalesChannel.objects.count(), 0)
+            self.assertEqual(CropSalesFormat.objects.count(), 0)
+
+    def test_import_writes_minimal_reference_records(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_reference_fixture(data_dir)
+
+            call_command("import_reference_data", data_dir)
+
+            self.assertEqual(Block.objects.count(), 1)
+            block = Block.objects.get(name="Field 1")
+            self.assertEqual(block.block_type, "field")
+            self.assertEqual(block.num_beds, 10)
+
+            self.assertEqual(CropInfo.objects.count(), 1)
+            crop = CropInfo.objects.get(name="Carrot")
+            self.assertEqual(crop.harvest_unit, "pounds")
+            self.assertEqual(crop.fresh_or_storage, "fresh")
+
+            self.assertEqual(CropBySeason.objects.count(), 1)
+            season = CropBySeason.objects.get(crop=crop, block_type="field")
+            self.assertEqual(season.dtm_days, 65)
+            self.assertEqual(str(season.total_yield_per_bedfoot), "1.20")
+
+            self.assertEqual(SalesChannel.objects.count(), 1)
+            channel = SalesChannel.objects.get(name="Farm Stand")
+            self.assertEqual(channel.days_of_week, ["Saturday", "Sunday"])
+            self.assertEqual(str(channel.weekly_target), "500.00")
