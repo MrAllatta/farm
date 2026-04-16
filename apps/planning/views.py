@@ -1171,10 +1171,14 @@ class PlantingReviseView(View):
             messages.error(request, "Invalid crop, season, or block.")
             return redirect("planning:planting_edit", pk=pk)
 
-        bed_start = int(request.POST.get("bed_start", 1))
-        bed_end = int(request.POST.get("bed_end", 1))
-        plant_date_str = request.POST.get("planned_plant_date")
-        plant_date = date.fromisoformat(plant_date_str)
+        try:
+            bed_start = int(request.POST.get("bed_start", 1))
+            bed_end = int(request.POST.get("bed_end", 1))
+            plant_date_str = request.POST.get("planned_plant_date")
+            plant_date = date.fromisoformat(plant_date_str)
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid bed range or plant date.")
+            return redirect("planning:planting_revise", pk=pk)
 
         bedfeet = (bed_end - bed_start + 1) * block.bedfeet_per_bed
         first_harvest = plant_date + timedelta(days=crop_season.dtm_days)
@@ -1629,7 +1633,7 @@ class WeekToDateView(View):
                 f'<input type="date" name="planned_plant_date" '
                 f'id="id_planned_plant_date" '
                 f'value="{monday.isoformat()}" required '
-                f'hx-get="{{% url "planning:harvest_date_calc" %}}" '
+                f'hx-get="{reverse("planning:harvest_date_calc")}" '
                 f'hx-target="#calc-dates" '
                 f'hx-trigger="change" '
                 f"hx-include=\"[name='crop_season']\">"

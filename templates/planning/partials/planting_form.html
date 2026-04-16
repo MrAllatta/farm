@@ -4,7 +4,9 @@
 <div class="planting-form {% if is_htmx %}htmx-form{% endif %}">
     
     <div class="form-header">
-        {% if object %}
+        {% if is_revision %}
+        <h2>Revise Planting</h2>
+        {% elif object %}
         <h2>Edit Planting</h2>
         {% else %}
         <h2>New Planting</h2>
@@ -223,9 +225,13 @@
         {# Form actions #}
         <div class="detail-actions">
             <button type="submit" class="btn btn-primary">
-                {% if object %}Save Changes{% else %}Create Planting{% endif %}
+                {% if is_revision %}Create Revision{% elif object %}Save Changes{% else %}Create Planting{% endif %}
             </button>
-            {% if object %}
+            {% if is_revision %}
+            <a href="{% url 'planning:planting_detail' original.id %}" class="btn">
+                Cancel
+            </a>
+            {% elif object %}
             <a href="{% url 'planning:planting_detail' object.id %}" class="btn">
                 Cancel
             </a>

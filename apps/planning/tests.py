@@ -116,6 +116,139 @@ class PlanningSmokeTests(TestCase):
 
 
 @override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
+class PlanningHtmxHelperTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.planning_year = PlanningYear.objects.create(year=2026, status="active")
+        cls.block = Block.objects.create(
+            name="Field 1",
+            block_type="field",
+            num_beds=10,
+            bed_width_feet="3.0",
+            bedfeet_per_bed=100,
+        )
+        cls.crop = CropInfo.objects.create(
+            name="Carrot",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=2,
+            weeks_until_pot_up=1,
+            seeds_per_cell=1,
+            thinned_plants=0,
+            units_per_bin=20,
+            harvest_bin="crate",
+        )
+        cls.crop_season = CropBySeason.objects.create(
+            crop=cls.crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("1.20"),
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+            tp_inrow_spacing=Decimal("0.50"),
+        )
+        planting_date = date(2026, 4, 1)
+        first_harvest = planting_date + timedelta(days=cls.crop_season.dtm_days)
+        last_harvest = first_harvest + timedelta(weeks=cls.crop_season.harvest_weeks - 1)
+        cls.planting = Planting.objects.create(
+            planning_year=cls.planning_year,
+            crop=cls.crop,
+            crop_season=cls.crop_season,
+            block=cls.block,
+            bed_start=1,
+            bed_end=2,
+            planned_bedfeet=200,
+            planned_plant_date=planting_date,
+            planned_first_harvest_date=first_harvest,
+            planned_last_harvest_date=last_harvest,
+            planned_total_yield="240.00",
+            status="planned",
+        )
+
+    def test_crop_season_options_returns_matching_options(self):
+        response = self.client.get(
+            reverse("planning:crop_season_options"),
+            {"crop": self.crop.pk, "block": self.block.pk},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "DTM 65d")
+        self.assertContains(response, "pounds/bf")
+
+    def test_harvest_date_calc_returns_seed_and_harvest_dates(self):
+        response = self.client.get(
+            reverse("planning:harvest_date_calc"),
+            {"crop_season": self.crop_season.pk, "planned_plant_date": "2026-04-15"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "First harvest:")
+        self.assertContains(response, "Last harvest:")
+        self.assertContains(response, "Seed date:")
+
+    def test_bedfeet_calc_returns_capacity_and_yield_details(self):
+        response = self.client.get(
+            reverse("planning:bedfeet_calc"),
+            {
+                "block": self.block.pk,
+                "bed_start": 1,
+                "bed_end": 2,
+                "crop_season": self.crop_season.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bedfeet:")
+        self.assertContains(response, "Planned yield:")
+        self.assertContains(response, "Est. bins:")
+        self.assertContains(response, "Plants:")
+
+    def test_week_to_date_returns_real_harvest_calc_url(self):
+        response = self.client.get(
+            reverse("planning:week_to_date"),
+            {"plant_week_input": 12},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="2026-03-16"')
+        self.assertContains(response, f'hx-get="{reverse("planning:harvest_date_calc")}"')
+
+    def test_bed_conflict_check_reports_conflict(self):
+        response = self.client.get(
+            reverse("planning:bed_conflict_check"),
+            {
+                "block": self.block.pk,
+                "bed_start": 1,
+                "bed_end": 1,
+                "planned_plant_date": "2026-04-15",
+                "crop_season": self.crop_season.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bed Conflicts:")
+        self.assertContains(response, "Carrot")
+
+    def test_bed_conflict_check_excludes_current_planting_on_edit(self):
+        response = self.client.get(
+            reverse("planning:bed_conflict_check"),
+            {
+                "block": self.block.pk,
+                "bed_start": 1,
+                "bed_end": 2,
+                "planned_plant_date": "2026-04-01",
+                "crop_season": self.crop_season.pk,
+                "planting_id": self.planting.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No conflicts")
+
+
+@override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
 class PlantingLifecycleTransitionTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -290,6 +423,16 @@ class PlantingLifecycleTransitionTests(TestCase):
         self.assertContains(response, "Carrot")
         self.assertContains(response, "Record Harvest")
 
+    def test_planting_revise_route_renders_revision_form(self):
+        planting = self._create_planting(status="planned")
+
+        response = self.client.get(
+            reverse("planning:planting_revise", kwargs={"pk": planting.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Revise Planting")
+        self.assertContains(response, "Create Revision")
+
     def test_planting_revise_replaces_original_pending_events(self):
         self.crop.nursery_weeks = 2
         self.crop.weeks_until_pot_up = 1
@@ -324,6 +467,61 @@ class PlantingLifecycleTransitionTests(TestCase):
         self.assertEqual(revised.status, "planned")
         self.assertGreater(NurseryEvent.objects.filter(planting=revised).count(), 0)
         self.assertGreater(HarvestEvent.objects.filter(planting=revised).count(), 0)
+
+    def test_planting_revise_invalid_date_redirects_without_changing_original(self):
+        planting = self._create_planting(status="planned")
+
+        response = self.client.post(
+            reverse("planning:planting_revise", kwargs={"pk": planting.pk}),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "1",
+                "planned_plant_date": "not-a-date",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("planning:planting_revise", kwargs={"pk": planting.pk}))
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planned")
+        self.assertFalse(Planting.objects.filter(revision_of=planting).exists())
+
+    def test_planting_status_requires_staff(self):
+        planting = self._create_planting(status="planned")
+        self.client.logout()
+        user = get_user_model().objects.create_user(
+            "planner-nonstaff", "planner-nonstaff@example.com", "x", is_staff=False
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_planting_revise_requires_staff(self):
+        planting = self._create_planting(status="planned")
+        self.client.logout()
+        user = get_user_model().objects.create_user(
+            "reviser-nonstaff", "reviser-nonstaff@example.com", "x", is_staff=False
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("planning:planting_revise", kwargs={"pk": planting.pk}),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "1",
+                "planned_plant_date": "2026-04-15",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
 
 
 @override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
