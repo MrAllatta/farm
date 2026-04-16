@@ -7,7 +7,11 @@
 <div class="dashboard">
     
     <div class="dashboard-header">
+        {% if week_num %}
         <h1>Week {{ week_num }} — {{ week_monday|date:"F j, Y" }}</h1>
+        {% else %}
+        <h1>Dashboard</h1>
+        {% endif %}
     </div>
     
     {# ── Row 1: Key Metrics ── #}
@@ -46,9 +50,11 @@
             <div class="metric-value">{{ harvest_recorded }} / {{ harvest_count }}</div>
             <div class="metric-sub">
                 {% if harvest_recorded < harvest_count %}
+                {% if week_num %}
                 <a href="{% url 'operations:harvest_entry_week' week_num %}">
                     Record harvests →
                 </a>
+                {% endif %}
                 {% else %}
                 ✓ All recorded
                 {% endif %}
@@ -104,11 +110,14 @@
                 <h3>🥬 Harvest</h3>
                 <p>
                     {{ harvest_count }} crops to harvest this week.
+                    {% if week_num %}
                     <a href="{% url 'reports:harvest_list_print' week_num %}">
                         🖨 Print harvest list
                     </a>
+                    {% endif %}
                 </p>
                 {% if harvest_recorded < harvest_count %}
+                {% if week_num %}
                 <p>
                     <a href="{% url 'operations:harvest_entry_week' week_num %}"
                        class="btn btn-primary">
@@ -116,12 +125,14 @@
                     </a>
                 </p>
                 {% endif %}
+                {% endif %}
             </div>
             
             {# Quick links #}
             <div class="task-section">
                 <h3>📋 Print This Week</h3>
                 <div class="print-links">
+                    {% if week_num %}
                     <a href="{% url 'reports:harvest_list_print' week_num %}" class="btn">
                         🖨 Harvest List
                     </a>
@@ -134,6 +145,7 @@
                     <a href="{% url 'reports:pack_list_print' week_num %}" class="btn">
                         🖨 Pack List
                     </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

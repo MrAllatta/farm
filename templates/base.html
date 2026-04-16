@@ -17,7 +17,9 @@
             <a href="{% url 'core:dashboard' %}">🌱 Farm</a>
             {% if current_planning_year %}
             <span class="nav-year">{{ current_planning_year.year }}</span>
+            {% if current_week %}
             <span class="nav-week">Week {{ current_week }}</span>
+            {% endif %}
             {% endif %}
         </div>
         
@@ -46,12 +48,14 @@
                 <summary class="nav-group-label">Reports</summary>
                 <div class="nav-menu">
                     <a href="{% url 'reports:crop_map' %}">Crop Map</a>
-                    <a href="{% url 'reports:harvest_list_print' current_week %}">
-                        🖨 Harvest List
-                    </a>
-                    <a href="{% url 'reports:weekly_schedule_print' current_week %}">
-                        🖨 Weekly Schedule
-                    </a>
+                    {% if current_week %}
+                        <a href="{% url 'reports:harvest_list_print' current_week %}">
+                            🖨 Harvest List
+                        </a>
+                        <a href="{% url 'reports:weekly_schedule_print' current_week %}">
+                            🖨 Weekly Schedule
+                        </a>
+                    {% endif %}
                     <a href="{% url 'reports:seed_order' %}">Seed Order</a>
                 </div>
             </details>
@@ -91,7 +95,10 @@
     <footer class="main-footer">
         <span>Farm {{ current_planning_year.year }}</span>
         <span>·</span>
-        <span>{{ today|date:"l, F j" }} · Week {{ current_week }}</span>
+        <span>
+            {{ today|date:"l, F j" }}
+            {% if current_week %} · Week {{ current_week }}{% endif %}
+        </span>
     </footer>
     
     <script>
