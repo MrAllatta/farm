@@ -1,6 +1,8 @@
 {
   "fixture_pack": "mismatch",
-  "version": "1.1",
+  "version": "1.2",
+  "scenario_intent": "Deterministic mismatch pack for row-error payloads, failure-signature ownership, and escalation handoff evidence.",
+  "owner": "engineering",
   "expected": {
     "failure_signatures": {
       "namespace_mismatch:crop_by_season.block_type": {
