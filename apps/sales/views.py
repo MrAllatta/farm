@@ -49,6 +49,7 @@ class MarketSalesEntryView(TemplateView):
 
         # Check if detailed entries exist
         detailed_entries = SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
             channel=channel,
             sale_date=sale_date,
         ).select_related("product", "product__crop")
@@ -214,6 +215,7 @@ class MarketSalesEntryView(TemplateView):
                 notes = request.POST.get(notes_key, "")
 
                 SalesEvent.objects.update_or_create(
+                    entry_kind=SalesEvent.EntryKind.ACTUAL,
                     channel=channel,
                     sale_date=sale_date,
                     product=product,

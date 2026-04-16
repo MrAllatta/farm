@@ -9,15 +9,17 @@ from django.db.models import Q, Sum
 from datetime import date
 from isoweek import Week
 
-from reference.models import Block, BlockType, CropInfo
+from reference.models import Block, BlockType, CropInfo, CropSalesFormat, SalesChannel
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus
 from core.planning_year import resolve_current_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
+from sales.models import SalesEvent
 
 from django.http import HttpResponse
 from django import forms
 from django.template.loader import render_to_string
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 
 
 class PlanningMatrixView(TemplateView):
@@ -853,6 +855,158 @@ class HarvestCalendarView(TemplateView):
                 "weeks": weeks,
                 "week_crop_counts": week_crop_counts,
                 "total_crops": len(all_crops),
+            }
+        )
+        return ctx
+
+
+class SalesPlanView(TemplateView):
+    """Product-by-week sales demand planning grid (301 semantics)."""
+
+    template_name = "planning/sales_plan.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.year_obj = resolve_current_planning_year()
+        if not self.year_obj:
+            messages.error(request, "No active planning year configured.")
+            return redirect("planning:matrix")
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
+
+        action = request.POST.get("action", "save")
+        channel_id = request.POST.get("channel")
+        if not channel_id:
+            messages.error(request, "Channel is required.")
+            return redirect(reverse("planning:sales_plan"))
+
+        try:
+            channel = SalesChannel.objects.get(id=channel_id)
+        except SalesChannel.DoesNotExist:
+            messages.error(request, "Invalid channel.")
+            return redirect(reverse("planning:sales_plan"))
+
+        if action == "save":
+            updated = self._save_plan_rows(request, channel)
+            messages.success(
+                request,
+                f"Saved {updated} planned product-week rows for {channel.name}.",
+            )
+            return redirect(f"{reverse('planning:sales_plan')}?channel={channel.id}")
+
+        if action == "draft":
+            from .services.sales_plan_translation import build_demand_to_supply_draft
+
+            draft = build_demand_to_supply_draft(self.year_obj, channel)
+            ctx = self.get_context_data(channel=channel, draft=draft)
+            messages.info(
+                request,
+                "Generated demand-to-supply draft recommendations from current planned demand.",
+            )
+            return render(request, self.template_name, ctx)
+
+        messages.error(request, "Unsupported action.")
+        return redirect(f"{reverse('planning:sales_plan')}?channel={channel.id}")
+
+    def _save_plan_rows(self, request, channel):
+        updated = 0
+        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop")
+        for product in products:
+            for week in range(1, 53):
+                key = f"qty_{product.id}_{week}"
+                raw_value = (request.POST.get(key) or "").strip()
+                sale_date = Week(self.year_obj.year, week).monday()
+
+                existing = SalesEvent.objects.filter(
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    planning_year=self.year_obj,
+                    channel=channel,
+                    product=product,
+                    sale_date=sale_date,
+                ).first()
+
+                if not raw_value:
+                    if existing:
+                        existing.delete()
+                    continue
+
+                try:
+                    quantity = Decimal(raw_value)
+                except (InvalidOperation, TypeError):
+                    continue
+
+                revenue = quantity * product.sale_price
+                SalesEvent.objects.update_or_create(
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    planning_year=self.year_obj,
+                    channel=channel,
+                    product=product,
+                    sale_date=sale_date,
+                    defaults={
+                        "planned_quantity": quantity,
+                        "planned_revenue": revenue,
+                        "notes": "Sales plan entry",
+                    },
+                )
+                updated += 1
+        return updated
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        channel = kwargs.get("channel")
+        channels = SalesChannel.objects.order_by("allocation_priority", "name")
+        if channel is None:
+            selected_channel_id = self.request.GET.get("channel")
+            channel = channels.filter(id=selected_channel_id).first() if selected_channel_id else channels.first()
+
+        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop").order_by(
+            "crop__crop_type", "crop__name", "product_name"
+        )
+        weeks = list(range(1, 53))
+        planned_lookup = {}
+        summary_qty = Decimal("0")
+        summary_revenue = Decimal("0")
+
+        if channel:
+            rows = SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.year_obj,
+                channel=channel,
+            ).select_related("product")
+            for row in rows:
+                week = row.sale_date.isocalendar()[1]
+                key = (row.product_id, week)
+                planned_lookup[key] = row
+                summary_qty += row.planned_quantity or Decimal("0")
+                summary_revenue += row.planned_revenue or Decimal("0")
+
+        product_rows = []
+        for product in products:
+            week_cells = []
+            for week in weeks:
+                plan = planned_lookup.get((product.id, week))
+                week_cells.append(
+                    {
+                        "week": week,
+                        "planned_quantity": plan.planned_quantity if plan else None,
+                    }
+                )
+            product_rows.append({"product": product, "week_cells": week_cells})
+
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "channels": channels,
+                "channel": channel,
+                "product_rows": product_rows,
+                "weeks": weeks,
+                "summary_qty": summary_qty,
+                "summary_revenue": summary_revenue,
+                "draft": kwargs.get("draft"),
             }
         )
         return ctx

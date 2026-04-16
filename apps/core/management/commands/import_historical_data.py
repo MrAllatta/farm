@@ -733,6 +733,7 @@ class Command(BaseCommand):
                 continue
 
             self._import_planning_year(year, year_dir)
+            self._import_product_week_plan(year, year_dir)
             self._import_plantings(year, year_dir)
 
     def _import_planning_year(self, year, year_dir):
@@ -925,6 +926,143 @@ class Command(BaseCommand):
             f" {self.stats['Planting']['processed']} processed, "
             f"{self.stats['Planting']['skipped']} skipped, "
             f"{self.stats['Planting']['errors']} errors\n"
+        )
+
+    def _import_product_week_plan(self, year, year_dir):
+        """Import product-week demand plan into SalesEvent plan rows."""
+        path = os.path.join(year_dir, "product_week_plan.csv")
+        if not os.path.exists(path):
+            return
+
+        self.stdout.write(f"Importing product-week sales plan {year}...")
+
+        planning_year = self._get_planning_year(year)
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                try:
+                    channel_name = (row.get("Channel Name") or row.get("Channel") or "").strip()
+                    product_name = (row.get("Product Name") or row.get("Product") or "").strip()
+                    week_raw = (row.get("Week") or "").strip()
+                    quantity_raw = (row.get("Planned Quantity") or "").strip()
+
+                    if not channel_name:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "product_week_plan.channel",
+                            "Channel Name",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+                    if not product_name:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "product_week_plan.product",
+                            "Product Name",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+                    if not week_raw:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "product_week_plan.week",
+                            "Week",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+                    if not quantity_raw:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "product_week_plan.planned_quantity",
+                            "Planned Quantity",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+
+                    channel = self._get_channel(channel_name)
+                    if not channel:
+                        self._record_stale_fk(
+                            "SalesEvent",
+                            i,
+                            "product_week_plan.channel",
+                            "sales channel",
+                            channel_name,
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+
+                    product = self._get_product_by_name(product_name)
+                    if not product:
+                        self._record_stale_fk(
+                            "SalesEvent",
+                            i,
+                            "product_week_plan.product",
+                            "product",
+                            product_name,
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+
+                    week = self._int(week_raw, 0)
+                    if week < 1 or week > 53:
+                        message = f"invalid week '{week_raw}'"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "SalesEvent",
+                            i,
+                            code="namespace_mismatch",
+                            field_path="product_week_plan.week",
+                            message=message,
+                        )
+                        self.stats["SalesEvent"]["errors"] += 1
+                        continue
+
+                    sale_date = datetime.fromisocalendar(year, week, 1).date()
+                    planned_quantity = self._dec(quantity_raw)
+                    planned_revenue_raw = (row.get("Planned Revenue") or "").strip()
+                    if planned_revenue_raw:
+                        planned_revenue = self._dec(planned_revenue_raw)
+                    else:
+                        planned_revenue = planned_quantity * product.sale_price
+
+                    defaults = {
+                        "planning_year": planning_year,
+                        "entry_kind": SalesEvent.EntryKind.PLAN,
+                        "planned_quantity": planned_quantity,
+                        "planned_revenue": planned_revenue,
+                        "notes": (row.get("Notes") or "").strip(),
+                    }
+
+                    if not self.write_disabled:
+                        _, created = SalesEvent.objects.update_or_create(
+                            entry_kind=SalesEvent.EntryKind.PLAN,
+                            channel=channel,
+                            sale_date=sale_date,
+                            product=product,
+                            defaults=defaults,
+                        )
+                        self.stats["SalesEvent"]["created" if created else "processed"] += 1
+                    else:
+                        self.stats["SalesEvent"]["processed"] += 1
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
+                    self.stderr.write(f"    ERROR row {i}: {e}")
+                    self.stats["SalesEvent"]["errors"] += 1
+
+        self.stdout.write(
+            f" {self.stats['SalesEvent']['processed']} processed, "
+            f"{self.stats['SalesEvent']['skipped']} skipped, "
+            f"{self.stats['SalesEvent']['errors']} errors\n"
         )
 
     # ============================================================================

@@ -1,10 +1,12 @@
 from datetime import date, timedelta
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from planning.models import Planting, PlanningYear
-from reference.models import Block, CropBySeason, CropInfo
+from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from sales.models import SalesEvent
 
 
 class PlanningSmokeTests(TestCase):
@@ -123,6 +125,12 @@ class PlantingLifecycleTransitionTests(TestCase):
             status=status,
         )
 
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            "planner-status", "planner-status@example.com", "x", is_staff=True
+        )
+        self.client.force_login(self.user)
+
     def test_planned_to_planted_sets_actual_plant_date_once(self):
         planting = self._create_planting(status="planned")
 
@@ -184,3 +192,80 @@ class PlantingLifecycleTransitionTests(TestCase):
         planting.refresh_from_db()
         self.assertEqual(planting.status, "planned")
         self.assertIsNone(planting.actual_plant_date)
+
+
+class SalesPlanViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.planning_year = PlanningYear.objects.create(year=2026, status="active")
+        cls.channel = SalesChannel.objects.create(
+            name="Farm Stand",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target="500.00",
+            is_csa=False,
+            allocation_priority=1,
+        )
+        crop = CropInfo.objects.create(
+            name="Carrot",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        cls.crop_season = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot="1.20",
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+        )
+        cls.product = CropSalesFormat.objects.create(
+            crop=crop,
+            product_name="Carrot Bunch",
+            sale_price="3.50",
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit="1.00",
+            is_active=True,
+        )
+
+    def test_sales_plan_route_renders(self):
+        response = self.client.get(reverse("planning:sales_plan"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sales Plan")
+
+    def test_sales_plan_save_creates_plan_rows(self):
+        user = get_user_model().objects.create_user(
+            "planner", "planner@example.com", "x", is_staff=True
+        )
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse("planning:sales_plan"),
+            {
+                "action": "save",
+                "channel": str(self.channel.id),
+                f"qty_{self.product.id}_12": "9.5",
+            },
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.planning_year,
+                channel=self.channel,
+                product=self.product,
+            ).exists()
+        )

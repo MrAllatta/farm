@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.test import TestCase
 
 from reference.models import CropInfo, CropSalesFormat, SalesChannel
+from planning.models import PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
 
 
@@ -36,6 +37,7 @@ class SalesModelTests(TestCase):
             sku="CAR-BUN",
             is_active=True,
         )
+        cls.planning_year = PlanningYear.objects.create(year=2026, status="planning")
 
     def test_sales_event_sell_through_uses_actual_quantity_when_present(self):
         event = SalesEvent.objects.create(
@@ -70,3 +72,36 @@ class SalesModelTests(TestCase):
         )
 
         self.assertEqual(quick_entry.total_revenue, Decimal("100.00"))
+
+    def test_sales_event_plan_entry_kind_and_planning_year(self):
+        event = SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.planning_year,
+            channel=self.channel,
+            sale_date=date(2026, 5, 5),
+            product=self.product,
+            planned_quantity=Decimal("12.00"),
+            planned_revenue=Decimal("42.00"),
+        )
+        self.assertEqual(event.entry_kind, SalesEvent.EntryKind.PLAN)
+        self.assertEqual(event.planning_year, self.planning_year)
+
+    def test_sales_event_plan_and_actual_can_share_same_date_product(self):
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.planning_year,
+            channel=self.channel,
+            sale_date=date(2026, 6, 1),
+            product=self.product,
+            planned_quantity=Decimal("10.00"),
+            planned_revenue=Decimal("35.00"),
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=date(2026, 6, 1),
+            product=self.product,
+            actual_quantity=Decimal("9.00"),
+            actual_revenue=Decimal("31.50"),
+        )
+        self.assertEqual(SalesEvent.objects.count(), 2)
