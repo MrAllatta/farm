@@ -488,6 +488,32 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(PlanningYear.objects.count(), 1)
             self.assertEqual(Planting.objects.count(), 1)
 
+    def test_field_walk_notes_can_resolve_planting_without_planting_id(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "field_walk_notes.csv",
+                [
+                    "Planting ID,Walk Date,Condition,Yield Adjust %,Notes,Crop // Variety,Block,Bed,Plan Field Year,Plan Field Week",
+                    ",2021-04-10,Good,95,resolved-by-lookup,Carrot // Nantes,Field 1,1,2021,13",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-field-walk-lookup.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["results"]["models"]["FieldWalkNote"]["created"], 1)
+            self.assertEqual(summary["results"]["models"]["FieldWalkNote"]["skipped"], 0)
+            self.assertEqual(summary["results"]["models"]["FieldWalkNote"]["error"], 0)
+            self.assertEqual(FieldWalkNote.objects.count(), 1)
+            note = FieldWalkNote.objects.get()
+            self.assertEqual(note.walk_date.isoformat(), "2021-04-10")
+            self.assertEqual(note.yield_adjust_pct, 95)
+            self.assertEqual(note.notes, "resolved-by-lookup")
+            self.assertEqual(note.planting.variety, "Nantes")
+
     def test_known_mismatch_fixture_validate_only_reports_expected_skips_and_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_known_mismatch_fixture(data_dir)
@@ -4494,7 +4520,6 @@ class GoogleSheetsStageA2ConnectorTests(TestCase):
                     "Arugula,Astro,B1,11,11,2026-04-06,100,Planned",
                 ],
             )
-
 
 class StageA2BaselineBundleTests(TestCase):
     def _write_csv(self, parent, name, lines):
