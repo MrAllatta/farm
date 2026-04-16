@@ -14,9 +14,10 @@ from django.test.utils import override_settings
 from django.utils import timezone
 from django.urls import get_resolver, reverse
 
-from operations.models import InventoryLedger
+from operations.models import FieldWalkNote, InventoryLedger
+from core.models import RotationHistory
 from core.planning_year import resolve_current_planning_year
-from planning.models import Planting, PlanningYear
+from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 
@@ -940,6 +941,84 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(summary["status"], expected["status"])
         self.assertEqual(summary["results"]["totals"], expected["totals"])
         self.assertEqual(summary["results"]["models"]["Block"], expected["models"]["Block"])
+
+    def test_repo_sample_import_apply_reconciles_summary_counts_to_persisted_models(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "sample_import"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-sample-fixture-apply-reconciliation.json",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(summary["results"]["row_errors"], [])
+        self.assertEqual(summary["results"]["failure_signatures"], [])
+        self.assertEqual(summary["results"]["escalation_summary"], [])
+        self.assertEqual(summary["results"]["totals"]["error"], 0)
+        self.assertEqual(summary["results"]["totals"]["skipped"], 0)
+
+        expected_counts = {
+            "Block": Block.objects.count(),
+            "CropInfo": CropInfo.objects.count(),
+            "CropBySeason": CropBySeason.objects.count(),
+            "SalesChannel": SalesChannel.objects.count(),
+            "CropSalesFormat": CropSalesFormat.objects.count(),
+            "PlanningYear": PlanningYear.objects.count(),
+            "Planting": Planting.objects.count(),
+            "NurseryEvent": NurseryEvent.objects.count(),
+            "HarvestEvent": HarvestEvent.objects.count(),
+            "FieldWalkNote": FieldWalkNote.objects.count(),
+            "InventoryLedger": InventoryLedger.objects.count(),
+            "SalesEvent": SalesEvent.objects.count(),
+            "QuickSalesEntry": QuickSalesEntry.objects.count(),
+            "RotationHistory": RotationHistory.objects.count(),
+        }
+        for model_name, persisted_count in expected_counts.items():
+            with self.subTest(model=model_name):
+                self.assertEqual(summary["results"]["models"][model_name]["created"], persisted_count)
+                self.assertEqual(summary["results"]["models"][model_name]["updated"], 0)
+                self.assertEqual(summary["results"]["models"][model_name]["skipped"], 0)
+                self.assertEqual(summary["results"]["models"][model_name]["error"], 0)
+
+    def test_repo_sample_import_apply_supports_curated_post_import_sanity_queries(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "sample_import"
+        with TemporaryDirectory() as output_dir:
+            summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repo-sample-fixture-apply-sanity-queries.json",
+            )
+
+        self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(summary["results"]["totals"]["error"], 0)
+        self.assertEqual(summary["results"]["row_errors"], [])
+
+        self.assertEqual(PlanningYear.objects.filter(year=2023).count(), 1)
+        self.assertEqual(PlanningYear.objects.filter(year=2024).count(), 1)
+        self.assertTrue(
+            Planting.objects.filter(
+                planning_year__year=2023,
+                crop__name="Tomato Beefsteak",
+                block__name="North Field",
+            ).exists()
+        )
+        self.assertTrue(
+            InventoryLedger.objects.filter(
+                crop__name="Tomato Beefsteak",
+            ).exists()
+        )
+        self.assertTrue(
+            SalesEvent.objects.filter(
+                channel__name="Farmers Market Saturday",
+            ).exists()
+        )
+        self.assertTrue(
+            QuickSalesEntry.objects.filter(
+                channel__name="Farm Store",
+                total_cash__gt=0,
+            ).exists()
+        )
 
     def test_repo_mismatch_fixture_pack_apply_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
