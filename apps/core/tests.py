@@ -1,3 +1,4 @@
+import csv
 import json
 from datetime import date, datetime
 from decimal import Decimal
@@ -20,6 +21,7 @@ from core.planning_year import resolve_current_planning_year
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from core.spreadsheet_connector import normalize_rows
 
 
 class ImportHistoricalDataCommandTests(TestCase):
@@ -188,7 +190,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             "sales_events.csv",
             [
                 "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Brought Quantity,Returned Quantity,Notes",
-                "  FARM   STAND  ,2021-06-01,  CARROT   BUNCH  ,10,35,9,31.5,3.5,10,1,normalized lookup test",
+                f"  FARM   STAND  ,{year}-06-01,  CARROT   BUNCH  ,10,35,9,31.5,3.5,10,1,normalized lookup test",
             ],
         )
         self._write_csv(
@@ -196,9 +198,14 @@ class ImportHistoricalDataCommandTests(TestCase):
             "pack_allocations.csv",
             [
                 "Planting ID,Harvest Date,Channel,Product,Pack Date,Quantity,Notes",
-                "P1,, farm stand , carrot bunch ,2021-06-02,5,duplicate-safe lookup test",
+                f"P1,, farm stand , carrot bunch ,{year}-06-02,5,duplicate-safe lookup test",
             ],
         )
+
+    def _write_partial_year_fixture(self, data_dir, years):
+        self._write_clean_fixture(data_dir)
+        for year in years:
+            self._write_year_fixture(data_dir, year=year)
 
     def _write_ops_sales_error_fixture(self, data_dir, year=2021):
         year_dir = Path(data_dir) / f"year_{year}"
@@ -1621,6 +1628,215 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(summary["results"]["models"]["PackAllocation"]["error"], 0)
             self.assertEqual(summary["results"]["models"]["SalesEvent"]["created"], 1)
             self.assertEqual(summary["results"]["models"]["PackAllocation"]["created"], 1)
+
+    def test_historical_import_emits_deterministic_warnings_for_duplicate_weak_id_matches(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            SalesChannel.objects.create(
+                name="farm stand",
+                days_of_week=["Saturday"],
+                start_week=1,
+                end_week=52,
+                weekly_target="100.00",
+                is_csa=False,
+                allocation_priority=9,
+            )
+            carrot = CropInfo.objects.create(
+                name="Backup Carrot",
+                crop_type="Vegetables",
+                botanical_family="Apiaceae",
+                propagation_type="seed",
+                is_perennial=False,
+                fresh_or_storage="fresh",
+                storage_weeks=0,
+                harvest_unit="pounds",
+                avg_unit_weight="1.00",
+                nursery_weeks=0,
+                weeks_until_pot_up=0,
+                seeds_per_cell=1,
+                thinned_plants=0,
+            )
+            CropSalesFormat.objects.create(
+                crop=carrot,
+                product_name="carrot bunch",
+                sale_price="2.00",
+                sale_unit="bunch",
+                harvest_qty_per_sale_unit="1.00",
+                is_active=True,
+            )
+            self._write_year_fixture(data_dir, year=2021)
+            summary, stdout, _stderr = self._run_import_with_output(
+                data_dir,
+                Path(output_dir) / "summary-duplicate-weak-id-warning.json",
+            )
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertIn("Multiple normalized sales channel matches for 'FARM   STAND'; using id=", stdout)
+        self.assertIn("Multiple normalized product matches for 'CARROT   BUNCH'; using id=", stdout)
+
+    def test_partial_year_fixture_range_skips_missing_year_directories_without_fatal_errors(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_partial_year_fixture(data_dir, years=(2021, 2023))
+            validate_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-partial-year-validate.json",
+                "--validate-only",
+                "--start-year",
+                "2021",
+                "--end-year",
+                "2023",
+            )
+            apply_summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-partial-year-apply.json",
+                "--start-year",
+                "2021",
+                "--end-year",
+                "2023",
+            )
+
+        self._assert_summary_contract(validate_summary, expected_validate_only=True, expected_dry_run=False)
+        self._assert_summary_contract(apply_summary, expected_validate_only=False, expected_dry_run=False)
+        self.assertEqual(validate_summary["status"], "ok")
+        self.assertEqual(apply_summary["status"], "ok")
+        self.assertEqual(validate_summary["fatal_error"], None)
+        self.assertEqual(apply_summary["fatal_error"], None)
+        self.assertEqual(validate_summary["results"]["row_errors"], [])
+        self.assertEqual(apply_summary["results"]["row_errors"], [])
+        self.assertEqual(apply_summary["results"]["models"]["PlanningYear"]["created"], 2)
+        self.assertEqual(apply_summary["results"]["models"]["Planting"]["created"], 2)
+        self.assertEqual(apply_summary["results"]["models"]["SalesEvent"]["created"], 2)
+        self.assertEqual(apply_summary["results"]["models"]["PackAllocation"]["created"], 2)
+        self.assertEqual(sorted(PlanningYear.objects.values_list("year", flat=True)), [2021, 2023])
+
+
+class StageA2OfflineConnectorTests(TestCase):
+    def test_normalizer_detects_header_after_irregular_preamble_using_contract_scan(self):
+        rows = [
+            ["2026 crop plan export"],
+            ["notes", "draft only"],
+            [" block name ", "block type", "number of beds", "bed width feet", "bedfeet per bed"],
+            ["Field 1", "Field", "10", "3", "100"],
+        ]
+
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Block", "Block Type", "# of Beds", "Bed Width (feet)", "Bedfeet per Bed"],
+            aliases={
+                "block name": "Block",
+                "block type": "Block Type",
+                "number of beds": "# of Beds",
+                "bed width feet": "Bed Width (feet)",
+                "bedfeet per bed": "Bedfeet per Bed",
+            },
+        )
+
+        self.assertEqual(normalized["header_row_index"], 2)
+        self.assertEqual(normalized["strategy"], "required_header_set_scan")
+        self.assertEqual(
+            normalized["rows"][0],
+            ["Block", "Block Type", "# of Beds", "Bed Width (feet)", "Bedfeet per Bed"],
+        )
+        self.assertEqual(normalized["rows"][1], ["Field 1", "Field", "10", "3", "100"])
+
+    def test_normalizer_supports_anchor_token_fallback_when_header_aliases_are_insufficient(self):
+        rows = [
+            ["Instructions"],
+            ["DATA START"],
+            ["Beds", "Width", "Length"],
+            ["Field 9", "4", "150"],
+        ]
+
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Block", "Block Type", "# of Beds"],
+            anchor_token="DATA START",
+        )
+
+        self.assertEqual(normalized["header_row_index"], 2)
+        self.assertEqual(normalized["strategy"], "anchor_token")
+        self.assertEqual(normalized["rows"][1], ["Field 9", "4", "150"])
+
+    def test_snapshot_stage_a2_bundle_command_writes_normalized_bundle_and_manifest(self):
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            raw_dir = temp_path / "raw"
+            raw_dir.mkdir()
+            (raw_dir / "blocks-tab.csv").write_text(
+                "\n".join(
+                    [
+                        "Farm export",
+                        "Prepared by operations",
+                        " block name ,block type,number of beds,bed width feet,bedfeet per bed",
+                        "Field 1,Field,10,3,100",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            config_path = temp_path / "stage-a2-config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "offline-fixture",
+                        "tabs": [
+                            {
+                                "source_csv": "raw/blocks-tab.csv",
+                                "output_path": "reference/blocks.csv",
+                                "required_headers": [
+                                    "Block",
+                                    "Block Type",
+                                    "# of Beds",
+                                    "Bed Width (feet)",
+                                    "Bedfeet per Bed",
+                                ],
+                                "aliases": {
+                                    "block name": "Block",
+                                    "block type": "Block Type",
+                                    "number of beds": "# of Beds",
+                                    "bed width feet": "Bed Width (feet)",
+                                    "bedfeet per bed": "Bedfeet per Bed",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output_dir = temp_path / "bundle"
+            call_command(
+                "snapshot_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            with (output_dir / "reference" / "blocks.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                rows = list(csv.reader(handle))
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            rows[0],
+            ["Block", "Block Type", "# of Beds", "Bed Width (feet)", "Bedfeet per Bed"],
+        )
+        self.assertEqual(rows[1], ["Field 1", "Field", "10", "3", "100"])
+        self.assertEqual(manifest["schema_version"], "a2-draft-1")
+        self.assertEqual(manifest["source_id"], "offline-fixture")
+        self.assertEqual(
+            manifest["tabs"],
+            [
+                {
+                    "header_row_index": 2,
+                    "output_path": "reference/blocks.csv",
+                    "rows_written": 1,
+                    "source_csv": "raw/blocks-tab.csv",
+                    "strategy": "required_header_set_scan",
+                }
+            ],
+        )
 
 
 class ImportReferenceDataCommandTests(TestCase):
