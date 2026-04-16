@@ -18,6 +18,7 @@ from django.urls import get_resolver, reverse
 from operations.models import FieldWalkNote, InventoryLedger
 from core.models import RotationHistory
 from core.planning_year import resolve_current_planning_year
+from core.google_sheets_connector import extract_drive_folder_id, extract_spreadsheet_id
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
@@ -3677,3 +3678,104 @@ class ImportReferenceDataCommandTests(TestCase):
             season = CropBySeason.objects.get()
             self.assertEqual(season.block_type, "high_tunnel")
             self.assertEqual(SalesChannel.objects.get().days_of_week, ["Saturday", "Sunday"])
+
+
+class GoogleSheetsStageA2ConnectorTests(TestCase):
+    def test_extract_google_ids_from_urls(self):
+        self.assertEqual(
+            extract_drive_folder_id(
+                "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link"
+            ),
+            "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+        )
+        self.assertEqual(
+            extract_spreadsheet_id(
+                "https://docs.google.com/spreadsheets/d/1abcDEFghiJKLmnOPqRSTuvwXYZ1234567890/edit#gid=0"
+            ),
+            "1abcDEFghiJKLmnOPqRSTuvwXYZ1234567890",
+        )
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_writes_normalized_csv_and_manifest(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-123",
+            "spreadsheet_name": "Archive 2025",
+            "modified_time": "2026-04-16T10:00:00Z",
+        }
+        fetch_tab_rows_mock.return_value = [
+            ["Farm Archive Export"],
+            ["Block Name", "Block Type", "Number of Beds", "Bed Width Feet", "Bedfeet per Bed"],
+            ["Field 1", "Field", "10", "3", "100"],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "live-config.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "drive-folder-stage-a2",
+                        "drive_folder_url": "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Archive 2025",
+                                "worksheet_title": "Growing Space",
+                                "output_path": "reference/blocks.csv",
+                                "required_headers": [
+                                    "Block",
+                                    "Block Type",
+                                    "# of Beds",
+                                    "Bed Width (feet)",
+                                    "Bedfeet per Bed",
+                                ],
+                                "aliases": {
+                                    "block name": "Block",
+                                    "number of beds": "# of Beds",
+                                    "bed width feet": "Bed Width (feet)",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            stdout = StringIO()
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+                stdout=stdout,
+            )
+
+            output_csv = output_dir / "reference" / "blocks.csv"
+            self.assertTrue(output_csv.exists())
+            self.assertEqual(
+                output_csv.read_text(encoding="utf-8").splitlines(),
+                [
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed",
+                    "Field 1,Field,10,3,100",
+                ],
+            )
+
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["provider"], "google_sheets")
+            self.assertEqual(manifest["drive_folder_id"], "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ")
+            self.assertEqual(len(manifest["tabs"]), 1)
+            self.assertEqual(manifest["tabs"][0]["spreadsheet_id"], "sheet-123")
+            self.assertEqual(manifest["tabs"][0]["worksheet_title"], "Growing Space")
+            self.assertEqual(manifest["tabs"][0]["output_path"], "reference/blocks.csv")
+            self.assertEqual(manifest["tabs"][0]["strategy"], "required_header_set_scan")
+            self.assertEqual(manifest["tabs"][0]["rows_written"], 1)
+            self.assertIn("pulled Archive 2025:Growing Space -> reference/blocks.csv", stdout.getvalue())
