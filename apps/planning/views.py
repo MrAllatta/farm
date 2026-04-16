@@ -1013,6 +1013,20 @@ class PlantingStatusUpdateView(View):
             return HttpResponse(status=400)
 
         old_status = planting.status
+        allowed_transitions = {
+            "planned": {"planned", "seeded", "planted", "failed", "skipped", "revised"},
+            "seeded": {"seeded", "planted", "failed", "skipped", "revised"},
+            "planted": {"planted", "growing", "harvesting", "failed", "revised"},
+            "growing": {"growing", "harvesting", "failed", "revised"},
+            "harvesting": {"harvesting", "complete", "failed", "revised"},
+            "complete": {"complete", "revised"},
+            "failed": {"failed", "revised"},
+            "skipped": {"skipped", "revised"},
+            "revised": {"revised", "planned"},
+        }
+        if new_status not in allowed_transitions.get(old_status, {old_status}):
+            return HttpResponse(status=400)
+
         planting.status = new_status
 
         # Auto-set dates based on status transitions

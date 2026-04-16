@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.db.models import Sum
 from django.http import HttpResponse
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
@@ -126,10 +126,16 @@ class MarketSalesEntryView(TemplateView):
         if not request.user.is_staff:
             return HttpResponse(status=403)
         channel_id = request.POST.get("channel_id")
-        sale_date = date.fromisoformat(request.POST.get("sale_date"))
+        sale_date_raw = request.POST.get("sale_date")
         entry_mode = request.POST.get("mode", "quick")
+        if not channel_id or not sale_date_raw:
+            return HttpResponse(status=400)
 
-        channel = SalesChannel.objects.get(id=channel_id)
+        try:
+            sale_date = date.fromisoformat(sale_date_raw)
+            channel = SalesChannel.objects.get(id=channel_id)
+        except (TypeError, ValueError, SalesChannel.DoesNotExist):
+            return HttpResponse(status=400)
 
         if entry_mode == "quick":
             return self._save_quick(request, channel, sale_date)
@@ -137,8 +143,11 @@ class MarketSalesEntryView(TemplateView):
             return self._save_detailed(request, channel, sale_date)
 
     def _save_quick(self, request, channel, sale_date):
-        total_cash = Decimal(request.POST.get("total_cash", "0") or "0")
-        total_card = Decimal(request.POST.get("total_card", "0") or "0")
+        try:
+            total_cash = Decimal(request.POST.get("total_cash", "0") or "0")
+            total_card = Decimal(request.POST.get("total_card", "0") or "0")
+        except (TypeError, InvalidOperation):
+            return HttpResponse(status=400)
         notes = request.POST.get("notes", "")
 
         QuickSalesEntry.objects.update_or_create(
@@ -174,7 +183,7 @@ class MarketSalesEntryView(TemplateView):
                 try:
                     product = CropSalesFormat.objects.get(id=product_id)
                     sold_qty = Decimal(value)
-                except (CropSalesFormat.DoesNotExist, ValueError):
+                except (CropSalesFormat.DoesNotExist, ValueError, InvalidOperation):
                     continue
 
                 # Get price — use actual price if overridden
@@ -182,7 +191,7 @@ class MarketSalesEntryView(TemplateView):
                 if price_key in request.POST and request.POST[price_key]:
                     try:
                         actual_price = Decimal(request.POST[price_key])
-                    except ValueError:
+                    except (ValueError, InvalidOperation):
                         actual_price = product.sale_price
                 else:
                     actual_price = product.sale_price
@@ -194,7 +203,7 @@ class MarketSalesEntryView(TemplateView):
                 if brought_key in request.POST and request.POST[brought_key]:
                     try:
                         brought_qty = Decimal(request.POST[brought_key])
-                    except ValueError:
+                    except (ValueError, InvalidOperation):
                         pass
 
                 returned_qty = None

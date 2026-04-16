@@ -16,7 +16,7 @@ from django.urls import get_resolver, reverse
 from operations.models import InventoryLedger
 from core.planning_year import resolve_current_planning_year
 from planning.models import Planting, PlanningYear
-from sales.models import QuickSalesEntry
+from sales.models import QuickSalesEntry, SalesEvent
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 
 
@@ -1643,6 +1643,21 @@ class AppBootGateTests(TestCase):
                 call_command("check")
         self.assertIn("core.E003", str(exc_info.exception))
 
+    @override_settings(DEBUG=False, SECRET_KEY="strong-secret-key", ALLOWED_HOSTS=[])
+    def test_production_settings_check_rejects_empty_allowed_hosts(self):
+        with patch("sys.argv", ["manage.py", "check"]):
+            with self.assertRaises(SystemCheckError) as exc_info:
+                call_command("check")
+        self.assertIn("core.E002", str(exc_info.exception))
+
+    @override_settings(DEBUG=False, SECRET_KEY="dev-insecure-key", ALLOWED_HOSTS=[])
+    def test_production_settings_check_reports_multiple_guardrail_failures(self):
+        with patch("sys.argv", ["manage.py", "check"]):
+            with self.assertRaises(SystemCheckError) as exc_info:
+                call_command("check")
+        self.assertIn("core.E001", str(exc_info.exception))
+        self.assertIn("core.E002", str(exc_info.exception))
+
     @override_settings(DEBUG=False, SECRET_KEY="strong-secret-key", ALLOWED_HOSTS=["farm.example.com"])
     def test_production_settings_check_accepts_explicit_hosts_and_strong_secret(self):
         with patch("sys.argv", ["manage.py", "check"]):
@@ -1749,6 +1764,17 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
         self.assertIn("atomic_apply", summary["run"])
         self.assertTrue({"models", "totals", "row_errors"} <= set(summary["results"].keys()))
+
+    def _assert_failure_signature_payload_shape(self, failure_signatures):
+        for item in failure_signatures:
+            with self.subTest(signature=item.get("signature")):
+                self.assertTrue(item["signature"])
+                self.assertGreaterEqual(item["count"], 1)
+                self.assertTrue(item["owner_area"])
+                self.assertTrue(item["owner_team"])
+                self.assertIn(item["severity"], {"high", "medium"})
+                self.assertTrue(item["escalation_path"])
+                self.assertTrue(item["recovery"])
 
     def _authenticate_operator(self):
         user = get_user_model().objects.create_user(
@@ -1867,6 +1893,8 @@ class BetaGateEvidenceTests(TestCase):
         apply_pairs = sorted(
             (item["signature"], item["count"]) for item in apply_summary["results"]["failure_signatures"]
         )
+        self._assert_failure_signature_payload_shape(validate_summary["results"]["failure_signatures"])
+        self._assert_failure_signature_payload_shape(apply_summary["results"]["failure_signatures"])
         self.assertEqual(validate_pairs, apply_pairs)
         self.assertEqual(validate_summary["results"]["totals"]["created"], 0)
         self.assertGreater(apply_summary["results"]["totals"]["created"], 0)
@@ -2013,12 +2041,7 @@ class BetaGateEvidenceTests(TestCase):
 
         emitted_signatures = {item["signature"] for item in summary["results"]["failure_signatures"]}
         self.assertEqual(emitted_signatures, {"namespace_mismatch", "stale_fk"})
-        for item in summary["results"]["failure_signatures"]:
-            self.assertTrue(item["owner_area"])
-            self.assertTrue(item["owner_team"])
-            self.assertTrue(item["escalation_path"])
-            self.assertTrue(item["recovery"])
-            self.assertIn(item["severity"], {"high", "medium"})
+        self._assert_failure_signature_payload_shape(summary["results"]["failure_signatures"])
 
     def test_mismatch_apply_repeats_preserve_reference_and_planning_model_counts(self):
         fixture_dir = self.fixture_root / "mismatch"
@@ -2324,6 +2347,148 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(sales_response.status_code, 302)
         self.assertEqual(QuickSalesEntry.objects.count(), 1)
 
+    def test_malformed_critical_mutation_payloads_do_not_raise_server_errors(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        status_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "definitely-not-a-valid-status"},
+        )
+        self.assertEqual(status_response.status_code, 400)
+
+        sales_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "sale_date": "bad-date",
+                "total_cash": "not-a-decimal",
+                "total_card": "not-a-decimal",
+                "notes": "malformed payload gate check",
+            },
+        )
+        self.assertEqual(sales_response.status_code, 400)
+        self.assertEqual(InventoryLedger.objects.count(), 0)
+        self.assertEqual(QuickSalesEntry.objects.count(), 0)
+
+    def test_inventory_add_rejects_malformed_quantity_payload_with_400(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        response = self.client.post(
+            reverse("operations:inventory_add"),
+            {
+                "crop": planting.crop_id,
+                "event_type": "return_in",
+                "quantity": "not-a-number",
+                "notes": "malformed inventory quantity gate check",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(InventoryLedger.objects.count(), 0)
+
+    def test_sales_market_entry_rejects_missing_or_unknown_channel_payloads(self):
+        _planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        missing_channel_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "sale_date": "2026-06-14",
+                "total_cash": "10.00",
+                "total_card": "5.00",
+            },
+        )
+        self.assertEqual(missing_channel_response.status_code, 400)
+
+        unknown_channel_response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id + 999,
+                "sale_date": "2026-06-14",
+                "total_cash": "10.00",
+                "total_card": "5.00",
+            },
+        )
+        self.assertEqual(unknown_channel_response.status_code, 400)
+        self.assertEqual(QuickSalesEntry.objects.count(), 0)
+
+    def test_sales_market_entry_rejects_missing_sale_date_payload(self):
+        _planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "quick",
+                "channel_id": channel.id,
+                "total_cash": "10.00",
+                "total_card": "5.00",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(QuickSalesEntry.objects.count(), 0)
+
+    def test_sales_detailed_entry_tolerates_invalid_decimal_payload_without_500(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+        product = CropSalesFormat.objects.create(
+            crop=planting.crop,
+            product_name="Carrot Bunch",
+            sale_price=Decimal("3.50"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            is_active=True,
+        )
+
+        response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "detailed",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                f"sold_{product.id}": "not-a-decimal",
+                f"price_{product.id}": "also-not-a-decimal",
+                f"brought_{product.id}": "still-not-a-decimal",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(SalesEvent.objects.count(), 0)
+
+    def test_sales_detailed_entry_falls_back_to_default_price_when_override_is_invalid(self):
+        planting, channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+        product = CropSalesFormat.objects.create(
+            crop=planting.crop,
+            product_name="Carrot Bundle",
+            sale_price=Decimal("4.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            is_active=True,
+        )
+
+        response = self.client.post(
+            reverse("sales:market_entry"),
+            {
+                "mode": "detailed",
+                "channel_id": channel.id,
+                "sale_date": "2026-06-14",
+                f"sold_{product.id}": "2",
+                f"price_{product.id}": "invalid-price",
+                f"brought_{product.id}": "3",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(SalesEvent.objects.count(), 1)
+        event = SalesEvent.objects.get()
+        self.assertEqual(event.product_id, product.id)
+        self.assertEqual(event.actual_price, Decimal("4.00"))
+        self.assertEqual(event.actual_revenue, Decimal("8.00"))
+        self.assertEqual(event.returned_quantity, Decimal("1.00"))
+
     def test_planting_status_replay_idempotence_preserves_initial_actual_plant_date(self):
         planting, _channel = self._bootstrap_core_workflow_records()
         self._authenticate_operator()
@@ -2344,6 +2509,115 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(second_response.status_code, 302)
         planting.refresh_from_db()
         self.assertEqual(planting.actual_plant_date, first_actual_plant_date)
+
+    def test_planting_status_replay_preserves_first_harvest_and_completion_dates(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        planted_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(planted_response.status_code, 302)
+
+        harvesting_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "harvesting"},
+        )
+        self.assertEqual(harvesting_response.status_code, 302)
+        planting.refresh_from_db()
+        first_harvest_date = planting.actual_first_harvest_date
+        self.assertIsNotNone(first_harvest_date)
+
+        harvesting_replay_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "harvesting"},
+        )
+        self.assertEqual(harvesting_replay_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.actual_first_harvest_date, first_harvest_date)
+
+        complete_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "complete"},
+        )
+        self.assertEqual(complete_response.status_code, 302)
+        planting.refresh_from_db()
+        completion_date = planting.actual_last_harvest_date
+        self.assertIsNotNone(completion_date)
+
+        complete_replay_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "complete"},
+        )
+        self.assertEqual(complete_replay_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.actual_last_harvest_date, completion_date)
+
+    def test_planting_status_rejects_illegal_transition_jumps(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        illegal_jump_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "complete"},
+        )
+        self.assertEqual(illegal_jump_response.status_code, 400)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planned")
+
+    def test_planting_status_accepts_expected_transition_sequence(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        for next_status in ("planted", "growing", "harvesting", "complete"):
+            response = self.client.post(
+                reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+                {"status": next_status},
+            )
+            self.assertEqual(response.status_code, 302)
+            planting.refresh_from_db()
+            self.assertEqual(planting.status, next_status)
+
+    def test_planting_status_revised_can_return_to_planned(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        revised_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "revised"},
+        )
+        self.assertEqual(revised_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "revised")
+
+        planned_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "planned"},
+        )
+        self.assertEqual(planned_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "planned")
+
+    def test_planting_status_failed_cannot_jump_back_to_harvesting(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        self._authenticate_operator()
+
+        fail_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "failed"},
+        )
+        self.assertEqual(fail_response.status_code, 302)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "failed")
+
+        invalid_recovery_response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": planting.pk}),
+            {"status": "harvesting"},
+        )
+        self.assertEqual(invalid_recovery_response.status_code, 400)
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "failed")
 
     def test_inventory_write_replay_keeps_running_balance_sequence_deterministic(self):
         planting, _channel = self._bootstrap_core_workflow_records()
@@ -2386,6 +2660,67 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(str(entries[1].running_balance), "7.00")
         self.assertEqual(str(entries[2].quantity), "-3.00")
         self.assertEqual(str(entries[2].running_balance), "4.00")
+
+    def test_mismatch_apply_replay_keeps_escalation_summary_stable_after_initial_write(self):
+        fixture_dir = self.fixture_root / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            first_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-escalation-apply-first.json",
+            )
+            second_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-escalation-apply-second.json",
+            )
+            third_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-escalation-apply-third.json",
+            )
+
+        self.assertGreater(first_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(second_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(third_summary["results"]["totals"]["created"], 0)
+        self.assertEqual(
+            second_summary["results"]["escalation_summary"],
+            third_summary["results"]["escalation_summary"],
+        )
+        self.assertEqual(
+            second_summary["results"]["failure_signatures"],
+            third_summary["results"]["failure_signatures"],
+        )
+        self.assertEqual(second_summary["results"]["row_errors"], third_summary["results"]["row_errors"])
+
+    def test_inventory_same_day_writes_keep_running_balance_order_deterministic(self):
+        planting, _channel = self._bootstrap_core_workflow_records()
+        crop = planting.crop
+        event_day = date(2026, 6, 15)
+
+        first = InventoryLedger.objects.create(
+            crop=crop,
+            event_date=event_day,
+            event_type="return_in",
+            quantity=Decimal("5.00"),
+            notes="same-day deterministic step 1",
+        )
+        second = InventoryLedger.objects.create(
+            crop=crop,
+            event_date=event_day,
+            event_type="sale_out",
+            quantity=Decimal("-2.00"),
+            notes="same-day deterministic step 2",
+        )
+        third = InventoryLedger.objects.create(
+            crop=crop,
+            event_date=event_day,
+            event_type="return_in",
+            quantity=Decimal("1.00"),
+            notes="same-day deterministic step 3",
+        )
+
+        entries = list(InventoryLedger.objects.filter(crop=crop).order_by("event_date", "created_at", "id"))
+        self.assertEqual([entry.id for entry in entries], [first.id, second.id, third.id])
+        self.assertEqual([str(entry.quantity) for entry in entries], ["5.00", "-2.00", "1.00"])
+        self.assertEqual([str(entry.running_balance) for entry in entries], ["5.00", "3.00", "4.00"])
 
 
 class ImportReferenceDataCommandTests(TestCase):
