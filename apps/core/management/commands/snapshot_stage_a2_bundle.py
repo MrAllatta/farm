@@ -53,6 +53,9 @@ class Command(BaseCommand):
                 row_transforms=tab.get("row_transforms"),
                 source_regions=tab.get("source_regions"),
                 stop_on_blank_in=tab.get("stop_on_blank_in"),
+                prefer_anchor_token=tab.get("prefer_anchor_token", False),
+                grid_unpivot=tab.get("grid_unpivot"),
+                append_without_header=tab.get("append_without_header", False),
             )
             manifest["tabs"].append(
                 {

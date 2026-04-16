@@ -144,6 +144,121 @@ def _apply_row_transforms(rows, row_transforms=None, source_rows=None):
     return transformed_rows
 
 
+def _parse_week_column_header(cell):
+    """Return ISO week number 1–53 if *cell* names a week column, else None."""
+    if cell is None:
+        return None
+    raw = str(cell).strip()
+    if not raw:
+        return None
+    if raw.isdigit():
+        w = int(raw)
+        if 1 <= w <= 53:
+            return w
+        return None
+    folded = _normalize_text(raw)
+    for prefix in ("week ", "wk "):
+        if folded.startswith(prefix):
+            tail = raw[len(prefix) :].strip()
+            if tail.isdigit():
+                w = int(tail)
+                if 1 <= w <= 53:
+                    return w
+    return None
+
+
+def _grid_unpivot_for_product_week_plan(source_rows, grid_unpivot):
+    """
+    Expand a wide worksheet (identity columns + week columns 1..53) into long
+    rows matching ``product_week_plan.csv`` (Channel Name, Product Name, Week,
+    Planned Quantity).
+    """
+    if not source_rows or len(source_rows) < 2:
+        return source_rows
+
+    header = source_rows[0]
+    header_idx = {_normalize_text(h): i for i, h in enumerate(header)}
+    identity = grid_unpivot.get("identity_columns") or []
+    if not identity:
+        raise ValueError("grid_unpivot requires identity_columns")
+
+    out_headers = grid_unpivot.get("output_headers")
+    if not out_headers or len(out_headers) != 4:
+        raise ValueError(
+            "grid_unpivot output_headers must be exactly four columns: "
+            "channel, product, week, planned quantity (importer contract)"
+        )
+
+    skip_blank = grid_unpivot.get("skip_blank_quantity", True)
+    reserved = set()
+    identity_specs = []
+    for entry in identity:
+        out_name = entry.get("output")
+        if not out_name:
+            raise ValueError("each identity_columns entry needs output")
+        if "fixed" in entry and entry["fixed"] is not None:
+            identity_specs.append({"output": out_name, "fixed": str(entry["fixed"]), "source_idx": None})
+            continue
+        src = entry.get("source")
+        if not src:
+            raise ValueError("identity_columns entry needs source or fixed")
+        idx = header_idx.get(_normalize_text(src))
+        if idx is None:
+            raise ValueError(f"grid_unpivot: source column {src!r} not found in header")
+        identity_specs.append({"output": out_name, "fixed": None, "source_idx": idx})
+        reserved.add(idx)
+
+    outputs_declared = {s["output"] for s in identity_specs}
+    ch_out, prod_out, _, _ = out_headers
+    if ch_out not in outputs_declared or prod_out not in outputs_declared:
+        raise ValueError(
+            "identity_columns must declare outputs matching output_headers[0] (channel) "
+            "and output_headers[1] (product)"
+        )
+
+    week_pairs = []
+    for i, h in enumerate(header):
+        if i in reserved:
+            continue
+        wn = _parse_week_column_header(h)
+        if wn is not None:
+            week_pairs.append((wn, i))
+    week_pairs.sort(key=lambda x: x[0])
+    if not week_pairs:
+        raise ValueError("grid_unpivot: no week columns (1–53) detected in header row")
+
+    out = [out_headers]
+
+    for row in source_rows[1:]:
+        id_values = {}
+        for spec in identity_specs:
+            if spec["source_idx"] is None:
+                id_values[spec["output"]] = spec["fixed"]
+            else:
+                idx = spec["source_idx"]
+                cell = row[idx] if idx < len(row) else ""
+                id_values[spec["output"]] = str(cell).strip() if cell is not None else ""
+
+        product_val = id_values.get(prod_out, "")
+        if not str(product_val).strip():
+            continue
+
+        for wn, col_idx in week_pairs:
+            qty = row[col_idx] if col_idx < len(row) else ""
+            if skip_blank and (qty is None or str(qty).strip() == ""):
+                continue
+            out.append(
+                [
+                    id_values.get(ch_out, ""),
+                    product_val,
+                    str(wn),
+                    str(qty).strip() if qty is not None else "",
+                ]
+            )
+
+    return out
+
+
 def _truncate_source_rows(source_rows, stop_on_blank_in=None):
     if not stop_on_blank_in or not source_rows:
         return source_rows
@@ -187,6 +302,7 @@ def _normalize_single_region(
     row_transforms=None,
     stop_on_blank_in=None,
     prefer_anchor_token=False,
+    grid_unpivot=None,
 ):
     header_index, canonical_header, strategy = detect_header_row(
         rows,
@@ -199,6 +315,12 @@ def _normalize_single_region(
     )
     source_rows = [canonical_header] + rows[header_index + 1 :]
     source_rows = _truncate_source_rows(source_rows, stop_on_blank_in=stop_on_blank_in)
+    if grid_unpivot:
+        source_rows = _grid_unpivot_for_product_week_plan(source_rows, grid_unpivot)
+        output_headers = None
+        column_map = None
+        default_values = None
+        row_transforms = None
     normalized_rows = _project_rows(
         source_rows,
         output_headers=output_headers,
@@ -279,7 +401,11 @@ def normalize_rows(
     source_regions=None,
     stop_on_blank_in=None,
     prefer_anchor_token=False,
+    grid_unpivot=None,
 ):
+    if grid_unpivot and source_regions:
+        raise ValueError("grid_unpivot cannot be combined with source_regions in one tab")
+
     if not source_regions:
         return _normalize_single_region(
             rows,
@@ -294,6 +420,7 @@ def normalize_rows(
             row_transforms=row_transforms,
             stop_on_blank_in=stop_on_blank_in,
             prefer_anchor_token=prefer_anchor_token,
+            grid_unpivot=grid_unpivot,
         )
 
     region_results = []
@@ -312,6 +439,7 @@ def normalize_rows(
                 row_transforms=region.get("row_transforms", row_transforms),
                 stop_on_blank_in=region.get("stop_on_blank_in", stop_on_blank_in),
                 prefer_anchor_token=region.get("prefer_anchor_token", prefer_anchor_token),
+                grid_unpivot=region.get("grid_unpivot"),
             )
         )
 
@@ -344,6 +472,8 @@ def normalize_csv_file(
     source_regions=None,
     stop_on_blank_in=None,
     prefer_anchor_token=False,
+    grid_unpivot=None,
+    append_without_header=False,
 ):
     with Path(source_path).open("r", encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.reader(handle))
@@ -362,13 +492,20 @@ def normalize_csv_file(
         source_regions=source_regions,
         stop_on_blank_in=stop_on_blank_in,
         prefer_anchor_token=prefer_anchor_token,
+        grid_unpivot=grid_unpivot,
     )
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.writer(handle)
-        writer.writerows(normalized["rows"])
-
-    normalized["rows_written"] = max(len(normalized["rows"]) - 1, 0)
+    data_rows = normalized["rows"][1:]
+    if append_without_header and output_path.exists():
+        with output_path.open("a", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerows(data_rows)
+        normalized["rows_written"] = len(data_rows)
+    else:
+        with output_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerows(normalized["rows"])
+        normalized["rows_written"] = max(len(normalized["rows"]) - 1, 0)
     return normalized

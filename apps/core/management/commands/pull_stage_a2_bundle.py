@@ -83,27 +83,41 @@ class Command(BaseCommand):
                 row_transforms=tab.get("row_transforms"),
                 source_regions=tab.get("source_regions"),
                 stop_on_blank_in=tab.get("stop_on_blank_in"),
+                prefer_anchor_token=tab.get("prefer_anchor_token", False),
+                grid_unpivot=tab.get("grid_unpivot"),
             )
 
             output_path = output_dir / tab["output_path"]
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            with output_path.open("w", encoding="utf-8", newline="") as handle:
-                writer = csv.writer(handle)
-                writer.writerows(normalized["rows"])
+            append_without_header = tab.get("append_without_header", False)
+            data_rows = normalized["rows"][1:]
+            appended_data_only = append_without_header and output_path.exists()
+            if appended_data_only:
+                with output_path.open("a", encoding="utf-8", newline="") as handle:
+                    writer = csv.writer(handle)
+                    writer.writerows(data_rows)
+                rows_written = len(data_rows)
+            else:
+                with output_path.open("w", encoding="utf-8", newline="") as handle:
+                    writer = csv.writer(handle)
+                    writer.writerows(normalized["rows"])
+                rows_written = max(len(normalized["rows"]) - 1, 0)
 
-            rows_written = max(len(normalized["rows"]) - 1, 0)
-            manifest["tabs"].append(
-                {
-                    "spreadsheet_id": resolved["spreadsheet_id"],
-                    "spreadsheet_name": resolved["spreadsheet_name"],
-                    "worksheet_title": worksheet_title,
-                    "output_path": tab["output_path"],
-                    "header_row_index": normalized["header_row_index"],
-                    "strategy": normalized["strategy"],
-                    "rows_written": rows_written,
-                    "modified_time": resolved.get("modified_time"),
-                }
-            )
+            tab_manifest = {
+                "spreadsheet_id": resolved["spreadsheet_id"],
+                "spreadsheet_name": resolved["spreadsheet_name"],
+                "worksheet_title": worksheet_title,
+                "output_path": tab["output_path"],
+                "header_row_index": normalized["header_row_index"],
+                "strategy": normalized["strategy"],
+                "rows_written": rows_written,
+                "modified_time": resolved.get("modified_time"),
+            }
+            if append_without_header:
+                tab_manifest["append_without_header"] = True
+            if tab.get("grid_unpivot"):
+                tab_manifest["grid_unpivot"] = True
+            manifest["tabs"].append(tab_manifest)
             self.stdout.write(
                 f"pulled {resolved['spreadsheet_name']}:{worksheet_title} -> {tab['output_path']}"
             )

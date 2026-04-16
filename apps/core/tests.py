@@ -1,5 +1,7 @@
 import csv
 import json
+import subprocess
+import sys
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -2002,6 +2004,92 @@ class StageA2OfflineConnectorTests(TestCase):
             ],
         )
 
+    def test_normalizer_grid_unpivot_wide_week_columns_to_product_week_plan(self):
+        rows = [
+            ["Annual sales draft"],
+            ["Channel", "Product", "1", "2", "3"],
+            ["Farm Stand", "Carrot Bunch", "10", "", "5"],
+        ]
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Channel", "Product", "1"],
+            grid_unpivot={
+                "output_headers": [
+                    "Channel Name",
+                    "Product Name",
+                    "Week",
+                    "Planned Quantity",
+                ],
+                "identity_columns": [
+                    {"output": "Channel Name", "source": "Channel"},
+                    {"output": "Product Name", "source": "Product"},
+                ],
+                "skip_blank_quantity": True,
+            },
+        )
+        self.assertEqual(
+            normalized["rows"][0],
+            ["Channel Name", "Product Name", "Week", "Planned Quantity"],
+        )
+        body = normalized["rows"][1:]
+        self.assertEqual(
+            sorted(body, key=lambda r: (int(r[2]), r[1])),
+            [
+                ["Farm Stand", "Carrot Bunch", "1", "10"],
+                ["Farm Stand", "Carrot Bunch", "3", "5"],
+            ],
+        )
+
+    def test_normalizer_grid_unpivot_accepts_week_prefixed_headers(self):
+        rows = [
+            ["Product", "Week 1", "Week 2"],
+            ["Spinach lb", "4", "9"],
+        ]
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Product", "Week 1"],
+            grid_unpivot={
+                "output_headers": [
+                    "Channel Name",
+                    "Product Name",
+                    "Week",
+                    "Planned Quantity",
+                ],
+                "identity_columns": [
+                    {"output": "Channel Name", "fixed": "Farm Stand"},
+                    {"output": "Product Name", "source": "Product"},
+                ],
+            },
+        )
+        body = normalized["rows"][1:]
+        self.assertEqual(len(body), 2)
+        self.assertEqual(body[0], ["Farm Stand", "Spinach lb", "1", "4"])
+        self.assertEqual(body[1], ["Farm Stand", "Spinach lb", "2", "9"])
+
+    def test_normalizer_grid_unpivot_skips_rows_with_blank_product(self):
+        rows = [
+            ["Channel", "Product", "1"],
+            ["Farm Stand", "", "99"],
+            ["Farm Stand", "Okra lb", "3"],
+        ]
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Channel", "Product", "1"],
+            grid_unpivot={
+                "output_headers": [
+                    "Channel Name",
+                    "Product Name",
+                    "Week",
+                    "Planned Quantity",
+                ],
+                "identity_columns": [
+                    {"output": "Channel Name", "source": "Channel"},
+                    {"output": "Product Name", "source": "Product"},
+                ],
+            },
+        )
+        self.assertEqual(len(normalized["rows"]), 2)
+
     def test_snapshot_stage_a2_bundle_command_writes_normalized_bundle_and_manifest(self):
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -2082,6 +2170,100 @@ class StageA2OfflineConnectorTests(TestCase):
                 }
             ],
         )
+
+    def test_snapshot_stage_a2_bundle_grid_unpivot_writes_product_week_plan(self):
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            raw_dir = temp_path / "raw"
+            raw_dir.mkdir()
+            (raw_dir / "orders-wide.csv").write_text(
+                "\n".join(
+                    [
+                        "Product,1,2,3",
+                        "Carrot Bunch,10,,5",
+                        "Arugula - 1/3 lb,,3,4",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            config_path = temp_path / "stage-a2-301.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "offline-301-sample",
+                        "tabs": [
+                            {
+                                "source_csv": "raw/orders-wide.csv",
+                                "output_path": "year_2026/product_week_plan.csv",
+                                "required_headers": ["Product", "1", "2"],
+                                "grid_unpivot": {
+                                    "output_headers": [
+                                        "Channel Name",
+                                        "Product Name",
+                                        "Week",
+                                        "Planned Quantity",
+                                    ],
+                                    "identity_columns": [
+                                        {"output": "Channel Name", "fixed": "Farm Stand"},
+                                        {"output": "Product Name", "source": "Product"},
+                                    ],
+                                    "skip_blank_quantity": True,
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = temp_path / "bundle"
+            call_command(
+                "snapshot_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+            with (output_dir / "year_2026" / "product_week_plan.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                rows = list(csv.reader(handle))
+
+        self.assertEqual(
+            rows[0],
+            ["Channel Name", "Product Name", "Week", "Planned Quantity"],
+        )
+        body = rows[1:]
+        self.assertEqual(len(body), 4)
+        self.assertIn(["Farm Stand", "Carrot Bunch", "1", "10"], body)
+        self.assertIn(["Farm Stand", "Carrot Bunch", "3", "5"], body)
+        self.assertIn(["Farm Stand", "Arugula - 1/3 lb", "2", "3"], body)
+        self.assertIn(["Farm Stand", "Arugula - 1/3 lb", "3", "4"], body)
+
+    def test_run_301_sales_plan_snapshot_rehearsal_script_writes_year_scoped_csv(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        script = repo_root / "scripts" / "run_301_sales_plan_snapshot_rehearsal.py"
+        self.assertTrue(script.is_file(), msg="expected repo script next to farm/")
+        with TemporaryDirectory() as tmp:
+            out = Path(tmp) / "bundle"
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "--year",
+                    "2027",
+                    "--output-dir",
+                    str(out),
+                ],
+                cwd=str(repo_root),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 0, msg=proc.stdout + proc.stderr)
+            csv_path = out / "year_2027" / "product_week_plan.csv"
+            self.assertTrue(csv_path.is_file())
+            rows = csv_path.read_text(encoding="utf-8").strip().splitlines()
+            self.assertGreaterEqual(len(rows), 2)
 
     def test_snapshot_stage_a2_bundle_can_translate_live_reference_tab_shape(self):
         with TemporaryDirectory() as temp_dir:
