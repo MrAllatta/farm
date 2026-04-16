@@ -1620,6 +1620,11 @@ class PrimaryRouteSmokeTests(TestCase):
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
         ("reports:crop_map", {}),
         ("reports:crop_map_week", {"week": 12}),
+        ("reports:harvest_list_print", {"week": 12}),
+        ("reports:pack_list_print", {"week": 12}),
+        ("reports:weekly_schedule_print", {"week": 12}),
+        ("reports:nursery_schedule_print", {}),
+        ("reports:seed_order", {}),
         ("reports:crop_performance", {}),
         ("reports:channel_performance", {}),
         ("reports:block_utilization", {}),
@@ -1632,7 +1637,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "planning": 6,
         "operations": 4,
         "sales": 3,
-        "reports": 7,
+        "reports": 12,
     }
     EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
         "core": 1,
@@ -1640,7 +1645,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "planning": 6,
         "operations": 4,
         "sales": 3,
-        "reports": 7,
+        "reports": 12,
     }
 
     @classmethod
