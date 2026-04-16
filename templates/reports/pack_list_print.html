@@ -1,6 +1,6 @@
 {# reports/pack_list_print.html #}
 {% extends "base.html" %}
-{% load humanize %}
+{% load static humanize planning_tags %}
 
 {% block title %}Pack List — Week {{ week_num }}{% endblock %}
 
@@ -13,7 +13,9 @@
     
     <div class="no-print" style="margin-bottom: 1rem;">
         <button onclick="window.print()" class="btn btn-primary">🖨 Print</button>
+        {% if week_num %}
         <a href="{% url 'operations:harvest_entry_week' week_num %}" class="btn">← Harvest Entry</a>
+        {% endif %}
         <a href="{% url 'sales:market_entry' %}" class="btn">Sales Entry →</a>
     </div>
     

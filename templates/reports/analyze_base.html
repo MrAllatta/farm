@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% if year %} — {{ year.year }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="report-header analyze-header">
+    <h1>{{ page_title }}</h1>
+    {% if page_subtitle %}
+    <p class="report-meta">{{ page_subtitle }}</p>
+    {% endif %}
+</div>
+
+<div class="analyze-tabs">
+    {% for item in analyze_links %}
+    <a
+        href="{% url item.route %}"
+        class="btn{% if item.key == analyze_page %} btn-primary{% endif %}"
+    >
+        {{ item.label }}
+    </a>
+    {% endfor %}
+</div>
+
+{% block analyze_metrics %}{% endblock %}
+
+{% if empty_message %}
+<div class="warning">
+    {{ empty_message }}
+</div>
+{% endif %}
+
+{% block analyze_content %}{% endblock %}
+{% endblock %}

@@ -1,28 +1,188 @@
 """reports/views.py"""
 
-from django.views.generic import TemplateView
-from django.db.models import Sum, F, Q
-from datetime import date, timedelta
-from isoweek import Week
 import math
-
-from planning.models import HarvestEvent, Planting
-from core.planning_year import resolve_current_planning_year
-from sales.models import SalesEvent, QuickSalesEntry
-from reference.models import Block, SalesChannel, CropSalesFormat
+from datetime import date, timedelta
 from decimal import Decimal
 
+from django.db.models import Sum
+from django.views.generic import TemplateView
+from isoweek import Week
 
-class WeeklySchedulePrintView(TemplateView):
+from core.planning_year import resolve_current_planning_year
+from planning.models import HarvestEvent, NurseryEvent, Planting
+from sales.models import SalesEvent, QuickSalesEntry
+from reference.models import Block, SalesChannel, CropSalesFormat
+from .mixins import AnalyzeViewMixin, ReportContextMixin
+from .services.crop_maps import CropMapOccupancyService
+
+
+CROP_MAP_PRINT_COLORS = {
+    "Greens": "#d9f99d",
+    "Vegetables": "#fde68a",
+    "Roots": "#fdba74",
+    "Brassicas": "#bfdbfe",
+    "Alliums": "#ddd6fe",
+    "Herbs": "#a7f3d0",
+}
+
+
+class WeeklySchedulePrintView(ReportContextMixin, TemplateView):
     """Weekly Schedule Print"""
 
-    template_name = "reports/harvest_list_print.html"
+    template_name = "reports/weekly_schedule_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_num = self.resolve_week(kwargs["week"])
+        week_monday, week_sunday = self.week_window(year_obj.year, week_num)
+
+        harvest_events = list(
+            HarvestEvent.objects.filter(
+                planting__planning_year=year_obj,
+                planned_date__gte=week_monday,
+                planned_date__lte=week_sunday,
+            )
+            .exclude(planting__status__in=self.excluded_statuses)
+            .select_related("planting__crop", "planting__block")
+            .order_by("planned_date", "planting__block__walk_route_order", "planting__bed_start")
+        )
+        nursery_events = list(
+            NurseryEvent.objects.filter(
+                planting__planning_year=year_obj,
+                planned_date__gte=week_monday,
+                planned_date__lte=week_sunday,
+            )
+            .exclude(planting__status__in=self.excluded_statuses)
+            .select_related("planting__crop", "planting__block")
+            .order_by("planned_date", "event_type", "planting__block__walk_route_order")
+        )
+
+        schedule_days = []
+        for offset, day_name in enumerate(
+            ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        ):
+            day_date = week_monday + timedelta(days=offset)
+            is_market_day = day_date.weekday() == 5
+            am_tasks = []
+            pm_tasks = []
+            day_nursery = [event for event in nursery_events if event.planned_date == day_date]
+            day_harvest = [event for event in harvest_events if event.planned_date == day_date]
+
+            for event in day_nursery:
+                label = (
+                    f"{event.get_event_type_display()}: {event.planting.crop.name}"
+                    f" ({event.planting.block.name} b{event.planting.bed_start}-{event.planting.bed_end})"
+                )
+                if event.event_type in {"seed", "pot_up"}:
+                    am_tasks.append(label)
+                else:
+                    pm_tasks.append(label)
+
+            for event in day_harvest:
+                pm_tasks.append(
+                    f"Harvest {event.planting.crop.name} "
+                    f"{event.planned_quantity:.0f} {event.planned_units}"
+                )
+
+            if is_market_day:
+                am_tasks.insert(0, "Market prep / load-out")
+                pm_tasks.append("Market sales and post-market reset")
+
+            schedule_days.append(
+                {
+                    "name": day_name,
+                    "date": day_date,
+                    "am_tasks": am_tasks,
+                    "pm_tasks": pm_tasks,
+                    "is_market_day": is_market_day,
+                }
+            )
+
+        ctx.update(
+            {
+                "year": year_obj,
+                "view_title": "Weekly Schedule",
+                "week_monday": week_monday,
+                "week_sunday": week_sunday,
+                "schedule_days": schedule_days,
+                "nursery_events": nursery_events,
+                "transplant_events": [event for event in nursery_events if event.event_type == "transplant"],
+                "harvest_events": harvest_events,
+                "total_bins": sum(
+                    math.ceil(float(event.planned_quantity) / event.planting.crop.units_per_bin)
+                    for event in harvest_events
+                    if event.planting.crop.units_per_bin and event.planned_quantity
+                ),
+            }
+        )
+        ctx.update(self.week_navigation(week_num))
+        return ctx
 
 
-class PackListPrintView(TemplateView):
+class PackListPrintView(ReportContextMixin, TemplateView):
     """Pack list print"""
 
-    template_name = "reports/harvest_list_print.html"
+    template_name = "reports/pack_list_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_num = self.resolve_week(kwargs["week"])
+        week_monday, week_sunday = self.week_window(year_obj.year, week_num)
+        channels = list(SalesChannel.objects.all())
+        harvest_events = list(
+            HarvestEvent.objects.filter(
+                planting__planning_year=year_obj,
+                planned_date__gte=week_monday,
+                planned_date__lte=week_sunday,
+            )
+            .exclude(planting__status__in=self.excluded_statuses)
+            .select_related("planting__crop", "planting__block")
+            .order_by("planting__crop__name", "planting__block__walk_route_order", "planting__bed_start")
+        )
+
+        fresh_items = []
+        projected_revenue = {}
+        for channel in channels:
+            planned_total = (
+                SalesEvent.objects.filter(
+                    planning_year=year_obj,
+                    channel=channel,
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    sale_date__gte=week_monday,
+                    sale_date__lte=week_sunday,
+                ).aggregate(total=Sum("planned_revenue"))["total"]
+                or Decimal("0")
+            )
+            projected_revenue[channel.id] = planned_total
+
+        for event in harvest_events:
+            crop = event.planting.crop
+            best_format = crop.sales_formats.filter(is_active=True).order_by("-sale_price").first()
+            fresh_items.append(
+                {
+                    "product_name": best_format.product_name if best_format else crop.name,
+                    "price": best_format.sale_price if best_format else Decimal("0"),
+                    "harvested": event.planned_quantity,
+                    "unit": event.planned_units,
+                    "channel_qtys": {},
+                    "wholesale_qty": event.planned_quantity,
+                }
+            )
+
+        ctx.update(
+            {
+                "year": year_obj,
+                "pack_date": week_monday + timedelta(days=4),
+                "channels": channels,
+                "fresh_items": fresh_items,
+                "storage_items": [],
+                "projected_revenue": projected_revenue,
+            }
+        )
+        ctx.update(self.week_navigation(week_num))
+        return ctx
 
 
 class ExportArchiveView(TemplateView):
@@ -37,19 +197,90 @@ class ExportCSVView(TemplateView):
     template_name = "reports/harvest_list_print.html"
 
 
-class SeedOrderReportView(TemplateView):
+class SeedOrderReportView(ReportContextMixin, TemplateView):
     """View seed order reports"""
 
-    template_name = "reports/harvest_list_print.html"
+    template_name = "reports/seed_order.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("planning", "active", "complete"))
+        ctx.update(
+            {
+                "year": year_obj,
+                "overplant_pct": int((year_obj.overplant_factor - 1) * 100) if year_obj else 0,
+                "seed_orders": [],
+                "direct_seeded": [],
+                "transplanted": [],
+                "vegetative": [],
+            }
+        )
+        return ctx
 
 
-class NurserySchedulePrintView(TemplateView):
+class NurserySchedulePrintView(ReportContextMixin, TemplateView):
     """Generate print-ready nursery schedule."""
 
-    template_name = "reports/harvest_list_print.html"
+    template_name = "reports/nursery_schedule_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("planning", "active", "complete"))
+        nursery_events = list(
+            NurseryEvent.objects.filter(planting__planning_year=year_obj)
+            .exclude(planting__status__in=self.excluded_statuses)
+            .select_related("planting__crop", "planting__block")
+            .order_by("planned_date", "event_type", "planting__crop__name")
+        )
+
+        weeks = {}
+        for event in nursery_events:
+            week_num = event.planned_date.isocalendar()[1]
+            bucket = weeks.setdefault(
+                week_num,
+                {
+                    "week_num": week_num,
+                    "monday": Week(year_obj.year, week_num).monday(),
+                    "events": [],
+                    "bench_trays": 0,
+                },
+            )
+            bucket["events"].append(event)
+            bucket["bench_trays"] += event.planned_tray_count or 0
+
+        all_weeks = [weeks[key] for key in sorted(weeks)]
+        peak_week = max(
+            ({"week": item["week_num"], "trays": item["bench_trays"]} for item in all_weeks),
+            key=lambda item: item["trays"],
+            default={"week": None, "trays": 0},
+        )
+
+        ctx.update(
+            {
+                "year": year_obj,
+                "today": date.today(),
+                "greenhouse_capacity": 0,
+                "bench_by_week": [
+                    {
+                        "week": item["week_num"],
+                        "trays": item["bench_trays"],
+                        "over_capacity": False,
+                    }
+                    for item in all_weeks
+                ],
+                "all_nursery_weeks": all_weeks,
+                "total_seed_events": sum(1 for event in nursery_events if event.event_type == "seed"),
+                "total_potup_events": sum(1 for event in nursery_events if event.event_type == "pot_up"),
+                "total_transplant_events": sum(
+                    1 for event in nursery_events if event.event_type == "transplant"
+                ),
+                "peak_week": peak_week,
+            }
+        )
+        return ctx
 
 
-class HarvestListPrintView(TemplateView):
+class HarvestListPrintView(ReportContextMixin, TemplateView):
     """Generates a print-ready harvest list for a given week."""
 
     template_name = "reports/harvest_list_print.html"
@@ -57,12 +288,9 @@ class HarvestListPrintView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year()
-        week_num = kwargs["week"]
-        year = year_obj.year
-
-        week_monday = Week(year, week_num).monday()
-        week_sunday = week_monday + timedelta(days=6)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_num = self.resolve_week(kwargs["week"])
+        week_monday, week_sunday = self.week_window(year_obj.year, week_num)
 
         events = (
             HarvestEvent.objects.filter(
@@ -70,7 +298,7 @@ class HarvestListPrintView(TemplateView):
                 planned_date__gte=week_monday,
                 planned_date__lte=week_sunday,
             )
-            .exclude(planting__status__in=["skipped", "failed"])
+            .exclude(planting__status__in=self.excluded_statuses)
             .select_related("planting__crop", "planting__block")
             .order_by(
                 "planting__block__walk_route_order",
@@ -115,10 +343,6 @@ class HarvestListPrintView(TemplateView):
             {
                 "view_title": "Harvest List",
                 "year": year_obj,
-                "week_num": week_num,
-                "prev_week_num": 52 if week_num == 1 else week_num - 1,
-                "next_week_num": 1 if week_num == 52 else week_num + 1,
-                "show_week_navigation": True,
                 "harvest_day": harvest_day,
                 "items": items,
                 "bin_totals": sorted(bin_totals.items()),
@@ -127,6 +351,7 @@ class HarvestListPrintView(TemplateView):
                 "total_items": len(items),
             }
         )
+        ctx.update(self.week_navigation(week_num))
         return ctx
 
 
@@ -138,7 +363,7 @@ class RevenueProjectionView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year()
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
         year = year_obj.year
 
         channels = SalesChannel.objects.all()
@@ -248,15 +473,35 @@ class RevenueProjectionView(TemplateView):
         return ctx
 
 
-class CropPerformanceView(TemplateView):
+class CropPerformanceView(AnalyzeViewMixin, TemplateView):
     """Per-crop analysis: yield, revenue, $/bedfoot."""
 
+    analyze_page = "crop_performance"
+    page_title = "Crop Performance"
     template_name = "reports/crop_performance.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
+        year_obj = self.resolve_planning_year()
+        if not year_obj:
+            ctx.update(
+                self.build_analyze_context(
+                    None,
+                    page_subtitle="No active or completed planning year is available yet.",
+                    empty_message="Create or activate a planning year to analyze crop performance.",
+                )
+            )
+            ctx.update(
+                {
+                    "crops": [],
+                    "total_revenue": Decimal("0"),
+                    "total_bedfeet": 0,
+                    "avg_revenue_per_bf": Decimal("0"),
+                    "num_crops": 0,
+                }
+            )
+            return ctx
 
         plantings = (
             Planting.objects.filter(
@@ -364,7 +609,6 @@ class CropPerformanceView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
                 "crops": performance,
                 "total_revenue": total_revenue,
                 "total_bedfeet": total_bedfeet,
@@ -372,18 +616,49 @@ class CropPerformanceView(TemplateView):
                 "num_crops": len(performance),
             }
         )
+        ctx.update(
+            self.build_analyze_context(
+                year_obj,
+                page_subtitle="Yield and revenue per crop across completed and in-season plantings.",
+                empty_message=(
+                    "No crop performance data is available yet for this planning year."
+                    if not performance
+                    else ""
+                ),
+            )
+        )
         return ctx
 
 
-class ChannelPerformanceView(TemplateView):
+class ChannelPerformanceView(AnalyzeViewMixin, TemplateView):
     """Revenue by channel — weekly, monthly, annual vs target."""
 
+    analyze_page = "channel_performance"
+    page_title = "Channel Performance"
     template_name = "reports/channel_performance.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
+        year_obj = self.resolve_planning_year()
+        if not year_obj:
+            ctx.update(
+                self.build_analyze_context(
+                    None,
+                    page_subtitle="No active or completed planning year is available yet.",
+                    empty_message="Create or activate a planning year to analyze channel performance.",
+                )
+            )
+            ctx.update(
+                {
+                    "channels": [],
+                    "total_ytd": Decimal("0"),
+                    "total_target_ytd": Decimal("0"),
+                    "total_annual_target": Decimal("0"),
+                    "total_ytd_gap": Decimal("0"),
+                }
+            )
+            return ctx
         year = year_obj.year
 
         channels = SalesChannel.objects.all()
@@ -557,7 +832,6 @@ class ChannelPerformanceView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
                 "channels": channel_data,
                 "total_ytd": total_ytd,
                 "total_target_ytd": total_target_ytd,
@@ -565,18 +839,67 @@ class ChannelPerformanceView(TemplateView):
                 "total_ytd_gap": total_ytd - total_target_ytd,
             }
         )
+        ctx.update(
+            self.build_analyze_context(
+                year_obj,
+                page_subtitle="Weekly pacing, target attainment, and top products by channel.",
+                empty_message=(
+                    "No sales channels or recorded sales data are available for this planning year."
+                    if not channel_data
+                    else ""
+                ),
+            )
+        )
         return ctx
 
 
-class SeasonSummaryView(TemplateView):
+class SeasonSummaryView(AnalyzeViewMixin, TemplateView):
     """End-of-season overview — the post-season analysis dashboard."""
 
+    analyze_page = "season_summary"
+    page_title = "Season Summary"
     template_name = "reports/season_summary.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
+        year_obj = self.resolve_planning_year()
+        if not year_obj:
+            ctx.update(
+                self.build_analyze_context(
+                    None,
+                    page_subtitle="No active or completed planning year is available yet.",
+                    empty_message="Create or activate a planning year to view a season summary.",
+                )
+            )
+            ctx.update(
+                {
+                    "total_plantings": 0,
+                    "completed_plantings": 0,
+                    "failed_plantings": 0,
+                    "skipped_plantings": 0,
+                    "failure_rate": 0,
+                    "total_planned_bf": 0,
+                    "total_actual_bf": 0,
+                    "planned_yield_total": Decimal("0"),
+                    "actual_yield_total": Decimal("0"),
+                    "yield_attainment": None,
+                    "total_revenue": Decimal("0"),
+                    "annual_target": Decimal("0"),
+                    "revenue_attainment": None,
+                    "revenue_gap": Decimal("0"),
+                    "revenue_per_bf": Decimal("0"),
+                    "total_harvest_hours": Decimal("0"),
+                    "revenue_per_harvest_hour": None,
+                    "unique_crops": 0,
+                    "crop_types": [],
+                    "botanical_families": [],
+                    "top_10_crops": [],
+                    "bottom_10_crops": [],
+                    "rotation_updates": 0,
+                }
+            )
+            return ctx
         year = year_obj.year
 
         # All plantings
@@ -715,7 +1038,6 @@ class SeasonSummaryView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
                 # Plantings overview
                 "total_plantings": all_plantings.count(),
                 "completed_plantings": completed.count(),
@@ -755,172 +1077,91 @@ class SeasonSummaryView(TemplateView):
                 "rotation_updates": len(rotation_updates),
             }
         )
+        ctx.update(
+            self.build_analyze_context(
+                year_obj,
+                page_subtitle="Season-wide rollup of plantings, yield, revenue, and labor.",
+                empty_message=(
+                    "No planting or sales data is available yet for this planning year."
+                    if not all_plantings.exists()
+                    else ""
+                ),
+            )
+        )
         return ctx
 
 
-class CropMapView(TemplateView):
+class CropMapView(ReportContextMixin, TemplateView):
     """Spatial farm view showing what's planted where."""
 
     template_name = "reports/crop_map.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        year_obj = resolve_current_planning_year()
-        year = year_obj.year
-
-        week_num = kwargs.get("week", date.today().isocalendar()[1])
-        week_date = Week(year, week_num).monday()
-
-        blocks = Block.objects.all().order_by("walk_route_order", "name")
-
-        # Get all plantings active during this week
-        plantings = (
-            Planting.objects.filter(
-                planning_year=year_obj,
-                planned_plant_date__lte=week_date + timedelta(days=6),
-                planned_last_harvest_date__gte=week_date,
-            )
-            .exclude(status__in=["skipped"])
-            .select_related("crop", "block")
-            .order_by("block__name", "bed_start")
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_num = self.resolve_week(kwargs.get("week"))
+        week_date = self.week_window(year_obj.year, week_num)[0]
+        service = CropMapOccupancyService(year_obj)
+        block_rows = service.get_high_level_block_map(week_num=week_num)
+        field_maps = [bm for bm in block_rows if bm["block"].block_type == "field"]
+        tunnel_maps = [bm for bm in block_rows if bm["block"].block_type == "high_tunnel"]
+        greenhouse_maps = [bm for bm in block_rows if bm["block"].block_type == "greenhouse"]
+        total_bf = sum(row["block"].total_bedfeet for row in block_rows)
+        used_bf = sum(
+            row["block"].total_bedfeet * (row["utilization_pct"] / 100)
+            for row in block_rows
         )
-
-        # Build map: block → list of bed segments
-        block_maps = []
-
-        for block in blocks:
-            block_plantings = [p for p in plantings if p.block_id == block.id]
-
-            segments = []
-            covered_beds = set()
-
-            for p in block_plantings:
-                for bed in range(p.bed_start, p.bed_end + 1):
-                    covered_beds.add(bed)
-
-                # Determine status relative to current week
-                harvest_start = p.planned_first_harvest_date
-                harvest_end = p.planned_last_harvest_date
-
-                if p.status == "failed":
-                    status_label = "failed"
-                elif week_date > harvest_end:
-                    status_label = "finishing"
-                elif week_date >= harvest_start:
-                    status_label = "harvesting"
-                elif week_date >= p.planned_plant_date:
-                    status_label = "growing"
-                else:
-                    status_label = "planned"
-
-                # CSS class for crop type coloring
-                crop_type_css = p.crop.crop_type.lower().replace("/", "-").replace(" ", "-")
-
-                segments.append(
-                    {
-                        "planting": p,
-                        "bed_start": p.bed_start,
-                        "bed_end": p.bed_end,
-                        "bed_count": p.bed_end - p.bed_start + 1,
-                        "width_pct": ((p.bed_end - p.bed_start + 1) / block.num_beds * 100),
-                        "label": p.crop.name,
-                        "sublabel": f"b{p.bed_start}-{p.bed_end}",
-                        "status": status_label,
-                        "crop_type_css": f"crop-{crop_type_css}",
-                    }
-                )
-
-            # Find fallow gaps
-            all_beds = set(range(1, block.num_beds + 1))
-            fallow_beds = sorted(all_beds - covered_beds)
-
-            # Group consecutive fallow beds
-            fallow_segments = []
-            if fallow_beds:
-                start = fallow_beds[0]
-                prev = fallow_beds[0]
-                for bed in fallow_beds[1:]:
-                    if bed == prev + 1:
-                        prev = bed
-                    else:
-                        fallow_segments.append(
-                            {
-                                "bed_start": start,
-                                "bed_end": prev,
-                                "bed_count": prev - start + 1,
-                                "width_pct": (prev - start + 1) / block.num_beds * 100,
-                                "label": "fallow",
-                                "status": "fallow",
-                                "crop_type_css": "",
-                            }
-                        )
-                        start = bed
-                        prev = bed
-                fallow_segments.append(
-                    {
-                        "bed_start": start,
-                        "bed_end": prev,
-                        "bed_count": prev - start + 1,
-                        "width_pct": (prev - start + 1) / block.num_beds * 100,
-                        "label": "fallow",
-                        "status": "fallow",
-                        "crop_type_css": "",
-                    }
-                )
-
-            # Merge and sort all segments by bed position
-            all_segments = segments + fallow_segments
-            all_segments.sort(key=lambda s: s["bed_start"])
-
-            block_maps.append(
-                {
-                    "block": block,
-                    "segments": all_segments,
-                    "fallow_beds": len(fallow_beds),
-                    "fallow_bedfeet": len(fallow_beds) * block.bedfeet_per_bed,
-                    "utilization_pct": (
-                        len(covered_beds) / block.num_beds * 100 if block.num_beds else 0
-                    ),
-                }
-            )
-
-        # Group blocks by type
-        field_maps = [bm for bm in block_maps if bm["block"].block_type == "field"]
-        tunnel_maps = [bm for bm in block_maps if bm["block"].block_type == "high_tunnel"]
-        greenhouse_maps = [bm for bm in block_maps if bm["block"].block_type == "greenhouse"]
-
-        # Summary stats
-        total_fallow_bf = sum(bm["fallow_bedfeet"] for bm in block_maps)
-        total_bf = sum(bm["block"].total_bedfeet for bm in block_maps)
 
         ctx.update(
             {
                 "year": year_obj,
-                "week_num": week_num,
                 "week_date": week_date,
                 "field_maps": field_maps,
                 "tunnel_maps": tunnel_maps,
                 "greenhouse_maps": greenhouse_maps,
-                "total_fallow_bf": total_fallow_bf,
                 "total_bf": total_bf,
-                "overall_utilization": (
-                    (total_bf - total_fallow_bf) / total_bf * 100 if total_bf else 0
-                ),
+                "overall_utilization": (used_bf / total_bf * 100) if total_bf else 0,
+                "view_links": [
+                    ("High-Level Block Map", "reports:crop_map"),
+                    ("Week By Bed Grid", "reports:crop_map_week_by_bed"),
+                    ("Week By Block Grid", "reports:crop_map_week_by_block"),
+                    ("Successions By Block", "reports:crop_map_successions"),
+                ],
             }
         )
+        ctx.update(self.week_navigation(week_num))
         return ctx
 
 
-class BlockUtilizationView(TemplateView):
+class BlockUtilizationView(AnalyzeViewMixin, TemplateView):
     """Per-block analysis: weeks in use, revenue, $/bf."""
 
+    analyze_page = "block_utilization"
+    page_title = "Block Utilization"
     template_name = "reports/block_utilization.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
+        year_obj = self.resolve_planning_year()
+        if not year_obj:
+            ctx.update(
+                self.build_analyze_context(
+                    None,
+                    page_subtitle="No active or completed planning year is available yet.",
+                    empty_message="Create or activate a planning year to analyze block utilization.",
+                )
+            )
+            ctx.update(
+                {
+                    "blocks": [],
+                    "total_revenue": Decimal("0"),
+                    "total_bf": 0,
+                    "avg_utilization": 0,
+                    "avg_revenue_per_bf": Decimal("0"),
+                }
+            )
+            return ctx
 
         blocks = Block.objects.all().order_by("walk_route_order", "name")
 
@@ -932,7 +1173,7 @@ class BlockUtilizationView(TemplateView):
                     planning_year=year_obj,
                     block=block,
                 )
-                .exclude(status__in=["skipped"])
+                .exclude(status__in=self.excluded_statuses)
                 .select_related("crop")
             )
 
@@ -1035,7 +1276,6 @@ class BlockUtilizationView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
                 "blocks": block_data,
                 "total_revenue": total_revenue,
                 "total_bf": total_bf,
@@ -1043,24 +1283,55 @@ class BlockUtilizationView(TemplateView):
                 "avg_revenue_per_bf": (total_revenue / total_bf if total_bf else 0),
             }
         )
+        ctx.update(
+            self.build_analyze_context(
+                year_obj,
+                page_subtitle="Compare block occupancy, crop mix, and proxy revenue by space used.",
+                empty_message=(
+                    "No blocks or plantings are available yet for this planning year."
+                    if not block_data
+                    else ""
+                ),
+            )
+        )
         return ctx
 
 
-class PlanVsActualView(TemplateView):
+class PlanVsActualView(AnalyzeViewMixin, TemplateView):
     """Per-planting comparison of plan to reality."""
 
+    analyze_page = "plan_vs_actual"
+    page_title = "Plan vs Actual"
     template_name = "reports/plan_vs_actual.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "complete"))
+        year_obj = self.resolve_planning_year()
+        if not year_obj:
+            ctx.update(
+                self.build_analyze_context(
+                    None,
+                    page_subtitle="No active or completed planning year is available yet.",
+                    empty_message="Create or activate a planning year to compare planned and actual results.",
+                )
+            )
+            ctx.update(
+                {
+                    "rows": [],
+                    "total_plantings": 0,
+                    "with_actuals": 0,
+                    "overperformers": [],
+                    "underperformers": [],
+                }
+            )
+            return ctx
 
         plantings = (
             Planting.objects.filter(
                 planning_year=year_obj,
             )
-            .exclude(status="skipped")
+            .exclude(status__in=self.excluded_statuses)
             .select_related("crop", "crop_season", "block")
             .prefetch_related("harvest_events")
             .order_by("crop__crop_type", "crop__name", "block__name")
@@ -1141,7 +1412,6 @@ class PlanVsActualView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
                 "rows": rows,
                 "total_plantings": len(rows),
                 "with_actuals": len(with_actuals),
@@ -1153,10 +1423,21 @@ class PlanVsActualView(TemplateView):
                 ],
             }
         )
+        ctx.update(
+            self.build_analyze_context(
+                year_obj,
+                page_subtitle="Per-planting yield and timing comparisons against the original plan.",
+                empty_message=(
+                    "No planting comparisons are available yet for this planning year."
+                    if not rows
+                    else ""
+                ),
+            )
+        )
         return ctx
 
 
-class CropMapPrintView(TemplateView):
+class CropMapPrintView(ReportContextMixin, TemplateView):
     """Printable crop map — optimized for 11×17 landscape."""
 
     template_name = "reports/crop_map_print.html"
@@ -1164,11 +1445,11 @@ class CropMapPrintView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year()
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
         year = year_obj.year
 
-        week_num = kwargs.get("week", date.today().isocalendar()[1])
-        week_date = Week(year, week_num).monday()
+        week_num = self.resolve_week(kwargs.get("week"))
+        week_date = self.week_window(year, week_num)[0]
 
         blocks = Block.objects.all().order_by("walk_route_order", "name")
 
@@ -1178,14 +1459,13 @@ class CropMapPrintView(TemplateView):
             Planting.objects.filter(
                 planning_year=year_obj,
             )
-            .exclude(status__in=["skipped", "revised"])
+            .exclude(status__in=self.excluded_statuses)
             .select_related("crop", "block")
             .order_by("block__name", "bed_start", "planned_plant_date")
         )
 
         # Week range to display — configurable but default full season
-        display_start = int(self.request.GET.get("start", 14))
-        display_end = int(self.request.GET.get("end", 45))
+        display_start, display_end = self.parse_week_range(self.request, 14, 45)
         weeks = list(range(display_start, display_end + 1))
 
         # Build block rows — each block gets multiple rows if beds overlap
@@ -1278,6 +1558,70 @@ class CropMapPrintView(TemplateView):
                 "display_start": display_start,
                 "display_end": display_end,
                 "num_weeks": len(weeks),
+                "today": date.today(),
+                "crop_colors": CROP_MAP_PRINT_COLORS,
+                "col_width": 22,
             }
         )
+        return ctx
+
+
+class CropMapWeekByBedGridView(ReportContextMixin, TemplateView):
+    """503-style calendar week by bed occupancy grid."""
+
+    template_name = "reports/crop_map_week_by_bed.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_start, week_end = self.parse_week_range(self.request, 1, 26)
+
+        service = CropMapOccupancyService(year_obj)
+        grid = service.get_week_by_bed_grid(week_start=week_start, week_end=week_end)
+        ctx.update(
+            {
+                "year": year_obj,
+                "week_start": week_start,
+                "week_end": week_end,
+                "weeks": grid["weeks"],
+                "rows": grid["rows"],
+            }
+        )
+        return ctx
+
+
+class CropMapWeekByBlockGridView(ReportContextMixin, TemplateView):
+    """503-style calendar week by block occupancy grid."""
+
+    template_name = "reports/crop_map_week_by_block.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_start, week_end = self.parse_week_range(self.request, 1, 52)
+
+        service = CropMapOccupancyService(year_obj)
+        grid = service.get_week_by_block_grid(week_start=week_start, week_end=week_end)
+        ctx.update(
+            {
+                "year": year_obj,
+                "week_start": week_start,
+                "week_end": week_end,
+                "weeks": grid["weeks"],
+                "rows": grid["rows"],
+            }
+        )
+        return ctx
+
+
+class CropMapSuccessionsByBlockView(ReportContextMixin, TemplateView):
+    """503-style succession group view by block."""
+
+    template_name = "reports/crop_map_successions_by_block.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        service = CropMapOccupancyService(year_obj)
+        ctx.update({"year": year_obj, "rows": service.get_successions_by_block()})
         return ctx

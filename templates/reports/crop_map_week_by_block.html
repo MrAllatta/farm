@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}503 Week by Block — {{ year.year }}{% endblock %}
+
+{% block content %}
+<div class="report-header">
+    <h1>503 Crop Map: Calendar Week by Block Grid</h1>
+    <p class="report-meta">Weeks {{ week_start }}-{{ week_end }}</p>
+</div>
+
+<div class="mt-1 mb-2">
+    <a href="{% url 'reports:crop_map' %}" class="btn">High-Level Block Map</a>
+    <a href="{% url 'reports:crop_map_week_by_bed' %}" class="btn">Calendar Week by Bed Grid</a>
+    <a href="{% url 'reports:crop_map_week_by_block' %}" class="btn btn-primary">Calendar Week by Block Grid</a>
+    <a href="{% url 'reports:crop_map_successions' %}" class="btn">Successions by Block</a>
+</div>
+
+<div class="matrix-container">
+    <table class="planning-matrix">
+        <thead>
+            <tr>
+                <th class="block-col">Block</th>
+                {% for wk in weeks %}
+                <th class="week-col {% if wk.is_current %}week-current{% endif %}">{{ wk.num }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td class="block-col">{{ row.block.name }}</td>
+                {% for cell in row.cells %}
+                <td class="week-cell {% if cell.is_empty %}fallow{% else %}planting-growing{% endif %}">
+                    {% if cell.is_empty %}
+                    <a href="{% url 'planning:planting_create_prefilled' block_id=row.block.id week=cell.week %}">+</a>
+                    {% else %}
+                    <div>{{ cell.active_count }} planting{{ cell.active_count|pluralize }}</div>
+                    <div class="muted">{{ cell.used_beds }}/{{ row.block.num_beds }} beds</div>
+                    {% with planting=cell.plantings.0 %}
+                    {% if planting %}
+                    <a href="{% url 'planning:planting_detail' planting.id %}">{{ planting.crop.name|truncatechars:12 }}</a>
+                    {% endif %}
+                    {% endwith %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

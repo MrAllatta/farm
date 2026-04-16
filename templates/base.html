@@ -49,6 +49,9 @@
                 <summary class="nav-group-label">Reports</summary>
                 <div class="nav-menu">
                     <a href="{% url 'reports:crop_map' %}">Crop Map</a>
+                    <a href="{% url 'reports:crop_map_week_by_bed' %}">503 Week by Bed</a>
+                    <a href="{% url 'reports:crop_map_week_by_block' %}">503 Week by Block</a>
+                    <a href="{% url 'reports:crop_map_successions' %}">503 Successions</a>
                     {% if current_week %}
                         <a href="{% url 'reports:harvest_list_print' current_week %}">
                             🖨 Harvest List
@@ -66,7 +69,7 @@
                 <div class="nav-menu">
                     <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
                     <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
-                    <a href="{% url 'reports:channel_performance' %}">Channel Revenue</a>
+                    <a href="{% url 'reports:channel_performance' %}">Channel Performance</a>
                     <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
                     <a href="{% url 'reports:season_summary' %}">Season Summary</a>
                 </div>

@@ -1,2 +1,106 @@
-{# reports/channel_performance.html #}
-{% extends "base.html" %}
+{% extends "reports/analyze_base.html" %}
+
+{% block analyze_metrics %}
+<div class="metric-cards">
+    <div class="metric-card">
+        <div class="metric-label">YTD Revenue</div>
+        <div class="metric-value">${{ total_ytd|default:0|floatformat:0 }}</div>
+        <div class="metric-sub">Target: ${{ total_target_ytd|default:0|floatformat:0 }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">YTD Gap</div>
+        <div class="metric-value {% if total_ytd_gap >= 0 %}positive{% else %}negative{% endif %}">
+            ${{ total_ytd_gap|default:0|floatformat:0 }}
+        </div>
+        <div class="metric-sub">Annual target: ${{ total_annual_target|default:0|floatformat:0 }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block analyze_content %}
+<div class="analyze-stacked">
+    {% for item in channels %}
+    <section class="analyze-section">
+        <h2>{{ item.channel.name }}</h2>
+        <div class="analyze-summary-grid">
+            <div class="metric-card">
+                <div class="metric-label">Coverage</div>
+                <div class="metric-value">{{ item.weeks_with_data }}/{{ item.total_active_weeks }}</div>
+                <div class="metric-sub">Weeks with sales data</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">YTD Revenue</div>
+                <div class="metric-value">${{ item.ytd_revenue|floatformat:0 }}</div>
+                <div class="metric-sub">Target: ${{ item.ytd_target|floatformat:0 }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Pacing</div>
+                <div class="metric-value {% if item.pacing and item.pacing.on_pace %}positive{% elif item.pacing %}negative{% endif %}">
+                    {% if item.pacing %}{% if item.pacing.on_pace %}On pace{% else %}Behind{% endif %}{% else %}n/a{% endif %}
+                </div>
+                <div class="metric-sub">
+                    {% if item.pacing %}Projected: ${{ item.pacing.projected_annual|floatformat:0 }}{% else %}Need more recorded weeks{% endif %}
+                </div>
+            </div>
+        </div>
+        <table class="compact-table analyze-table">
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Date</th>
+                    <th>Revenue</th>
+                    <th>Target</th>
+                    <th>Gap</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in item.weeks_table %}
+                <tr>
+                    <td>{{ week.week }}</td>
+                    <td>{{ week.date|date:"M j" }}</td>
+                    <td>{% if week.revenue is not None %}${{ week.revenue|floatformat:0 }}{% else %}<span class="muted">No data</span>{% endif %}</td>
+                    <td>${{ week.target|floatformat:0 }}</td>
+                    <td>
+                        {% if week.gap is not None %}
+                        <span class="{% if week.gap >= 0 %}positive{% else %}negative{% endif %}">
+                            ${{ week.gap|floatformat:0 }}
+                        </span>
+                        {% else %}
+                        <span class="muted">n/a</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if item.top_products %}
+        <h3>Top Products</h3>
+        <table class="compact-table analyze-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Crop</th>
+                    <th>Revenue</th>
+                    <th>Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in item.top_products %}
+                <tr>
+                    <td>{{ product.product__product_name }}</td>
+                    <td>{{ product.product__crop__name }}</td>
+                    <td>${{ product.total_revenue|floatformat:0 }}</td>
+                    <td>{{ product.total_qty|floatformat:1 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </section>
+    {% empty %}
+    <section class="analyze-section">
+        <span class="muted">No channel performance data yet.</span>
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}

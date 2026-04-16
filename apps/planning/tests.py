@@ -1,14 +1,23 @@
 from datetime import date, timedelta
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.urls import reverse
 
-from planning.models import Planting, PlanningYear
+from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from sales.models import SalesEvent
 
+TEST_MIDDLEWARE = [
+    middleware
+    for middleware in settings.MIDDLEWARE
+    if middleware != "whitenoise.middleware.WhiteNoiseMiddleware"
+]
 
+@override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
 class PlanningSmokeTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -68,7 +77,45 @@ class PlanningSmokeTests(TestCase):
         self.assertLess(response.status_code, 500)
         self.assertNotEqual(response.status_code, 404)
 
+    def test_succession_create_route_renders_form_choices(self):
+        response = self.client.get(reverse("planning:succession_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Create Succession Series")
+        self.assertContains(response, "Carrot")
+        self.assertContains(response, "Field 1")
 
+    def test_nursery_schedule_route_renders(self):
+        response = self.client.get(reverse("planning:nursery_schedule"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nursery Schedule")
+
+    def test_field_schedule_route_renders(self):
+        response = self.client.get(reverse("planning:field_schedule"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Field Schedule")
+
+    def test_planting_create_route_renders_form(self):
+        response = self.client.get(reverse("planning:planting_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "New Planting")
+        self.assertContains(response, "Carrot")
+        self.assertContains(response, "Field 1")
+
+    def test_year_dependent_routes_redirect_when_no_active_year(self):
+        PlanningYear.objects.all().delete()
+
+        for route_name in [
+            "planning:sales_plan",
+            "planning:nursery_schedule",
+            "planning:field_schedule",
+            "planning:succession_create",
+        ]:
+            response = self.client.get(reverse(route_name))
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, reverse("planning:matrix"))
+
+
+@override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
 class PlantingLifecycleTransitionTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -100,7 +147,7 @@ class PlantingLifecycleTransitionTests(TestCase):
             block_type="field",
             field_week_start=10,
             field_week_end=40,
-            total_yield_per_bedfoot="1.20",
+            total_yield_per_bedfoot=Decimal("1.20"),
             harvest_weeks=6,
             dtm_days=65,
             rows_per_bed=3,
@@ -193,7 +240,93 @@ class PlantingLifecycleTransitionTests(TestCase):
         self.assertEqual(planting.status, "planned")
         self.assertIsNone(planting.actual_plant_date)
 
+    def test_planting_edit_route_renders_existing_values(self):
+        planting = self._create_planting(status="planned")
 
+        response = self.client.get(
+            reverse("planning:planting_edit", kwargs={"pk": planting.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Edit Planting")
+        self.assertContains(response, "Carrot")
+        self.assertContains(response, "Field 1")
+
+    def test_planting_edit_replaces_pending_generated_events_instead_of_duplicating(self):
+        self.crop.nursery_weeks = 2
+        self.crop.weeks_until_pot_up = 1
+        self.crop.save(update_fields=["nursery_weeks", "weeks_until_pot_up"])
+
+        planting = self._create_planting(status="planned")
+        planting.generate_nursery_events()
+        planting.generate_harvest_events()
+
+        original_nursery_count = NurseryEvent.objects.filter(planting=planting).count()
+        original_harvest_count = HarvestEvent.objects.filter(planting=planting).count()
+
+        response = self.client.post(
+            reverse("planning:planting_edit", kwargs={"pk": planting.pk}),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "variety": "",
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "1",
+                "planned_plant_date": "2026-04-08",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(NurseryEvent.objects.filter(planting=planting).count(), original_nursery_count)
+        self.assertEqual(HarvestEvent.objects.filter(planting=planting).count(), original_harvest_count)
+
+    def test_planting_detail_htmx_route_renders_detail_panel(self):
+        planting = self._create_planting(status="planned")
+
+        response = self.client.get(
+            reverse("planning:planting_detail_htmx", kwargs={"pk": planting.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Carrot")
+        self.assertContains(response, "Record Harvest")
+
+    def test_planting_revise_replaces_original_pending_events(self):
+        self.crop.nursery_weeks = 2
+        self.crop.weeks_until_pot_up = 1
+        self.crop.save(update_fields=["nursery_weeks", "weeks_until_pot_up"])
+
+        planting = self._create_planting(status="planned")
+        planting.generate_nursery_events()
+        planting.generate_harvest_events()
+
+        response = self.client.post(
+            reverse("planning:planting_revise", kwargs={"pk": planting.pk}),
+            {
+                "crop": str(self.crop.pk),
+                "crop_season": str(self.crop_season.pk),
+                "variety": "",
+                "block": str(self.block.pk),
+                "bed_start": "1",
+                "bed_end": "1",
+                "planned_plant_date": "2026-04-15",
+                "succession_group": "",
+                "notes": "Revised planting",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        planting.refresh_from_db()
+        self.assertEqual(planting.status, "revised")
+        self.assertEqual(NurseryEvent.objects.filter(planting=planting).count(), 0)
+        self.assertEqual(HarvestEvent.objects.filter(planting=planting).count(), 0)
+
+        revised = Planting.objects.get(revision_of=planting)
+        self.assertEqual(revised.status, "planned")
+        self.assertGreater(NurseryEvent.objects.filter(planting=revised).count(), 0)
+        self.assertGreater(HarvestEvent.objects.filter(planting=revised).count(), 0)
+
+
+@override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
 class SalesPlanViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):

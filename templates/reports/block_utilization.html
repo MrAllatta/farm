@@ -1,3 +1,54 @@
-{# reports/block_utilization #}
-{% extends "base.html" %}
-{% load static %}
+{% extends "reports/analyze_base.html" %}
+
+{% block analyze_metrics %}
+<div class="metric-cards">
+    <div class="metric-card">
+        <div class="metric-label">Blocks</div>
+        <div class="metric-value">{{ blocks|length }}</div>
+        <div class="metric-sub">{{ total_bf|default:0|floatformat:0 }} total bedfeet</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Avg Utilization</div>
+        <div class="metric-value">{{ avg_utilization|default:0|floatformat:0 }}%</div>
+        <div class="metric-sub">${{ avg_revenue_per_bf|default:0|floatformat:2 }} average revenue per bedfoot</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block analyze_content %}
+<div class="analyze-section">
+    <h2>Per Block Performance</h2>
+    <table class="compact-table analyze-table">
+        <thead>
+            <tr>
+                <th>Block</th>
+                <th>Type</th>
+                <th>Plantings</th>
+                <th>Weeks Used</th>
+                <th>Utilization</th>
+                <th>Revenue</th>
+                <th>$/BF</th>
+                <th>$/BF/Week</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for block in blocks %}
+            <tr>
+                <td>{{ block.block.name }}</td>
+                <td>{{ block.block.get_block_type_display }}</td>
+                <td>{{ block.num_plantings }}</td>
+                <td>{{ block.weeks_used }}</td>
+                <td>{{ block.utilization_pct|floatformat:0 }}%</td>
+                <td>${{ block.total_revenue|floatformat:0 }}</td>
+                <td>${{ block.revenue_per_bf|floatformat:2 }}</td>
+                <td>${{ block.revenue_per_bf_per_week|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="muted">No block utilization data yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
