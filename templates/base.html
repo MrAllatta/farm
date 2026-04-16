@@ -22,42 +22,50 @@
         </div>
         
         <div class="nav-links">
-            <div class="nav-group">
-                <span class="nav-group-label">Plan</span>
-                <a href="{% url 'planning:matrix' %}">Crop Plan</a>
-                <a href="{% url 'planning:nursery_schedule' %}">Nursery</a>
-                <a href="{% url 'planning:harvest_calendar' %}">Harvest Calendar</a>
-                <a href="{% url 'planning:succession_create' %}">+ Succession</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Plan</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'planning:matrix' %}">Crop Plan</a>
+                    <a href="{% url 'planning:nursery_schedule' %}">Nursery</a>
+                    <a href="{% url 'planning:harvest_calendar' %}">Harvest Calendar</a>
+                    <a href="{% url 'planning:succession_create' %}">+ Succession</a>
+                </div>
+            </details>
             
-            <div class="nav-group">
-                <span class="nav-group-label">Operate</span>
-                <a href="{% url 'operations:harvest_entry_current' %}">Record Harvest</a>
-                <a href="{% url 'operations:field_walk_current' %}">Field Walk</a>
-                <a href="{% url 'sales:market_entry' %}">Market Sales</a>
-                <a href="{% url 'operations:inventory' %}">Storage Inventory</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Operate</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'operations:harvest_entry_current' %}">Record Harvest</a>
+                    <a href="{% url 'operations:field_walk_current' %}">Field Walk</a>
+                    <a href="{% url 'sales:market_entry' %}">Market Sales</a>
+                    <a href="{% url 'operations:inventory' %}">Storage Inventory</a>
+                </div>
+            </details>
             
-            <div class="nav-group">
-                <span class="nav-group-label">Reports</span>
-                <a href="{% url 'reports:crop_map' %}">Crop Map</a>
-                <a href="{% url 'reports:harvest_list_print' current_week %}">
-                    🖨 Harvest List
-                </a>
-                <a href="{% url 'reports:weekly_schedule_print' current_week %}">
-                    🖨 Weekly Schedule
-                </a>
-                <a href="{% url 'reports:seed_order' %}">Seed Order</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Reports</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'reports:crop_map' %}">Crop Map</a>
+                    <a href="{% url 'reports:harvest_list_print' current_week %}">
+                        🖨 Harvest List
+                    </a>
+                    <a href="{% url 'reports:weekly_schedule_print' current_week %}">
+                        🖨 Weekly Schedule
+                    </a>
+                    <a href="{% url 'reports:seed_order' %}">Seed Order</a>
+                </div>
+            </details>
             
-            <div class="nav-group">
-                <span class="nav-group-label">Analyze</span>
-                <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
-                <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
-                <a href="{% url 'reports:channel_performance' %}">Channel Revenue</a>
-                <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
-                <a href="{% url 'reports:season_summary' %}">Season Summary</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Analyze</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
+                    <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
+                    <a href="{% url 'reports:channel_performance' %}">Channel Revenue</a>
+                    <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
+                    <a href="{% url 'reports:season_summary' %}">Season Summary</a>
+                </div>
+            </details>
             
             <div class="nav-group">
                 <a href="{% url 'reports:export_csv' %}">📤 Export</a>
@@ -86,6 +94,35 @@
         <span>{{ today|date:"l, F j" }} · Week {{ current_week }}</span>
     </footer>
     
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navMenus = Array.from(document.querySelectorAll(".nav-group-menu"));
+
+            navMenus.forEach((menu) => {
+                menu.addEventListener("toggle", function () {
+                    if (!menu.open) {
+                        return;
+                    }
+
+                    navMenus.forEach((otherMenu) => {
+                        if (otherMenu !== menu) {
+                            otherMenu.open = false;
+                        }
+                    });
+                });
+            });
+
+            document.addEventListener("click", function (event) {
+                if (event.target.closest(".main-nav")) {
+                    return;
+                }
+
+                navMenus.forEach((menu) => {
+                    menu.open = false;
+                });
+            });
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

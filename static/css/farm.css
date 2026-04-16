@@ -49,11 +49,11 @@ body {
 .main-nav {
     background: var(--color-primary);
     color: white;
-    padding: 0 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 2rem;
-    height: 48px;
+    min-height: 48px;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -87,7 +87,9 @@ body {
 
 .nav-links {
     display: flex;
-    gap: 1.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     overflow-x: auto;
 }
 
@@ -95,14 +97,20 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
 }
 
 .nav-group-label {
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    opacity: 0.6;
-    margin-right: 0.25rem;
+    color: rgba(255,255,255,0.9);
+    cursor: pointer;
+    list-style: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    user-select: none;
+    white-space: nowrap;
 }
 
 .nav-links a {
@@ -113,8 +121,74 @@ body {
     padding: 4px 0;
 }
 
-.nav-links a:hover {
+.nav-group-menu {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.nav-group-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.nav-group-menu > summary::after {
+    content: "▾";
+    margin-left: 0.4rem;
+    font-size: 0.75rem;
+}
+
+.nav-group-menu[open] > summary,
+.nav-group-menu > summary:hover {
+    background: rgba(255,255,255,0.12);
     color: white;
+}
+
+.nav-menu {
+    display: none;
+    position: static;
+    min-width: 220px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    padding: 0.4rem;
+    margin-top: 0.35rem;
+    z-index: 120;
+}
+
+.nav-group-menu[open] .nav-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+}
+
+.nav-menu a {
+    color: var(--color-text);
+    padding: 0.45rem 0.65rem;
+    border-radius: 6px;
+}
+
+.nav-menu a:hover {
+    background: #f3f5ef;
+    color: var(--color-primary);
+}
+
+.nav-links > .nav-group:not(.nav-group-menu) a:hover {
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .main-nav {
+        flex-direction: column;
+        gap: 0.75rem 1rem;
+    }
+
+    .nav-links {
+        width: 100%;
+        padding-bottom: 0.25rem;
+    }
 }
 
 /* ── Content ── */
