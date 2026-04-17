@@ -61,12 +61,15 @@ When mix-product packing is enabled, use this deterministic recovery order:
    - exactly one active recipe per product
    - components define exactly one source (`crop` or `product`)
    - if all components are percent-based, total must be `100.00`
-2. Confirm pack batch has component rows before posting consumption.
-3. Post consumption and verify inventory ledger:
+2. Confirm pack batch has component rows before posting consumption (imported mix packs with `Recipe Name` materialize `PackBatchComponent` rows when `Packed Unit` matches the recipe output unit).
+3. Post consumption:
+   - **Admin:** select `PackBatch` rows → action **Post inventory consumption** (`farm/apps/operations/admin.py`).
+   - **CLI:** from `farm-planning/farm/`, run `python manage.py post_pack_batch_consumption <pack_batch_id> [<pack_batch_id> ...]` (optional `--dry-run`).
+4. Verify inventory ledger after posting:
    - one negative `sale_out` ledger row per crop-backed component
    - running balance updated deterministically from latest prior balance
-4. For sales traceability, confirm `SalesEvent.pack_batch` is set for detailed entries sourced from same-day pack allocations.
-5. If consumption posting fails:
+5. For sales traceability, confirm `SalesEvent.pack_batch` is set for detailed entries sourced from same-day pack allocations (importer caches pack batches by channel/product/pack date).
+6. If consumption posting fails:
    - keep the batch for audit
-   - fix component rows
+   - fix component rows or recipe scaling inputs
    - re-run posting; do not hand-edit ledger balances directly.

@@ -29,10 +29,17 @@ from reference.models import (
     CropBySeason,
     CropSalesFormat,
     ProductRecipe,
+    ProductRecipeComponent,
     SalesChannel,
 )
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
-from operations.models import FieldWalkNote, InventoryLedger, PackAllocation, PackBatch
+from operations.models import (
+    FieldWalkNote,
+    InventoryLedger,
+    PackAllocation,
+    PackBatch,
+    PackBatchComponent,
+)
 from sales.models import SalesEvent, QuickSalesEntry
 from core.models import RotationHistory
 
@@ -327,6 +334,8 @@ class Command(BaseCommand):
         self._import_crop_by_season()
         self._import_sales_channels()
         self._import_crop_sales_formats()
+        self._import_product_recipe_components()
+        self._warm_recipe_cache()
 
     def _resolve_reference_path(self, filename):
         """Support both legacy root-level fixtures and Stage A2 `reference/` bundles."""
@@ -729,6 +738,441 @@ class Command(BaseCommand):
             f" {self.stats['CropSalesFormat']['processed']} processed, "
             f"{self.stats['CropSalesFormat']['errors']} errors\n"
         )
+
+    def _prc_field(self, row, *candidates):
+        for name in candidates:
+            if not name or name not in row:
+                continue
+            val = row.get(name)
+            if val is None:
+                continue
+            s = str(val).strip()
+            if s:
+                return s
+        return ""
+
+    def _resolve_csf_for_mix_row(self, row, i, model_name="ProductRecipeComponent"):
+        """
+        Resolve CropSalesFormat for a product_recipe_components row (read-only lookups).
+        Returns (csf|None, error_recorded: bool).
+        """
+        mix_product = self._prc_field(
+            row, "Mix Product Name", "Mix Product", "Choose Mix"
+        )
+        if not mix_product:
+            return None, False
+        mix_crop = self._prc_field(row, "Mix Crop Name", "Mix Crop")
+        if mix_crop:
+            crop = self._get_crop(mix_crop)
+            if not crop:
+                self._record_stale_fk(
+                    model_name,
+                    i,
+                    "product_recipe_components.mix_crop",
+                    "crop",
+                    mix_crop,
+                )
+                return None, True
+            csf = (
+                CropSalesFormat.objects.filter(crop=crop, product_name=mix_product)
+                .order_by("id")
+                .first()
+            )
+            if not csf:
+                self._record_stale_fk(
+                    model_name,
+                    i,
+                    "product_recipe_components.mix_product",
+                    "product",
+                    f"{mix_crop} / {mix_product}",
+                )
+                return None, True
+            return csf, False
+        matches = list(
+            CropSalesFormat.objects.filter(product_name=mix_product).order_by("id")
+        )
+        if len(matches) == 0:
+            self._record_stale_fk(
+                model_name,
+                i,
+                "product_recipe_components.mix_product",
+                "product",
+                mix_product,
+            )
+            return None, True
+        if len(matches) > 1:
+            self._record_row_error(
+                model_name,
+                i,
+                code="stale_fk",
+                field_path="product_recipe_components.mix_product",
+                message=(
+                    f"multiple products match name '{mix_product}'; "
+                    "set Mix Crop Name to disambiguate"
+                ),
+            )
+            return None, True
+        return matches[0], False
+
+    def _import_product_recipe_components(self):
+        """Import mix recipe lines from reference/product_recipe_components.csv."""
+        path = self._resolve_reference_path("product_recipe_components.csv")
+        if not os.path.exists(path):
+            self.stdout.write("  ⊘ product_recipe_components.csv not found\n")
+            return
+
+        self.stdout.write("Importing product recipe components...")
+
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            rows_list = list(enumerate(reader, 1))
+
+        buckets = defaultdict(list)
+        csf_by_id = {}
+        for i, row in rows_list:
+            csf, err = self._resolve_csf_for_mix_row(row, i)
+            if err:
+                self.stats["ProductRecipeComponent"]["errors"] += 1
+                continue
+            if not self._prc_field(row, "Mix Product Name", "Mix Product", "Choose Mix"):
+                self.stats["ProductRecipeComponent"]["skipped"] += 1
+                continue
+            if not csf:
+                self.stats["ProductRecipeComponent"]["skipped"] += 1
+                continue
+            buckets[csf.id].append((i, row))
+            csf_by_id[csf.id] = csf
+
+        for pk, rows_group in buckets.items():
+            csf = csf_by_id[pk]
+            recipe_names = set()
+            for _i, r in rows_group:
+                rn = self._prc_field(r, "Recipe Name")
+                if rn:
+                    recipe_names.add(rn)
+            if len(recipe_names) > 1:
+                for row_num, row in rows_group:
+                    self._record_row_error(
+                        "ProductRecipe",
+                        row_num,
+                        code="namespace_mismatch",
+                        field_path="product_recipe_components.recipe_name",
+                        message="conflicting Recipe Name values for the same mix product",
+                    )
+                    self.stats["ProductRecipe"]["errors"] += 1
+                continue
+            recipe_final = recipe_names.pop() if recipe_names else "Default"
+            ordered = sorted(
+                rows_group, key=lambda t: self._prc_sort_key(t[1], t[0])
+            )
+            self._prc_process_recipe_group(ordered, csf, recipe_final)
+
+        rp = self.stats["ProductRecipe"]
+        rc = self.stats["ProductRecipeComponent"]
+        self.stdout.write(
+            f" {rp.get('processed', 0) + rp.get('created', 0)} recipes, "
+            f"{rc.get('processed', 0) + rc.get('created', 0)} components, "
+            f"{rp.get('errors', 0)} recipe errors, "
+            f"{rc.get('errors', 0)} component errors\n"
+        )
+
+    def _prc_sort_key(self, row, row_num):
+        lo = self._prc_field(row, "Line Order")
+        if lo:
+            try:
+                return (0, int(lo))
+            except ValueError:
+                pass
+        return (1, row_num)
+
+    def _prc_process_recipe_group(self, ordered_pairs, csf, recipe_final):
+        """Create or replace one ProductRecipe and its ProductRecipeComponents."""
+        model_rc = "ProductRecipeComponent"
+        if self.write_disabled:
+            self.stats["ProductRecipe"]["processed"] += 1
+            self.stats["ProductRecipeComponent"]["processed"] += len(ordered_pairs)
+            return
+        recipe_final = recipe_final or "Default"
+        ProductRecipe.objects.filter(product=csf).update(is_active=False)
+        recipe, created = ProductRecipe.objects.update_or_create(
+            product=csf,
+            name=recipe_final,
+            defaults={
+                "is_active": True,
+                "output_unit": "",
+                "notes": "Imported from product_recipe_components.csv",
+            },
+        )
+        self.stats["ProductRecipe"]["created" if created else "processed"] += 1
+
+        recipe.components.all().delete()
+
+        for idx, (row_num, row) in enumerate(ordered_pairs, start=1):
+            source_type_raw = self._prc_field(
+                row, "Component Source Type", "Source Type"
+            )
+            if not source_type_raw:
+                self._record_missing_required(
+                    model_rc,
+                    row_num,
+                    "product_recipe_components.component_source_type",
+                    "Component Source Type",
+                )
+                self.stats["ProductRecipeComponent"]["errors"] += 1
+                continue
+            st = source_type_raw.strip().lower()
+            if st in ("c", "crop", "vegetable"):
+                source_kind = "crop"
+            elif st in ("p", "product"):
+                source_kind = "product"
+            else:
+                self._record_row_error(
+                    model_rc,
+                    row_num,
+                    code="namespace_mismatch",
+                    field_path="product_recipe_components.component_source_type",
+                    message=f"expected crop or product, got '{source_type_raw}'",
+                )
+                self.stats["ProductRecipeComponent"]["errors"] += 1
+                continue
+
+            pct_raw = self._prc_field(row, "Component Percent", "Percent")
+            qty_raw = self._prc_field(
+                row, "Component Quantity", "Quantity", "Qty"
+            )
+            unit_raw = self._prc_field(row, "Component Unit", "Unit")
+
+            pct = None
+            if pct_raw:
+                try:
+                    pct = self._dec(pct_raw)
+                    if pct <= 0 or pct > Decimal("100"):
+                        raise ValueError("percent range")
+                except (InvalidOperation, ValueError):
+                    self._record_row_error(
+                        model_rc,
+                        row_num,
+                        code="namespace_mismatch",
+                        field_path="product_recipe_components.component_percent",
+                        message=f"invalid percent '{pct_raw}'",
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+
+            qty = None
+            if qty_raw:
+                try:
+                    qty = self._dec(qty_raw)
+                    if qty <= 0:
+                        raise ValueError("qty sign")
+                except (InvalidOperation, ValueError):
+                    self._record_row_error(
+                        model_rc,
+                        row_num,
+                        code="namespace_mismatch",
+                        field_path="product_recipe_components.component_quantity",
+                        message=f"invalid quantity '{qty_raw}'",
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+
+            if pct is None and qty is None:
+                self._record_missing_required(
+                    model_rc,
+                    row_num,
+                    "product_recipe_components.component_quantity",
+                    "Component Percent or Component Quantity",
+                )
+                self.stats["ProductRecipeComponent"]["errors"] += 1
+                continue
+
+            if qty is not None and not unit_raw:
+                self._record_missing_required(
+                    model_rc,
+                    row_num,
+                    "product_recipe_components.component_unit",
+                    "Component Unit",
+                )
+                self.stats["ProductRecipeComponent"]["errors"] += 1
+                continue
+
+            if pct is not None and qty is None:
+                qty = Decimal("1")
+                unit_raw = unit_raw or csf.sale_unit
+
+            if qty is not None and pct is None and not unit_raw:
+                unit_raw = csf.sale_unit
+
+            comp_crop = self._prc_field(
+                row, "Component Crop Name", "Component Crop", "Choose Ingredients"
+            )
+            comp_product = self._prc_field(
+                row, "Component Product Name", "Component Product"
+            )
+
+            src_crop = None
+            src_product = None
+            if source_kind == "crop":
+                if comp_product:
+                    self._record_row_error(
+                        model_rc,
+                        row_num,
+                        code="namespace_mismatch",
+                        field_path="product_recipe_components.component_product",
+                        message="Component Product Name must be empty when source type is crop",
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+                if not comp_crop:
+                    self._record_missing_required(
+                        model_rc,
+                        row_num,
+                        "product_recipe_components.component_crop",
+                        "Component Crop Name",
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+                crop_obj = self._get_crop(comp_crop)
+                if not crop_obj:
+                    self._record_stale_fk(
+                        model_rc,
+                        row_num,
+                        "product_recipe_components.component_crop",
+                        "crop",
+                        comp_crop,
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+                src_crop = crop_obj
+            else:
+                if not comp_crop or not comp_product:
+                    self._record_missing_required(
+                        model_rc,
+                        row_num,
+                        "product_recipe_components.component_product",
+                        "Component Crop Name and Component Product Name",
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+                c_crop = self._get_crop(comp_crop)
+                if not c_crop:
+                    self._record_stale_fk(
+                        model_rc,
+                        row_num,
+                        "product_recipe_components.component_crop",
+                        "crop",
+                        comp_crop,
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+                csf_comp = CropSalesFormat.objects.filter(
+                    crop=c_crop, product_name=comp_product
+                ).first()
+                if not csf_comp:
+                    self._record_stale_fk(
+                        model_rc,
+                        row_num,
+                        "product_recipe_components.component_product",
+                        "product",
+                        f"{comp_crop} / {comp_product}",
+                    )
+                    self.stats["ProductRecipeComponent"]["errors"] += 1
+                    continue
+                src_product = csf_comp
+
+            comp_obj = ProductRecipeComponent(
+                recipe=recipe,
+                source_crop=src_crop,
+                source_product=src_product,
+                component_quantity=qty,
+                component_unit=unit_raw,
+                component_percent=pct,
+                sort_order=idx,
+                notes=self._prc_field(row, "Notes"),
+            )
+            try:
+                comp_obj.full_clean()
+                comp_obj.save()
+                self.stats["ProductRecipeComponent"]["created"] += 1
+            except (
+                ValidationError,
+                IntegrityError,
+                DatabaseError,
+            ) as e:
+                self._record_row_error(
+                    model_rc,
+                    row_num,
+                    code="namespace_mismatch",
+                    field_path="product_recipe_components.row",
+                    message=str(e),
+                )
+                self.stats["ProductRecipeComponent"]["errors"] += 1
+                continue
+
+        try:
+            recipe.refresh_from_db()
+            recipe.clean()
+            recipe.validate_component_totals()
+        except ValidationError as e:
+            first_row = ordered_pairs[0][0]
+            self._record_row_error(
+                "ProductRecipe",
+                first_row,
+                code="namespace_mismatch",
+                field_path="product_recipe_components.recipe_validation",
+                message=str(e),
+            )
+            self.stats["ProductRecipe"]["errors"] += 1
+            recipe.components.all().delete()
+            recipe.delete()
+
+    def _warm_recipe_cache(self):
+        """Populate recipe lookup cache for tier 4/5 mix resolution."""
+        if self.write_disabled:
+            return
+        for rec in ProductRecipe.objects.select_related("product").iterator():
+            self.recipe_cache[(rec.product_id, rec.name)] = rec
+
+    def _materialize_pack_batch_components(self, pack_batch, recipe, row_num):
+        """
+        Scale recipe lines to PackBatchComponent rows (per recipe output unit).
+        Returns False if the batch could not be materialized (batch is removed).
+        """
+        if self.write_disabled:
+            return True
+        output_u = (
+            recipe.output_unit or recipe.product.sale_unit or ""
+        ).strip().casefold()
+        pack_u = (pack_batch.packed_unit or "").strip().casefold()
+        if output_u != pack_u:
+            self._record_row_error(
+                "PackAllocation",
+                row_num,
+                code="namespace_mismatch",
+                field_path="pack_allocations.packed_unit",
+                message=(
+                    f"packed unit '{pack_batch.packed_unit}' does not match recipe output unit "
+                    f"'{recipe.output_unit or recipe.product.sale_unit}'"
+                ),
+            )
+            pack_batch.delete()
+            return False
+
+        pack_batch.components.all().delete()
+        factor = pack_batch.packed_quantity
+        for rc in recipe.components.select_related(
+            "source_crop", "source_product"
+        ).order_by("sort_order", "id"):
+            consumed = rc.component_quantity * factor
+            PackBatchComponent.objects.create(
+                pack_batch=pack_batch,
+                source_crop=rc.source_crop,
+                source_product=rc.source_product,
+                consumed_quantity=consumed,
+                consumed_unit=rc.component_unit,
+                component_percent=rc.component_percent,
+            )
+        return True
 
     # ============================================================================
     # TIER 2: Planning Years & Plantings
@@ -1608,7 +2052,7 @@ class Command(BaseCommand):
 
                     pack_batch = None
                     if recipe_name:
-                        recipe = self._get_recipe_by_name(recipe_name)
+                        recipe = self._get_recipe_for_product(product, recipe_name)
                         if not recipe:
                             self._record_stale_fk(
                                 "PackAllocation",
@@ -1619,7 +2063,11 @@ class Command(BaseCommand):
                             )
                             self.stats["PackAllocation"]["skipped"] += 1
                             continue
-                        if recipe.product_id != product.id:
+                        if (
+                            getattr(recipe, "product_id", None) is not None
+                            and getattr(product, "pk", None) is not None
+                            and recipe.product_id != product.id
+                        ):
                             self._record_row_error(
                                 "PackAllocation",
                                 i,
@@ -1663,6 +2111,11 @@ class Command(BaseCommand):
                                     "notes": f"Imported from pack_allocations row {i}",
                                 },
                             )
+                            if not self._materialize_pack_batch_components(
+                                pack_batch, recipe, i
+                            ):
+                                self.stats["PackAllocation"]["errors"] += 1
+                                continue
                             self.pack_batch_cache[
                                 self._build_pack_batch_key(channel.id, product.id, data["pack_date"])
                             ] = pack_batch
@@ -2021,10 +2474,22 @@ class Command(BaseCommand):
         self.product_cache[product_name] = resolved
         return resolved
 
-    def _get_recipe_by_name(self, recipe_name):
-        """Get or cache mix recipe by name."""
+    def _get_recipe_for_product(self, product, recipe_name):
+        """Resolve ProductRecipe for this product and recipe name (scoped, not global)."""
         if not recipe_name:
             return None
+        product_pk = getattr(product, "pk", None)
+        if product_pk:
+            cache_key = (product_pk, recipe_name)
+            if cache_key in self.recipe_cache:
+                return self.recipe_cache[cache_key]
+            resolved = (
+                ProductRecipe.objects.filter(product=product, name=recipe_name)
+                .order_by("id")
+                .first()
+            )
+            self.recipe_cache[cache_key] = resolved
+            return resolved
         if recipe_name in self.recipe_cache:
             return self.recipe_cache[recipe_name]
         resolved = self._resolve_fk_by_text(

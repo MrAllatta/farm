@@ -29,6 +29,7 @@ from reference.models import (
     CropInfo,
     CropSalesFormat,
     ProductRecipe,
+    ProductRecipeComponent,
     SalesChannel,
 )
 from core.spreadsheet_connector import normalize_rows
@@ -1873,6 +1874,82 @@ class ImportHistoricalDataCommandTests(TestCase):
             product__product_name="Carrot Bunch",
         )
         self.assertEqual(linked_sale.pack_batch_id, pack_batch.id)
+
+    def _append_product_recipe_components_csv(self, data_dir, lines):
+        """Writes bundle-root product_recipe_components.csv (tier 1 reference)."""
+        self._write_csv(Path(data_dir), "product_recipe_components.csv", lines)
+
+    def test_product_recipe_components_csv_import_builds_active_recipe(self):
+        headers = (
+            "Mix Product Name,Mix Crop Name,Component Source Type,"
+            "Component Crop Name,Component Percent,Recipe Name"
+        )
+        lines = [
+            headers,
+            "Carrot Bunch,Carrot,crop,Carrot,100.00,Carrot Mix Recipe",
+        ]
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._append_product_recipe_components_csv(data_dir, lines)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-prc-import.json")
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(ProductRecipe.objects.count(), 1)
+        recipe = ProductRecipe.objects.get()
+        self.assertEqual(recipe.name, "Carrot Mix Recipe")
+        self.assertTrue(recipe.is_active)
+        self.assertEqual(ProductRecipeComponent.objects.count(), 1)
+
+    def test_product_recipe_components_percent_total_validation_failure(self):
+        headers = (
+            "Mix Product Name,Mix Crop Name,Component Source Type,"
+            "Component Crop Name,Component Percent,Recipe Name"
+        )
+        lines = [
+            headers,
+            "Carrot Bunch,Carrot,crop,Carrot,40.00,R1",
+            "Carrot Bunch,Carrot,crop,Carrot,50.00,R1",
+        ]
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._append_product_recipe_components_csv(data_dir, lines)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-prc-bad-pct.json")
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(ProductRecipe.objects.count(), 0)
+
+    def test_pack_allocation_with_recipe_csv_materializes_pack_batch_components(self):
+        recipe_name = "Carrot Mix Recipe"
+        prc_headers = (
+            "Mix Product Name,Mix Crop Name,Component Source Type,"
+            "Component Crop Name,Component Quantity,Component Unit,Recipe Name"
+        )
+        prc_lines = [
+            prc_headers,
+            # Align units with clean fixture CropSalesFormat.sale_unit (bunch) -> recipe output bunch
+            f"Carrot Bunch,Carrot,crop,Carrot,1,bunch,{recipe_name}",
+        ]
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._append_product_recipe_components_csv(data_dir, prc_lines)
+            self._write_mix_recipe_pack_fixture(
+                data_dir,
+                year=2021,
+                recipe_name=recipe_name,
+                packed_quantity="12",
+                packed_unit="bunch",
+                pack_date="2021-06-01",
+            )
+            summary = self._run_import(
+                data_dir, Path(output_dir) / "summary-prc-materialize.json"
+            )
+
+        self.assertEqual(summary["status"], "ok")
+        pb = PackBatch.objects.get()
+        comps = list(pb.components.order_by("id"))
+        self.assertEqual(len(comps), 1)
+        self.assertEqual(comps[0].consumed_quantity, Decimal("12"))
+        self.assertEqual(comps[0].consumed_unit, "bunch")
 
 
 class StageA2OfflineConnectorTests(TestCase):
