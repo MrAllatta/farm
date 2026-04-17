@@ -1,7 +1,7 @@
-Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa
-Farmers Market Saturday,Saturday,16,42,800,false
-Farmers Market Sunday,Sunday,16,42,600,false
-CSA Program,Thursday,18,40,1500,true
-Wholesale Produce,Monday + Wednesday,16,42,2000,false
-Farm Store,Tuesday,8,52,500,false
-Restaurant Direct,Wednesday,20,40,1200,false
+Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority
+Farmers Market Saturday,Saturday,16,42,800,false,1
+Farmers Market Sunday,Sunday,16,42,600,false,2
+CSA Program,Thursday,18,40,1500,true,3
+Wholesale Produce,Monday + Wednesday,16,42,2000,false,4
+Farm Store,Tuesday,8,52,500,false,5
+Restaurant Direct,Wednesday,20,40,1200,false,6
