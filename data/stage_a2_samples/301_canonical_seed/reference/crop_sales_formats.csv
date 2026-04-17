@@ -1,0 +1,106 @@
+Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active
+Arugula,Arugula - 1/3 lb,0,each,1,AUTO-0001,true
+Arugula,Arugula - 2/3 lb,0,each,1,AUTO-0002,true
+Asparagus,Asparagus - bu,0,each,1,AUTO-0003,true
+Basil,Basil - bu,0,each,1,AUTO-0004,true
+Arugula,Arugula Wild - 1/3 lb,0,each,1,AUTO-0005,true
+Beets Golden,Beets Golden - bu,0,each,1,AUTO-0006,true
+Beets Red,Beets Red - bu,0,each,1,AUTO-0007,true
+Bitter Melon,Bitter Melon - lb,0,each,1,AUTO-0008,true
+Bok Choy,Bok Choy - ea,0,each,1,AUTO-0009,true
+Broccolini,Broccolini - bu,0,each,1,AUTO-0010,true
+Brussels Sprouts,Brussels Sprouts - ea,0,each,1,AUTO-0011,true
+Cabbage Chinese,Cabbage Chinese - lb,0,each,1,AUTO-0012,true
+Cabbage Chinese Red,Cabbage Chinese Red - lb,0,each,1,AUTO-0013,true
+Cabbage Cone,Cabbage Cone - lb,0,each,1,AUTO-0014,true
+Cabbage Flat,Cabbage Flat - lb,0,each,1,AUTO-0015,true
+Cabbage Green Storage,Cabbage Green Storage - lb,0,each,1,AUTO-0016,true
+Beets Bulk Golden,Beets Bulk Golden - lb,0,each,1,AUTO-0017,true
+Beets Bulk Red,Beets Bulk Red - lb,0,each,1,AUTO-0018,true
+Carrot,Carrot - bu,0,each,1,AUTO-0019,true
+Cauliflower,Cauliflower - lb,0,each,1,AUTO-0020,true
+Cauliflower Purple,Cauliflower Purple - lb,0,each,1,AUTO-0021,true
+Cauliflower Romanesco,Cauliflower Romanesco - lb,0,each,1,AUTO-0022,true
+Cauliflower Sprouting,Cauliflower Sprouting - lb,0,each,1,AUTO-0023,true
+Celery,Celery - bu,0,each,1,AUTO-0024,true
+Cilantro,Cilantro - bu,0,each,1,AUTO-0025,true
+Cucumber,Cucumber - lb,0,each,1,AUTO-0026,true
+Cucumber Persian,Cucumber Persian - lb,0,each,1,AUTO-0027,true
+Cucumber Pickling,Cucumber Pickling - lb,0,each,1,AUTO-0028,true
+Dandelion,Dandelion - bu,0,each,1,AUTO-0029,true
+Dill,Dill - bu,0,each,1,AUTO-0030,true
+Eggplant Asian,Eggplant Asian - lb,0,each,1,AUTO-0031,true
+Eggplant Italian Black,Eggplant Italian Black - lb,0,each,1,AUTO-0032,true
+Eggplant Italian Striped,Eggplant Italian Striped - lb,0,each,1,AUTO-0033,true
+Eggplant Mini,Eggplant Mini - Pt,0,each,1,AUTO-0034,true
+Eggplant Mini,Eggplant Mini - Qt,0,each,1,AUTO-0035,true
+Escarole,Escarole - ea,0,each,1,AUTO-0036,true
+Fennel,Fennel - ea,0,each,1,AUTO-0037,true
+Garlic Green,Garlic Green - bu,0,each,1,AUTO-0038,true
+Garlic Scape,Garlic Scape - bu,0,each,1,AUTO-0039,true
+Bok Choy,Bok Choy - lb,0,each,1,AUTO-0040,true
+Braising Mix,Braising Mix - 1 lb,0,each,1,AUTO-0041,true
+Kohlrabi,Kohlrabi - bu,0,each,1,AUTO-0042,true
+Lettuce Mini Gem,Lettuce Mini Gem - ea,0,each,1,AUTO-0043,true
+Okra,Okra - Pt,0,each,1,AUTO-0044,true
+Onion Spring,Onion Spring - bu,0,each,1,AUTO-0045,true
+Parsley,Parsley - bu,0,each,1,AUTO-0046,true
+Pea Shelling,Pea Shelling - Qt,0,each,1,AUTO-0047,true
+Pea Snap,Pea Snap - Qt,0,each,1,AUTO-0048,true
+Pepper Carmen,Pepper Carmen - lb,0,each,1,AUTO-0049,true
+Pepper Hot,Pepper Hot - ea,0,each,1,AUTO-0050,true
+Pepper Shishito,Pepper Shishito - Pt,0,each,1,AUTO-0051,true
+Pepper Shishito,Pepper Shishito - Qt,0,each,1,AUTO-0052,true
+Potato Red,Potato Red - lb,0,each,1,AUTO-0053,true
+Potato White,Potato White - lb,0,each,1,AUTO-0054,true
+Puntarelle,Puntarelle - lb,0,each,1,AUTO-0055,true
+Cabbage Cone Storage,Cabbage Cone Storage - lb,0,each,1,AUTO-0056,true
+Cabbage Red,Cabbage Red - lb,0,each,1,AUTO-0057,true
+Radish Daikon Mix,Radish Daikon Mix - bu,0,each,1,AUTO-0058,true
+Radish French Breakfast,Radish French Breakfast - bu,0,each,1,AUTO-0059,true
+Radish Purple,Radish Purple - bu,0,each,1,AUTO-0060,true
+Radish Red,Radish Red - bu,0,each,1,AUTO-0061,true
+Cabbage Savoy,Cabbage Savoy - lb,0,each,1,AUTO-0062,true
+Carrot Bulk,Carrot Bulk - lb,0,each,1,AUTO-0063,true
+Sweet Potato Covington,Sweet Potato Covington - lb,0,each,1,AUTO-0064,true
+Tomato Cherry Mix,Tomato Cherry Mix - Pt,0,each,1,AUTO-0065,true
+Tomato Cherry Sungold,Tomato Cherry Sungold - pt,0,each,1,AUTO-0066,true
+Tomato Heirloom,Tomato Heirloom - lb,0,each,1,AUTO-0067,true
+Tomato Sauce,Tomato Sauce - Qt,0,each,1,AUTO-0068,true
+Turnip,Turnip - bu,0,each,1,AUTO-0069,true
+Winter Squash Acorn,Winter Squash Acorn - lb,0,each,1,AUTO-0070,true
+Winter Squash Delicata,Winter Squash Delicata - lb,0,each,1,AUTO-0071,true
+Chard,Chard - bu,0,each,1,AUTO-0072,true
+Winter Squash Honeynut,Winter Squash Honeynut - lb,0,each,1,AUTO-0073,true
+Winter Squash Kabocha,Winter Squash Kabocha - lb,0,each,1,AUTO-0074,true
+Zucchini Green,Zucchini Green - lb,0,each,1,AUTO-0075,true
+Zucchini Striped,Zucchini Striped - lb,0,each,1,AUTO-0076,true
+Zucchini Yellow,Zucchini Yellow - lb,0,each,1,AUTO-0077,true
+Collards,Collards - bu,0,each,1,AUTO-0078,true
+Cucumber Katrina,Cucumber Katrina - lb,0,each,1,AUTO-0079,true
+Garlic,Garlic - lb,0,each,1,AUTO-0080,true
+Kale Curly,Kale Curly - bu,0,each,1,AUTO-0081,true
+Kale Lacinato,Kale Lacinato - bu,0,each,1,AUTO-0082,true
+Kale Russian,Kale Russian - bu,0,each,1,AUTO-0083,true
+Kohlrabi Storage,Kohlrabi Storage - ea,0,each,1,AUTO-0084,true
+Mustard,Mustard - bu,0,each,1,AUTO-0085,true
+Pea Snap,Pea Snap - Pt,0,each,1,AUTO-0086,true
+Potato Blue,Potato Blue - lb,0,each,1,AUTO-0087,true
+Potato Yellow,Potato Yellow - lb,0,each,1,AUTO-0088,true
+Radicchio Forced,Radicchio Forced - lb,0,each,1,AUTO-0089,true
+Radicchio Round,Radicchio Round - lb,0,each,1,AUTO-0090,true
+Radicchio Treviso,Radicchio Treviso - lb,0,each,1,AUTO-0091,true
+Radicchio Variegated,Radicchio Variegated - lb,0,each,1,AUTO-0092,true
+Radish Daikon Bulk,Radish Daikon Bulk - lb,0,each,1,AUTO-0093,true
+Salad Mix,Salad Mix - 1 1/3 lb,0,each,1,AUTO-0094,true
+Salad Mix,Salad Mix - 1/3 lb,0,each,1,AUTO-0095,true
+Salad Mix,Salad Mix - 2/3 lb,0,each,1,AUTO-0096,true
+Scallion,Scallion - bu,0,each,1,AUTO-0097,true
+Spinach,Spinach - 1 lb,0,each,1,AUTO-0098,true
+Spinach,Spinach - 1/2 lb,0,each,1,AUTO-0099,true
+Sweet Potato Murasaki,Sweet Potato Murasaki - lb,0,each,1,AUTO-0100,true
+Winter Squash Butternut,Winter Squash Butternut - lb,0,each,1,AUTO-0101,true
+Winter Squash Futsu,Winter Squash Futsu - lb,0,each,1,AUTO-0102,true
+Winter Squash Koginut,Winter Squash Koginut - lb,0,each,1,AUTO-0103,true
+Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true
+Eggs,Egg Dozen,5.00,dozen,1,EGG-DOZ,true
