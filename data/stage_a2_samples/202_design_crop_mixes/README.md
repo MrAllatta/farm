@@ -13,6 +13,11 @@ Authoritative column mapping lives in [`docs/spreadsheet-academy-map.md`](../../
 
 ## Stage A2 connector
 
-There is no checked-in Google Sheets config for `202` in this sample folder yet. Add a `pull_stage_a2_bundle` configuration when the operator lane is activated: same declarative rules as other Stage A2 packets (`required_header_set_scan`, column projection per `spreadsheet-academy-map.md`). Export files into a bundle layout matching `docs/data-import-migration.md` so `import_historical_data` can consume `reference/product_recipe_components.csv` in tier 1.
+Checked-in wiring:
 
-For a minimal offline hand-edit, see column headers and normalization in `docs/historical-import-csv-contracts.md` § `product_recipe_components.csv`.
+- **Live pull (with baseline bundle):** `docs/live-rehearsal-baseline-config.example.json` — two tab entries on **`Design Crop Mixes`** (append `B:F` block into `reference/crop_sales_formats.csv`, write `reference/product_recipe_components.csv` from **`L:N`**).
+- **Offline rehearsal (no Google):** `design_crop_mixes_tab_sample.csv` + `docs/live-rehearsal-202-mix-snapshot-config.example.json`; run `make live-rehearsal-202-mix-snapshot-validate` (or `scripts/run_202_mix_stage_a2_snapshot_rehearsal.py`). Example validate-only summary totals: `202-mix-snapshot-validate-summary.example.json`.
+
+**Phase 2 exit:** satisfied for §6 — see `docs/phase-2-exit-checklist.md` and `docs/production-decision-log.md` (2026-04-17 Phase 2 Exit entry).
+
+For importer column contracts, see `docs/historical-import-csv-contracts.md` § `product_recipe_components.csv`.

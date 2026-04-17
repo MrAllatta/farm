@@ -1900,6 +1900,33 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertTrue(recipe.is_active)
         self.assertEqual(ProductRecipeComponent.objects.count(), 1)
 
+    def test_product_recipe_resolves_workbook_short_mix_product_label(self):
+        """``Choose Mix`` short labels (e.g. ``Carrot Bunch``) align to weighted SKUs (``Carrot Bunch - lb``)."""
+        headers = (
+            "Mix Product Name,Mix Crop Name,Component Source Type,"
+            "Component Crop Name,Component Percent,Recipe Name"
+        )
+        lines = [
+            headers,
+            "Carrot Bunch,,crop,Carrot,100.00,Default",
+        ]
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_csv(
+                data_dir,
+                "crop_sales_formats.csv",
+                [
+                    "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                    "Carrot,Carrot Bunch - lb,3.50,lb,1,CAR-BUN-LB,true",
+                ],
+            )
+            self._append_product_recipe_components_csv(data_dir, lines)
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-prc-prefix.json")
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(ProductRecipe.objects.count(), 1)
+        self.assertEqual(ProductRecipeComponent.objects.count(), 1)
+
     def test_product_recipe_components_percent_total_validation_failure(self):
         headers = (
             "Mix Product Name,Mix Crop Name,Component Source Type,"

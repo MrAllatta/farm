@@ -331,6 +331,7 @@ class Command(BaseCommand):
         """Import reference data: blocks, crops, crop_by_season, channels, products."""
         self._import_blocks()
         self._import_crops()
+        self._ensure_placeholder_crops_for_sales_format_catalog()
         self._import_crop_by_season()
         self._import_sales_channels()
         self._import_crop_sales_formats()
@@ -487,6 +488,82 @@ class Command(BaseCommand):
             f"{self.stats['CropInfo']['skipped']} skipped, "
             f"{self.stats['CropInfo']['errors']} errors\n"
         )
+
+    def _ensure_placeholder_crops_for_sales_format_catalog(self):
+        """
+        Workbook 201 ``Crop Info`` may omit sellable-only crops that still appear as ``Crop Name``
+        on ``Farm Crop Formats`` / ``Design Crop Mixes`` (e.g. ``Braising Mix``). Create minimal
+        ``CropInfo`` rows so ``crop_sales_formats`` and mix recipes can resolve FKs.
+
+        Guard: only when ``crop_info.csv`` already looks like a full farm catalog (enough rows).
+        Small contract fixtures intentionally omit crops to exercise ``stale_fk`` paths; they must
+        not pick up automatic placeholders from ``crop_sales_formats.csv`` alone.
+        """
+        path = self._resolve_reference_path("crop_sales_formats.csv")
+        if not os.path.exists(path):
+            return
+        if self.write_disabled:
+            return
+
+        catalog_path = self._resolve_reference_path("crop_info.csv")
+        catalog_crop_names = set()
+        if os.path.exists(catalog_path):
+            with open(catalog_path, "r", encoding="utf-8") as f:
+                for row in csv.DictReader(f):
+                    n = (row.get("Crop") or "").strip()
+                    if n:
+                        catalog_crop_names.add(n)
+        if len(catalog_crop_names) < 20:
+            return
+
+        names = set()
+        with open(path, "r", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                cn = (row.get("Crop Name") or row.get("Crop") or "").strip()
+                if cn:
+                    names.add(cn)
+        if not names:
+            return
+
+        defaults = {
+            "crop_type": "Vegetables",
+            "botanical_family": "",
+            "propagation_type": "seed",
+            "is_perennial": False,
+            "fresh_or_storage": "fresh",
+            "storage_weeks": 0,
+            "can_hold_in_field": False,
+            "harvest_unit": "pounds",
+            "avg_unit_weight": Decimal("1"),
+            "units_per_bin": None,
+            "harvest_bin": "",
+            "harvest_tools": "",
+            "harvest_rate_per_hour": None,
+            "nursery_weeks": 0,
+            "weeks_until_pot_up": 0,
+            "pot_up_tray_size": None,
+            "seeded_tray_size": None,
+            "seeds_per_cell": 1,
+            "thinned_plants": 0,
+            "seeds_per_ounce": None,
+        }
+
+        created = 0
+        for name in sorted(names):
+            if name in catalog_crop_names:
+                continue
+            if CropInfo.objects.filter(name=name).exists():
+                continue
+            obj = CropInfo.objects.create(name=name, **defaults)
+            created += 1
+            self.crop_cache[name] = obj
+
+        if created:
+            self.normalized_lookup_indexes.clear()
+            self.stdout.write(
+                f"  placeholder CropInfo rows for catalog holes: {created} created "
+                f"(from crop_sales_formats.csv crop names)\n"
+            )
 
     def _import_crop_by_season(self):
         """Import crop-by-season profiles."""
@@ -751,6 +828,52 @@ class Command(BaseCommand):
                 return s
         return ""
 
+    def _csf_matches_for_mix_label(self, crop, mix_product):
+        """
+        Map workbook short mix label (``Choose Mix``) to ``CropSalesFormat`` rows.
+
+        Farm formats typically use ``{label} - {pack size}`` while recipe rows use ``label`` only.
+        """
+        qs = CropSalesFormat.objects.all()
+        if crop is not None:
+            qs = qs.filter(crop=crop)
+        exact = list(qs.filter(product_name=mix_product).order_by("id"))
+        if exact:
+            return exact
+        prefix = f"{mix_product} -"
+        return list(qs.filter(product_name__startswith=prefix).order_by("id"))
+
+    def _pick_unique_mix_csf(self, matches, model_name, i, mix_label_for_error):
+        if len(matches) == 1:
+            return matches[0], False
+        if not matches:
+            self._record_stale_fk(
+                model_name,
+                i,
+                "product_recipe_components.mix_product",
+                "product",
+                mix_label_for_error,
+            )
+            return None, True
+        label = str(mix_label_for_error).split("/", 1)[-1].strip()
+        same_crop_as_label = [m for m in matches if m.crop.name == label]
+        if len(same_crop_as_label) == 1:
+            return same_crop_as_label[0], False
+        crops_seen = {m.crop_id for m in matches}
+        if len(crops_seen) == 1:
+            return matches[0], False
+        self._record_row_error(
+            model_name,
+            i,
+            code="stale_fk",
+            field_path="product_recipe_components.mix_product",
+            message=(
+                f"multiple products match label '{mix_label_for_error}' with different crops; "
+                "set Mix Crop Name to disambiguate"
+            ),
+        )
+        return None, True
+
     def _resolve_csf_for_mix_row(self, row, i, model_name="ProductRecipeComponent"):
         """
         Resolve CropSalesFormat for a product_recipe_components row (read-only lookups).
@@ -773,46 +896,12 @@ class Command(BaseCommand):
                     mix_crop,
                 )
                 return None, True
-            csf = (
-                CropSalesFormat.objects.filter(crop=crop, product_name=mix_product)
-                .order_by("id")
-                .first()
+            matches = self._csf_matches_for_mix_label(crop, mix_product)
+            return self._pick_unique_mix_csf(
+                matches, model_name, i, f"{mix_crop} / {mix_product}"
             )
-            if not csf:
-                self._record_stale_fk(
-                    model_name,
-                    i,
-                    "product_recipe_components.mix_product",
-                    "product",
-                    f"{mix_crop} / {mix_product}",
-                )
-                return None, True
-            return csf, False
-        matches = list(
-            CropSalesFormat.objects.filter(product_name=mix_product).order_by("id")
-        )
-        if len(matches) == 0:
-            self._record_stale_fk(
-                model_name,
-                i,
-                "product_recipe_components.mix_product",
-                "product",
-                mix_product,
-            )
-            return None, True
-        if len(matches) > 1:
-            self._record_row_error(
-                model_name,
-                i,
-                code="stale_fk",
-                field_path="product_recipe_components.mix_product",
-                message=(
-                    f"multiple products match name '{mix_product}'; "
-                    "set Mix Crop Name to disambiguate"
-                ),
-            )
-            return None, True
-        return matches[0], False
+        matches = self._csf_matches_for_mix_label(None, mix_product)
+        return self._pick_unique_mix_csf(matches, model_name, i, mix_product)
 
     def _import_product_recipe_components(self):
         """Import mix recipe lines from reference/product_recipe_components.csv."""
@@ -964,7 +1053,9 @@ class Command(BaseCommand):
                 try:
                     qty = self._dec(qty_raw)
                     if qty <= 0:
-                        raise ValueError("qty sign")
+                        self.stats["ProductRecipeComponent"]["skipped"] += 1
+                        continue
+                    qty = qty.quantize(Decimal("0.01"))
                 except (InvalidOperation, ValueError):
                     self._record_row_error(
                         model_rc,
@@ -977,13 +1068,8 @@ class Command(BaseCommand):
                     continue
 
             if pct is None and qty is None:
-                self._record_missing_required(
-                    model_rc,
-                    row_num,
-                    "product_recipe_components.component_quantity",
-                    "Component Percent or Component Quantity",
-                )
-                self.stats["ProductRecipeComponent"]["errors"] += 1
+                # Blank template / spacer lines on workbook 202 ``Design Crop Mixes`` tab.
+                self.stats["ProductRecipeComponent"]["skipped"] += 1
                 continue
 
             if qty is not None and not unit_raw:
