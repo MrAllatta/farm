@@ -1868,7 +1868,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(pack_batch.packed_quantity, Decimal("12"))
         self.assertEqual(pack_batch.packed_unit, "bag")
         linked_sale = SalesEvent.objects.get(
-            entry_kind=SalesEvent.EntryKind.PLAN,
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
             sale_date=date(2021, 6, 1),
             product__product_name="Carrot Bunch",
         )

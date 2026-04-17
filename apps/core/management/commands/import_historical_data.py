@@ -1817,12 +1817,20 @@ class Command(BaseCommand):
                     data["returned_quantity"] = self._dec_or_none(row.get("Returned Quantity"))
 
                     data["notes"] = row.get("Notes", "").strip()
+                    data["entry_kind"] = SalesEvent.EntryKind.ACTUAL
+
+                    product_obj = data.get("product")
+                    if product_obj and not self.write_disabled:
+                        batch = self._get_pack_batch(channel.id, product_obj.id, data["sale_date"])
+                        if batch:
+                            data["pack_batch"] = batch
 
                     if not self.write_disabled:
                         obj, created = SalesEvent.objects.update_or_create(
+                            entry_kind=SalesEvent.EntryKind.ACTUAL,
                             channel=channel,
                             sale_date=data["sale_date"],
-                            product=data.get("product"),
+                            product=product_obj,
                             defaults=data,
                         )
                         self.stats["SalesEvent"]["created" if created else "processed"] += 1

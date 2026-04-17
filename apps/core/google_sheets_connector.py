@@ -2,11 +2,6 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-import google.auth
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-
-
 DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
 SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
 SPREADSHEET_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
@@ -51,6 +46,9 @@ def extract_spreadsheet_id(value):
 
 
 def get_service_account_credentials(scopes=None):
+    import google.auth
+    from google.oauth2 import service_account
+
     credentials_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
     requested_scopes = scopes or [SHEETS_READONLY_SCOPE]
 
@@ -71,6 +69,8 @@ def get_service_account_credentials(scopes=None):
 
 
 def build_google_service(service_name, version, scopes):
+    from googleapiclient.discovery import build
+
     credentials = get_service_account_credentials(scopes=scopes)
     return build(service_name, version, credentials=credentials, cache_discovery=False)
 
