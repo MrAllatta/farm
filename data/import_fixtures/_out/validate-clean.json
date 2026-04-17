@@ -13,7 +13,7 @@
       "RotationHistory": {
         "created": 0,
         "error": 0,
-        "skipped": 8,
+        "skipped": 35,
         "updated": 0
       }
     },
@@ -21,7 +21,7 @@
     "totals": {
       "created": 0,
       "error": 0,
-      "skipped": 9,
+      "skipped": 36,
       "updated": 0
     }
   },
@@ -30,10 +30,10 @@
     "data_dir": "farm/data/import_fixtures/clean",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-17T17:45:35.345867Z",
-    "run_id": "20260417T174535334266",
+    "finished_at": "2026-04-17T18:10:26.822323Z",
+    "run_id": "20260417T181026770488",
     "start_year": 2021,
-    "started_at": "2026-04-17T17:45:35.334266Z",
+    "started_at": "2026-04-17T18:10:26.770488Z",
     "validate_only": true,
     "verbose": false
   },
