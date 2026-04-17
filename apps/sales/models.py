@@ -31,6 +31,13 @@ class SalesEvent(models.Model):
         null=True,
         blank=True,  # null for quick-entry (total only)
     )
+    pack_batch = models.ForeignKey(
+        "operations.PackBatch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sales_events",
+    )
 
     planned_quantity = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     planned_revenue = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

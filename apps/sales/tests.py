@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 
+from operations.models import PackBatch
 from reference.models import CropInfo, CropSalesFormat, SalesChannel
 from planning.models import PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
@@ -105,3 +106,21 @@ class SalesModelTests(TestCase):
             actual_revenue=Decimal("31.50"),
         )
         self.assertEqual(SalesEvent.objects.count(), 2)
+
+    def test_sales_event_can_link_to_pack_batch_for_mix_traceability(self):
+        pack_batch = PackBatch.objects.create(
+            product=self.product,
+            packed_quantity=Decimal("15.00"),
+            packed_unit="bunch",
+            pack_date=date(2026, 6, 1),
+        )
+        event = SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=date(2026, 6, 1),
+            product=self.product,
+            pack_batch=pack_batch,
+            actual_quantity=Decimal("9.00"),
+            actual_revenue=Decimal("31.50"),
+        )
+        self.assertEqual(event.pack_batch, pack_batch)

@@ -1,6 +1,8 @@
 """reference/models.py data models for farm references."""
 
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 import math
 from decimal import Decimal
 
@@ -132,6 +134,10 @@ class CropSalesFormat(models.Model):
     def __str__(self):
         return f"{self.product_name} @ ${self.sale_price}/{self.sale_unit}"
 
+    @property
+    def is_mix_product(self):
+        return self.recipes.filter(is_active=True).exists()
+
 
 class SalesChannel(models.Model):
     name = models.CharField(max_length=100)
@@ -157,3 +163,93 @@ class SalesChannel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProductRecipe(models.Model):
+    product = models.ForeignKey(
+        CropSalesFormat,
+        on_delete=models.CASCADE,
+        related_name="recipes",
+    )
+    name = models.CharField(max_length=100)
+    output_unit = models.CharField(max_length=20, blank=True)
+    effective_start = models.DateField(null=True, blank=True)
+    effective_end = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["product__product_name", "-effective_start", "name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product"],
+                condition=Q(is_active=True),
+                name="product_recipe_single_active_per_product",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.product.product_name} recipe: {self.name}"
+
+    def clean(self):
+        if self.effective_start and self.effective_end and self.effective_end < self.effective_start:
+            raise ValidationError({"effective_end": "Effective end cannot be before effective start."})
+        if not self.output_unit:
+            self.output_unit = self.product.sale_unit
+
+    def validate_component_totals(self):
+        components = list(self.components.all())
+        if not components:
+            raise ValidationError("Recipe must include at least one component.")
+
+        percent_components = [c for c in components if c.component_percent is not None]
+        if percent_components and len(percent_components) == len(components):
+            total_percent = sum(c.component_percent for c in percent_components)
+            if abs(total_percent - Decimal("100.00")) > Decimal("0.01"):
+                raise ValidationError(
+                    f"Component percentages must sum to 100.00, got {total_percent}."
+                )
+
+
+class ProductRecipeComponent(models.Model):
+    recipe = models.ForeignKey(
+        ProductRecipe,
+        on_delete=models.CASCADE,
+        related_name="components",
+    )
+    source_crop = models.ForeignKey(
+        CropInfo,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="recipe_components",
+    )
+    source_product = models.ForeignKey(
+        CropSalesFormat,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="as_recipe_component",
+    )
+    component_quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    component_unit = models.CharField(max_length=20)
+    component_percent = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["recipe", "sort_order", "id"]
+
+    def __str__(self):
+        source = self.source_crop or self.source_product
+        return f"{self.recipe.name}: {source}"
+
+    def clean(self):
+        if bool(self.source_crop) == bool(self.source_product):
+            raise ValidationError("Provide exactly one component source: crop or product.")
+        if self.component_quantity <= 0:
+            raise ValidationError({"component_quantity": "Component quantity must be positive."})
+        if self.component_percent is not None and not (Decimal("0") < self.component_percent <= Decimal("100")):
+            raise ValidationError({"component_percent": "Component percent must be > 0 and <= 100."})

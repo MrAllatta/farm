@@ -1122,6 +1122,8 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             product_rows.append(
                 {
                     "product": product,
+                    "is_mix_product": product.is_mix_product,
+                    "active_recipe": product.recipes.filter(is_active=True).first(),
                     "week_cells": week_cells,
                     "season_profile": selected_profile,
                     "season_window_label": window_label,

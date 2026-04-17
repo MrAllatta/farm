@@ -1,8 +1,18 @@
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from reference.models import Block, BlockType, CropBySeason, CropInfo, SalesChannel
+from reference.models import (
+    Block,
+    BlockType,
+    CropBySeason,
+    CropInfo,
+    CropSalesFormat,
+    ProductRecipe,
+    ProductRecipeComponent,
+    SalesChannel,
+)
 
 
 class ReferenceModelTests(TestCase):
@@ -72,3 +82,63 @@ class ReferenceModelTests(TestCase):
 
         self.assertEqual(channel.num_weeks, 9)
         self.assertEqual(channel.annual_target, Decimal("1125.00"))
+
+
+class ProductRecipeInvariantTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.crop = CropInfo.objects.create(
+            name="Mix Lettuce",
+            crop_type="Greens",
+            botanical_family="Asteraceae",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+        )
+        cls.product = CropSalesFormat.objects.create(
+            crop=cls.crop,
+            product_name="Salad Mix Bag",
+            sale_price=Decimal("6.00"),
+            sale_unit="bag",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            is_active=True,
+        )
+        cls.other_crop = CropInfo.objects.create(
+            name="Baby Kale",
+            crop_type="Greens",
+            botanical_family="Brassicaceae",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+        )
+
+    def test_recipe_percent_components_must_sum_to_100(self):
+        recipe = ProductRecipe.objects.create(product=self.product, name="Default")
+        ProductRecipeComponent.objects.create(
+            recipe=recipe,
+            source_crop=self.crop,
+            component_quantity=Decimal("1.00"),
+            component_unit="pounds",
+            component_percent=Decimal("60.00"),
+        )
+        ProductRecipeComponent.objects.create(
+            recipe=recipe,
+            source_crop=self.other_crop,
+            component_quantity=Decimal("1.00"),
+            component_unit="pounds",
+            component_percent=Decimal("30.00"),
+        )
+        with self.assertRaises(ValidationError):
+            recipe.validate_component_totals()
+
+    def test_component_requires_exactly_one_source(self):
+        recipe = ProductRecipe.objects.create(product=self.product, name="Default")
+        component = ProductRecipeComponent(
+            recipe=recipe,
+            source_crop=self.crop,
+            source_product=self.product,
+            component_quantity=Decimal("1.00"),
+            component_unit="pounds",
+        )
+        with self.assertRaises(ValidationError):
+            component.clean()

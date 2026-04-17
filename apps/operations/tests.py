@@ -6,9 +6,9 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from isoweek import Week
 
-from operations.models import FieldWalkNote, InventoryLedger
+from operations.models import FieldWalkNote, InventoryLedger, PackBatch, PackBatchComponent
 from planning.models import HarvestEvent, PlanningYear, Planting
-from reference.models import Block, CropBySeason, CropInfo
+from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat
 
 
 class InventoryLedgerGateTests(TestCase):
@@ -659,3 +659,59 @@ class InventoryHarvestInViewTests(TestCase):
             {"quantity": "5"},
         )
         self.assertEqual(response.status_code, 405)
+
+
+class MixPackBatchInventoryTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.crop = CropInfo.objects.create(
+            name="Mix Component Crop",
+            crop_type="Greens",
+            botanical_family="Asteraceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=2,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        cls.product = CropSalesFormat.objects.create(
+            crop=cls.crop,
+            product_name="Salad Mix Bag",
+            sale_price="6.00",
+            sale_unit="bag",
+            harvest_qty_per_sale_unit="1.00",
+            is_active=True,
+        )
+
+    def test_post_component_consumption_creates_negative_inventory_drawdown(self):
+        InventoryLedger.objects.create(
+            crop=self.crop,
+            event_date=date(2026, 1, 1),
+            event_type="harvest_in",
+            quantity=Decimal("25.00"),
+            running_balance=Decimal("25.00"),
+        )
+        batch = PackBatch.objects.create(
+            product=self.product,
+            packed_quantity=Decimal("10.00"),
+            packed_unit="bag",
+            pack_date=date(2026, 1, 2),
+        )
+        PackBatchComponent.objects.create(
+            pack_batch=batch,
+            source_crop=self.crop,
+            consumed_quantity=Decimal("8.00"),
+            consumed_unit="pounds",
+            component_percent=Decimal("100.00"),
+        )
+
+        entries = batch.post_component_consumption()
+        self.assertEqual(len(entries), 1)
+        entry = entries[0]
+        self.assertEqual(entry.quantity, Decimal("-8.00"))
+        self.assertEqual(entry.running_balance, Decimal("17.00"))

@@ -213,6 +213,18 @@ class MarketSalesEntryView(TemplateView):
 
                 notes_key = f"notes_{product_id}"
                 notes = request.POST.get(notes_key, "")
+                pack_batch = (
+                    PackAllocation.objects.filter(
+                        channel=channel,
+                        pack_date=sale_date,
+                        product=product,
+                        pack_batch__isnull=False,
+                    )
+                    .select_related("pack_batch")
+                    .order_by("-id")
+                    .values_list("pack_batch_id", flat=True)
+                    .first()
+                )
 
                 SalesEvent.objects.update_or_create(
                     entry_kind=SalesEvent.EntryKind.ACTUAL,
@@ -225,6 +237,7 @@ class MarketSalesEntryView(TemplateView):
                         "actual_price": actual_price,
                         "brought_quantity": brought_qty,
                         "returned_quantity": returned_qty,
+                        "pack_batch_id": pack_batch,
                         "notes": notes,
                     },
                 )

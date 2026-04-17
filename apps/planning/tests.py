@@ -8,7 +8,15 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
-from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from reference.models import (
+    Block,
+    CropBySeason,
+    CropInfo,
+    CropSalesFormat,
+    ProductRecipe,
+    ProductRecipeComponent,
+    SalesChannel,
+)
 from sales.models import SalesEvent
 
 TEST_MIDDLEWARE = [
@@ -752,3 +760,22 @@ class SalesPlanViewTests(TestCase):
         self.assertEqual(carrot_week_1["window_state"], "off")
         self.assertEqual(spinach_week_2["window_state"], "harvest")
         self.assertEqual(mystery_week_20["window_state"], "unknown")
+
+    def test_sales_plan_context_marks_mix_products_without_hiding_non_mix_products(self):
+        mix_recipe = ProductRecipe.objects.create(product=self.product, name="Salad Mix")
+        ProductRecipeComponent.objects.create(
+            recipe=mix_recipe,
+            source_crop=self.product.crop,
+            component_quantity=Decimal("1.00"),
+            component_unit="pounds",
+            component_percent=Decimal("100.00"),
+        )
+
+        response = self.client.get(reverse("planning:sales_plan"))
+        self.assertEqual(response.status_code, 200)
+        rows = response.context["product_rows"]
+        carrot_row = next(r for r in rows if r["product"].id == self.product.id)
+        mystery_row = next(r for r in rows if r["product"].id == self.no_profile_product.id)
+        self.assertTrue(carrot_row["is_mix_product"])
+        self.assertIsNotNone(carrot_row["active_recipe"])
+        self.assertFalse(mystery_row["is_mix_product"])

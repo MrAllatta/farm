@@ -52,3 +52,21 @@ These tests cover:
 - Apply mode should default to atomic rollback safety.
 - `--non-atomic-apply` should only be used for recovery diagnostics.
 - Escalation handoff output is an operator contract and should stay deterministic.
+
+## Mix Data Troubleshooting (Phase 2)
+
+When mix-product packing is enabled, use this deterministic recovery order:
+
+1. Validate recipe integrity in admin:
+   - exactly one active recipe per product
+   - components define exactly one source (`crop` or `product`)
+   - if all components are percent-based, total must be `100.00`
+2. Confirm pack batch has component rows before posting consumption.
+3. Post consumption and verify inventory ledger:
+   - one negative `sale_out` ledger row per crop-backed component
+   - running balance updated deterministically from latest prior balance
+4. For sales traceability, confirm `SalesEvent.pack_batch` is set for detailed entries sourced from same-day pack allocations.
+5. If consumption posting fails:
+   - keep the batch for audit
+   - fix component rows
+   - re-run posting; do not hand-edit ledger balances directly.
