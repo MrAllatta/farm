@@ -23,6 +23,7 @@
     </div>
     
     {# Day-by-day schedule #}
+    <div class="fp-table-scroll">
     <table style="width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 1rem;">
         <thead>
             <tr style="background: #ddd;">
@@ -55,6 +56,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     
     {# Two-column layout: Nursery + Transplants #}
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
@@ -63,6 +65,7 @@
             <h2 style="font-size: 10pt; border-bottom: 1px solid #333; padding-bottom: 2px; margin-bottom: 4px;">
                 🌱 NURSERY
             </h2>
+            <div class="fp-table-scroll">
             <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
                 {% for ne in nursery_events %}
                 <tr>
@@ -87,12 +90,14 @@
                 </tr>
                 {% endfor %}
             </table>
+            </div>
         </div>
         
         <div style="flex: 1;">
             <h2 style="font-size: 10pt; border-bottom: 1px solid #333; padding-bottom: 2px; margin-bottom: 4px;">
                 🌿 TRANSPLANTS
             </h2>
+            <div class="fp-table-scroll">
             <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
                 {% for ne in transplant_events %}
                 <tr>
@@ -116,6 +121,7 @@
                 </tr>
                 {% endfor %}
             </table>
+            </div>
         </div>
     </div>
     

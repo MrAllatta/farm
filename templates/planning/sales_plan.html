@@ -29,7 +29,7 @@
     {% if not channel %}
     <p>Select a channel to begin.</p>
     {% else %}
-    <div class="sales-plan-matrix-wrap">
+    <div class="sales-plan-matrix-wrap fp-table-scroll" data-testid="fp-table-scroll">
         <table class="sales-plan-matrix">
             <thead>
                 <tr>
@@ -44,8 +44,12 @@
                 {% for row in product_rows %}
                 <tr>
                     <td class="sales-plan-sticky-col sales-plan-product-col">
-                        {{ row.product.product_name }}<br>
-                        <small>{{ row.product.crop.name }} · {{ row.product.sale_unit }}</small>
+                        {% if row.product.sales_plan_product_cell_one_line %}
+                        <span class="sales-plan-product-primary">{{ row.product.product_name }}</span><span class="sales-plan-product-sep"> · </span><span class="sales-plan-product-sub">{{ row.product.sales_plan_row_subtitle }}</span>
+                        {% else %}
+                        <span class="sales-plan-product-primary">{{ row.product.product_name }}</span><br>
+                        <small class="sales-plan-product-sub">{{ row.product.sales_plan_row_subtitle }}</small>
+                        {% endif %}
                     </td>
                     <td class="sales-plan-sticky-col sales-plan-window-col">
                         <small>{{ row.season_window_label }}</small>
@@ -80,7 +84,7 @@
         <li><strong>Skipped:</strong> {{ draft.counts.skipped }}</li>
     </ul>
     {% if draft.rows %}
-    <div style="overflow:auto;">
+    <div class="fp-table-scroll">
         <table style="border-collapse:collapse; width:100%;">
             <thead>
                 <tr>

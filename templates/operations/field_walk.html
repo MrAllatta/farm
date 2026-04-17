@@ -24,6 +24,7 @@
     {% for block_name, payload in blocks.items %}
     <section class="panel">
         <h2>{{ block_name }}</h2>
+        <div class="fp-table-scroll">
         <table>
             <thead>
                 <tr>
@@ -62,6 +63,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </section>
     {% endfor %}
 

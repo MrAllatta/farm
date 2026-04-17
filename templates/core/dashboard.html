@@ -218,12 +218,16 @@
         <div class="dashboard-col">
             <h2>Storage Inventory</h2>
             {% if inventory_summary %}
+            <div class="fp-table-scroll">
             <table class="compact-table">
+                <thead>
                 <tr>
                     <th>Crop</th>
                     <th>On Hand</th>
                     <th>Expires</th>
                 </tr>
+                </thead>
+                <tbody>
                 {% for item in inventory_summary %}
                 <tr {% if item.weeks_left and item.weeks_left < 4 %}class="warning"{% endif %}>
                     <td>{{ item.crop }}</td>
@@ -236,7 +240,9 @@
                     </td>
                 </tr>
                 {% endfor %}
+                </tbody>
             </table>
+            </div>
             <a href="{% url 'operations:inventory' %}">Full inventory →</a>
             {% else %}
             <p class="muted">No storage crops in inventory.</p>

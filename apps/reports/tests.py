@@ -191,6 +191,8 @@ class CropMapServiceAndViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reports/crop_map_week_by_bed.html")
         self.assertIn("rows", response.context)
+        self.assertContains(response, 'data-testid="fp-table-scroll"')
+        self.assertContains(response, "fp-table-scroll")
 
     def test_crop_map_week_by_block_route_renders(self):
         response = self.client.get(reverse("reports:crop_map_week_by_block"))

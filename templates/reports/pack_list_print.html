@@ -27,6 +27,7 @@
         Packing for: {% for ch in channels %}{{ ch.name }}{% if not forloop.last %} + {% endif %}{% endfor %}
     </div>
     
+    <div class="fp-table-scroll">
     <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
         <thead>
             <tr style="background: #ddd;">
@@ -123,6 +124,7 @@
             </tr>
         </tbody>
     </table>
+    </div>
     
     {# Loading instructions #}
     <div style="margin-top: 0.75rem; font-size: 9pt; border-top: 1px solid #999; padding-top: 0.5rem;">

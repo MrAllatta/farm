@@ -27,6 +27,7 @@
 <section class="panel">
     <h2>Recent Inventory Entries</h2>
     {% if recent_ledger_entries %}
+    <div class="fp-table-scroll">
     <table>
         <thead>
             <tr>
@@ -49,6 +50,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p>No inventory history for this crop yet.</p>
     {% endif %}

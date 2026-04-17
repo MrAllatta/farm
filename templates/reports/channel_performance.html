@@ -43,6 +43,7 @@
                 </div>
             </div>
         </div>
+        <div class="fp-table-scroll">
         <table class="compact-table analyze-table">
             <thead>
                 <tr>
@@ -73,8 +74,10 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         {% if item.top_products %}
         <h3>Top Products</h3>
+        <div class="fp-table-scroll">
         <table class="compact-table analyze-table">
             <thead>
                 <tr>
@@ -95,6 +98,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         {% endif %}
     </section>
     {% empty %}

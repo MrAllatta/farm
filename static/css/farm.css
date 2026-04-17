@@ -1,6 +1,9 @@
 /* static/css/farm.css — main application styles */
 
 :root {
+    /* Sticky table header offset inside scroll boxes (nav is outside the box). */
+    --fp-sticky-table-top: 0;
+
     --color-primary: #2d5a27;      /* forest green */
     --color-primary-light: #4a8c3f;
     --color-bg: #fafaf7;           /* warm white */
@@ -30,7 +33,7 @@
     --crop-legume: #6366f1;
 }
 
-\* { /* this line needs changing after tangle */
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -475,6 +478,79 @@ body {
     overflow-x: auto;
     border: 1px solid var(--color-border);
     border-radius: 4px;
+}
+
+/* ── Scroll region + frozen header row (screen) ── */
+
+.fp-table-scroll {
+    max-height: min(75vh, 56rem);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.matrix-container.fp-table-scroll {
+    overflow: auto;
+}
+
+.fp-table-scroll thead th {
+    position: sticky;
+    top: var(--fp-sticky-table-top, 0);
+    z-index: 12;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-border);
+}
+
+.fp-table-scroll .compact-table thead th,
+.fp-table-scroll .analyze-table thead th {
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .detail-table thead th {
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .planning-matrix thead th.week-col {
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .planning-matrix thead th.block-col,
+.fp-table-scroll .planning-matrix thead th.beds-col {
+    z-index: 25;
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .planning-matrix thead th.week-current {
+    background: #fffde7;
+}
+
+.fp-table-scroll .performance-table thead th {
+    top: var(--fp-sticky-table-top, 0);
+}
+
+.fp-table-scroll .sales-plan-matrix thead th.sales-plan-week-col {
+    z-index: 12;
+    background: #fff;
+}
+
+.fp-table-scroll .sales-plan-matrix thead th.sales-plan-sticky-col {
+    z-index: 22;
+    background: #fff;
+}
+
+.fp-table-scroll .harvest-calendar-table thead th:nth-child(1),
+.fp-table-scroll .harvest-calendar-table thead th:nth-child(2) {
+    z-index: 25;
+}
+
+/* Crop map print: two header rows */
+.crop-map-print-page .fp-table-scroll thead tr:nth-child(1) th {
+    top: 0;
+    z-index: 16;
+}
+
+.crop-map-print-page .fp-table-scroll thead tr:nth-child(2) th {
+    top: 1.15rem;
+    z-index: 15;
 }
 
 .section-header td {
@@ -1146,13 +1222,19 @@ body {
 /* ── Sales Plan Matrix ── */
 
 .sales-plan-matrix-wrap {
+    --sales-plan-product-col-width: 168px;
+    --sales-plan-window-col-width: 88px;
+    --sales-plan-week-col-width: 52px;
     overflow: auto;
     border: 1px solid var(--color-border);
     border-radius: 4px;
 }
 
 .sales-plan-matrix {
-    min-width: 2200px;
+    min-width: calc(
+        var(--sales-plan-product-col-width) + var(--sales-plan-window-col-width) +
+            52 * var(--sales-plan-week-col-width)
+    );
     border-collapse: collapse;
     width: 100%;
 }
@@ -1160,7 +1242,11 @@ body {
 .sales-plan-matrix th,
 .sales-plan-matrix td {
     border: 1px solid #e5e7eb;
-    padding: 0.25rem;
+    padding: 0.12rem 0.15rem;
+}
+
+.sales-plan-matrix tbody tr {
+    line-height: 1.12;
 }
 
 .sales-plan-sticky-col {
@@ -1171,22 +1257,48 @@ body {
 
 .sales-plan-product-col {
     left: 0;
-    min-width: 220px;
-    white-space: nowrap;
-    padding: 0.4rem;
+    min-width: var(--sales-plan-product-col-width);
+    max-width: var(--sales-plan-product-col-width);
+    white-space: normal;
+    padding: 0.12rem 0.2rem;
+    font-size: 0.8125rem;
+    line-height: 1.12;
+    vertical-align: middle;
+}
+
+.sales-plan-product-primary {
+    font-weight: 500;
+}
+
+.sales-plan-product-sep,
+.sales-plan-product-sub {
+    color: var(--color-text-muted);
+    font-weight: normal;
+    font-size: 0.75rem;
 }
 
 .sales-plan-window-col {
-    left: 220px;
-    min-width: 120px;
+    left: var(--sales-plan-product-col-width);
+    min-width: var(--sales-plan-window-col-width);
+    max-width: var(--sales-plan-window-col-width);
     text-align: center;
     color: var(--color-text-muted);
+    font-size: 0.7rem;
+    line-height: 1.12;
+    padding: 0.1rem 0.12rem;
 }
 
 .sales-plan-week-col {
-    min-width: 72px;
+    min-width: var(--sales-plan-week-col-width);
     text-align: center;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.08rem;
+}
+
+.sales-plan-matrix tbody td.sales-plan-cell {
+    min-width: var(--sales-plan-week-col-width);
+    text-align: center;
+    vertical-align: middle;
 }
 
 .sales-plan-cell--harvest {
@@ -1210,5 +1322,49 @@ body {
 }
 
 .sales-plan-qty-input {
-    width: 5rem;
+    width: 3.35rem;
+    max-width: 100%;
+    font-size: 0.72rem;
+    padding: 0.08rem 0.1rem;
+    line-height: 1.15;
+    box-sizing: border-box;
+}
+
+@media print {
+    .fp-table-scroll {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .fp-table-scroll thead th {
+        position: static !important;
+        top: auto !important;
+        box-shadow: none !important;
+    }
+
+    .fp-table-scroll .performance-table thead th {
+        top: auto !important;
+    }
+
+    .fp-table-scroll .planning-matrix .block-col,
+    .fp-table-scroll .planning-matrix .beds-col {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .fp-table-scroll .sales-plan-sticky-col {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .fp-table-scroll .harvest-calendar-table thead th,
+    .fp-table-scroll .harvest-calendar-table tbody td {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .performance-table thead th {
+        position: static !important;
+        top: auto !important;
+    }
 }

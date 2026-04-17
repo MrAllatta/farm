@@ -57,6 +57,7 @@
 <section class="panel">
     <h2>Recent Field Walk Notes</h2>
     {% if recent_notes %}
+    <div class="fp-table-scroll">
     <table>
         <thead>
             <tr>
@@ -77,6 +78,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p>No field walk notes have been recorded for this planting yet.</p>
     {% endif %}

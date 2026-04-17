@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 import math
+import re
 from decimal import Decimal
 
 
@@ -137,6 +138,22 @@ class CropSalesFormat(models.Model):
     @property
     def is_mix_product(self):
         return self.recipes.filter(is_active=True).exists()
+
+    @property
+    def sales_plan_row_subtitle(self) -> str:
+        """Secondary label for sales plan grid: avoid repeating crop when product_name already names it."""
+        pn = self.product_name.casefold()
+        cn = self.crop.name.casefold()
+        if cn and re.search(r"\b" + re.escape(cn) + r"\b", pn):
+            return self.sale_unit
+        return f"{self.crop.name} · {self.sale_unit}"
+
+    @property
+    def sales_plan_product_cell_one_line(self) -> bool:
+        """True when subtitle is unit-only (crop omitted); use compact single-line layout."""
+        pn = self.product_name.casefold()
+        cn = self.crop.name.casefold()
+        return bool(cn and re.search(r"\b" + re.escape(cn) + r"\b", pn))
 
 
 class SalesChannel(models.Model):

@@ -62,6 +62,7 @@
     {# Nursery events #}
     {% if nursery_events %}
     <h3>Nursery</h3>
+    <div class="fp-table-scroll">
     <table class="detail-table compact">
         {% for ne in nursery_events %}
         <tr>
@@ -78,13 +79,18 @@
         </tr>
         {% endfor %}
     </table>
+    </div>
     {% endif %}
     
     {# Recent harvest events #}
     {% if harvest_events %}
     <h3>Harvest</h3>
+    <div class="fp-table-scroll">
     <table class="detail-table compact">
+        <thead>
         <tr><th>Week</th><th>Planned</th><th>Actual</th></tr>
+        </thead>
+        <tbody>
         {% for he in harvest_events %}
         <tr>
             <td>Wk {{ he.planned_week }}</td>
@@ -94,7 +100,9 @@
                 {% else %}—{% endif %}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
+    </div>
     {% endif %}
     
     {# Field walk notes #}

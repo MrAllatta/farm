@@ -717,6 +717,8 @@ class SalesPlanViewTests(TestCase):
         self.assertContains(response, "Sales Plan")
         self.assertContains(response, "sales-plan-cell--harvest")
         self.assertContains(response, "sales-plan-cell--off")
+        self.assertContains(response, 'data-testid="fp-table-scroll"')
+        self.assertContains(response, "fp-table-scroll")
 
     def test_sales_plan_save_creates_plan_rows(self):
         user = get_user_model().objects.create_user(
@@ -779,3 +781,36 @@ class SalesPlanViewTests(TestCase):
         self.assertTrue(carrot_row["is_mix_product"])
         self.assertIsNotNone(carrot_row["active_recipe"])
         self.assertFalse(mystery_row["is_mix_product"])
+
+    def test_sales_plan_row_subtitle_omits_crop_when_named_in_product_name(self):
+        self.assertEqual(self.product.sales_plan_row_subtitle, "bunch")
+        self.assertTrue(self.product.sales_plan_product_cell_one_line)
+        self.assertEqual(self.winter_product.sales_plan_row_subtitle, "bag")
+        self.assertEqual(self.no_profile_product.sales_plan_row_subtitle, "bunch")
+
+    def test_sales_plan_row_subtitle_includes_crop_when_not_in_product_name(self):
+        poultry = CropInfo.objects.create(
+            name="Chicken",
+            crop_type="Poultry",
+            botanical_family="Phasianidae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="each",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        eggs = CropSalesFormat.objects.create(
+            crop=poultry,
+            product_name="Dozen Eggs",
+            sale_price="6.00",
+            sale_unit="dozen",
+            harvest_qty_per_sale_unit="1.00",
+            is_active=True,
+        )
+        self.assertEqual(eggs.sales_plan_row_subtitle, "Chicken · dozen")
+        self.assertFalse(eggs.sales_plan_product_cell_one_line)

@@ -18,6 +18,7 @@
 {% for row in rows %}
 <div class="block-group">
     <div class="block-group-header">{{ row.block.name }}</div>
+    <div class="fp-table-scroll">
     <table class="compact-table">
         <thead>
             <tr>
@@ -54,6 +55,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endfor %}
 {% endblock %}
