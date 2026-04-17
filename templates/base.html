@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Farm{% endblock %} — {{ current_planning_year.year }}</title>
+    <title>{% block title %}Farm{% endblock %} — {% if current_planning_year %}{{ current_planning_year.year }}{% else %}—{% endif %}</title>
     <link rel="stylesheet" href="{% static 'css/farm.css' %}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     {% block extra_head %}{% endblock %}
@@ -15,11 +15,24 @@
     <nav class="main-nav">
         <div class="nav-brand">
             <a href="{% url 'core:dashboard' %}">🌱 Farm</a>
-            {% if current_planning_year %}
+            {% if planning_year_scope_choices %}
+            <form method="post" action="{% url 'core:planning_year_focus' %}" class="nav-planning-year-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <label class="nav-planning-year-label">
+                    <span class="nav-planning-year-label-text">Plan</span>
+                    <select name="planning_year_id" class="nav-planning-year-select" aria-label="Planning year" onchange="this.form.submit();">
+                        {% for py in planning_year_scope_choices %}
+                        <option value="{{ py.id }}"{% if current_planning_year and py.id == current_planning_year.id %} selected{% endif %}>{{ py.year }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </form>
+            {% elif current_planning_year %}
             <span class="nav-year">{{ current_planning_year.year }}</span>
+            {% endif %}
             {% if current_week %}
             <span class="nav-week">Week {{ current_week }}</span>
-            {% endif %}
             {% endif %}
         </div>
         
@@ -97,7 +110,7 @@
     </main>
     
     <footer class="main-footer">
-        <span>Farm {{ current_planning_year.year }}</span>
+        <span>Farm {% if current_planning_year %}{{ current_planning_year.year }}{% else %}—{% endif %}</span>
         <span>·</span>
         <span>
             {{ today|date:"l, F j" }}

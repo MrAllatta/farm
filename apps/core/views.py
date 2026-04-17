@@ -7,14 +7,21 @@ from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.db import connection, DatabaseError
 from django.http import JsonResponse
-from django.urls import get_resolver
+from django.urls import get_resolver, reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views import View
 from isoweek import Week
 
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
 from operations.models import InventoryLedger
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel
-from core.planning_year import resolve_current_planning_year
+from core.planning_year import (
+    get_effective_planning_year,
+    operational_anchor_year,
+    set_session_planning_year,
+    resolve_current_planning_year,
+)
 
 from django.views.generic import FormView
 from django import forms
@@ -62,13 +69,47 @@ def readyz(request):
     return JsonResponse(payload, status=200 if not failures else 503)
 
 
+class PlanningYearFocusView(View):
+    """POST: persist UI planning focus (this calendar year vs next) in session."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        next_url = request.POST.get("next") or reverse("core:dashboard")
+        if not url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            next_url = reverse("core:dashboard")
+
+        try:
+            year_id = int(request.POST.get("planning_year_id", ""))
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid planning year.")
+            return redirect(next_url)
+
+        anchor = operational_anchor_year()
+        allowed = PlanningYear.objects.filter(year__in=(anchor, anchor + 1))
+        planning_year = allowed.filter(pk=year_id).first()
+        if planning_year is None:
+            messages.error(
+                request,
+                "That planning year is not in the current date window.",
+            )
+            return redirect(next_url)
+
+        set_session_planning_year(request, planning_year)
+        return redirect(next_url)
+
+
 class DashboardView(TemplateView):
     template_name = "core/dashboard.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year()
+        year_obj = get_effective_planning_year(self.request)
 
         if not year_obj:
             ctx["no_year"] = True

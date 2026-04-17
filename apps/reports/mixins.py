@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from isoweek import Week
 
-from core.planning_year import resolve_current_planning_year
+from core.planning_year import get_effective_planning_year, resolve_current_planning_year
 
 
 REPORT_EXCLUDED_STATUSES = ("skipped", "failed", "revised")
@@ -33,6 +33,11 @@ class ReportContextMixin:
     default_status_priority = ("active", "complete")
 
     def resolve_planning_year(self, status_priority=None):
+        request = getattr(self, "request", None)
+        if request is not None:
+            effective = get_effective_planning_year(request)
+            if effective is not None:
+                return effective
         return resolve_current_planning_year(
             status_priority=status_priority or self.default_status_priority
         )

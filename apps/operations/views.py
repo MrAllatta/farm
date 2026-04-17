@@ -11,7 +11,7 @@ from django import forms
 from reference.models import CropInfo, CropSalesFormat
 from operations.models import InventoryLedger, FieldWalkNote
 from planning.models import Planting, HarvestEvent
-from core.planning_year import resolve_current_planning_year
+from core.planning_year import get_effective_planning_year
 from decimal import Decimal
 
 
@@ -58,7 +58,7 @@ class FieldWalkNoteView(TemplateView):
     template_name = "operations/field_walk_note.html"
 
     def _get_planting_for_request(self, request, pk):
-        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+        year_obj = get_effective_planning_year(request)
         if not year_obj:
             raise Http404("No active planning year")
         return get_object_or_404(
@@ -90,7 +90,7 @@ class FieldWalkNoteView(TemplateView):
             return HttpResponse(status=403)
 
         planting = self._get_planting_for_request(request, kwargs["pk"])
-        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+        year_obj = get_effective_planning_year(request)
         today = date.today()
 
         condition = (request.POST.get("condition") or "").strip()
@@ -169,7 +169,7 @@ class WeeklyHarvestEntryView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+        year_obj = get_effective_planning_year(self.request)
         week_num = kwargs.get("week", date.today().isocalendar()[1])
         year = year_obj.year if year_obj else date.today().year
 
@@ -250,7 +250,7 @@ class WeeklyHarvestEntryView(TemplateView):
             return redirect(f"/admin/login/?next={request.path}")
         if not request.user.is_staff:
             return HttpResponse(status=403)
-        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+        year_obj = get_effective_planning_year(request)
 
         updated = 0
         for key, value in request.POST.items():
@@ -528,7 +528,7 @@ class FieldWalkView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+        year_obj = get_effective_planning_year(self.request)
         today = date.today()
 
         # Active plantings ordered by walk route
@@ -616,7 +616,7 @@ class FieldWalkView(TemplateView):
             return redirect(f"/admin/login/?next={request.path}")
         if not request.user.is_staff:
             return HttpResponse(status=403)
-        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
+        year_obj = get_effective_planning_year(request)
         today = date.today()
 
         notes_created = 0
@@ -680,7 +680,7 @@ class SeedOrderReportView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year()
+        year_obj = get_effective_planning_year(self.request)
 
         plantings = (
             Planting.objects.filter(

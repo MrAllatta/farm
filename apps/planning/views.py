@@ -13,7 +13,7 @@ from isoweek import Week
 
 from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus
-from core.planning_year import resolve_current_planning_year
+from core.planning_year import get_effective_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 from sales.models import SalesEvent
 
@@ -31,7 +31,7 @@ class PlanningMatrixView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = resolve_current_planning_year()
+        year_obj = get_effective_planning_year(self.request)
 
         if not year_obj:
             ctx["no_year"] = True
@@ -181,7 +181,7 @@ class ActivePlanningYearMixin:
     year_obj = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.year_obj = resolve_current_planning_year()
+        self.year_obj = get_effective_planning_year(request)
         if not self.year_obj:
             messages.error(request, "No active planning year configured.")
             return redirect("planning:matrix")
@@ -448,7 +448,7 @@ class SuccessionPreviewView(View):
                 "</span>"
             )
 
-        year_obj = resolve_current_planning_year()
+        year_obj = get_effective_planning_year(request)
         year = year_obj.year if year_obj else date.today().year
 
         beds_per = math.ceil(bf_per / block.bedfeet_per_bed)
@@ -1639,7 +1639,7 @@ class WeekToDateView(View):
 
     def get(self, request):
         week_num = request.GET.get("plant_week_input")
-        year_obj = resolve_current_planning_year()
+        year_obj = get_effective_planning_year(request)
 
         if not week_num or not year_obj:
             return HttpResponse("")
@@ -1687,7 +1687,9 @@ class BedConflictCheckView(View):
             first_harvest = plant_date + timedelta(days=cs.dtm_days)
             last_harvest = first_harvest + timedelta(weeks=cs.harvest_weeks - 1)
 
-            year_obj = resolve_current_planning_year()
+            year_obj = get_effective_planning_year(request)
+            if not year_obj:
+                return HttpResponse("")
 
             conflicts = (
                 Planting.objects.filter(

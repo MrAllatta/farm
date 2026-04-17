@@ -19,7 +19,13 @@ from django.urls import get_resolver, reverse
 
 from operations.models import FieldWalkNote, InventoryLedger, PackBatch
 from core.models import RotationHistory
-from core.planning_year import resolve_current_planning_year
+from django.contrib.sessions.middleware import SessionMiddleware
+
+from core.planning_year import (
+    PLANNING_YEAR_SESSION_KEY,
+    get_effective_planning_year,
+    resolve_current_planning_year,
+)
 from core.google_sheets_connector import extract_drive_folder_id, extract_spreadsheet_id
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
@@ -3132,6 +3138,61 @@ class PlanningYearResolutionTests(TestCase):
         year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
 
         self.assertIsNone(year_obj)
+
+
+class EffectivePlanningYearTests(TestCase):
+    def test_get_effective_respects_session_when_year_in_clock_scope(self):
+        from django.test import RequestFactory
+
+        y2026 = PlanningYear.objects.create(year=2026, status="planning")
+        y2027 = PlanningYear.objects.create(year=2027, status="planning")
+
+        rf = RequestFactory()
+        request = rf.get("/")
+        SessionMiddleware(lambda req: None).process_request(request)
+        request.session[PLANNING_YEAR_SESSION_KEY] = y2027.id
+        request.session.save()
+
+        eff = get_effective_planning_year(request, today=date(2026, 4, 17))
+        self.assertEqual(eff.id, y2027.id)
+
+    def test_get_effective_defaults_to_anchor_year_when_resolved_outside_scope(self):
+        from django.test import RequestFactory
+
+        PlanningYear.objects.create(year=2024, status="active")
+        y2026 = PlanningYear.objects.create(year=2026, status="planning")
+        PlanningYear.objects.create(year=2027, status="planning")
+
+        rf = RequestFactory()
+        request = rf.get("/")
+        SessionMiddleware(lambda req: None).process_request(request)
+        request.session.save()
+
+        eff = get_effective_planning_year(request, today=date(2026, 4, 17))
+        self.assertEqual(eff.id, y2026.id)
+
+    @patch("core.views.operational_anchor_year", return_value=2026)
+    def test_planning_year_focus_post_sets_session(self, _mock_anchor):
+        PlanningYear.objects.create(year=2026, status="planning")
+        y2027 = PlanningYear.objects.create(year=2027, status="planning")
+        url = reverse("core:planning_year_focus")
+        self.client.post(
+            url,
+            {"planning_year_id": str(y2027.id), "next": "/"},
+        )
+        self.assertEqual(int(self.client.session[PLANNING_YEAR_SESSION_KEY]), y2027.id)
+
+    @patch("core.views.operational_anchor_year", return_value=2026)
+    def test_planning_year_focus_rejects_out_of_scope_year(self, _mock_anchor):
+        self.client.session.flush()
+        PlanningYear.objects.create(year=2026, status="planning")
+        alien = PlanningYear.objects.create(year=2030, status="planning")
+        url = reverse("core:planning_year_focus")
+        self.client.post(
+            url,
+            {"planning_year_id": str(alien.id), "next": "/"},
+        )
+        self.assertIsNone(self.client.session.get(PLANNING_YEAR_SESSION_KEY))
 
 
 class DomainModelInvariantTests(TestCase):
