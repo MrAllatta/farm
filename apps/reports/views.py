@@ -12,6 +12,7 @@ from core.planning_year import resolve_current_planning_year
 from planning.models import HarvestEvent, NurseryEvent, Planting
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import Block, SalesChannel, CropSalesFormat
+from operations.models import PackBatch, PackBatchComponent
 from .mixins import AnalyzeViewMixin, ReportContextMixin
 from .services.crop_maps import CropMapOccupancyService
 
@@ -962,6 +963,27 @@ class SeasonSummaryView(AnalyzeViewMixin, TemplateView):
 
         annual_target = sum(ch.annual_target for ch in SalesChannel.objects.all())
 
+        # Mix reconciliation: sold mix qty versus packed qty and component drawdown.
+        mix_batches = PackBatch.objects.filter(pack_date__year=year).select_related("product")
+        mix_sales = SalesEvent.objects.filter(
+            sale_date__year=year,
+            pack_batch__isnull=False,
+            actual_quantity__isnull=False,
+        )
+        mix_packed_qty = (
+            mix_batches.aggregate(total=Sum("packed_quantity"))["total"] or Decimal("0")
+        )
+        mix_sold_qty = (
+            mix_sales.aggregate(total=Sum("actual_quantity"))["total"] or Decimal("0")
+        )
+        mix_component_drawdown = (
+            PackBatchComponent.objects.filter(
+                pack_batch__pack_date__year=year,
+                source_crop__isnull=False,
+            ).aggregate(total=Sum("consumed_quantity"))["total"]
+            or Decimal("0")
+        )
+
         # Crops grown
         crop_types = set(p.crop.crop_type for p in planned if p.crop.crop_type)
         unique_crops = set(p.crop.name for p in planned)
@@ -1066,6 +1088,12 @@ class SeasonSummaryView(AnalyzeViewMixin, TemplateView):
                 # Labor
                 "total_harvest_hours": total_harvest_hours,
                 "revenue_per_harvest_hour": revenue_per_harvest_hour,
+                # Mix reconciliation
+                "mix_batches_count": mix_batches.count(),
+                "mix_packed_qty": mix_packed_qty,
+                "mix_sold_qty": mix_sold_qty,
+                "mix_unallocated_qty": mix_packed_qty - mix_sold_qty,
+                "mix_component_drawdown": mix_component_drawdown,
                 # Diversity
                 "unique_crops": len(unique_crops),
                 "crop_types": sorted(crop_types),

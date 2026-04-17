@@ -23,9 +23,16 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 from django.db import transaction, DatabaseError, IntegrityError
 
-from reference.models import CropInfo, Block, CropBySeason, CropSalesFormat, SalesChannel
+from reference.models import (
+    CropInfo,
+    Block,
+    CropBySeason,
+    CropSalesFormat,
+    ProductRecipe,
+    SalesChannel,
+)
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
-from operations.models import FieldWalkNote, InventoryLedger, PackAllocation
+from operations.models import FieldWalkNote, InventoryLedger, PackAllocation, PackBatch
 from sales.models import SalesEvent, QuickSalesEntry
 from core.models import RotationHistory
 
@@ -185,9 +192,11 @@ class Command(BaseCommand):
         self.block_cache = {}
         self.channel_cache = {}
         self.product_cache = {}
+        self.recipe_cache = {}
         self.planning_year_cache = {}
         self.planting_cache = {}
         self.harvest_event_cache = {}
+        self.pack_batch_cache = {}
         self.normalized_lookup_indexes = {}
 
         if not os.path.isdir(self.data_dir):
@@ -1126,6 +1135,15 @@ class Command(BaseCommand):
 
                     data["notes"] = row.get("Notes", "").strip()
 
+                    if data.get("product") is not None and not self.write_disabled:
+                        batch = self._get_pack_batch(
+                            channel.id,
+                            data["product"].id,
+                            data["sale_date"],
+                        )
+                        if batch:
+                            data["pack_batch"] = batch
+
                     if not self.write_disabled:
                         obj, created = NurseryEvent.objects.update_or_create(
                             planting=planting,
@@ -1519,6 +1537,9 @@ class Command(BaseCommand):
                     channel_name = row.get("Channel", "").strip()
                     product_name = row.get("Product", "").strip()
                     pack_date_str = row.get("Pack Date", "").strip()
+                    recipe_name = (row.get("Recipe Name") or "").strip()
+                    packed_quantity_raw = (row.get("Packed Quantity") or "").strip()
+                    packed_unit = (row.get("Packed Unit") or "").strip()
 
                     if not (channel_name and product_name and pack_date_str):
                         if not channel_name:
@@ -1584,6 +1605,75 @@ class Command(BaseCommand):
                         he = self.harvest_event_cache.get(cache_key)
                         if he:
                             data["harvest_event"] = he
+
+                    pack_batch = None
+                    if recipe_name:
+                        recipe = self._get_recipe_by_name(recipe_name)
+                        if not recipe:
+                            self._record_stale_fk(
+                                "PackAllocation",
+                                i,
+                                "pack_allocations.recipe",
+                                "mix recipe",
+                                recipe_name,
+                            )
+                            self.stats["PackAllocation"]["skipped"] += 1
+                            continue
+                        if recipe.product_id != product.id:
+                            self._record_row_error(
+                                "PackAllocation",
+                                i,
+                                code="namespace_mismatch",
+                                field_path="pack_allocations.recipe",
+                                message=f"recipe '{recipe_name}' does not belong to product '{product_name}'",
+                            )
+                            self.stats["PackAllocation"]["errors"] += 1
+                            continue
+                        if not packed_quantity_raw:
+                            self._record_missing_required(
+                                "PackAllocation",
+                                i,
+                                "pack_allocations.packed_quantity",
+                                "Packed Quantity",
+                            )
+                            self.stats["PackAllocation"]["skipped"] += 1
+                            continue
+                        packed_quantity = self._dec(packed_quantity_raw)
+                        if packed_quantity <= 0:
+                            self._record_row_error(
+                                "PackAllocation",
+                                i,
+                                code="namespace_mismatch",
+                                field_path="pack_allocations.packed_quantity",
+                                message="packed quantity must be positive",
+                            )
+                            self.stats["PackAllocation"]["errors"] += 1
+                            continue
+                        if not packed_unit:
+                            packed_unit = recipe.output_unit or product.sale_unit
+
+                        if not self.write_disabled:
+                            pack_batch, _ = PackBatch.objects.update_or_create(
+                                product=product,
+                                recipe=recipe,
+                                pack_date=data["pack_date"],
+                                defaults={
+                                    "packed_quantity": packed_quantity,
+                                    "packed_unit": packed_unit,
+                                    "notes": f"Imported from pack_allocations row {i}",
+                                },
+                            )
+                            self.pack_batch_cache[
+                                self._build_pack_batch_key(channel.id, product.id, data["pack_date"])
+                            ] = pack_batch
+                            data["pack_batch"] = pack_batch
+                        else:
+                            self.pack_batch_cache[
+                                self._build_pack_batch_key(channel.id, product.id, data["pack_date"])
+                            ] = {
+                                "product_id": product.id,
+                                "pack_date": data["pack_date"],
+                            }
 
                     if not self.write_disabled:
                         obj, created = PackAllocation.objects.update_or_create(
@@ -1922,6 +2012,28 @@ class Command(BaseCommand):
         )
         self.product_cache[product_name] = resolved
         return resolved
+
+    def _get_recipe_by_name(self, recipe_name):
+        """Get or cache mix recipe by name."""
+        if not recipe_name:
+            return None
+        if recipe_name in self.recipe_cache:
+            return self.recipe_cache[recipe_name]
+        resolved = self._resolve_fk_by_text(
+            ProductRecipe,
+            "name",
+            recipe_name,
+            label="mix recipe",
+        )
+        self.recipe_cache[recipe_name] = resolved
+        return resolved
+
+    def _build_pack_batch_key(self, channel_id, product_id, pack_date):
+        return f"{channel_id}:{product_id}:{pack_date.isoformat()}"
+
+    def _get_pack_batch(self, channel_id, product_id, pack_date):
+        key = self._build_pack_batch_key(channel_id, product_id, pack_date)
+        return self.pack_batch_cache.get(key)
 
     def _get_crop_season(self, crop, block_type):
         """Resolve crop season with deterministic duplicate handling."""

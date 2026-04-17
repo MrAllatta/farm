@@ -17,13 +17,20 @@ from django.test.utils import override_settings
 from django.utils import timezone
 from django.urls import get_resolver, reverse
 
-from operations.models import FieldWalkNote, InventoryLedger
+from operations.models import FieldWalkNote, InventoryLedger, PackBatch
 from core.models import RotationHistory
 from core.planning_year import resolve_current_planning_year
 from core.google_sheets_connector import extract_drive_folder_id, extract_spreadsheet_id
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
-from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from reference.models import (
+    Block,
+    CropBySeason,
+    CropInfo,
+    CropSalesFormat,
+    ProductRecipe,
+    SalesChannel,
+)
 from core.spreadsheet_connector import normalize_rows
 
 
@@ -298,6 +305,29 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "Farm Stand,2021-06-05,10,5,valid quick sale",
                 ",2021-06-05,10,0,missing channel",
                 "Ghost Channel,2021-06-05,12,0,stale channel",
+            ],
+        )
+
+    def _write_mix_recipe_pack_fixture(
+        self,
+        data_dir,
+        year=2021,
+        recipe_name="Carrot Mix Recipe",
+        packed_quantity="10",
+        packed_unit="bag",
+        pack_date=None,
+    ):
+        self._write_clean_fixture(data_dir)
+        self._write_year_fixture(data_dir, year=year)
+        year_dir = Path(data_dir) / f"year_{year}"
+        if pack_date is None:
+            pack_date = f"{year}-06-01"
+        self._write_csv(
+            year_dir,
+            "pack_allocations.csv",
+            [
+                "Planting ID,Harvest Date,Channel,Product,Pack Date,Quantity,Recipe Name,Packed Quantity,Packed Unit,Notes",
+                f"P1,,Farm Stand,Carrot Bunch,{pack_date},5,{recipe_name},{packed_quantity},{packed_unit},mix pack import test",
             ],
         )
 
@@ -1737,6 +1767,112 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(apply_summary["results"]["models"]["SalesEvent"]["created"], 2)
         self.assertEqual(apply_summary["results"]["models"]["PackAllocation"]["created"], 2)
         self.assertEqual(sorted(PlanningYear.objects.values_list("year", flat=True)), [2021, 2023])
+
+    def test_pack_allocation_recipe_requires_packed_quantity_when_recipe_name_present(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            recipe_name = "Carrot Mix Recipe"
+            self._write_mix_recipe_pack_fixture(
+                data_dir,
+                year=2021,
+                recipe_name=recipe_name,
+                packed_quantity="",
+                packed_unit="bag",
+            )
+            crop = CropInfo.objects.create(
+                name="Carrot",
+                crop_type="Vegetables",
+                botanical_family="Apiaceae",
+                propagation_type="seed",
+                is_perennial=False,
+                fresh_or_storage="fresh",
+                storage_weeks=0,
+                harvest_unit="pounds",
+                avg_unit_weight="1.00",
+                nursery_weeks=0,
+                weeks_until_pot_up=0,
+                seeds_per_cell=1,
+                thinned_plants=0,
+            )
+            product = CropSalesFormat.objects.create(
+                crop=crop,
+                product_name="Carrot Bunch",
+                sale_price="3.50",
+                sale_unit="bag",
+                harvest_qty_per_sale_unit="1.00",
+                sku="CAR-BAG",
+                is_active=True,
+            )
+            ProductRecipe.objects.create(
+                product=product,
+                name=recipe_name,
+                output_unit="bag",
+                is_active=True,
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-mix-recipe-missing-packed-qty.json")
+
+        errors = [
+            err
+            for err in summary["results"]["row_errors"]
+            if err["field_path"] == "pack_allocations.packed_quantity"
+        ]
+        self.assertEqual(summary["status"], "ok")
+        self.assertTrue(errors)
+        self.assertEqual(errors[0]["code"], "missing_required")
+
+    def test_pack_allocation_recipe_creates_pack_batch_and_links_sales_event(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            recipe_name = "Carrot Mix Recipe"
+            self._write_mix_recipe_pack_fixture(
+                data_dir,
+                year=2021,
+                recipe_name=recipe_name,
+                packed_quantity="12",
+                packed_unit="bag",
+                pack_date="2021-06-01",
+            )
+            crop = CropInfo.objects.create(
+                name="Carrot",
+                crop_type="Vegetables",
+                botanical_family="Apiaceae",
+                propagation_type="seed",
+                is_perennial=False,
+                fresh_or_storage="fresh",
+                storage_weeks=0,
+                harvest_unit="pounds",
+                avg_unit_weight="1.00",
+                nursery_weeks=0,
+                weeks_until_pot_up=0,
+                seeds_per_cell=1,
+                thinned_plants=0,
+            )
+            product = CropSalesFormat.objects.create(
+                crop=crop,
+                product_name="Carrot Bunch",
+                sale_price="3.50",
+                sale_unit="bag",
+                harvest_qty_per_sale_unit="1.00",
+                sku="CAR-BAG",
+                is_active=True,
+            )
+            ProductRecipe.objects.create(
+                product=product,
+                name=recipe_name,
+                output_unit="bag",
+                is_active=True,
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-mix-recipe-pack-batch-link.json")
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(PackBatch.objects.count(), 1)
+        pack_batch = PackBatch.objects.first()
+        self.assertEqual(pack_batch.packed_quantity, Decimal("12"))
+        self.assertEqual(pack_batch.packed_unit, "bag")
+        linked_sale = SalesEvent.objects.get(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            sale_date=date(2021, 6, 1),
+            product__product_name="Carrot Bunch",
+        )
+        self.assertEqual(linked_sale.pack_batch_id, pack_batch.id)
 
 
 class StageA2OfflineConnectorTests(TestCase):

@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from planning.models import HarvestEvent, Planting, PlanningYear
+from operations.models import PackBatch, PackBatchComponent
 from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from reports.services.crop_maps import CropMapOccupancyService
 from sales.models import QuickSalesEntry, SalesEvent
@@ -293,6 +294,22 @@ class AnalyzeViewsTests(TestCase):
             total_cash=Decimal("80.00"),
             total_card=Decimal("20.00"),
         )
+        cls.mix_batch = PackBatch.objects.create(
+            product=cls.format,
+            packed_quantity=Decimal("40.00"),
+            packed_unit="bag",
+            pack_date=date(2026, 4, 11),
+        )
+        PackBatchComponent.objects.create(
+            pack_batch=cls.mix_batch,
+            source_crop=cls.crop,
+            consumed_quantity=Decimal("35.00"),
+            consumed_unit="bag",
+            component_percent=Decimal("100.00"),
+        )
+        sales_event = SalesEvent.objects.filter(channel=cls.channel, sale_date=date(2026, 4, 11)).first()
+        sales_event.pack_batch = cls.mix_batch
+        sales_event.save(update_fields=["pack_batch"])
 
     def test_all_analyze_routes_render(self):
         routes = [
@@ -328,6 +345,10 @@ class AnalyzeViewsTests(TestCase):
         self.assertEqual(response.context["page_title"], "Season Summary")
         self.assertEqual(response.context["total_revenue"], Decimal("250.00"))
         self.assertEqual(response.context["actual_yield_total"], Decimal("48.00"))
+        self.assertEqual(response.context["mix_batches_count"], 1)
+        self.assertEqual(response.context["mix_packed_qty"], Decimal("40.00"))
+        self.assertEqual(response.context["mix_sold_qty"], Decimal("30.00"))
+        self.assertEqual(response.context["mix_component_drawdown"], Decimal("35.00"))
 
 
 class ReportTemplateParityTests(TestCase):
