@@ -1,0 +1,4 @@
+Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce
+Carrot,Vegetables,Apiaceae,fresh,0,pounds,1.00,10,crate,,,0,0,,,1,0,
+Eggs,Other,Gallus,fresh,0,eaches,1.00,12,carton,,,0,0,,,1,0,
+Arugula,Vegetables,Brassicaceae,fresh,0,pounds,0.50,8,bin,,,0,0,,,1,0,

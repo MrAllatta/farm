@@ -1,0 +1,4 @@
+Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation
+Carrot,field,10,40,1.20,6,65,3,30,na,,,,,
+Eggs,field,1,52,0.50,4,1,1,1,na,,,,,
+Arugula,field,10,40,2.00,4,35,4,40,na,,,,,

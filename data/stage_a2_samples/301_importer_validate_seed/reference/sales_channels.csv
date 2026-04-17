@@ -1,0 +1,6 @@
+Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority
+CSA Core,Sunday,1,52,0,true,10
+Farm Stand,Saturday,1,52,500,false,1
+Orders Tab,Monday,1,52,0,false,5
+Wholesale Orders,Monday,1,52,0,false,5
+Market Retail,Saturday,1,52,0,false,3
