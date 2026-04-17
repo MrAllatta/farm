@@ -291,7 +291,8 @@ class WeeklyHarvestEntryView(TemplateView):
                 except HarvestEvent.DoesNotExist:
                     pass
 
-        return redirect("operations:harvest_entry_week", week=kwargs.get("week"))
+        week_num = kwargs.get("week", date.today().isocalendar()[1])
+        return redirect("operations:harvest_entry_week", week=week_num)
 
 
 class InventoryDashboardView(TemplateView):

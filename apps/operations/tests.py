@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from isoweek import Week
 
 from operations.models import FieldWalkNote, InventoryLedger
 from planning.models import HarvestEvent, PlanningYear, Planting
@@ -413,3 +414,248 @@ class FieldWalkNoteViewPostTests(TestCase):
             reverse("operations:field_walk", kwargs={"pk": self.other_year_planting.pk})
         )
         self.assertEqual(response.status_code, 404)
+
+
+class WeeklyHarvestEntryViewWeekRouteTests(TestCase):
+    """Batch harvest entry: explicit week URL and POST contract."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.year = PlanningYear.objects.create(year=2026, status="active")
+        cls.crop = CropInfo.objects.create(
+            name="Harvest Week Crop",
+            crop_type="Vegetables",
+            botanical_family="Brassicaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            units_per_bin=5,
+            harvest_bin="bin",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        cls.block = Block.objects.create(
+            name="HBlock",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet="2.5",
+            bedfeet_per_bed=50,
+            walk_route_order=1,
+        )
+        cls.crop_season = CropBySeason.objects.create(
+            crop=cls.crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot="1.00",
+            harvest_weeks=4,
+            dtm_days=50,
+            rows_per_bed=2,
+            ds_seed_rate=20,
+        )
+        cls.planting = Planting.objects.create(
+            planning_year=cls.year,
+            crop=cls.crop,
+            crop_season=cls.crop_season,
+            block=cls.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=date(2026, 4, 1),
+            planned_first_harvest_date=date(2026, 6, 1),
+            planned_last_harvest_date=date(2026, 6, 22),
+            planned_total_yield="50.00",
+            status="growing",
+        )
+        cls.target_week = 23
+        cls.week_mid = Week(2026, cls.target_week).monday() + timedelta(days=2)
+        cls.harvest_event = HarvestEvent.objects.create(
+            planting=cls.planting,
+            planned_date=cls.week_mid,
+            planned_quantity="25.00",
+            planned_units="pounds",
+        )
+
+    def setUp(self):
+        user_model = get_user_model()
+        self.staff = user_model.objects.create_user(
+            username="harvest_staff",
+            email="h@example.com",
+            password="test-pass-123",
+            is_staff=True,
+        )
+
+    def test_week_route_shows_event_and_week_navigation(self):
+        self.client.force_login(self.staff)
+        url = reverse("operations:harvest_entry_week", kwargs={"week": self.target_week})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["week_num"], self.target_week)
+        self.assertContains(response, "Harvest Week Crop")
+        self.assertEqual(response.context["prev_week"], 22)
+        self.assertEqual(response.context["next_week"], 24)
+
+    def test_week_route_post_records_bins_and_redirects_back_to_same_week(self):
+        self.client.force_login(self.staff)
+        url = reverse("operations:harvest_entry_week", kwargs={"week": self.target_week})
+        response = self.client.post(
+            url,
+            {f"bins_{self.harvest_event.pk}": "2", f"notes_{self.harvest_event.pk}": "ok"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"/operations/harvest/week/{self.target_week}/", response["Location"])
+        self.harvest_event.refresh_from_db()
+        self.assertEqual(self.harvest_event.actual_bins, 2.0)
+        self.assertEqual(self.harvest_event.notes, "ok")
+
+
+class InventoryDashboardViewStatusOrderingTests(TestCase):
+    """InventoryDashboardView: summary counts and critical-first ordering."""
+
+    @classmethod
+    def setUpTestData(cls):
+        PlanningYear.objects.create(year=2026, status="active")
+        today = date.today()
+        cls.critical_crop = CropInfo.objects.create(
+            name="Crit Kale",
+            crop_type="Vegetables",
+            botanical_family="Brassicaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=8,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        cls.good_crop = CropInfo.objects.create(
+            name="Good Potato",
+            crop_type="Vegetables",
+            botanical_family="Solanaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=20,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        InventoryLedger.objects.create(
+            crop=cls.good_crop,
+            event_date=today - timedelta(days=30),
+            event_type="return_in",
+            quantity=Decimal("100.00"),
+            running_balance=Decimal("100.00"),
+            expiry_date=today + timedelta(weeks=20),
+            storage_location="Cellar A",
+        )
+        InventoryLedger.objects.create(
+            crop=cls.critical_crop,
+            event_date=today - timedelta(days=2),
+            event_type="return_in",
+            quantity=Decimal("12.00"),
+            running_balance=Decimal("12.00"),
+            expiry_date=today + timedelta(days=12),
+            storage_location="Cellar C",
+        )
+
+    def test_dashboard_orders_critical_before_good_and_counts_critical(self):
+        response = self.client.get(reverse("operations:inventory"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["critical_count"], 1)
+        self.assertEqual(response.context["warning_count"], 0)
+        items = response.context["items"]
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["status"], "critical")
+        self.assertEqual(items[0]["crop"].name, "Crit Kale")
+        self.assertEqual(items[1]["status"], "good")
+
+
+class InventoryHarvestInViewTests(TestCase):
+    """DESIGN_GATE: harvest-to-inventory POST intake is not specified; GET surface is covered."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.year = PlanningYear.objects.create(year=2026, status="active")
+        cls.crop = CropInfo.objects.create(
+            name="Harvest In Crop",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="storage",
+            storage_weeks=8,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        cls.block = Block.objects.create(
+            name="InvBlock",
+            block_type="field",
+            num_beds=2,
+            bed_width_feet="2.5",
+            bedfeet_per_bed=50,
+            walk_route_order=1,
+        )
+        cls.crop_season = CropBySeason.objects.create(
+            crop=cls.crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot="1.00",
+            harvest_weeks=4,
+            dtm_days=50,
+            rows_per_bed=2,
+            ds_seed_rate=20,
+        )
+        cls.planting = Planting.objects.create(
+            planning_year=cls.year,
+            crop=cls.crop,
+            crop_season=cls.crop_season,
+            block=cls.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=date(2026, 4, 1),
+            planned_first_harvest_date=date(2026, 6, 1),
+            planned_last_harvest_date=date(2026, 6, 22),
+            planned_total_yield="50.00",
+            status="growing",
+        )
+        cls.harvest_event = HarvestEvent.objects.create(
+            planting=cls.planting,
+            planned_date=date(2026, 6, 8),
+            planned_quantity="25.00",
+            planned_units="pounds",
+        )
+
+    def test_get_shows_harvest_context(self):
+        response = self.client.get(
+            reverse("operations:inventory_harvest_in", kwargs={"harvest_event_id": self.harvest_event.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Harvest In Crop")
+        self.assertEqual(response.context["harvest_event"], self.harvest_event)
+        self.assertEqual(response.context["current_balance"], Decimal("0"))
+
+    def test_post_returns_method_not_allowed_until_intake_design_gate(self):
+        """DESIGN_GATE: written harvest-to-inventory intake policy + form not implemented."""
+        response = self.client.post(
+            reverse("operations:inventory_harvest_in", kwargs={"harvest_event_id": self.harvest_event.pk}),
+            {"quantity": "5"},
+        )
+        self.assertEqual(response.status_code, 405)
