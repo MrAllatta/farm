@@ -30,7 +30,7 @@
     --crop-legume: #6366f1;
 }
 
-\* { /* this line needs changing after tangle */
+* { /* this line needs changing after tangle */
     box-sizing: border-box;
     margin: 0;
     padding: 0;
