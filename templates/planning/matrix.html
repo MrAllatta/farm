@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 {% load planning_tags %}
 
-{% block title %}Crop Plan{% if year %} — {{ year }}{% endif %}{% endblock %}
+{% block title %}Crop Planner{% if year %} — {{ year }}{% endif %}{% endblock %}
 
 {% block content %}
 {% if no_year %}
@@ -11,7 +11,8 @@
 </div>
 {% else %}
 <div class="planning-header">
-    <h1>{{ year.year }} Crop Plan</h1>
+    <h1>{{ year.year }} Crop Planner</h1>
+    <p class="muted">Plantings matrix — week-by-block view (workbook Crop Planner tab).</p>
     <div class="week-nav">
         <a href="{% url 'planning:matrix_date' prev_date.isoformat %}" 
            class="btn">← Earlier</a>

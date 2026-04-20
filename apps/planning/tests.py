@@ -81,9 +81,11 @@ class PlanningSmokeTests(TestCase):
         )
 
     def test_planning_matrix_route_renders_with_existing_plantings(self):
-        response = self.client.get("/planning/")
-        self.assertLess(response.status_code, 500)
-        self.assertNotEqual(response.status_code, 404)
+        """Primary Crop Planner / plantings matrix surface (planning:matrix) must return 200."""
+        response = self.client.get(reverse("planning:matrix"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Crop Planner")
+        self.assertContains(response, "planning-matrix")
 
     def test_succession_create_route_renders_form_choices(self):
         response = self.client.get(reverse("planning:succession_create"))

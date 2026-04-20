@@ -194,6 +194,13 @@ class CropMapServiceAndViewTests(TestCase):
         self.assertContains(response, 'data-testid="fp-table-scroll"')
         self.assertContains(response, "fp-table-scroll")
 
+    def test_crop_map_primary_route_renders(self):
+        """High-level crop map (entry to block/bed week reports) must return 200."""
+        response = self.client.get(reverse("reports:crop_map"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "reports/crop_map.html")
+        self.assertIn("field_maps", response.context)
+
     def test_crop_map_week_by_block_route_renders(self):
         response = self.client.get(reverse("reports:crop_map_week_by_block"))
         self.assertEqual(response.status_code, 200)
