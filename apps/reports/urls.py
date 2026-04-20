@@ -9,6 +9,21 @@ urlpatterns = [
     # Crop map
     path("crop-map/", views.CropMapView.as_view(), name="crop_map"),
     path("crop-map/week/<int:week>/", views.CropMapView.as_view(), name="crop_map_week"),
+    path(
+        "crop-map/503/week-by-bed/",
+        views.CropMapWeekByBedGridView.as_view(),
+        name="crop_map_week_by_bed",
+    ),
+    path(
+        "crop-map/503/week-by-block/",
+        views.CropMapWeekByBlockGridView.as_view(),
+        name="crop_map_week_by_block",
+    ),
+    path(
+        "crop-map/503/successions/",
+        views.CropMapSuccessionsByBlockView.as_view(),
+        name="crop_map_successions",
+    ),
     # Printable documents
     path(
         "harvest-list/week/<int:week>/",

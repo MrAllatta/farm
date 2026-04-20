@@ -1,4 +1,67 @@
 {# operations/inventory.html #}
 {% extends "base.html" %}
 
-{% block title %}Inventory - Week {{ week_num }}{% endblock %}
+{% block title %}Storage Inventory{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Storage Inventory</h1>
+    <p>
+        Inventory items: {{ total_items }} |
+        Critical: {{ critical_count }} |
+        Warning: {{ warning_count }}
+    </p>
+    <p>Estimated value: ${{ total_value|floatformat:2 }}</p>
+    <p><a class="btn" href="{% url 'operations:inventory_add' %}">Record Inventory Transaction</a></p>
+</section>
+
+{% if items %}
+<section class="panel">
+    <div class="fp-table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Crop</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Weekly Draw</th>
+                <th>Runout</th>
+                <th>Expiry</th>
+                <th>Storage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.crop.name }}</td>
+                <td>{{ item.balance|floatformat:2 }} {{ item.unit }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.weekly_draw|floatformat:2 }} {{ item.unit }}</td>
+                <td>
+                    {% if item.runout_date %}
+                    {{ item.runout_date|date:"Y-m-d" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.expiry_date %}
+                    {{ item.expiry_date|date:"Y-m-d" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ item.storage_location|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% else %}
+<section class="panel">
+    <h2>No storage inventory yet</h2>
+    <p>Use "Record Inventory Transaction" to create the first ledger entry.</p>
+</section>
+{% endif %}
+{% endblock %}

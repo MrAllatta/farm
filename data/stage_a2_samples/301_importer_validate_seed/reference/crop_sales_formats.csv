@@ -1,0 +1,4 @@
+Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active
+Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true
+Eggs,Egg Dozen,5.00,dozen,1,EGG-DOZ,true
+Arugula,Arugula - 1/3 lb,4.00,third_lb,0.33,ARU-THIRD,true

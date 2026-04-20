@@ -1,6 +1,9 @@
 /* static/css/farm.css — main application styles */
 
 :root {
+    /* Sticky table header offset inside scroll boxes (nav is outside the box). */
+    --fp-sticky-table-top: 0;
+
     --color-primary: #2d5a27;      /* forest green */
     --color-primary-light: #4a8c3f;
     --color-bg: #fafaf7;           /* warm white */
@@ -30,7 +33,7 @@
     --crop-legume: #6366f1;
 }
 
-* { /* this line needs changing after tangle */
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -49,11 +52,11 @@ body {
 .main-nav {
     background: var(--color-primary);
     color: white;
-    padding: 0 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 2rem;
-    height: 48px;
+    min-height: 48px;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -73,6 +76,36 @@ body {
     font-size: 1.1rem;
 }
 
+.nav-planning-year-form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+}
+
+.nav-planning-year-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.nav-planning-year-label-text {
+    opacity: 0.9;
+}
+
+.nav-planning-year-select {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    min-width: 4.5rem;
+}
+
 .nav-year {
     background: rgba(255,255,255,0.2);
     padding: 2px 8px;
@@ -87,7 +120,9 @@ body {
 
 .nav-links {
     display: flex;
-    gap: 1.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     overflow-x: auto;
 }
 
@@ -95,14 +130,20 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
 }
 
 .nav-group-label {
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    opacity: 0.6;
-    margin-right: 0.25rem;
+    color: rgba(255,255,255,0.9);
+    cursor: pointer;
+    list-style: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    user-select: none;
+    white-space: nowrap;
 }
 
 .nav-links a {
@@ -113,8 +154,74 @@ body {
     padding: 4px 0;
 }
 
-.nav-links a:hover {
+.nav-group-menu {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.nav-group-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.nav-group-menu > summary::after {
+    content: "▾";
+    margin-left: 0.4rem;
+    font-size: 0.75rem;
+}
+
+.nav-group-menu[open] > summary,
+.nav-group-menu > summary:hover {
+    background: rgba(255,255,255,0.12);
     color: white;
+}
+
+.nav-menu {
+    display: none;
+    position: static;
+    min-width: 220px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    padding: 0.4rem;
+    margin-top: 0.35rem;
+    z-index: 120;
+}
+
+.nav-group-menu[open] .nav-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+}
+
+.nav-menu a {
+    color: var(--color-text);
+    padding: 0.45rem 0.65rem;
+    border-radius: 6px;
+}
+
+.nav-menu a:hover {
+    background: #f3f5ef;
+    color: var(--color-primary);
+}
+
+.nav-links > .nav-group:not(.nav-group-menu) a:hover {
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .main-nav {
+        flex-direction: column;
+        gap: 0.75rem 1rem;
+    }
+
+    .nav-links {
+        width: 100%;
+        padding-bottom: 0.25rem;
+    }
 }
 
 /* ── Content ── */
@@ -123,6 +230,73 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 1rem;
+}
+
+.muted {
+    color: var(--color-text-muted);
+}
+
+.positive {
+    color: var(--color-primary);
+}
+
+.negative {
+    color: #dc2626;
+}
+
+/* ── Reports / Analyze ── */
+
+.report-header {
+    margin-bottom: 1rem;
+}
+
+.report-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.report-meta {
+    color: var(--color-text-muted);
+}
+
+.analyze-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.analyze-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.analyze-section h2,
+.analyze-section h3 {
+    margin-bottom: 0.75rem;
+}
+
+.analyze-stacked {
+    display: grid;
+    gap: 1rem;
+}
+
+.analyze-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.analyze-columns {
+    align-items: start;
+}
+
+.analyze-table th {
+    background: #f8f8f5;
 }
 
 /* ── Dashboard ── */
@@ -304,6 +478,79 @@ body {
     overflow-x: auto;
     border: 1px solid var(--color-border);
     border-radius: 4px;
+}
+
+/* ── Scroll region + frozen header row (screen) ── */
+
+.fp-table-scroll {
+    max-height: min(75vh, 56rem);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.matrix-container.fp-table-scroll {
+    overflow: auto;
+}
+
+.fp-table-scroll thead th {
+    position: sticky;
+    top: var(--fp-sticky-table-top, 0);
+    z-index: 12;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-border);
+}
+
+.fp-table-scroll .compact-table thead th,
+.fp-table-scroll .analyze-table thead th {
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .detail-table thead th {
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .planning-matrix thead th.week-col {
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .planning-matrix thead th.block-col,
+.fp-table-scroll .planning-matrix thead th.beds-col {
+    z-index: 25;
+    background: #f8f8f5;
+}
+
+.fp-table-scroll .planning-matrix thead th.week-current {
+    background: #fffde7;
+}
+
+.fp-table-scroll .performance-table thead th {
+    top: var(--fp-sticky-table-top, 0);
+}
+
+.fp-table-scroll .sales-plan-matrix thead th.sales-plan-week-col {
+    z-index: 12;
+    background: #fff;
+}
+
+.fp-table-scroll .sales-plan-matrix thead th.sales-plan-sticky-col {
+    z-index: 22;
+    background: #fff;
+}
+
+.fp-table-scroll .harvest-calendar-table thead th:nth-child(1),
+.fp-table-scroll .harvest-calendar-table thead th:nth-child(2) {
+    z-index: 25;
+}
+
+/* Crop map print: two header rows */
+.crop-map-print-page .fp-table-scroll thead tr:nth-child(1) th {
+    top: 0;
+    z-index: 16;
+}
+
+.crop-map-print-page .fp-table-scroll thead tr:nth-child(2) th {
+    top: 1.15rem;
+    z-index: 15;
 }
 
 .section-header td {
@@ -970,4 +1217,154 @@ body {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
+}
+
+/* ── Sales Plan Matrix ── */
+
+.sales-plan-matrix-wrap {
+    --sales-plan-product-col-width: 168px;
+    --sales-plan-window-col-width: 88px;
+    --sales-plan-week-col-width: 52px;
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+
+.sales-plan-matrix {
+    min-width: calc(
+        var(--sales-plan-product-col-width) + var(--sales-plan-window-col-width) +
+            52 * var(--sales-plan-week-col-width)
+    );
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.sales-plan-matrix th,
+.sales-plan-matrix td {
+    border: 1px solid #e5e7eb;
+    padding: 0.12rem 0.15rem;
+}
+
+.sales-plan-matrix tbody tr {
+    line-height: 1.12;
+}
+
+.sales-plan-sticky-col {
+    position: sticky;
+    background: #fff;
+    z-index: 5;
+}
+
+.sales-plan-product-col {
+    left: 0;
+    min-width: var(--sales-plan-product-col-width);
+    max-width: var(--sales-plan-product-col-width);
+    white-space: normal;
+    padding: 0.12rem 0.2rem;
+    font-size: 0.8125rem;
+    line-height: 1.12;
+    vertical-align: middle;
+}
+
+.sales-plan-product-primary {
+    font-weight: 500;
+}
+
+.sales-plan-product-sep,
+.sales-plan-product-sub {
+    color: var(--color-text-muted);
+    font-weight: normal;
+    font-size: 0.75rem;
+}
+
+.sales-plan-window-col {
+    left: var(--sales-plan-product-col-width);
+    min-width: var(--sales-plan-window-col-width);
+    max-width: var(--sales-plan-window-col-width);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    line-height: 1.12;
+    padding: 0.1rem 0.12rem;
+}
+
+.sales-plan-week-col {
+    min-width: var(--sales-plan-week-col-width);
+    text-align: center;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.08rem;
+}
+
+.sales-plan-matrix tbody td.sales-plan-cell {
+    min-width: var(--sales-plan-week-col-width);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sales-plan-cell--harvest {
+    background: #dcfce7;
+}
+
+.sales-plan-cell--shoulder {
+    background: #fef9c3;
+}
+
+.sales-plan-cell--off {
+    background: #f9fafb;
+}
+
+.sales-plan-cell--unknown {
+    background: #f3f4f6;
+}
+
+.sales-plan-cell--planned {
+    box-shadow: inset 0 0 0 2px #14532d;
+}
+
+.sales-plan-qty-input {
+    width: 3.35rem;
+    max-width: 100%;
+    font-size: 0.72rem;
+    padding: 0.08rem 0.1rem;
+    line-height: 1.15;
+    box-sizing: border-box;
+}
+
+@media print {
+    .fp-table-scroll {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .fp-table-scroll thead th {
+        position: static !important;
+        top: auto !important;
+        box-shadow: none !important;
+    }
+
+    .fp-table-scroll .performance-table thead th {
+        top: auto !important;
+    }
+
+    .fp-table-scroll .planning-matrix .block-col,
+    .fp-table-scroll .planning-matrix .beds-col {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .fp-table-scroll .sales-plan-sticky-col {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .fp-table-scroll .harvest-calendar-table thead th,
+    .fp-table-scroll .harvest-calendar-table tbody td {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .performance-table thead th {
+        position: static !important;
+        top: auto !important;
+    }
 }

@@ -1,0 +1,21 @@
+Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active
+Tomato Beefsteak,Tomato Beefsteak Box (2 lb),8.50,box,2.0,TOM-BF-BOX,true
+Tomato Beefsteak,Tomato Beefsteak Bulk,6.99,pound,1.0,TOM-BF-LB,true
+Tomato Cherry,Tomato Cherry Pint,4.50,pint,1.0,TOM-CHR-PT,true
+Tomato Cherry,Tomato Cherry Bulk,7.99,pound,1.0,TOM-CHR-LB,true
+Lettuce Mix,Lettuce Mix Clamshell,3.99,clamshell,1.0,LET-MIX-CS,true
+Lettuce Mix,Lettuce Mix Bulk,2.99,pound,1.0,LET-MIX-LB,true
+Spinach,Spinach Bunch,2.50,bunch,1.0,SPN-BNCH,true
+Spinach,Spinach Bulk,4.99,pound,1.0,SPN-LB,true
+Bell Pepper,Bell Pepper Mix (3 ea),5.99,package,3.0,BEL-PEP-3PK,true
+Bell Pepper,Bell Pepper Single,2.50,each,1.0,BEL-PEP-EA,true
+Carrot,Carrot Bunch,2.99,bunch,1.0,CAR-BNCH,true
+Carrot,Carrot Bulk,1.99,pound,1.0,CAR-LB,true
+Beet,Beet Bunch,3.50,bunch,1.0,BET-BNCH,true
+Cucumber,Cucumber Single,1.50,each,1.0,CUC-EA,true
+Cucumber,Cucumber Bulk,2.99,pound,1.0,CUC-LB,true
+Basil,Basil Bunch,3.99,bunch,1.0,BAS-BNCH,true
+Garlic,Garlic Bulb (1 lb),4.99,pound,1.0,GAR-LB,true
+Potato,Potato Bag (5 lb),5.99,bag,5.0,POT-BAG-5,true
+Potato,Potato Bulk,1.49,pound,1.0,POT-LB,true
+Asparagus,Asparagus Bunch,5.99,bunch,1.0,ASP-BNCH,true

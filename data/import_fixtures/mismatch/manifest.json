@@ -1,0 +1,352 @@
+{
+  "fixture_pack": "mismatch",
+  "version": "1.2",
+  "scenario_intent": "Deterministic mismatch pack for row-error payloads, failure-signature ownership, and escalation handoff evidence.",
+  "owner": "engineering",
+  "expected": {
+    "failure_signatures": {
+      "namespace_mismatch:crop_by_season.block_type": {
+        "owner_area": "reference-import-normalization",
+        "escalation_path": "Data Platform On-call -> Importer Maintainer",
+        "severity": "medium"
+      },
+      "stale_fk:crop_by_season.crop": {
+        "owner_area": "reference-import-fk-resolution",
+        "escalation_path": "Data Platform On-call -> Reference Domain Owner",
+        "severity": "high"
+      },
+      "stale_fk:crop_sales_formats.crop": {
+        "owner_area": "sales-catalog-import-fk-resolution",
+        "escalation_path": "Data Platform On-call -> Sales Domain Owner",
+        "severity": "high"
+      },
+      "stale_fk:plantings.crop": {
+        "owner_area": "planning-import-fk-resolution",
+        "escalation_path": "Planning On-call -> Importer Maintainer",
+        "severity": "high"
+      },
+      "stale_fk:plantings.block": {
+        "owner_area": "planning-import-fk-resolution",
+        "escalation_path": "Planning On-call -> Operations Domain Owner",
+        "severity": "high"
+      },
+      "stale_fk:plantings.planning_year": {
+        "owner_area": "planning-year-boundary-validation",
+        "escalation_path": "Planning On-call -> Release Manager",
+        "severity": "medium"
+      }
+    },
+    "validate_only": {
+      "status": "ok",
+      "error_signals": [
+        "unsupported block type 'Unknown Block'",
+        "unsupported block type 'Unknown Tunnel'",
+        "crop not found 'Ghost Crop'",
+        "crop not found 'Missing Crop'",
+        "block not found 'Missing Block'",
+        "planning year not found '2022'"
+      ],
+      "totals": {
+        "created": 0,
+        "updated": 0,
+        "skipped": 5,
+        "error": 15
+      },
+      "models": {
+        "Block": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 0
+        },
+        "CropBySeason": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 6
+        },
+        "CropSalesFormat": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 3
+        },
+        "PlanningYear": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 0
+        },
+        "Planting": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 0,
+          "error": 6
+        }
+      },
+      "row_errors": [
+        {
+          "model": "CropBySeason",
+          "row": 1,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Unknown Block'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 2,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Unknown Tunnel'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 3,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Storage Barn'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 4,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Container Yard'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 5,
+          "code": "stale_fk",
+          "field_path": "crop_by_season.crop",
+          "message": "crop not found 'Ghost Crop'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 6,
+          "code": "stale_fk",
+          "field_path": "crop_by_season.crop",
+          "message": "crop not found 'Missing Crop'"
+        },
+        {
+          "model": "CropSalesFormat",
+          "row": 2,
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop",
+          "message": "crop not found 'Ghost Crop'"
+        },
+        {
+          "model": "CropSalesFormat",
+          "row": 3,
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop",
+          "message": "crop not found 'Missing Crop'"
+        },
+        {
+          "model": "CropSalesFormat",
+          "row": 4,
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop",
+          "message": "crop not found 'Phantom Crop'"
+        },
+        {
+          "model": "Planting",
+          "row": 1,
+          "code": "stale_fk",
+          "field_path": "plantings.crop",
+          "message": "crop not found 'Missing Crop'"
+        },
+        {
+          "model": "Planting",
+          "row": 2,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Missing Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 3,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Ghost Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 4,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Shadow Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 5,
+          "code": "stale_fk",
+          "field_path": "plantings.crop",
+          "message": "crop not found 'Phantom Crop'"
+        },
+        {
+          "model": "Planting",
+          "row": 1,
+          "code": "stale_fk",
+          "field_path": "plantings.planning_year",
+          "message": "planning year not found '2022'"
+        }
+      ]
+    },
+    "apply": {
+      "status": "ok",
+      "error_signals": [
+        "unsupported block type 'Unknown Block'",
+        "unsupported block type 'Unknown Tunnel'",
+        "crop not found 'Ghost Crop'",
+        "crop not found 'Missing Crop'",
+        "block not found 'Missing Block'",
+        "planning year not found '2022'"
+      ],
+      "totals": {
+        "created": 4,
+        "updated": 0,
+        "skipped": 1,
+        "error": 15
+      },
+      "models": {
+        "Block": {
+          "created": 1,
+          "updated": 0,
+          "skipped": 0,
+          "error": 0
+        },
+        "CropBySeason": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 1,
+          "error": 6
+        },
+        "CropSalesFormat": {
+          "created": 1,
+          "updated": 0,
+          "skipped": 0,
+          "error": 3
+        },
+        "PlanningYear": {
+          "created": 1,
+          "updated": 0,
+          "skipped": 0,
+          "error": 0
+        },
+        "Planting": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 0,
+          "error": 6
+        }
+      },
+      "row_errors": [
+        {
+          "model": "CropBySeason",
+          "row": 1,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Unknown Block'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 2,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Unknown Tunnel'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 3,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Storage Barn'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 4,
+          "code": "namespace_mismatch",
+          "field_path": "crop_by_season.block_type",
+          "message": "unsupported block type 'Container Yard'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 5,
+          "code": "stale_fk",
+          "field_path": "crop_by_season.crop",
+          "message": "crop not found 'Ghost Crop'"
+        },
+        {
+          "model": "CropBySeason",
+          "row": 6,
+          "code": "stale_fk",
+          "field_path": "crop_by_season.crop",
+          "message": "crop not found 'Missing Crop'"
+        },
+        {
+          "model": "CropSalesFormat",
+          "row": 2,
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop",
+          "message": "crop not found 'Ghost Crop'"
+        },
+        {
+          "model": "CropSalesFormat",
+          "row": 3,
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop",
+          "message": "crop not found 'Missing Crop'"
+        },
+        {
+          "model": "CropSalesFormat",
+          "row": 4,
+          "code": "stale_fk",
+          "field_path": "crop_sales_formats.crop",
+          "message": "crop not found 'Phantom Crop'"
+        },
+        {
+          "model": "Planting",
+          "row": 1,
+          "code": "stale_fk",
+          "field_path": "plantings.crop",
+          "message": "crop not found 'Missing Crop'"
+        },
+        {
+          "model": "Planting",
+          "row": 2,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Missing Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 3,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Ghost Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 4,
+          "code": "stale_fk",
+          "field_path": "plantings.block",
+          "message": "block not found 'Shadow Block'"
+        },
+        {
+          "model": "Planting",
+          "row": 5,
+          "code": "stale_fk",
+          "field_path": "plantings.crop",
+          "message": "crop not found 'Phantom Crop'"
+        },
+        {
+          "model": "Planting",
+          "row": 1,
+          "code": "stale_fk",
+          "field_path": "plantings.planning_year",
+          "message": "planning year not found '2022'"
+        }
+      ]
+    }
+  }
+}

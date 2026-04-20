@@ -1,6 +1,35 @@
 /* static/css/print.css — loaded via @media print or separate stylesheet */
 
 @media print {
+    /* Scroll + sticky headers are for screen preview only */
+    .fp-table-scroll {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .fp-table-scroll thead th {
+        position: static !important;
+        top: auto !important;
+        box-shadow: none !important;
+    }
+
+    .fp-table-scroll .planning-matrix .block-col,
+    .fp-table-scroll .planning-matrix .beds-col {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .fp-table-scroll .sales-plan-sticky-col {
+        position: static !important;
+        left: auto !important;
+    }
+
+    .fp-table-scroll .harvest-calendar-table thead th,
+    .fp-table-scroll .harvest-calendar-table tbody td {
+        position: static !important;
+        left: auto !important;
+    }
+
     /* Hide all navigation and interactive elements */
     .main-nav,
     .main-footer,

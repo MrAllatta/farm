@@ -2,16 +2,105 @@
 
 from datetime import date, timedelta
 from django.views.generic import TemplateView
+from django.shortcuts import redirect
+from django.contrib import messages
 from django.db.models import Sum, Count, Q
+from django.db import connection, DatabaseError
+from django.http import JsonResponse
+from django.urls import get_resolver, reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views import View
 from isoweek import Week
 
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
 from operations.models import InventoryLedger
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel
+from core.planning_year import (
+    get_effective_planning_year,
+    operational_anchor_year,
+    set_session_planning_year,
+    resolve_current_planning_year,
+)
 
 from django.views.generic import FormView
 from django import forms
+
+
+def healthz(request):
+    """Lightweight process health signal for uptime checks."""
+    return JsonResponse({"status": "ok", "service": "farm", "check": "healthz"})
+
+
+def readyz(request):
+    """Readiness signal with DB and URL resolver checks."""
+    checks = {"db": "unknown", "urlconf": "unknown"}
+    failures = []
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        checks["db"] = "ok"
+    except DatabaseError as exc:
+        checks["db"] = "error"
+        failures.append(f"db:{exc.__class__.__name__}")
+
+    try:
+        resolver = get_resolver()
+        namespace_dict = getattr(resolver, "namespace_dict", {})
+        required = {"core", "reference", "planning", "operations", "sales", "reports"}
+        if required <= set(namespace_dict):
+            checks["urlconf"] = "ok"
+        else:
+            checks["urlconf"] = "error"
+            failures.append("urlconf:missing_namespaces")
+    except Exception as exc:  # pragma: no cover - defensive readiness guard
+        checks["urlconf"] = "error"
+        failures.append(f"urlconf:{exc.__class__.__name__}")
+
+    payload = {
+        "status": "ready" if not failures else "not_ready",
+        "service": "farm",
+        "check": "readyz",
+        "checks": checks,
+        "failures": failures,
+    }
+    return JsonResponse(payload, status=200 if not failures else 503)
+
+
+class PlanningYearFocusView(View):
+    """POST: persist UI planning focus (this calendar year vs next) in session."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        next_url = request.POST.get("next") or reverse("core:dashboard")
+        if not url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            next_url = reverse("core:dashboard")
+
+        try:
+            year_id = int(request.POST.get("planning_year_id", ""))
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid planning year.")
+            return redirect(next_url)
+
+        anchor = operational_anchor_year()
+        allowed = PlanningYear.objects.filter(year__in=(anchor, anchor + 1))
+        planning_year = allowed.filter(pk=year_id).first()
+        if planning_year is None:
+            messages.error(
+                request,
+                "That planning year is not in the current date window.",
+            )
+            return redirect(next_url)
+
+        set_session_planning_year(request, planning_year)
+        return redirect(next_url)
 
 
 class DashboardView(TemplateView):
@@ -20,7 +109,7 @@ class DashboardView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = get_effective_planning_year(self.request)
 
         if not year_obj:
             ctx["no_year"] = True
@@ -383,7 +472,7 @@ class CompleteSeasonView(TemplateView):
     """Mark a planning year as complete and update rotation history."""
 
     def post(self, request, **kwargs):
-        year_obj = PlanningYear.objects.filter(status="active").first()
+        year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
 
         if not year_obj:
             messages.error(request, "No active planning year found.")

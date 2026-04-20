@@ -3,16 +3,40 @@
 from django.db import models
 from reference.models import SalesChannel
 from reference.models import CropSalesFormat
+from planning.models import PlanningYear
 
 
 class SalesEvent(models.Model):
+    class EntryKind(models.TextChoices):
+        PLAN = "plan", "Plan"
+        ACTUAL = "actual", "Actual"
+
     channel = models.ForeignKey(SalesChannel, on_delete=models.PROTECT)
     sale_date = models.DateField()
+    planning_year = models.ForeignKey(
+        PlanningYear,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="sales_events",
+    )
+    entry_kind = models.CharField(
+        max_length=10,
+        choices=EntryKind.choices,
+        default=EntryKind.ACTUAL,
+    )
     product = models.ForeignKey(
         CropSalesFormat,
         on_delete=models.PROTECT,
         null=True,
         blank=True,  # null for quick-entry (total only)
+    )
+    pack_batch = models.ForeignKey(
+        "operations.PackBatch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sales_events",
     )
 
     planned_quantity = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -40,6 +64,12 @@ class SalesEvent(models.Model):
 
     class Meta:
         ordering = ["sale_date", "channel"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entry_kind", "channel", "sale_date", "product"],
+                name="sales_event_kind_channel_date_product_uniq",
+            )
+        ]
 
 
 class QuickSalesEntry(models.Model):

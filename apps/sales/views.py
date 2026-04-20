@@ -1,9 +1,13 @@
 """sales/views.py"""
 
 from django.views.generic import TemplateView, FormView
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.contrib import messages
 from django.db.models import Sum
+from django.http import HttpResponse
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
@@ -45,6 +49,7 @@ class MarketSalesEntryView(TemplateView):
 
         # Check if detailed entries exist
         detailed_entries = SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
             channel=channel,
             sale_date=sale_date,
         ).select_related("product", "product__crop")
@@ -117,11 +122,21 @@ class MarketSalesEntryView(TemplateView):
         return ctx
 
     def post(self, request, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         channel_id = request.POST.get("channel_id")
-        sale_date = date.fromisoformat(request.POST.get("sale_date"))
+        sale_date_raw = request.POST.get("sale_date")
         entry_mode = request.POST.get("mode", "quick")
+        if not channel_id or not sale_date_raw:
+            return HttpResponse(status=400)
 
-        channel = SalesChannel.objects.get(id=channel_id)
+        try:
+            sale_date = date.fromisoformat(sale_date_raw)
+            channel = SalesChannel.objects.get(id=channel_id)
+        except (TypeError, ValueError, SalesChannel.DoesNotExist):
+            return HttpResponse(status=400)
 
         if entry_mode == "quick":
             return self._save_quick(request, channel, sale_date)
@@ -129,8 +144,11 @@ class MarketSalesEntryView(TemplateView):
             return self._save_detailed(request, channel, sale_date)
 
     def _save_quick(self, request, channel, sale_date):
-        total_cash = Decimal(request.POST.get("total_cash", "0") or "0")
-        total_card = Decimal(request.POST.get("total_card", "0") or "0")
+        try:
+            total_cash = Decimal(request.POST.get("total_cash", "0") or "0")
+            total_card = Decimal(request.POST.get("total_card", "0") or "0")
+        except (TypeError, InvalidOperation):
+            return HttpResponse(status=400)
         notes = request.POST.get("notes", "")
 
         QuickSalesEntry.objects.update_or_create(
@@ -166,7 +184,7 @@ class MarketSalesEntryView(TemplateView):
                 try:
                     product = CropSalesFormat.objects.get(id=product_id)
                     sold_qty = Decimal(value)
-                except (CropSalesFormat.DoesNotExist, ValueError):
+                except (CropSalesFormat.DoesNotExist, ValueError, InvalidOperation):
                     continue
 
                 # Get price — use actual price if overridden
@@ -174,7 +192,7 @@ class MarketSalesEntryView(TemplateView):
                 if price_key in request.POST and request.POST[price_key]:
                     try:
                         actual_price = Decimal(request.POST[price_key])
-                    except ValueError:
+                    except (ValueError, InvalidOperation):
                         actual_price = product.sale_price
                 else:
                     actual_price = product.sale_price
@@ -186,7 +204,7 @@ class MarketSalesEntryView(TemplateView):
                 if brought_key in request.POST and request.POST[brought_key]:
                     try:
                         brought_qty = Decimal(request.POST[brought_key])
-                    except ValueError:
+                    except (ValueError, InvalidOperation):
                         pass
 
                 returned_qty = None
@@ -195,8 +213,21 @@ class MarketSalesEntryView(TemplateView):
 
                 notes_key = f"notes_{product_id}"
                 notes = request.POST.get(notes_key, "")
+                pack_batch = (
+                    PackAllocation.objects.filter(
+                        channel=channel,
+                        pack_date=sale_date,
+                        product=product,
+                        pack_batch__isnull=False,
+                    )
+                    .select_related("pack_batch")
+                    .order_by("-id")
+                    .values_list("pack_batch_id", flat=True)
+                    .first()
+                )
 
                 SalesEvent.objects.update_or_create(
+                    entry_kind=SalesEvent.EntryKind.ACTUAL,
                     channel=channel,
                     sale_date=sale_date,
                     product=product,
@@ -206,6 +237,7 @@ class MarketSalesEntryView(TemplateView):
                         "actual_price": actual_price,
                         "brought_quantity": brought_qty,
                         "returned_quantity": returned_qty,
+                        "pack_batch_id": pack_batch,
                         "notes": notes,
                     },
                 )

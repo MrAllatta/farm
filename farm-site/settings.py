@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import importlib.util
 import os
 import sys
 from django.conf.locale.en import formats as en_formats
@@ -24,10 +25,29 @@ sys.path.insert(0, str(BASE_DIR / "apps"))
 # Generate from django utils. Set in .env
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-key")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Runtime environment profile
+DJANGO_ENV = os.environ.get("DJANGO_ENV", "dev").lower()
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get("DJANGO_DEBUG", "1" if DJANGO_ENV == "dev" else "0").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
+_allowed_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS")
+if _allowed_hosts:
+    ALLOWED_HOSTS = [host.strip() for host in _allowed_hosts.split(",") if host.strip()]
+elif DJANGO_ENV == "dev":
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
+else:
+    ALLOWED_HOSTS = []
+
+_csrf_trusted_origins = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in _csrf_trusted_origins.split(",") if origin.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -52,16 +72,26 @@ INSTALLED_APPS = [
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "farm_db"),
-        "USER": os.environ.get("DB_USER", "farm_dev"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "farm_dev"),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").lower()
+
+if DB_ENGINE == "postgres":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME", "farm_db"),
+            "USER": os.environ.get("DB_USER", "farm_dev"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", "farm_dev"),
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # For week number display
 en_formats.DATE_FORMAT = "M j, Y"
@@ -73,6 +103,10 @@ DJANGO_HTMX_REQUIRE_CONFIRM = False
 # Static files
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+WHITENOISE_AVAILABLE = importlib.util.find_spec("whitenoise") is not None
+if WHITENOISE_AVAILABLE:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # URLconf
 ROOT_URLCONF = "farm-site.urls"
@@ -106,6 +140,59 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if WHITENOISE_AVAILABLE:
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+SECURE_REFERRER_POLICY = "same-origin"
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = os.environ.get("DJANGO_SECURE_HSTS_PRELOAD", "0").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    if os.environ.get("DJANGO_TRUST_X_FORWARDED_PROTO", "0").lower() in {"1", "true", "yes", "on"}:
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+TEST_RUNNER = "core.test_runner.ProjectDiscoverRunner"
+
+# Ensure production request exceptions are visible in Cloud Run logs.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

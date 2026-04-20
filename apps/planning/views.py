@@ -1,19 +1,28 @@
 """planning.views"""
 
-from django.shortcuts import render
+import math
+
+from django.shortcuts import get_object_or_404, render
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.contrib import messages
 from django.views.generic import TemplateView
-from django.db.models import Q
+from django.db.models import Q, Sum
 from datetime import date
 from isoweek import Week
 
-from reference.models import Block, BlockType, CropInfo
-from .models import Planting, PlanningYear, Planting, HarvestEvent
+from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus
+from core.planning_year import get_effective_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
+from sales.models import SalesEvent
 
 from django.http import HttpResponse
 from django import forms
 from django.template.loader import render_to_string
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
+from typing import Optional
 
 
 class PlanningMatrixView(TemplateView):
@@ -22,7 +31,7 @@ class PlanningMatrixView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = get_effective_planning_year(self.request)
 
         if not year_obj:
             ctx["no_year"] = True
@@ -31,34 +40,32 @@ class PlanningMatrixView(TemplateView):
         year = year_obj.year
 
         # Current or requested week
+        requested_date = kwargs.get("date")
         requested_week = kwargs.get("week")
-        if requested_week:
-            center_week = requested_week
+
+        if requested_date:
+            center_date = date.fromisoformat(requested_date)
+        elif requested_week:
+            center_date = Week(year, requested_week).monday()
         else:
-            today = date.today()
-            if today.year == year:
-                center_week = today.isocalendar()[1]
-            else:
-                center_week = 1
+            center_date = date.today()
+
+        window_start_date = center_date - timedelta(weeks=4)
+        window_end_date = center_date + timedelta(weeks=11) # 16 week window
+
+        weeks = []
+        current = window_start_date
+        while current <= window_end_date:
+            weeks.append({
+                'date': current,
+                'num': current.isocalendar()[1],
+                'is_current': current.isocalendar()[1] == date.today().isocalendar()[1]
+            })
+            current += timedelta(weeks=1)
 
         # Show 16-week window (scrollable)
-        week_start = max(1, center_week - 4)
-        week_end = min(52, week_start + 15)
-        weeks = list(range(week_start, week_end + 1))
-
-        # Week metadata (dates, events)
-        week_info = []
-        for w in weeks:
-            monday = Week(year, w).monday()
-            week_info.append(
-                {
-                    "num": w,
-                    "date": monday,
-                    "is_current": (
-                        w == date.today().isocalendar()[1] and year == date.today().year
-                    ),
-                }
-            )
+        week_start = Week.withdate(window_start_date).monday()
+        week_end = Week.withdate(window_end_date).monday()
 
         # All blocks, grouped by type
         blocks = Block.objects.all().order_by("walk_route_order", "name")
@@ -66,22 +73,14 @@ class PlanningMatrixView(TemplateView):
         tunnel_blocks = blocks.filter(block_type=BlockType.HIGH_TUNNEL)
         greenhouse_blocks = blocks.filter(block_type=BlockType.GREENHOUSE)
 
-        # All plantings this year that overlap the visible window
-        # Convert week range to dates for query
-        window_start = Week(year, week_start).monday()
-        window_end = Week(year, week_end).sunday()
-
+        # Query plantings that overlap the visible window
         plantings = (
             Planting.objects.filter(
                 planning_year=year_obj,
+                planned_plant_date__lte=window_end_date,
+                planned_last_harvest_date__gte=window_start_date,
             )
             .exclude(status="skipped")
-            .filter(
-                # Planting overlaps visible window:
-                # plant date before window end AND last harvest after window start
-                Q(planned_plant_date__lte=window_end)
-                & Q(planned_last_harvest_date__gte=window_start)
-            )
             .select_related("crop", "crop_season", "block")
             .order_by("block__name", "bed_start", "planned_plant_date")
         )
@@ -89,18 +88,22 @@ class PlanningMatrixView(TemplateView):
         # Build the matrix: block → list of plantings with week positions
         matrix = self._build_matrix(blocks, plantings, weeks, year)
 
+        # Extract week number range for display
+        week_nums = [w['num'] for w in weeks]
+
         ctx.update(
             {
                 "year": year_obj,
-                "weeks": week_info,
-                "week_start": week_start,
-                "week_end": week_end,
-                "center_week": center_week,
+                "weeks": weeks,
+                "week_start": week_nums[0],
+                "week_end": week_nums[-1],
                 "field_blocks": field_blocks,
                 "tunnel_blocks": tunnel_blocks,
                 "greenhouse_blocks": greenhouse_blocks,
                 "matrix": matrix,
                 "plantings": plantings,
+                "prev_date": window_start_date - timedelta(weeks=8),
+                "next_date": window_end_date + timedelta(days=1),
             }
         )
         return ctx
@@ -108,6 +111,11 @@ class PlanningMatrixView(TemplateView):
     def _build_matrix(self, blocks, plantings, weeks, year):
         """Build a dict: block_id → list of planting display objects."""
         matrix = {}
+
+        # Extract week numbers from weeks list
+        week_nums = [w['num'] for w in weeks]
+        first_week = week_nums[0]
+        last_week = week_nums[-1]
 
         for block in blocks:
             block_plantings = [p for p in plantings if p.block_id == block.id]
@@ -119,8 +127,8 @@ class PlanningMatrixView(TemplateView):
                 harvest_end = p.planned_last_harvest_date.isocalendar()[1]
 
                 # Position in the grid
-                first_visible = max(weeks[0], plant_week)
-                last_visible = min(weeks[-1], harvest_end)
+                first_visible = max(first_week, plant_week)
+                last_visible = min(last_week, harvest_end)
 
                 if last_visible < first_visible:
                     continue  # Not visible in current window
@@ -130,7 +138,7 @@ class PlanningMatrixView(TemplateView):
                         "planting": p,
                         "label": f"{p.crop.name}",
                         "sublabel": f"b{p.bed_start}-{p.bed_end}",
-                        "col_start": first_visible - weeks[0],
+                        "col_start": first_visible - first_week,
                         "col_span": last_visible - first_visible + 1,
                         "plant_week": plant_week,
                         "harvest_start": harvest_start,
@@ -165,6 +173,19 @@ class PlanningMatrixView(TemplateView):
             return "planting-growing"
         else:
             return "planting-planned"
+
+
+class ActivePlanningYearMixin:
+    """Redirect views that require an active planning year."""
+
+    year_obj = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.year_obj = get_effective_planning_year(request)
+        if not self.year_obj:
+            messages.error(request, "No active planning year configured.")
+            return redirect("planning:matrix")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class PlantingDetailView(DetailView):
@@ -214,25 +235,86 @@ class PlantingDetailView(DetailView):
         return ctx
 
 
-class PlantingCreateView(CreateView):
+class PlantingFormContextMixin:
+    """Shared form context for create/update/revise planting flows."""
+
+    def _get_crop_season_choices(self, crop=None, block=None):
+        if not crop or not block:
+            return []
+        return CropBySeason.objects.filter(
+            crop=crop,
+            block_type=block.block_type,
+        ).order_by("dtm_days", "id")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        form = ctx.get("form")
+        selected_crop = None
+        selected_block = None
+
+        if form is not None:
+            selected_crop = getattr(form.instance, "crop", None) or form.initial.get("crop")
+            selected_block = getattr(form.instance, "block", None) or form.initial.get("block")
+
+        ctx.update(
+            {
+                "crop_choices": CropInfo.objects.all().order_by("crop_type", "name"),
+                "block_choices": Block.objects.all().order_by("block_type", "walk_route_order"),
+                "selected_crop": selected_crop,
+                "selected_block": selected_block,
+                "crop_season_choices": self._get_crop_season_choices(selected_crop, selected_block),
+                "is_htmx": bool(self.request.headers.get("HX-Request")),
+            }
+        )
+        return ctx
+
+
+class PlantingForm(forms.ModelForm):
+    class Meta:
+        model = Planting
+        fields = [
+            "crop",
+            "crop_season",
+            "variety",
+            "block",
+            "bed_start",
+            "bed_end",
+            "planned_plant_date",
+        ]
+
+    def clean(self):
+        cleaned = super().clean()
+        block = cleaned.get("block")
+        bed_start = cleaned.get("bed_start")
+        bed_end = cleaned.get("bed_end")
+        crop = cleaned.get("crop")
+        crop_season = cleaned.get("crop_season")
+
+        if bed_start and bed_end and bed_end < bed_start:
+            self.add_error("bed_end", "Bed end must be greater than or equal to bed start.")
+
+        if block and bed_end and bed_end > block.num_beds:
+            self.add_error("bed_end", f"{block.name} only has {block.num_beds} beds.")
+
+        if block and crop and crop_season:
+            if crop_season.crop_id != crop.id:
+                self.add_error("crop_season", "Season profile must match the selected crop.")
+            if crop_season.block_type != block.block_type:
+                self.add_error("crop_season", "Season profile must match the selected block type.")
+
+        return cleaned
+
+
+class PlantingCreateView(ActivePlanningYearMixin, PlantingFormContextMixin, CreateView):
     """Create a new planting. Handles both full-page and HTMX partial."""
 
     model = Planting
     template_name = "planning/partials/planting_form.html"
-    fields = [
-        "crop",
-        "crop_season",
-        "variety",
-        "block",
-        "bed_start",
-        "bed_end",
-        "planned_plant_date",
-    ]
+    form_class = PlantingForm
 
     def get_initial(self):
         initial = super().get_initial()
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        initial["planning_year"] = year_obj
+        initial["planning_year"] = self.year_obj
 
         # Pre-fill from URL params (clicked cell in matrix)
         block_id = self.kwargs.get("block_id")
@@ -244,15 +326,14 @@ class PlantingCreateView(CreateView):
             initial["bed_start"] = 1
             initial["bed_end"] = block.num_beds
 
-        if week and year_obj:
-            initial["planned_plant_date"] = Week(year_obj.year, week).monday()
+        if week and self.year_obj:
+            initial["planned_plant_date"] = Week(self.year_obj.year, week).monday()
 
         return initial
 
     def form_valid(self, form):
         planting = form.save(commit=False)
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        planting.planning_year = year_obj
+        planting.planning_year = self.year_obj
 
         # Auto-calculate bedfeet
         block = planting.block
@@ -277,25 +358,16 @@ class PlantingCreateView(CreateView):
         return redirect("planning:matrix")
 
 
-class PlantingUpdateView(UpdateView):
+class PlantingUpdateView(PlantingFormContextMixin, UpdateView):
     """Update a planting. Handles both full-page and HTMX partial."""
 
     model = Planting
     template_name = "planning/partials/planting_form.html"
-    fields = [
-        "crop",
-        "crop_season",
-        "variety",
-        "block",
-        "bed_start",
-        "bed_end",
-        "planned_plant_date",
-    ]
+    form_class = PlantingForm
 
     def get_initial(self):
         initial = super().get_initial()
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        initial["planning_year"] = year_obj
+        initial["planning_year"] = self.object.planning_year
 
         # Pre-fill from URL params (clicked cell in matrix)
         block_id = self.kwargs.get("block_id")
@@ -307,15 +379,14 @@ class PlantingUpdateView(UpdateView):
             initial["bed_start"] = 1
             initial["bed_end"] = block.num_beds
 
-        if week and year_obj:
-            initial["planned_plant_date"] = Week(year_obj.year, week).monday()
+        if week:
+            initial["planned_plant_date"] = Week(self.object.planning_year.year, week).monday()
 
         return initial
 
     def form_valid(self, form):
         planting = form.save(commit=False)
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        planting.planning_year = year_obj
+        planting.planning_year = self.object.planning_year
 
         # Auto-calculate bedfeet
         block = planting.block
@@ -324,7 +395,9 @@ class PlantingUpdateView(UpdateView):
 
         planting.save()
 
-        # Generate nursery and harvest events
+        # Regenerate only pending planned events so edits do not duplicate schedules.
+        planting.nursery_events.filter(actual_date__isnull=True).delete()
+        planting.harvest_events.filter(actual_quantity__isnull=True).delete()
         planting.generate_nursery_events()
         planting.generate_harvest_events()
 
@@ -375,7 +448,7 @@ class SuccessionPreviewView(View):
                 "</span>"
             )
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = get_effective_planning_year(request)
         year = year_obj.year if year_obj else date.today().year
 
         beds_per = math.ceil(bf_per / block.bedfeet_per_bed)
@@ -500,13 +573,22 @@ class SuccessionForm(forms.Form):
         return cleaned
 
 
-class SuccessionCreateView(FormView):
+class SuccessionCreateView(ActivePlanningYearMixin, FormView):
     template_name = "planning/succession_form.html"
     form_class = SuccessionForm
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(
+            {
+                "crop_choices": CropInfo.objects.all().order_by("crop_type", "name"),
+                "block_choices": Block.objects.all().order_by("block_type", "walk_route_order"),
+            }
+        )
+        return ctx
+
     def form_valid(self, form):
         data = form.cleaned_data
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
 
         crop = data["crop"]
         crop_season = data["crop_season"]
@@ -517,7 +599,7 @@ class SuccessionCreateView(FormView):
         interval = data["interval_weeks"]
         reuse = data["reuse_beds"]
 
-        year = year_obj.year
+        year = self.year_obj.year
         beds_per = math.ceil(bf_per / block.bedfeet_per_bed)
 
         # Generate succession list
@@ -571,7 +653,7 @@ class SuccessionCreateView(FormView):
             bedfeet = (s["bed_end"] - s["bed_start"] + 1) * block.bedfeet_per_bed
 
             p = Planting.objects.create(
-                planning_year=year_obj,
+                planning_year=self.year_obj,
                 crop=crop,
                 crop_season=crop_season,
                 block=block,
@@ -647,7 +729,7 @@ class SuccessionCreateView(FormView):
         return successions
 
 
-class NurseryScheduleView(TemplateView):
+class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
     """Weekly nursery task view — seeding, pot up, transplant."""
 
     template_name = "planning/nursery_schedule.html"
@@ -655,8 +737,7 @@ class NurseryScheduleView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        year = year_obj.year
+        year = self.year_obj.year
 
         requested_week = kwargs.get("week")
         if requested_week:
@@ -676,7 +757,7 @@ class NurseryScheduleView(TemplateView):
 
             events = (
                 NurseryEvent.objects.filter(
-                    planting__planning_year=year_obj,
+                    planting__planning_year=self.year_obj,
                     planned_date__gte=monday,
                     planned_date__lte=sunday,
                 )
@@ -693,7 +774,7 @@ class NurseryScheduleView(TemplateView):
             # seeded before this week AND not yet transplanted
             on_bench = (
                 NurseryEvent.objects.filter(
-                    planting__planning_year=year_obj,
+                    planting__planning_year=self.year_obj,
                     event_type="seed",
                     planned_date__lte=sunday,
                 )
@@ -709,7 +790,7 @@ class NurseryScheduleView(TemplateView):
             # Add pot-up trays (they replace seed trays but may be larger)
             potup_on_bench = (
                 NurseryEvent.objects.filter(
-                    planting__planning_year=year_obj,
+                    planting__planning_year=self.year_obj,
                     event_type="pot_up",
                     planned_date__lte=sunday,
                 )
@@ -744,7 +825,7 @@ class NurseryScheduleView(TemplateView):
 
             trays = (
                 NurseryEvent.objects.filter(
-                    planting__planning_year=year_obj,
+                    planting__planning_year=self.year_obj,
                     event_type__in=["seed", "pot_up"],
                     planned_date__lte=sunday,
                 )
@@ -771,7 +852,7 @@ class NurseryScheduleView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
+                "year": self.year_obj,
                 "center_week": center_week,
                 "weeks": weeks_data,
                 "greenhouse_capacity": greenhouse_capacity,
@@ -782,7 +863,7 @@ class NurseryScheduleView(TemplateView):
         return ctx
 
 
-class HarvestCalendarView(TemplateView):
+class HarvestCalendarView(ActivePlanningYearMixin, TemplateView):
     """What's available each week across all plantings."""
 
     template_name = "planning/harvest_calendar.html"
@@ -790,8 +871,7 @@ class HarvestCalendarView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        year = year_obj.year
+        year = self.year_obj.year
 
         # Build week range
         week_start = kwargs.get("week_start", 1)
@@ -800,7 +880,7 @@ class HarvestCalendarView(TemplateView):
         # Get all harvest events grouped by crop and week
         events = (
             HarvestEvent.objects.filter(
-                planting__planning_year=year_obj,
+                planting__planning_year=self.year_obj,
             )
             .exclude(planting__status__in=["skipped", "failed", "revised"])
             .select_related("planting__crop", "planting__block")
@@ -845,11 +925,221 @@ class HarvestCalendarView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
+                "year": self.year_obj,
                 "crops": sorted_crops,
                 "weeks": weeks,
                 "week_crop_counts": week_crop_counts,
                 "total_crops": len(all_crops),
+                "current_week": date.today().isocalendar()[1],
+            }
+        )
+        return ctx
+
+
+class SalesPlanView(ActivePlanningYearMixin, TemplateView):
+    """Product-by-week sales demand planning grid (301 semantics)."""
+
+    template_name = "planning/sales_plan.html"
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
+
+        action = request.POST.get("action", "save")
+        channel_id = request.POST.get("channel")
+        if not channel_id:
+            messages.error(request, "Channel is required.")
+            return redirect(reverse("planning:sales_plan"))
+
+        try:
+            channel = SalesChannel.objects.get(id=channel_id)
+        except SalesChannel.DoesNotExist:
+            messages.error(request, "Invalid channel.")
+            return redirect(reverse("planning:sales_plan"))
+
+        if action == "save":
+            updated = self._save_plan_rows(request, channel)
+            messages.success(
+                request,
+                f"Saved {updated} planned product-week rows for {channel.name}.",
+            )
+            return redirect(f"{reverse('planning:sales_plan')}?channel={channel.id}")
+
+        if action == "draft":
+            from .services.sales_plan_translation import build_demand_to_supply_draft
+
+            draft = build_demand_to_supply_draft(self.year_obj, channel)
+            ctx = self.get_context_data(channel=channel, draft=draft)
+            messages.info(
+                request,
+                "Generated demand-to-supply draft recommendations from current planned demand.",
+            )
+            return render(request, self.template_name, ctx)
+
+        messages.error(request, "Unsupported action.")
+        return redirect(f"{reverse('planning:sales_plan')}?channel={channel.id}")
+
+    def _save_plan_rows(self, request, channel):
+        updated = 0
+        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop")
+        for product in products:
+            for week in range(1, 53):
+                key = f"qty_{product.id}_{week}"
+                raw_value = (request.POST.get(key) or "").strip()
+                sale_date = Week(self.year_obj.year, week).monday()
+
+                existing = SalesEvent.objects.filter(
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    planning_year=self.year_obj,
+                    channel=channel,
+                    product=product,
+                    sale_date=sale_date,
+                ).first()
+
+                if not raw_value:
+                    if existing:
+                        existing.delete()
+                    continue
+
+                try:
+                    quantity = Decimal(raw_value)
+                except (InvalidOperation, TypeError):
+                    continue
+
+                revenue = quantity * product.sale_price
+                SalesEvent.objects.update_or_create(
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    planning_year=self.year_obj,
+                    channel=channel,
+                    product=product,
+                    sale_date=sale_date,
+                    defaults={
+                        "planned_quantity": quantity,
+                        "planned_revenue": revenue,
+                        "notes": "Sales plan entry",
+                    },
+                )
+                updated += 1
+        return updated
+
+    @staticmethod
+    def _week_in_window(week: int, start_week: int, end_week: int) -> bool:
+        """Return True when week falls within [start_week, end_week], handling wrap-around."""
+        if start_week <= end_week:
+            return start_week <= week <= end_week
+        return week >= start_week or week <= end_week
+
+    @classmethod
+    def _window_state(
+        cls,
+        week: int,
+        season_start_week: Optional[int],
+        season_end_week: Optional[int],
+        shoulder_weeks: int = 2,
+    ) -> str:
+        if not season_start_week or not season_end_week:
+            return "unknown"
+        if cls._week_in_window(week, season_start_week, season_end_week):
+            return "harvest"
+        for offset in range(1, shoulder_weeks + 1):
+            before_week = ((week - offset - 1) % 52) + 1
+            after_week = ((week + offset - 1) % 52) + 1
+            if cls._week_in_window(before_week, season_start_week, season_end_week) or cls._week_in_window(
+                after_week, season_start_week, season_end_week
+            ):
+                return "shoulder"
+        return "off"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        channel = kwargs.get("channel")
+        channels = SalesChannel.objects.order_by("allocation_priority", "name")
+        if channel is None:
+            selected_channel_id = self.request.GET.get("channel")
+            channel = channels.filter(id=selected_channel_id).first() if selected_channel_id else channels.first()
+
+        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop").order_by(
+            "crop__crop_type", "crop__name", "product_name"
+        )
+        weeks = list(range(1, 53))
+        crop_ids = [product.crop_id for product in products]
+        season_profiles = (
+            CropBySeason.objects.filter(crop_id__in=crop_ids)
+            .order_by("crop_id", "block_type", "id")
+        )
+        seasons_by_crop = {}
+        for profile in season_profiles:
+            seasons_by_crop.setdefault(profile.crop_id, []).append(profile)
+
+        planned_lookup = {}
+        summary_qty = Decimal("0")
+        summary_revenue = Decimal("0")
+
+        if channel:
+            rows = SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.year_obj,
+                channel=channel,
+            ).select_related("product")
+            for row in rows:
+                week = row.sale_date.isocalendar()[1]
+                key = (row.product_id, week)
+                planned_lookup[key] = row
+                summary_qty += row.planned_quantity or Decimal("0")
+                summary_revenue += row.planned_revenue or Decimal("0")
+
+        product_rows = []
+        for product in products:
+            crop_profiles = seasons_by_crop.get(product.crop_id, [])
+            selected_profile = next(
+                (profile for profile in crop_profiles if profile.block_type == BlockType.FIELD),
+                crop_profiles[0] if crop_profiles else None,
+            )
+            season_start = selected_profile.field_week_start if selected_profile else None
+            season_end = selected_profile.field_week_end if selected_profile else None
+            window_label = (
+                f"Wk {season_start}-{season_end}" if season_start and season_end else "No harvest profile"
+            )
+
+            week_cells = []
+            for week in weeks:
+                plan = planned_lookup.get((product.id, week))
+                window_state = self._window_state(week, season_start, season_end)
+                css_class = f"sales-plan-cell sales-plan-cell--{window_state}"
+                if plan and plan.planned_quantity:
+                    css_class += " sales-plan-cell--planned"
+                week_cells.append(
+                    {
+                        "week": week,
+                        "planned_quantity": plan.planned_quantity if plan else None,
+                        "window_state": window_state,
+                        "css_class": css_class,
+                        "title": f"{window_label} · Week {week}",
+                    }
+                )
+            product_rows.append(
+                {
+                    "product": product,
+                    "is_mix_product": product.is_mix_product,
+                    "active_recipe": product.recipes.filter(is_active=True).first(),
+                    "week_cells": week_cells,
+                    "season_profile": selected_profile,
+                    "season_window_label": window_label,
+                }
+            )
+
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "channels": channels,
+                "channel": channel,
+                "product_rows": product_rows,
+                "weeks": weeks,
+                "summary_qty": summary_qty,
+                "summary_revenue": summary_revenue,
+                "draft": kwargs.get("draft"),
             }
         )
         return ctx
@@ -884,6 +1174,10 @@ class PlantingReviseView(View):
         return render(request, self.template_name, ctx)
 
     def post(self, request, pk):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         original = get_object_or_404(Planting, pk=pk)
         year_obj = original.planning_year
 
@@ -899,10 +1193,14 @@ class PlantingReviseView(View):
             messages.error(request, "Invalid crop, season, or block.")
             return redirect("planning:planting_edit", pk=pk)
 
-        bed_start = int(request.POST.get("bed_start", 1))
-        bed_end = int(request.POST.get("bed_end", 1))
-        plant_date_str = request.POST.get("planned_plant_date")
-        plant_date = date.fromisoformat(plant_date_str)
+        try:
+            bed_start = int(request.POST.get("bed_start", 1))
+            bed_end = int(request.POST.get("bed_end", 1))
+            plant_date_str = request.POST.get("planned_plant_date")
+            plant_date = date.fromisoformat(plant_date_str)
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid bed range or plant date.")
+            return redirect("planning:planting_revise", pk=pk)
 
         bedfeet = (bed_end - bed_start + 1) * block.bedfeet_per_bed
         first_harvest = plant_date + timedelta(days=crop_season.dtm_days)
@@ -913,6 +1211,9 @@ class PlantingReviseView(View):
         original.status = "revised"
         original.notes += f"\nRevised on {date.today()}"
         original.save()
+
+        # Cancel original's pending nursery events.
+        original.nursery_events.filter(actual_date__isnull=True).delete()
 
         # Cancel original's future harvest events
         original.harvest_events.filter(
@@ -994,6 +1295,10 @@ class PlantingStatusUpdateView(View):
     """HTMX: quick status update without full form."""
 
     def post(self, request, pk):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
         planting = get_object_or_404(Planting, pk=pk)
         new_status = request.POST.get("status")
 
@@ -1002,6 +1307,20 @@ class PlantingStatusUpdateView(View):
             return HttpResponse(status=400)
 
         old_status = planting.status
+        allowed_transitions = {
+            "planned": {"planned", "seeded", "planted", "failed", "skipped", "revised"},
+            "seeded": {"seeded", "planted", "failed", "skipped", "revised"},
+            "planted": {"planted", "growing", "harvesting", "failed", "revised"},
+            "growing": {"growing", "harvesting", "failed", "revised"},
+            "harvesting": {"harvesting", "complete", "failed", "revised"},
+            "complete": {"complete", "revised"},
+            "failed": {"failed", "revised"},
+            "skipped": {"skipped", "revised"},
+            "revised": {"revised", "planned"},
+        }
+        if new_status not in allowed_transitions.get(old_status, {old_status}):
+            return HttpResponse(status=400)
+
         planting.status = new_status
 
         # Auto-set dates based on status transitions
@@ -1033,7 +1352,7 @@ class PlantingStatusUpdateView(View):
 # planning/views.py (FieldScheduleView)
 
 
-class FieldScheduleView(TemplateView):
+class FieldScheduleView(ActivePlanningYearMixin, TemplateView):
     """Week-by-week field tasks: plantings, terminations, bed prep."""
 
     template_name = "planning/field_schedule.html"
@@ -1041,8 +1360,7 @@ class FieldScheduleView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
-        year = year_obj.year
+        year = self.year_obj.year
 
         week_num = kwargs.get("week", date.today().isocalendar()[1])
         week_start = max(1, week_num - 1)
@@ -1057,7 +1375,7 @@ class FieldScheduleView(TemplateView):
             # Plantings starting this week
             planting_this_week = (
                 Planting.objects.filter(
-                    planning_year=year_obj,
+                    planning_year=self.year_obj,
                     planned_plant_date__gte=monday,
                     planned_plant_date__lte=sunday,
                 )
@@ -1072,7 +1390,7 @@ class FieldScheduleView(TemplateView):
             # Transplants this week (from nursery events)
             transplant_this_week = (
                 NurseryEvent.objects.filter(
-                    planting__planning_year=year_obj,
+                    planting__planning_year=self.year_obj,
                     event_type="transplant",
                     planned_date__gte=monday,
                     planned_date__lte=sunday,
@@ -1084,7 +1402,7 @@ class FieldScheduleView(TemplateView):
             # Beds finishing this week (last harvest)
             finishing_this_week = (
                 Planting.objects.filter(
-                    planning_year=year_obj,
+                    planning_year=self.year_obj,
                     planned_last_harvest_date__gte=monday,
                     planned_last_harvest_date__lte=sunday,
                 )
@@ -1158,7 +1476,7 @@ class FieldScheduleView(TemplateView):
 
         ctx.update(
             {
-                "year": year_obj,
+                "year": self.year_obj,
                 "week_num": week_num,
                 "weeks": weeks_data,
                 "prev_start": max(1, week_start - 4),
@@ -1321,7 +1639,7 @@ class WeekToDateView(View):
 
     def get(self, request):
         week_num = request.GET.get("plant_week_input")
-        year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+        year_obj = get_effective_planning_year(request)
 
         if not week_num or not year_obj:
             return HttpResponse("")
@@ -1337,7 +1655,7 @@ class WeekToDateView(View):
                 f'<input type="date" name="planned_plant_date" '
                 f'id="id_planned_plant_date" '
                 f'value="{monday.isoformat()}" required '
-                f'hx-get="{{% url "planning:harvest_date_calc" %}}" '
+                f'hx-get="{reverse("planning:harvest_date_calc")}" '
                 f'hx-target="#calc-dates" '
                 f'hx-trigger="change" '
                 f"hx-include=\"[name='crop_season']\">"
@@ -1369,7 +1687,9 @@ class BedConflictCheckView(View):
             first_harvest = plant_date + timedelta(days=cs.dtm_days)
             last_harvest = first_harvest + timedelta(weeks=cs.harvest_weeks - 1)
 
-            year_obj = PlanningYear.objects.filter(status__in=["planning", "active"]).first()
+            year_obj = get_effective_planning_year(request)
+            if not year_obj:
+                return HttpResponse("")
 
             conflicts = (
                 Planting.objects.filter(

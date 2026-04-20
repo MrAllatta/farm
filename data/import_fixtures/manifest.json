@@ -1,0 +1,38 @@
+{
+  "fixture_pack_suite": "phase-1-import-reliability",
+  "version": "1.0",
+  "owner": "engineering",
+  "artifact_policy": {
+    "committed_gate_dir": "farm/data/import_fixtures/_out",
+    "naming_contract": [
+      "validate-clean.json",
+      "apply-clean.json",
+      "validate-mismatch.json",
+      "apply-mismatch.json",
+      "preflight-sample.json",
+      "apply-sample.json"
+    ],
+    "cleanup_owner": "engineering",
+    "retention_note": "Keep only canonical gate artifacts in git-tracked _out/; prune superseded local artifacts outside committed fixture evidence."
+  },
+  "packs": [
+    {
+      "name": "clean",
+      "manifest": "farm/data/import_fixtures/clean/manifest.json",
+      "intent": "minimum valid reference-tier smoke pack",
+      "owner": "engineering"
+    },
+    {
+      "name": "mismatch",
+      "manifest": "farm/data/import_fixtures/mismatch/manifest.json",
+      "intent": "deterministic row-error and escalation contract pack",
+      "owner": "engineering"
+    },
+    {
+      "name": "sample",
+      "manifest": "farm/data/sample_import/manifest.json",
+      "intent": "representative multi-tier historical rehearsal pack",
+      "owner": "engineering"
+    }
+  ]
+}

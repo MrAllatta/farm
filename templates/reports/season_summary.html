@@ -1,220 +1,67 @@
-{# reports/season_summary.html #}
-{% extends "base.html" %}
+{% extends "reports/analyze_base.html" %}
 {% load humanize %}
 
-{% block title %}Season Summary — {{ year.year }}{% endblock %}
-
-{% block content %}
-<div class="report-header">
-    <h1>{{ year.year }} Season Summary</h1>
-    <div class="report-meta">
-        Status: {{ year.get_status_display }}
+{% block analyze_metrics %}
+<div class="metric-cards">
+    <div class="metric-card">
+        <div class="metric-label">Total Revenue</div>
+        <div class="metric-value">${{ total_revenue|default:0|floatformat:0|intcomma }}</div>
+        <div class="metric-sub">Target: ${{ annual_target|default:0|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Yield Recorded</div>
+        <div class="metric-value">{{ actual_yield_total|default:0|floatformat:0|intcomma }}</div>
+        <div class="metric-sub">Planned: {{ planned_yield_total|default:0|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Plantings</div>
+        <div class="metric-value">{{ total_plantings|default:0 }}</div>
+        <div class="metric-sub">{{ completed_plantings|default:0 }} completed</div>
     </div>
 </div>
+{% endblock %}
 
-{# ── Revenue Overview ── #}
-<div class="summary-section">
-    <h2>Revenue</h2>
-    <div class="metric-cards">
-        <div class="metric-card">
-            <div class="metric-label">Total Revenue</div>
-            <div class="metric-value {% if total_revenue >= annual_target %}positive{% else %}negative{% endif %}">
-                ${{ total_revenue|floatformat:0|intcomma }}
-            </div>
-            <div class="metric-sub">
-                Target: ${{ annual_target|floatformat:0|intcomma }}
-            </div>
-            {% if revenue_attainment %}
-            <div class="metric-sub">
-                {{ revenue_attainment|floatformat:0 }}% of target
-                ({% if revenue_gap >= 0 %}+{% endif %}${{ revenue_gap|floatformat:0|intcomma }})
-            </div>
-            {% endif %}
+{% block analyze_content %}
+<div class="dashboard-columns analyze-columns">
+    <section class="dashboard-col analyze-section">
+        <h2>Season Rollup</h2>
+        <table class="compact-table">
+            <tbody>
+                <tr><th>Status</th><td>{% if year %}{{ year.get_status_display }}{% else %}<span class="muted">n/a</span>{% endif %}</td></tr>
+                <tr><th>Revenue Gap</th><td>${{ revenue_gap|default:0|floatformat:0|intcomma }}</td></tr>
+                <tr><th>Yield Attainment</th><td>{% if yield_attainment is not None %}{{ yield_attainment|floatformat:0 }}%{% else %}<span class="muted">n/a</span>{% endif %}</td></tr>
+                <tr><th>Total Actual Bedfeet</th><td>{{ total_actual_bf|default:0|intcomma }}</td></tr>
+                <tr><th>Revenue / BF</th><td>${{ revenue_per_bf|default:0|floatformat:2 }}</td></tr>
+                <tr><th>Harvest Hours</th><td>{{ total_harvest_hours|default:0|floatformat:1 }}</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="dashboard-col analyze-section">
+        <h2>Top Crops</h2>
+        <div class="fp-table-scroll">
+        <table class="compact-table">
+            <thead>
+                <tr>
+                    <th>Crop</th>
+                    <th>Revenue</th>
+                    <th>$/BF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for crop in top_10_crops %}
+                <tr>
+                    <td>{{ crop.crop.name }}</td>
+                    <td>${{ crop.total_revenue|floatformat:0 }}</td>
+                    <td>${{ crop.revenue_per_bf|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="muted">No top-crop data yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         </div>
-        
-        <div class="metric-card">
-            <div class="metric-label">Revenue per Bedfoot</div>
-            <div class="metric-value">
-                ${{ revenue_per_bf|floatformat:2 }}
-            </div>
-            <div class="metric-sub">
-                {{ total_actual_bf|intcomma }} bedfeet in production
-            </div>
-        </div>
-        
-        {% if revenue_per_harvest_hour %}
-        <div class="metric-card">
-            <div class="metric-label">Revenue per Harvest Hour</div>
-            <div class="metric-value">
-                ${{ revenue_per_harvest_hour|floatformat:0 }}
-            </div>
-            <div class="metric-sub">
-                {{ total_harvest_hours|floatformat:0 }} total harvest hours
-            </div>
-        </div>
-        {% endif %}
-        
-        <div class="metric-card">
-            <div class="metric-label">Yield Attainment</div>
-            {% if yield_attainment %}
-            <div class="metric-value {% if yield_attainment >= 90 %}positive{% elif yield_attainment >= 75 %}{% else %}negative{% endif %}">
-                {{ yield_attainment|floatformat:0 }}%
-            </div>
-            {% else %}
-            <div class="metric-value muted">—</div>
-            {% endif %}
-            <div class="metric-sub">of planned harvest recorded</div>
-        </div>
-    </div>
-</div>
-
-{# ── Plantings Overview ── #}
-<div class="summary-section">
-    <h2>Plantings</h2>
-    <div class="summary-stats-grid">
-        <div class="summary-stat">
-            <span class="stat-num">{{ total_plantings }}</span>
-            <span class="stat-label">Total plantings</span>
-        </div>
-        <div class="summary-stat">
-            <span class="stat-num">{{ completed_plantings }}</span>
-            <span class="stat-label">Completed</span>
-        </div>
-        <div class="summary-stat {% if failed_plantings > 0 %}negative{% endif %}">
-            <span class="stat-num">{{ failed_plantings }}</span>
-            <span class="stat-label">Failed</span>
-        </div>
-        <div class="summary-stat muted">
-            <span class="stat-num">{{ skipped_plantings }}</span>
-            <span class="stat-label">Skipped</span>
-        </div>
-        <div class="summary-stat">
-            <span class="stat-num">{{ unique_crops }}</span>
-            <span class="stat-label">Unique crops</span>
-        </div>
-        <div class="summary-stat">
-            <span class="stat-num">{{ botanical_families|length }}</span>
-            <span class="stat-label">Botanical families</span>
-        </div>
-    </div>
-</div>
-
-{# ── Top Crop Performers ── #}
-<div class="summary-section">
-    <h2>Top Performers — $/Bedfoot</h2>
-    <table class="performance-table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Crop</th>
-                <th class="num">Bedfeet</th>
-                <th class="num">Revenue</th>
-                <th class="num">$/Bedfoot</th>
-                <th>Bar</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% with max_rev=top_10_crops.0.revenue_per_bf %}
-            {% for crop in top_10_crops %}
-            <tr>
-                <td class="muted">{{ forloop.counter }}</td>
-                <td class="crop-name">{{ crop.crop.name }}</td>
-                <td class="num">{{ crop.total_bf|intcomma }}</td>
-                <td class="num">${{ crop.total_revenue|floatformat:0|intcomma }}</td>
-                <td class="num font-mono positive">
-                    ${{ crop.revenue_per_bf|floatformat:2 }}
-                </td>
-                <td>
-                    {% if max_rev %}
-                    <div class="inline-bar"
-                         style="width: {{ crop.revenue_per_bf|floatformat:0 }}px; max-width: 200px; opacity: 0.6;">
-                    </div>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-            {% endwith %}
-        </tbody>
-    </table>
-</div>
-
-{# ── Underperformers ── #}
-{% if bottom_10_crops %}
-<div class="summary-section">
-    <h2>Lowest $/Bedfoot</h2>
-    <p class="muted">
-        Review these crops for next year — consider reducing bedfeet,
-        finding better channels, or replacing with higher-value crops.
-    </p>
-    <table class="performance-table">
-        <thead>
-            <tr>
-                <th>Crop</th>
-                <th class="num">Bedfeet</th>
-                <th class="num">Revenue</th>
-                <th class="num">$/Bedfoot</th>
-                <th>Reference</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for crop in bottom_10_crops %}
-            <tr>
-                <td class="crop-name">{{ crop.crop.name }}</td>
-                <td class="num">{{ crop.total_bf|intcomma }}</td>
-                <td class="num">${{ crop.total_revenue|floatformat:0|intcomma }}</td>
-                <td class="num font-mono">
-                    ${{ crop.revenue_per_bf|floatformat:2 }}
-                </td>
-                <td class="muted">
-                    {% comment %}Could show crop type, family, notes{% endcomment %}
-                    {{ crop.crop.crop_type }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endif %}
-
-{# ── Season Links ── #}
-<div class="summary-section">
-    <h2>Full Reports</h2>
-    <div class="print-links">
-        <a href="{% url 'reports:crop_performance' %}" class="btn">
-            Crop Performance
-        </a>
-        <a href="{% url 'reports:channel_performance' %}" class="btn">
-            Channel Performance
-        </a>
-        <a href="{% url 'reports:plan_vs_actual' %}" class="btn">
-            Plan vs Actual
-        </a>
-        <a href="{% url 'reports:block_utilization' %}" class="btn">
-            Block Utilization
-        </a>
-        <a href="{% url 'reports:export_csv' %}" class="btn">
-            📤 Export Season Data
-        </a>
-    </div>
-    
-    {% if year.status == 'active' %}
-    <div class="mt-2">
-        <form method="post" action="{% url 'core:complete_season' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-warning"
-                    onclick="return confirm('Mark {{ year.year }} as complete? This will archive the season.')">
-                Archive {{ year.year }} Season
-            </button>
-        </form>
-    </div>
-    {% endif %}
-    
-    {% if year.status == 'complete' %}
-    <div class="mt-2">
-        <a href="{% url 'core:clone_plan_ui' year.year %}" class="btn btn-primary">
-            → Start {{ year.year|add:1 }} Plan (clone this year)
-        </a>
-    </div>
-    {% endif %}
+    </section>
 </div>
 {% endblock %}

@@ -1,7 +1,15 @@
 """reference/admin.py"""
 
 from django.contrib import admin
-from .models import CropInfo, CropBySeason, Block, CropSalesFormat, SalesChannel
+from .models import (
+    CropInfo,
+    CropBySeason,
+    Block,
+    CropSalesFormat,
+    ProductRecipe,
+    ProductRecipeComponent,
+    SalesChannel,
+)
 
 
 class CropBySeasonInline(admin.TabularInline):
@@ -120,3 +128,24 @@ class SalesChannelAdmin(admin.ModelAdmin):
         "allocation_priority",
     ]
     list_editable = ["weekly_target", "allocation_priority"]
+
+
+class ProductRecipeComponentInline(admin.TabularInline):
+    model = ProductRecipeComponent
+    extra = 1
+    fields = [
+        "source_crop",
+        "source_product",
+        "component_quantity",
+        "component_unit",
+        "component_percent",
+        "sort_order",
+    ]
+
+
+@admin.register(ProductRecipe)
+class ProductRecipeAdmin(admin.ModelAdmin):
+    list_display = ("name", "product", "is_active", "effective_start", "effective_end")
+    list_filter = ("is_active",)
+    search_fields = ("name", "product__product_name")
+    inlines = [ProductRecipeComponentInline]

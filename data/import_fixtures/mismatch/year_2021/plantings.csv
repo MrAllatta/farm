@@ -1,0 +1,6 @@
+ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status
+P1,Missing Crop,Field 1,Nantes,1,1,100,2021-04-01,Planned
+P2,Carrot,Missing Block,Nantes,1,1,100,2021-04-08,Planned
+P3,Carrot,Ghost Block,Nantes,1,1,100,2021-04-15,Planned
+P4,Carrot,Shadow Block,Nantes,1,1,100,2021-04-22,Planned
+P5,Phantom Crop,Field 1,Nantes,1,1,100,2021-04-29,Planned

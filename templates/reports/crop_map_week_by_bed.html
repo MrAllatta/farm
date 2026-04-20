@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}503 Week by Bed — {{ year.year }}{% endblock %}
+
+{% block content %}
+<div class="report-header">
+    <h1>503 Crop Map: Calendar Week by Bed Grid</h1>
+    <p class="report-meta">Weeks {{ week_start }}-{{ week_end }}</p>
+</div>
+
+<div class="mt-1 mb-2">
+    <a href="{% url 'reports:crop_map' %}" class="btn">High-Level Block Map</a>
+    <a href="{% url 'reports:crop_map_week_by_bed' %}" class="btn btn-primary">Calendar Week by Bed Grid</a>
+    <a href="{% url 'reports:crop_map_week_by_block' %}" class="btn">Calendar Week by Block Grid</a>
+    <a href="{% url 'reports:crop_map_successions' %}" class="btn">Successions by Block</a>
+</div>
+
+<div class="matrix-container fp-table-scroll" data-testid="fp-table-scroll">
+    <table class="planning-matrix">
+        <thead>
+            <tr>
+                <th class="block-col">Block</th>
+                <th class="beds-col">Bed</th>
+                {% for wk in weeks %}
+                <th class="week-col {% if wk.is_current %}week-current{% endif %}">{{ wk.num }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for block_row in rows %}
+                {% for bed_row in block_row.bed_rows %}
+                <tr>
+                    {% if forloop.first %}
+                    <td class="block-col" rowspan="{{ block_row.bed_rows|length }}">{{ block_row.block.name }}</td>
+                    {% endif %}
+                    <td class="beds-col">{{ bed_row.bed_num }}</td>
+                    {% for cell in bed_row.cells %}
+                        {% if cell.planting %}
+                        <td class="week-cell {{ cell.status_css }}">
+                            <a href="{% url 'planning:planting_detail' cell.planting.id %}">
+                                {{ cell.planting.crop.name|truncatechars:12 }}
+                            </a>
+                            <div class="muted">
+                                <a href="{% url 'planning:planting_edit' cell.planting.id %}">Edit</a> ·
+                                <a href="{% url 'planning:planting_revise' cell.planting.id %}">Revise</a>
+                            </div>
+                        </td>
+                        {% else %}
+                        <td class="week-cell fallow">
+                            <a href="{% url 'planning:planting_create_prefilled' block_id=block_row.block.id week=cell.week %}">+</a>
+                        </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,163 +1,63 @@
-{# reports/plan_vs_actual.html #}
-{% extends "base.html" %}
-{% load planning_tags humanize %}
+{% extends "reports/analyze_base.html" %}
 
-{% block title %}Plan vs Actual — {{ year.year }}{% endblock %}
-
-{% block content %}
-<div class="report-header">
-    <h1>Plan vs Actual — {{ year.year }}</h1>
-    <div class="report-meta">
-        {{ total_plantings }} plantings ·
-        {{ with_actuals }} with harvest data
+{% block analyze_metrics %}
+<div class="metric-cards">
+    <div class="metric-card">
+        <div class="metric-label">Plantings</div>
+        <div class="metric-value">{{ total_plantings|default:0 }}</div>
+        <div class="metric-sub">{{ with_actuals|default:0 }} with actual harvest data</div>
     </div>
-    <div class="no-print" style="margin-top:0.5rem;">
-        <button onclick="window.print()" class="btn">🖨 Print</button>
-        <a href="{% url 'reports:export_csv' %}" class="btn">📤 Export</a>
+    <div class="metric-card">
+        <div class="metric-label">Overperformers</div>
+        <div class="metric-value positive">{{ overperformers|length }}</div>
+        <div class="metric-sub">Yield variance above 10%</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Underperformers</div>
+        <div class="metric-value negative">{{ underperformers|length }}</div>
+        <div class="metric-sub">Yield variance below -15%</div>
     </div>
 </div>
+{% endblock %}
 
-{# ── Summary callouts ── #}
-{% if overperformers or underperformers %}
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
-    
-    {% if overperformers %}
-    <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:6px; padding:0.75rem;">
-        <h3 style="font-size:0.9rem; color:#166534; margin-bottom:0.5rem;">
-            🌟 Top Overperformers
-        </h3>
-        {% for r in overperformers %}
-        <div style="font-size:0.85rem; padding:2px 0; border-bottom:1px solid #dcfce7;">
-            <strong>{{ r.crop_name }}</strong>
-            {{ r.block }} ·
-            {% yield_variance_bar r.actual_yield r.planned_yield 60 %}
-            <span style="color:#166534;">{{ r.yield_variance_pct|variance_display }}</span>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
-    {% if underperformers %}
-    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:0.75rem;">
-        <h3 style="font-size:0.9rem; color:#991b1b; margin-bottom:0.5rem;">
-            ⚠ Underperformers
-        </h3>
-        {% for r in underperformers %}
-        <div style="font-size:0.85rem; padding:2px 0; border-bottom:1px solid #fee2e2;">
-            <strong>{{ r.crop_name }}</strong>
-            {{ r.block }} ·
-            {% yield_variance_bar r.actual_yield r.planned_yield 60 %}
-            <span style="color:#991b1b;">{{ r.yield_variance_pct|variance_display }}</span>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-</div>
-{% endif %}
-
-{# ── Main table ── #}
-<div style="overflow-x:auto;">
-    <table class="performance-table">
+{% block analyze_content %}
+<div class="analyze-section">
+    <h2>Planting Detail</h2>
+    <div class="fp-table-scroll">
+    <table class="compact-table analyze-table">
         <thead>
             <tr>
-                <th style="min-width:140px;">Crop</th>
+                <th>Crop</th>
                 <th>Block</th>
                 <th>Beds</th>
-                <th class="num">BF</th>
                 <th>Status</th>
-                <th class="num">Planned Yield</th>
-                <th class="num">Actual Yield</th>
-                <th class="num">Variance</th>
-                <th style="min-width:100px;">Attainment</th>
-                <th class="num">Plan $/bf</th>
-                <th class="num">Act $/bf</th>
-                <th class="num">Plant Δ</th>
-                <th class="num">Harvest Δ</th>
+                <th>Plan Yield</th>
+                <th>Actual Yield</th>
+                <th>Variance</th>
+                <th>Plant Timing</th>
+                <th>Harvest Timing</th>
             </tr>
         </thead>
         <tbody>
-            {% regroup rows by crop_type as type_groups %}
-            {% for group in type_groups %}
-            
-            <tr style="background:#f0f0ec;">
-                <td colspan="13" style="padding:3px 8px; font-weight:600;
-                                        font-size:0.75rem; text-transform:uppercase;">
-                    {{ group.grouper }}
-                </td>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.crop_name }}</td>
+                <td>{{ row.block }}</td>
+                <td>{{ row.beds }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.planned_yield|floatformat:1 }} {{ row.harvest_unit }}</td>
+                <td>{% if row.actual_yield is not None %}{{ row.actual_yield|floatformat:1 }} {{ row.harvest_unit }}{% else %}<span class="muted">No actuals</span>{% endif %}</td>
+                <td>{% if row.yield_variance_pct is not None %}<span class="{% if row.yield_variance_pct >= 0 %}positive{% else %}negative{% endif %}">{{ row.yield_variance_pct|floatformat:0 }}%</span>{% else %}<span class="muted">n/a</span>{% endif %}</td>
+                <td>{% if row.plant_variance_days is not None %}{{ row.plant_variance_days }}d{% else %}<span class="muted">n/a</span>{% endif %}</td>
+                <td>{% if row.harvest_variance_days is not None %}{{ row.harvest_variance_days }}d{% else %}<span class="muted">n/a</span>{% endif %}</td>
             </tr>
-            
-            {% for r in group.list %}
-            <tr {% if not r.has_actuals %}style="opacity:0.6;"{% endif %}>
-                <td class="crop-name">
-                    <a href="{% url 'planning:planting_detail' r.planting.id %}">
-                        {{ r.crop_name }}
-                    </a>
-                    {% if r.planting.variety %}
-                    <br><span style="font-size:0.75rem; color:#666;">{{ r.planting.variety }}</span>
-                    {% endif %}
-                    {% rotation_badge r.planting %}
-                </td>
-                <td>{{ r.block }}</td>
-                <td>{{ r.beds }}</td>
-                <td class="num">{{ r.bedfeet }}</td>
-                <td>{% planting_status_badge r.planting %}</td>
-                <td class="num">
-                    {% if r.planned_yield %}
-                    {{ r.planned_yield|floatformat:0|intcomma }}
-                    <span style="font-size:0.7rem; color:#999;">{{ r.harvest_unit }}</span>
-                    {% else %}—{% endif %}
-                </td>
-                <td class="num">
-                    {% if r.actual_yield %}
-                    {{ r.actual_yield|floatformat:0|intcomma }}
-                    <span style="font-size:0.7rem; color:#999;">{{ r.harvest_unit }}</span>
-                    {% else %}—{% endif %}
-                </td>
-                <td class="num {{ r.yield_variance_pct|variance_css }}">
-                    {% if r.yield_variance %}
-                    {% if r.yield_variance > 0 %}+{% endif %}{{ r.yield_variance|floatformat:0|intcomma }}
-                    {% else %}—{% endif %}
-                </td>
-                <td>
-                    {% if r.has_actuals and r.planned_yield %}
-                    {% yield_variance_bar r.actual_yield r.planned_yield 80 %}
-                    {% else %}
-                    <span style="color:#ccc; font-size:0.75rem;">pending</span>
-                    {% endif %}
-                </td>
-                <td class="num">
-                    {% if r.planned_yield_per_bf %}
-                    {{ r.planned_yield_per_bf|floatformat:2 }}
-                    {% else %}—{% endif %}
-                </td>
-                <td class="num {{ r.yield_variance_pct|variance_css }}">
-                    {% if r.actual_yield_per_bf %}
-                    {{ r.actual_yield_per_bf|floatformat:2 }}
-                    {% else %}—{% endif %}
-                </td>
-                <td class="num {% if r.plant_variance_days and r.plant_variance_days > 7 %}negative{% elif r.plant_variance_days and r.plant_variance_days < -3 %}positive{% endif %}">
-                    {% if r.plant_variance_days is not None %}
-                    {{ r.plant_variance_days|days_display }}
-                    {% else %}—{% endif %}
-                </td>
-                <td class="num {% if r.harvest_variance_days and r.harvest_variance_days > 7 %}negative{% elif r.harvest_variance_days and r.harvest_variance_days < -5 %}positive{% endif %}">
-                    {% if r.harvest_variance_days is not None %}
-                    {{ r.harvest_variance_days|days_display }}
-                    {% else %}—{% endif %}
-                </td>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="muted">No planting comparisons are available yet.</td>
             </tr>
-            {% endfor %}
             {% endfor %}
         </tbody>
     </table>
-</div>
-
-<div class="no-print" style="margin-top:0.75rem; font-size:0.8rem; color:#666;">
-    <strong>Columns:</strong>
-    BF = bedfeet ·
-    Variance = actual − planned ·
-    Attainment = % of plan achieved ·
-    $/bf = yield per bedfoot vs reference ·
-    Plant Δ / Harvest Δ = days early (−) or late (+)
+    </div>
 </div>
 {% endblock %}

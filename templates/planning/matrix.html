@@ -2,23 +2,29 @@
 {% extends "base.html" %}
 {% load planning_tags %}
 
-{% block title %}Crop Plan — {{ year }}{% endblock %}
+{% block title %}Crop Planner{% if year %} — {{ year }}{% endif %}{% endblock %}
 
 {% block content %}
+{% if no_year %}
+<div class="message message-warning">
+    No active planning year is configured yet.
+</div>
+{% else %}
 <div class="planning-header">
-    <h1>{{ year.year }} Crop Plan</h1>
+    <h1>{{ year.year }} Crop Planner</h1>
+    <p class="muted">Plantings matrix — week-by-block view (workbook Crop Planner tab).</p>
     <div class="week-nav">
-        <a href="{% url 'planning:matrix_week' week_start|add:'-8' %}" 
+        <a href="{% url 'planning:matrix_date' prev_date.isoformat %}" 
            class="btn">← Earlier</a>
         <span>Weeks {{ week_start }}–{{ week_end }}</span>
-        <a href="{% url 'planning:matrix_week' week_end|add:'1' %}" 
+        <a href="{% url 'planning:matrix_date' next_date.isoformat %}" 
            class="btn">Later →</a>
         <a href="{% url 'planning:matrix' %}" class="btn">Today</a>
     </div>
 </div>
 
 {# Week header row #}
-<div class="matrix-container">
+<div class="matrix-container fp-table-scroll">
     <table class="planning-matrix">
         <thead>
             <tr>
@@ -107,24 +113,5 @@
 <div id="planting-detail" class="detail-panel" style="display:none;">
     {# Loaded via HTMX or JS #}
 </div>
+{% endif %}
 {% endblock %}
-
-{# matrix.html, add HTMX to planting bars #}
-
-{# Clicking a planting bar loads its detail into the side panel #}
-<td class="week-cell planting-bar {{ css }}"
-    colspan="{{ col_span }}"
-    hx-get="{% url 'planning:planting_detail' planting.id %}"
-    hx-target="#planting-detail"
-    hx-swap="innerHTML"
-    hx-trigger="click">
-    <span class="planting-label">{{ row.label }}</span>
-</td>
-
-{# Clicking a fallow cell opens the new planting form, pre-filled #}
-<td class="week-cell fallow"
-    hx-get="{% url 'planning:planting_create_prefilled' block_id=block.id week=w.num %}"
-    hx-target="#planting-detail"
-    hx-swap="innerHTML"
-    hx-trigger="click">
-</td>

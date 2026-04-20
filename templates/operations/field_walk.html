@@ -1,2 +1,80 @@
 {# operations/field_walk.html #}
 {% extends "base.html" %}
+
+{% block title %}Field Walk{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Field Walk</h1>
+    <p>
+        {% if year %}
+        Active planning year: {{ year.year }}.
+        {% else %}
+        No active planning year was found.
+        {% endif %}
+        Review each block and record crop condition updates.
+    </p>
+    <p>Active plantings on route: {{ total_plantings }}</p>
+</section>
+
+{% if blocks %}
+<form method="post">
+    {% csrf_token %}
+
+    {% for block_name, payload in blocks.items %}
+    <section class="panel">
+        <h2>{{ block_name }}</h2>
+        <div class="fp-table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Crop</th>
+                    <th>Beds</th>
+                    <th>Stage</th>
+                    <th>Expected Harvest</th>
+                    <th>Condition</th>
+                    <th>Yield %</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in payload.plantings %}
+                <tr>
+                    <td>{{ item.crop_name }}</td>
+                    <td>{{ item.beds }}</td>
+                    <td>{{ item.expected_stage }}</td>
+                    <td>{{ item.expected_harvest|date:"Y-m-d" }}</td>
+                    <td>
+                        <select name="condition_{{ item.planting.id }}">
+                            <option value="">-</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="200" step="5" name="yield_{{ item.planting.id }}" value="100">
+                    </td>
+                    <td>
+                        <input type="text" name="notes_{{ item.planting.id }}" placeholder="Observed issues, pests, weather, etc.">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </section>
+    {% endfor %}
+
+    <p>
+        <button type="submit" class="btn btn-primary">Save Field Walk Notes</button>
+    </p>
+</form>
+{% else %}
+<section class="panel">
+    <h2>No active plantings for field walk</h2>
+    <p>Start by adding plantings in planning, then return here to record observations.</p>
+</section>
+{% endif %}
+{% endblock %}

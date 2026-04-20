@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Farm{% endblock %} — {{ current_planning_year.year }}</title>
+    <title>{% block title %}Farm{% endblock %} — {% if current_planning_year %}{{ current_planning_year.year }}{% else %}—{% endif %}</title>
     <link rel="stylesheet" href="{% static 'css/farm.css' %}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     {% block extra_head %}{% endblock %}
@@ -15,49 +15,78 @@
     <nav class="main-nav">
         <div class="nav-brand">
             <a href="{% url 'core:dashboard' %}">🌱 Farm</a>
-            {% if current_planning_year %}
+            {% if planning_year_scope_choices %}
+            <form method="post" action="{% url 'core:planning_year_focus' %}" class="nav-planning-year-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <label class="nav-planning-year-label">
+                    <span class="nav-planning-year-label-text">Plan</span>
+                    <select name="planning_year_id" class="nav-planning-year-select" aria-label="Planning year" onchange="this.form.submit();">
+                        {% for py in planning_year_scope_choices %}
+                        <option value="{{ py.id }}"{% if current_planning_year and py.id == current_planning_year.id %} selected{% endif %}>{{ py.year }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </form>
+            {% elif current_planning_year %}
             <span class="nav-year">{{ current_planning_year.year }}</span>
+            {% endif %}
+            {% if current_week %}
             <span class="nav-week">Week {{ current_week }}</span>
             {% endif %}
         </div>
         
         <div class="nav-links">
-            <div class="nav-group">
-                <span class="nav-group-label">Plan</span>
-                <a href="{% url 'planning:matrix' %}">Crop Plan</a>
-                <a href="{% url 'planning:nursery_schedule' %}">Nursery</a>
-                <a href="{% url 'planning:harvest_calendar' %}">Harvest Calendar</a>
-                <a href="{% url 'planning:succession_create' %}">+ Succession</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Plan</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'planning:matrix' %}">Crop Planner</a>
+                    <a href="{% url 'planning:sales_plan' %}">Sales Plan</a>
+                    <a href="{% url 'planning:nursery_schedule' %}">Nursery</a>
+                    <a href="{% url 'planning:harvest_calendar' %}">Harvest Calendar</a>
+                    <a href="{% url 'planning:succession_create' %}">+ Succession</a>
+                </div>
+            </details>
             
-            <div class="nav-group">
-                <span class="nav-group-label">Operate</span>
-                <a href="{% url 'operations:harvest_entry_current' %}">Record Harvest</a>
-                <a href="{% url 'operations:field_walk_current' %}">Field Walk</a>
-                <a href="{% url 'sales:market_entry' %}">Market Sales</a>
-                <a href="{% url 'operations:inventory' %}">Storage Inventory</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Operate</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'operations:harvest_entry_current' %}">Record Harvest</a>
+                    <a href="{% url 'operations:field_walk_current' %}">Field Walk</a>
+                    <a href="{% url 'sales:market_entry' %}">Market Sales</a>
+                    <a href="{% url 'operations:inventory' %}">Storage Inventory</a>
+                </div>
+            </details>
             
-            <div class="nav-group">
-                <span class="nav-group-label">Reports</span>
-                <a href="{% url 'reports:crop_map' %}">Crop Map</a>
-                <a href="{% url 'reports:harvest_list_print' current_week %}">
-                    🖨 Harvest List
-                </a>
-                <a href="{% url 'reports:weekly_schedule_print' current_week %}">
-                    🖨 Weekly Schedule
-                </a>
-                <a href="{% url 'reports:seed_order' %}">Seed Order</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Reports</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'reports:crop_map' %}">Crop Map</a>
+                    <a href="{% url 'reports:crop_map_week_by_bed' %}">503 Week by Bed</a>
+                    <a href="{% url 'reports:crop_map_week_by_block' %}">503 Week by Block</a>
+                    <a href="{% url 'reports:crop_map_successions' %}">503 Successions</a>
+                    {% if current_week %}
+                        <a href="{% url 'reports:harvest_list_print' current_week %}">
+                            🖨 Harvest List
+                        </a>
+                        <a href="{% url 'reports:weekly_schedule_print' current_week %}">
+                            🖨 Weekly Schedule
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'reports:seed_order' %}">Seed Order</a>
+                </div>
+            </details>
             
-            <div class="nav-group">
-                <span class="nav-group-label">Analyze</span>
-                <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
-                <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
-                <a href="{% url 'reports:channel_performance' %}">Channel Revenue</a>
-                <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
-                <a href="{% url 'reports:season_summary' %}">Season Summary</a>
-            </div>
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Analyze</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
+                    <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
+                    <a href="{% url 'reports:channel_performance' %}">Channel Performance</a>
+                    <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
+                    <a href="{% url 'reports:season_summary' %}">Season Summary</a>
+                </div>
+            </details>
             
             <div class="nav-group">
                 <a href="{% url 'reports:export_csv' %}">📤 Export</a>
@@ -81,11 +110,43 @@
     </main>
     
     <footer class="main-footer">
-        <span>Farm {{ current_planning_year.year }}</span>
+        <span>Farm {% if current_planning_year %}{{ current_planning_year.year }}{% else %}—{% endif %}</span>
         <span>·</span>
-        <span>{{ today|date:"l, F j" }} · Week {{ current_week }}</span>
+        <span>
+            {{ today|date:"l, F j" }}
+            {% if current_week %} · Week {{ current_week }}{% endif %}
+        </span>
     </footer>
     
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navMenus = Array.from(document.querySelectorAll(".nav-group-menu"));
+
+            navMenus.forEach((menu) => {
+                menu.addEventListener("toggle", function () {
+                    if (!menu.open) {
+                        return;
+                    }
+
+                    navMenus.forEach((otherMenu) => {
+                        if (otherMenu !== menu) {
+                            otherMenu.open = false;
+                        }
+                    });
+                });
+            });
+
+            document.addEventListener("click", function (event) {
+                if (event.target.closest(".main-nav")) {
+                    return;
+                }
+
+                navMenus.forEach((menu) => {
+                    menu.open = false;
+                });
+            });
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -8,6 +8,7 @@ app_name = "planning"
 urlpatterns = [
     # Main matrix
     path("", views.PlanningMatrixView.as_view(), name="matrix"),
+    path("date/<str:date>/", views.PlanningMatrixView.as_view(), name="matrix_date"),
     path("week/<int:week>/", views.PlanningMatrixView.as_view(), name="matrix_week"),
     # Planting CRUD
     path("planting/new/", views.PlantingCreateView.as_view(), name="planting_create"),
@@ -31,6 +32,7 @@ urlpatterns = [
     path("nursery/", views.NurseryScheduleView.as_view(), name="nursery_schedule"),
     path("nursery/week/<int:week>/", views.NurseryScheduleView.as_view(), name="nursery_week"),
     path("harvest-calendar/", views.HarvestCalendarView.as_view(), name="harvest_calendar"),
+    path("sales-plan/", views.SalesPlanView.as_view(), name="sales_plan"),
     path("field-schedule/", views.FieldScheduleView.as_view(), name="field_schedule"),
     # HTMX helpers
     path(

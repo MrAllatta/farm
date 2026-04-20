@@ -4,7 +4,9 @@
 <div class="planting-form {% if is_htmx %}htmx-form{% endif %}">
     
     <div class="form-header">
-        {% if object %}
+        {% if is_revision %}
+        <h2>Revise Planting</h2>
+        {% elif object %}
         <h2>Edit Planting</h2>
         {% else %}
         <h2>New Planting</h2>
@@ -22,6 +24,16 @@
           hx-swap="innerHTML"
           {% endif %}>
         {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="message message-error">
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            {{ error }}<br>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
         
         {# Crop selection — the most important field #}
         <div class="form-group">
@@ -79,7 +91,7 @@
                         {{ cs.get_block_type_display }}
                         — DTM {{ cs.dtm_days }}d
                         · {{ cs.harvest_weeks }}wk harvest
-                        · {{ cs.total_yield_per_bedfoot }}{{ crop.harvest_unit }}/bf
+                        · {{ cs.total_yield_per_bedfoot }}{% if selected_crop %}{{ selected_crop.harvest_unit }}{% endif %}/bf
                     </option>
                     {% endfor %}
                     {% else %}
@@ -112,10 +124,6 @@
                 <label for="id_bed_end">Bed End *</label>
                 <input type="number" name="bed_end" id="id_bed_end"
                        value="{{ form.bed_end.value|default:'' }}"
-
-#+begin_src html
-{# planning/planting_form.html (continued) #}
-
                        min="1" required
                        hx-get="{% url 'planning:bedfeet_calc' %}"
                        hx-target="#calc-bedfeet"
@@ -131,7 +139,7 @@
             <dt>Bedfeet:</dt>
             <dd>{{ planned_bedfeet }} bf</dd>
             <dt>Planned yield:</dt>
-            <dd>{{ planned_yield|floatformat:0 }} {{ crop.harvest_unit }}</dd>
+            <dd>{{ planned_yield|floatformat:0 }} {% if selected_crop %}{{ selected_crop.harvest_unit }}{% endif %}</dd>
             {% endwith %}
             {% else %}
             <span class="muted">Select block and beds to see calculated bedfeet.</span>
@@ -167,7 +175,7 @@
             <dd>{{ calculated_first_harvest|date:"M j" }} (Wk {{ calculated_first_harvest|date:"W" }})</dd>
             <dt>Last harvest:</dt>
             <dd>{{ calculated_last_harvest|date:"M j" }} (Wk {{ calculated_last_harvest|date:"W" }})</dd>
-            {% if crop.nursery_weeks %}
+            {% if selected_crop and selected_crop.nursery_weeks %}
             <dt>Seed date:</dt>
             <dd>{{ calculated_seed_date|date:"M j" }} (Wk {{ calculated_seed_date|date:"W" }})</dd>
             {% endif %}
@@ -227,9 +235,13 @@
         {# Form actions #}
         <div class="detail-actions">
             <button type="submit" class="btn btn-primary">
-                {% if object %}Save Changes{% else %}Create Planting{% endif %}
+                {% if is_revision %}Create Revision{% elif object %}Save Changes{% else %}Create Planting{% endif %}
             </button>
-            {% if object %}
+            {% if is_revision %}
+            <a href="{% url 'planning:planting_detail' original.id %}" class="btn">
+                Cancel
+            </a>
+            {% elif object %}
             <a href="{% url 'planning:planting_detail' object.id %}" class="btn">
                 Cancel
             </a>

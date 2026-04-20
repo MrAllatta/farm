@@ -1,6 +1,60 @@
-{# planning/nursery_schedule.html #}
 {% extends "base.html" %}
-{% load planning_tags %}
 
-{% block title %}Nursery Schedule — {{ year }}{% endblock %}
+{% block title %}Nursery Schedule — {{ year.year }}{% endblock %}
 
+{% block content %}
+<div class="report-header">
+    <h1>Nursery Schedule — {{ year.year }}</h1>
+    <div class="report-meta">
+        Week {{ center_week }} focus · Peak bench load {{ peak_week.trays }} trays in week {{ peak_week.week }}
+    </div>
+</div>
+
+<div style="margin-bottom:1rem;">
+    <strong>Capacity:</strong> {{ greenhouse_capacity }} trays
+</div>
+
+{% for week in weeks %}
+<section style="margin-bottom:1.5rem;">
+    <h2>Week {{ week.week_num }} · {{ week.monday|date:"M j" }}-{{ week.monday|date:"j" }}</h2>
+    <p class="muted">
+        {{ week.total_events }} events · {{ week.bench_trays }} trays on benches
+    </p>
+
+    <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
+        <div>
+            <h3>Seed</h3>
+            <ul>
+                {% for event in week.seed_events %}
+                <li>{{ event.planting.crop.name }} · {{ event.planting.block.name }}</li>
+                {% empty %}
+                <li class="muted">No seedings</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div>
+            <h3>Pot Up</h3>
+            <ul>
+                {% for event in week.potup_events %}
+                <li>{{ event.planting.crop.name }} · {{ event.planting.block.name }}</li>
+                {% empty %}
+                <li class="muted">No pot-up work</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div>
+            <h3>Transplant</h3>
+            <ul>
+                {% for event in week.transplant_events %}
+                <li>{{ event.planting.crop.name }} · {{ event.planting.block.name }}</li>
+                {% empty %}
+                <li class="muted">No transplants</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

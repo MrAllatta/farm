@@ -1,107 +1,51 @@
-{# reports/crop_performance.html #}
-{% extends "base.html" %}
-{% load planning_tags humanize %}
+{% extends "reports/analyze_base.html" %}
+{% load humanize %}
 
-{% block title %}Crop Performance — {{ year.year }}{% endblock %}
-
-{% block content %}
-<div class="report-header">
-    <h1>Crop Performance — {{ year.year }}</h1>
-    <div class="report-meta">
-        {{ num_crops }} crops ·
-        {{ total_bedfeet|intcomma }} total bedfeet ·
-        ${{ total_revenue|floatformat:0|intcomma }} total revenue ·
-        ${{ avg_revenue_per_bf|floatformat:2 }}/bf average
+{% block analyze_metrics %}
+<div class="metric-cards">
+    <div class="metric-card">
+        <div class="metric-label">Tracked Crops</div>
+        <div class="metric-value">{{ num_crops|default:0 }}</div>
+        <div class="metric-sub">{{ total_bedfeet|default:0|floatformat:0 }} total bedfeet</div>
     </div>
-    <div class="no-print" style="margin-top:0.5rem;">
-        <button onclick="window.print()" class="btn">🖨 Print</button>
-        <a href="{% url 'reports:export_csv' %}" class="btn">📤 Export</a>
-        <a href="{% url 'reports:plan_vs_actual' %}" class="btn">
-            Plan vs Actual →
-        </a>
+    <div class="metric-card">
+        <div class="metric-label">Crop Revenue</div>
+        <div class="metric-value">${{ total_revenue|default:0|floatformat:0|intcomma }}</div>
+        <div class="metric-sub">${{ avg_revenue_per_bf|default:0|floatformat:2 }} per bedfoot</div>
     </div>
 </div>
+{% endblock %}
 
-<div style="overflow-x:auto;">
-    <table class="performance-table">
+{% block analyze_content %}
+<div class="analyze-section">
+    <h2>Per Crop Performance</h2>
+    <div class="fp-table-scroll">
+    <table class="compact-table analyze-table">
         <thead>
             <tr>
-                <th style="width:30px;">#</th>
-                <th style="min-width:150px;">Crop</th>
-                <th>Type</th>
-                <th class="num">Bedfeet</th>
-                <th class="num">Plantings</th>
-                <th class="num">Planned Yield/bf</th>
-                <th class="num">Actual Yield/bf</th>
-                <th class="num">Yield Δ</th>
-                <th class="num">Revenue</th>
-                <th class="num">$/bf</th>
-                <th class="num">$/bf/wk</th>
-                <th style="min-width:80px;">Revenue Bar</th>
+                <th>Crop</th>
+                <th>Planned BF</th>
+                <th>Actual BF</th>
+                <th>Total Revenue</th>
+                <th>$/BF</th>
             </tr>
         </thead>
-	{% endblock %}
-{% comment %}        <tbody>
-            {% for crop_data in crops %}
+        <tbody>
+            {% for crop in crops %}
             <tr>
-                <td class="num muted">{{ forloop.counter }}</td>
-                <td class="crop-name">
-                    {{ crop_data.crop.name }}
-                    <br>
-                    <span style="font-size:0.7rem; color:#999;">
-                        {{ crop_data.crop.botanical_family|default:"" }}
-                    </span>
-                </td>
-                <td style="font-size:0.8rem;">{{ crop_data.crop.crop_type }}</td>
-                <td class="num">{{ crop_data.total_actual_bedfeet|intcomma }}</td>
-                <td class="num">{{ crop_data.plantings|length }}</td>
-                <td class="num">
-                    {{ crop_data.planned_yield_per_bf|floatformat:2 }}
-                    <span style="font-size:0.7rem; color:#999;">
-                        {{ crop_data.crop.harvest_unit }}/bf
-                    </span>
-                </td>
-                <td class="num {% if crop_data.actual_yield_per_bf %}{% if crop_data.yield_variance_pct and crop_data.yield_variance_pct > 5 %}positive{% elif crop_data.yield_variance_pct and crop_data.yield_variance_pct < -10 %}negative{% endif %}{% endif %}">
-                    {% if crop_data.actual_yield_per_bf %}
-                    {{ crop_data.actual_yield_per_bf|floatformat:2 }}
-                    {% else %}
-                    <span class="muted">—</span>
-                    {% endif %}
-                </td>
-                <td class="num">
-                    {% if crop_data.yield_variance_pct is not None %}
-                    {% yield_variance_bar crop_data.total_actual_yield crop_data.total_planned_yield 50 %}
-                    {% else %}
-                    <span class="muted">—</span>
-                    {% endif %}
-                </td>
-                <td class="num">
-                    {% if crop_data.total_revenue %}
-                    ${{ crop_data.total_revenue|floatformat:0|intcomma }}
-                    {% else %}
-                    <span class="muted">—</span>
-                    {% endif %}
-                </td>
-                <td class="num {% if crop_data.revenue_per_bedfoot > avg_revenue_per_bf %}positive{% endif %}">
-                    {% if crop_data.revenue_per_bedfoot %}
-                    ${{ crop_data.revenue_per_bedfoot|floatformat:2 }}
-                    {% else %}
-                    <span class="muted">—</span>
-                    {% endif %}
-                </td>
-                <td class="num">
-                    {% if crop_data.revenue_per_bf_per_week %}
-                    ${{ crop_data.revenue_per_bf_per_week|floatformat:2 }}
-                    {% else %}
-                    <span class="muted">—</span>
-                    {% endif %}
-                </td>
-                <td>
-{#                    {% if crop_data.total_revenue and total_revenue %}   #}
-                    <div style="background:#e5e7eb; height:8px; border-radius:4px; overflow:hidden; width:80px;">
-		</td>
-	    </tr>
-	</tbody>
-
-			/*UNFINISHED*/
-{% endcomment %}
+                <td>{{ crop.crop.name }}</td>
+                <td>{{ crop.total_planned_bedfeet|floatformat:0 }}</td>
+                <td>{{ crop.total_actual_bedfeet|floatformat:0 }}</td>
+                <td>${{ crop.total_revenue|floatformat:0 }}</td>
+                <td>${{ crop.revenue_per_bedfoot|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="muted">No crop performance data yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

@@ -17,12 +17,16 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from core import views as core_views
 
 urlpatterns = [
+    path("healthz/", core_views.healthz, name="healthz"),
+    path("readyz/", core_views.readyz, name="readyz"),
     path("", include("core.urls")),
+    path("reference/", include("reference.urls")),
     path("planning/", include("planning.urls")),
     path("reports/", include("reports.urls")),
     path("sales/", include("sales.urls")),
-    path("operations", include("operations.urls")),
+    path("operations/", include("operations.urls")),
     path("admin/", admin.site.urls),
 ]

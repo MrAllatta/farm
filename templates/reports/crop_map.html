@@ -1,11 +1,87 @@
-{# reports/crop_map.html #}
 {% extends "base.html" %}
-{# {% load humanize %} #}
 
-{% block title %}Season Summary — {{ year.year }}{% endblock %}
+{% block title %}503 Crop Map — {{ year.year }}{% endblock %}
 
 {% block content %}
 <div class="report-header">
-  <h1>{{ year.year}} Crop Map </h1>
+    <h1>503 Crop Map: High-Level Block Map</h1>
+    <p class="report-meta">
+        Week {{ week_num }} ({{ week_date|date:"M j" }}) · Utilization {{ overall_utilization|floatformat:1 }}%
+    </p>
+    <div class="week-nav mt-1">
+        <a href="{% url 'reports:crop_map_week' prev_week_num %}" class="btn">← Week {{ prev_week_num }}</a>
+        <a href="{% url 'reports:crop_map' %}" class="btn">Current Week</a>
+        <a href="{% url 'reports:crop_map_week' next_week_num %}" class="btn">Week {{ next_week_num }} →</a>
+    </div>
+</div>
+
+<div class="mt-1 mb-2">
+    <a href="{% url 'reports:crop_map' %}" class="btn btn-primary">High-Level Block Map</a>
+    <a href="{% url 'reports:crop_map_week_by_bed' %}" class="btn">Calendar Week by Bed Grid</a>
+    <a href="{% url 'reports:crop_map_week_by_block' %}" class="btn">Calendar Week by Block Grid</a>
+    <a href="{% url 'reports:crop_map_successions' %}" class="btn">Successions by Block</a>
+</div>
+
+<div class="crop-map">
+    {% if field_maps %}
+    <div class="block-group-header">Field Blocks</div>
+    {% for map in field_maps %}
+    <div class="block-group">
+        <div class="block-row">
+            <div class="block-name">{{ map.block.name }}</div>
+            <div class="block-beds">
+                {% for segment in map.segments %}
+                <a class="bed-segment {{ segment.crop_css }} {{ segment.status_css }}"
+                   style="width: {{ segment.width_pct }}%;"
+                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}"
+                   title="{% if segment.planting %}{{ segment.label }} beds {{ segment.bed_start }}-{{ segment.bed_end }}{% else %}Fallow beds {{ segment.bed_start }}-{{ segment.bed_end }}{% endif %}">
+                    {{ segment.label }} ({{ segment.bed_start }}-{{ segment.bed_end }})
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if tunnel_maps %}
+    <div class="block-group-header">High Tunnels</div>
+    {% for map in tunnel_maps %}
+    <div class="block-group">
+        <div class="block-row">
+            <div class="block-name">{{ map.block.name }}</div>
+            <div class="block-beds">
+                {% for segment in map.segments %}
+                <a class="bed-segment {{ segment.crop_css }} {{ segment.status_css }}"
+                   style="width: {{ segment.width_pct }}%;"
+                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}">
+                    {{ segment.label }} ({{ segment.bed_start }}-{{ segment.bed_end }})
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if greenhouse_maps %}
+    <div class="block-group-header">Greenhouses</div>
+    {% for map in greenhouse_maps %}
+    <div class="block-group">
+        <div class="block-row">
+            <div class="block-name">{{ map.block.name }}</div>
+            <div class="block-beds">
+                {% for segment in map.segments %}
+                <a class="bed-segment {{ segment.crop_css }} {{ segment.status_css }}"
+                   style="width: {{ segment.width_pct }}%;"
+                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}">
+                    {{ segment.label }} ({{ segment.bed_start }}-{{ segment.bed_end }})
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}

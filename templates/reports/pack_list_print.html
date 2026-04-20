@@ -1,6 +1,6 @@
 {# reports/pack_list_print.html #}
 {% extends "base.html" %}
-{% load humanize %}
+{% load static humanize planning_tags %}
 
 {% block title %}Pack List — Week {{ week_num }}{% endblock %}
 
@@ -13,7 +13,9 @@
     
     <div class="no-print" style="margin-bottom: 1rem;">
         <button onclick="window.print()" class="btn btn-primary">🖨 Print</button>
+        {% if week_num %}
         <a href="{% url 'operations:harvest_entry_week' week_num %}" class="btn">← Harvest Entry</a>
+        {% endif %}
         <a href="{% url 'sales:market_entry' %}" class="btn">Sales Entry →</a>
     </div>
     
@@ -25,6 +27,7 @@
         Packing for: {% for ch in channels %}{{ ch.name }}{% if not forloop.last %} + {% endif %}{% endfor %}
     </div>
     
+    <div class="fp-table-scroll">
     <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
         <thead>
             <tr style="background: #ddd;">
@@ -121,6 +124,7 @@
             </tr>
         </tbody>
     </table>
+    </div>
     
     {# Loading instructions #}
     <div style="margin-top: 0.75rem; font-size: 9pt; border-top: 1px solid #999; padding-top: 0.5rem;">

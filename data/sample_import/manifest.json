@@ -1,0 +1,14 @@
+{
+  "fixture_pack": "sample",
+  "version": "1.0",
+  "scenario_intent": "Representative multi-tier historical rehearsal pack spanning reference, planning, operations, and sales flows.",
+  "owner": "engineering",
+  "expected_artifacts": [
+    "farm/data/import_fixtures/_out/preflight-sample.json",
+    "farm/data/import_fixtures/_out/apply-sample.json"
+  ],
+  "notes": [
+    "Used for realistic multi-tier rehearsal evidence rather than the minimal clean smoke case.",
+    "Covers shared reference files plus year_2023 complete history and year_2024 planned-only data."
+  ]
+}

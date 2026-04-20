@@ -3,7 +3,7 @@
 {% load static %}
 {% load humanize %}
 
-{% block title %}Harvest List — Week {{ week_num }}{% endblock %}
+{% block title %}{{ view_title|default:"Report" }}{% if week_num %} — Week {{ week_num }}{% endif %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
@@ -28,26 +28,32 @@
     
     {# Screen-only controls #}
     <div class="no-print" style="margin-bottom: 1rem;">
-        <a href="{% url 'reports:harvest_list_print' week_num|add:'-1' %}" class="btn">← Wk {{ week_num|add:'-1' }}</a>
+        {% if show_week_navigation and prev_week_num %}
+        <a href="{% url 'reports:harvest_list_print' prev_week_num %}" class="btn">← Wk {{ prev_week_num }}</a>
+        {% endif %}
         <button onclick="window.print()" class="btn btn-primary">🖨 Print</button>
-        <a href="{% url 'reports:harvest_list_print' week_num|add:'1' %}" class="btn">Wk {{ week_num|add:'1' }} →</a>
+        {% if show_week_navigation and next_week_num %}
+        <a href="{% url 'reports:harvest_list_print' next_week_num %}" class="btn">Wk {{ next_week_num }} →</a>
+        {% endif %}
+        {% if show_week_navigation and week_num %}
         <a href="{% url 'operations:harvest_entry_week' week_num %}" class="btn">Enter Actuals</a>
+        {% endif %}
     </div>
     
     {# Document header #}
     <div style="margin-bottom: 0.5rem;">
-        <h1 
-style="font-size: 14pt; margin-bottom: 2px;">
-            HARVEST LIST — {{ harvest_day|date:"l, F j, Y" }}
+        <h1 style="font-size: 14pt; margin-bottom: 2px;">
+            {{ view_title|default:"Report"|upper }}{% if harvest_day %} — {{ harvest_day|date:"l, F j, Y" }}{% endif %}
         </h1>
         <div style="font-size: 10pt;">
-            Week {{ week_num }} ·
-            {{ total_items }} crops ·
-            Est. {{ total_bins }} bins
+            {% if week_num %}Week {{ week_num }} · {% endif %}
+            {{ total_items|default:0 }} crops ·
+            Est. {{ total_bins|default:0 }} bins
         </div>
     </div>
     
     {# Main table #}
+    <div class="fp-table-scroll">
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem;">
         <thead>
             <tr style="background: #ddd;">
@@ -93,12 +99,13 @@ style="font-size: 14pt; margin-bottom: 2px;">
             {% empty %}
             <tr>
                 <td colspan="8" style="padding: 8px; text-align: center; color: #666;">
-                    No harvest events planned for Week {{ week_num }}.
+                    No harvest events planned{% if week_num %} for Week {{ week_num }}{% endif %}.
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
     
     {# Bin summary #}
     <div style="display: flex; gap: 2rem; margin-bottom: 1rem; font-size: 10pt;">
@@ -107,7 +114,7 @@ style="font-size: 14pt; margin-bottom: 2px;">
             {% for bin_type, count in bin_totals %}
             {{ count }} {{ bin_type }}{% if not forloop.last %} · {% endif %}
             {% endfor %}
-            · Total: {{ total_bins }}
+            · Total: {{ total_bins|default:0 }}
         </div>
     </div>
     

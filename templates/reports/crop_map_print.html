@@ -1,5 +1,6 @@
 {# reports/crop_map_print.html #}
 {% extends "base.html" %}
+{% load static planning_tags %}
 
 {% block title %}Crop Map — Week {{ week_num }} — {{ year.year }}{% endblock %}
 
@@ -100,6 +101,7 @@
         · Generated {{ today|date:"F j, Y" }}
     </div>
     
+    <div class="fp-table-scroll">
     <table>
         {# Month header row #}
         <thead>
@@ -169,6 +171,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     
     {# Legend #}
     <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; font-size:7pt;">

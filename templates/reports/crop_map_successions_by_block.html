@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}503 Successions by Block — {{ year.year }}{% endblock %}
+
+{% block content %}
+<div class="report-header">
+    <h1>503 Crop Map: Successions by Block</h1>
+    <p class="report-meta">Grouped by succession group, then crop/variety fallback.</p>
+</div>
+
+<div class="mt-1 mb-2">
+    <a href="{% url 'reports:crop_map' %}" class="btn">High-Level Block Map</a>
+    <a href="{% url 'reports:crop_map_week_by_bed' %}" class="btn">Calendar Week by Bed Grid</a>
+    <a href="{% url 'reports:crop_map_week_by_block' %}" class="btn">Calendar Week by Block Grid</a>
+    <a href="{% url 'reports:crop_map_successions' %}" class="btn btn-primary">Successions by Block</a>
+</div>
+
+{% for row in rows %}
+<div class="block-group">
+    <div class="block-group-header">{{ row.block.name }}</div>
+    <div class="fp-table-scroll">
+    <table class="compact-table">
+        <thead>
+            <tr>
+                <th>Succession</th>
+                <th>Crop</th>
+                <th>Count</th>
+                <th>Weeks</th>
+                <th>Bedfeet</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for succession in row.successions %}
+            <tr>
+                <td>{{ succession.succession_key }}</td>
+                <td>{{ succession.crop_name }}{% if succession.variety %} ({{ succession.variety }}){% endif %}</td>
+                <td>{{ succession.count }}</td>
+                <td>{{ succession.first_week }}-{{ succession.last_week }}</td>
+                <td>{{ succession.total_bedfeet }}</td>
+                <td>
+                    {% with planting=succession.plantings.0 %}
+                    {% if planting %}
+                    <a href="{% url 'planning:planting_detail' planting.id %}">Detail</a> ·
+                    <a href="{% url 'planning:planting_edit' planting.id %}">Edit</a> ·
+                    <a href="{% url 'planning:planting_revise' planting.id %}">Revise</a>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="muted">No active successions.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
