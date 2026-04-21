@@ -28,37 +28,80 @@
     }
     window.__cropPlannerDragDelegationBound = true;
 
+    var lastHighlighted = null;
+
+    function clearDropHighlight() {
+      if (lastHighlighted) {
+        lastHighlighted.classList.remove("week-cell--drop-target");
+        lastHighlighted = null;
+      }
+    }
+
+    /** Resolve the week cell under the planting bar's top-left (CP-11). */
+    function resolveDropCell(clientX, clientY) {
+      if (!dragged || dragged.grabOffsetX === undefined) {
+        return null;
+      }
+      var x = clientX - dragged.grabOffsetX;
+      var y = clientY - dragged.grabOffsetY;
+      var el = document.elementFromPoint(x, y);
+      if (!el) {
+        return null;
+      }
+      return el.closest(".week-cell");
+    }
+
     document.addEventListener("dragstart", function (e) {
       var bar = e.target.closest(".planting-bar[draggable=true]");
       if (!bar) {
         return;
       }
+      var rect = bar.getBoundingClientRect();
       dragged = {
         plantingId: bar.getAttribute("data-planting"),
         fromBlockId: bar.getAttribute("data-block-id"),
+        grabOffsetX: e.clientX - rect.left,
+        grabOffsetY: e.clientY - rect.top,
       };
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", dragged.plantingId);
     });
 
     document.addEventListener("dragend", function (e) {
+      clearDropHighlight();
       if (e.target.closest(".planting-bar[draggable=true]")) {
         dragged = null;
       }
     });
 
     document.addEventListener("dragover", function (e) {
-      var cell = e.target.closest(".week-cell");
-      if (!cell || !dragged) {
+      if (!dragged) {
         return;
       }
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
+      var cell = resolveDropCell(e.clientX, e.clientY);
+      if (cell) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      }
+      if (cell !== lastHighlighted) {
+        clearDropHighlight();
+        if (cell) {
+          cell.classList.add("week-cell--drop-target");
+          lastHighlighted = cell;
+        }
+      }
     });
 
     document.addEventListener("drop", function (e) {
-      var cell = e.target.closest(".week-cell");
-      if (!cell || !dragged) {
+      clearDropHighlight();
+      if (!dragged) {
+        return;
+      }
+      var cell = resolveDropCell(e.clientX, e.clientY);
+      if (!cell) {
+        cell = e.target.closest(".week-cell");
+      }
+      if (!cell) {
         return;
       }
       e.preventDefault();

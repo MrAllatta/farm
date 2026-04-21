@@ -12,8 +12,8 @@ from datetime import date
 from isoweek import Week
 
 from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
-from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus
-from core.planning_year import get_effective_planning_year
+from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
+from core.planning_year import get_effective_planning_year, operational_anchor_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 from sales.models import SalesEvent
 
@@ -140,6 +140,9 @@ class PlanningMatrixView(TemplateView):
         # Extract week number range for display
         week_nums = [w['num'] for w in weeks]
 
+        anchor = operational_anchor_year()
+        next_planning_year_row = PlanningYear.objects.filter(year=anchor + 1).first()
+
         ctx.update(
             {
                 "year": year_obj,
@@ -154,6 +157,9 @@ class PlanningMatrixView(TemplateView):
                 "prev_date": window_start_date - timedelta(weeks=8),
                 "next_date": window_end_date + timedelta(days=1),
                 "matrix_center_date": center_date.isoformat(),
+                # Next-season CTA (YP-1): only when session focus is the anchor calendar year
+                "next_planning_year_row": next_planning_year_row,
+                "show_start_next_season_cta": year_obj.year == anchor,
             }
         )
         return ctx

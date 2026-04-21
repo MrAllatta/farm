@@ -13,6 +13,26 @@
 {% else %}
 <form id="csrf-helper" style="display:none;">{% csrf_token %}</form>
 <div id="drag-warnings" class="drag-warnings" role="status" aria-live="polite"></div>
+{% if show_start_next_season_cta %}
+<div class="planning-next-season-banner" role="region" aria-label="Next season">
+    {% if next_planning_year_row %}
+    <p class="planning-next-season-banner__text">
+        <strong>{{ next_planning_year_row.year }}</strong> is set up — open that plan or keep working in {{ year.year }}.
+    </p>
+    <form method="post" action="{% url 'core:planning_year_focus' %}" class="planning-next-season-banner__form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="hidden" name="planning_year_id" value="{{ next_planning_year_row.id }}">
+        <button type="submit" class="btn btn-primary">Go to {{ next_planning_year_row.year }} plan</button>
+    </form>
+    {% else %}
+    <p class="planning-next-season-banner__text">
+        Ready to plan <strong>{{ year.year|add:1 }}</strong>? Copy this year&rsquo;s crop skeleton into a new planning year (no actuals).
+    </p>
+    <a href="{% url 'core:clone_plan_ui' source_year=year.year %}" class="btn btn-primary">Start next season</a>
+    {% endif %}
+</div>
+{% endif %}
 <div class="planning-header">
     <h1>{{ year.year }} Crop Planner</h1>
     <p class="muted">Plantings matrix — week-by-block view (workbook Crop Planner tab).</p>

@@ -568,6 +568,14 @@ body {
     position: relative;
 }
 
+/* Crop planner drag: drop target preview (CP-12) */
+.week-cell.week-cell--drop-target {
+    outline: 2px dashed var(--color-primary);
+    outline-offset: -2px;
+    background: rgba(45, 90, 39, 0.12);
+    z-index: 1;
+}
+
 .week-cell.fallow {
     background: var(--color-fallow);
 }
@@ -1363,6 +1371,29 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
+}
+
+/* Next-season CTA on crop planner (YP-1) */
+.planning-next-season-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin: 0.5rem 1rem 0;
+    padding: 0.65rem 1rem;
+    background: #ecfdf5;
+    border: 1px solid var(--color-primary-light);
+    border-radius: 8px;
+    font-size: 0.92rem;
+}
+
+.planning-next-season-banner__text {
+    margin: 0;
+    flex: 1 1 12rem;
+}
+
+.planning-next-season-banner__form {
+    margin: 0;
 }
 
 .drag-warnings {
