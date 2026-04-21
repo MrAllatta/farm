@@ -1620,6 +1620,11 @@ body {
     padding: 0 1rem 2rem;
 }
 
+/* planting_form partial is shared with full page; hide drawer-only close there */
+.planting-form-page .planting-drawer-close {
+    display: none !important;
+}
+
 /* ── Weekly operations (field walk / harvest needs / record harvest) ── */
 .weekops-shell {
     max-width: 72rem;

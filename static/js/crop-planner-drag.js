@@ -32,6 +32,10 @@
     return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
   }
 
+  function getPlantingDrawerBackdrop() {
+    return document.getElementById("planting-detail-backdrop");
+  }
+
   function openPlantingDrawer() {
     var el = document.getElementById("planting-detail");
     if (!el) {
@@ -39,6 +43,11 @@
     }
     el.classList.add("planting-drawer--open");
     el.setAttribute("aria-hidden", "false");
+    var backdrop = getPlantingDrawerBackdrop();
+    if (backdrop) {
+      backdrop.classList.add("planting-drawer-backdrop--open");
+      backdrop.setAttribute("aria-hidden", "false");
+    }
   }
 
   window.cropPlannerCloseDrawer = function () {
@@ -49,6 +58,11 @@
     el.classList.remove("planting-drawer--open");
     el.setAttribute("aria-hidden", "true");
     el.innerHTML = "";
+    var backdrop = getPlantingDrawerBackdrop();
+    if (backdrop) {
+      backdrop.classList.remove("planting-drawer-backdrop--open");
+      backdrop.setAttribute("aria-hidden", "true");
+    }
   };
 
   function prefillCreateUrl(blockId, week) {
@@ -483,16 +497,16 @@
       }
     });
 
-    document.addEventListener("click", function (ev) {
-      var drawer = document.getElementById("planting-detail");
-      if (!drawer || !drawer.classList.contains("planting-drawer--open")) {
-        return;
-      }
-      if (!drawer.contains(ev.target)) {
+    var backdropEl = getPlantingDrawerBackdrop();
+    if (backdropEl && !window.__cropPlannerBackdropClickBound) {
+      window.__cropPlannerBackdropClickBound = true;
+      backdropEl.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
         if (window.cropPlannerCloseDrawer) {
           window.cropPlannerCloseDrawer();
         }
-      }
-    });
+      });
+    }
   });
 })();
