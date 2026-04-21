@@ -122,6 +122,7 @@
 {% block extra_js %}
 <script>
   window.CROP_PLANNER_MOVE_URL = "{% url 'planning:planting_move' %}";
+  window.CROP_PLANNER_MATRIX_DATE = {% if matrix_center_date %}"{{ matrix_center_date }}"{% else %}null{% endif %};
 </script>
 <script src="{% static 'js/crop-planner-drag.js' %}"></script>
 {% endblock %}

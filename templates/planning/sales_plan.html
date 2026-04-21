@@ -38,6 +38,7 @@
                     {% for week in weeks %}
                     <th class="sales-plan-week-col">W{{ week }}</th>
                     {% endfor %}
+                    <th class="sales-plan-summary-col" title="Year-total all-channel demand vs harvest supply (sale units)">Σ D / Σ S</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,7 +57,7 @@
                     </td>
                     {% for cell in row.week_cells %}
                     <td class="{{ cell.css_class }}" title="{{ cell.title }}">
-                        {% if cell.shortage %}<span class="sales-plan-shortage-mark" aria-hidden="true">!</span>{% endif %}
+                        {% if cell.shortage %}<span class="sales-plan-shortage-mark" title="{{ cell.shortage_title }}" aria-label="{{ cell.shortage_title }}">!</span>{% endif %}
                         <input
                             type="number"
                             step="0.01"
@@ -67,6 +68,15 @@
                         >
                     </td>
                     {% endfor %}
+                    <td class="sales-plan-summary-col">
+                        <div title="Total demand (all channels, all weeks)">{{ row.row_total_demand }}</div>
+                        <div title="Total harvest supply (sale-unit equivalent)">{{ row.row_total_supply }}</div>
+                        {% if row.row_ratio is not None %}
+                        <div title="Supply ÷ demand">≈ {{ row.row_ratio }}</div>
+                        {% else %}
+                        <div class="muted">—</div>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

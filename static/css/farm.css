@@ -1225,6 +1225,7 @@ body {
     --sales-plan-product-col-width: 168px;
     --sales-plan-window-col-width: 88px;
     --sales-plan-week-col-width: 52px;
+    --sales-plan-summary-col-width: 96px;
     overflow: auto;
     border: 1px solid var(--color-border);
     border-radius: 4px;
@@ -1233,7 +1234,7 @@ body {
 .sales-plan-matrix {
     min-width: calc(
         var(--sales-plan-product-col-width) + var(--sales-plan-window-col-width) +
-            52 * var(--sales-plan-week-col-width)
+            52 * var(--sales-plan-week-col-width) + var(--sales-plan-summary-col-width)
     );
     border-collapse: collapse;
     width: 100%;
@@ -1295,6 +1296,17 @@ body {
     padding: 0.1rem 0.08rem;
 }
 
+.sales-plan-summary-col {
+    min-width: var(--sales-plan-summary-col-width);
+    max-width: var(--sales-plan-summary-col-width);
+    text-align: center;
+    font-size: 0.68rem;
+    line-height: 1.15;
+    vertical-align: middle;
+    color: var(--color-text-muted);
+    background: #fafafa;
+}
+
 .sales-plan-matrix tbody td.sales-plan-cell {
     min-width: var(--sales-plan-week-col-width);
     text-align: center;
@@ -1341,6 +1353,16 @@ body {
     padding: 0.08rem 0.1rem;
     line-height: 1.15;
     box-sizing: border-box;
+}
+
+.nav-menu-heading {
+    margin: 0.5rem 0 0.2rem 0.35rem;
+    padding: 0;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
 }
 
 .drag-warnings {

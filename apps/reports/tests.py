@@ -389,3 +389,77 @@ class ReportTemplateParityTests(TestCase):
         response = self.client.get(reverse("reports:crop_map_print", kwargs={"week": 12}))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reports/crop_map_print.html")
+
+
+class SeedOrderReportGroupingTests(TestCase):
+    def test_build_seed_order_rows_splits_by_variety(self):
+        from isoweek import Week
+
+        from planning.models import Planting
+        from reports.services.seed_order_report import build_seed_order_rows
+
+        year = PlanningYear.objects.create(year=3031, status="active")
+        block = Block.objects.create(
+            name="SO1",
+            block_type=BlockType.FIELD,
+            num_beds=10,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        crop = CropInfo.objects.create(
+            name="SeedOrderCrop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+            seeds_per_ounce=Decimal("1000"),
+        )
+        cs = CropBySeason.objects.create(
+            crop=crop,
+            block_type=BlockType.FIELD,
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+            ds_seed_rate=10,
+        )
+        from reference.models import Variety
+
+        v1 = Variety.objects.create(crop=crop, name="Alpha")
+        v2 = Variety.objects.create(crop=crop, name="Beta")
+        mon = Week(3031, 10).monday()
+        p1 = Planting.objects.create(
+            planning_year=year,
+            crop=crop,
+            crop_season=cs,
+            block=block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=100,
+            planned_plant_date=mon,
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon,
+            planned_total_yield=Decimal("100"),
+            variety_obj=v1,
+        )
+        p2 = Planting.objects.create(
+            planning_year=year,
+            crop=crop,
+            crop_season=cs,
+            block=block,
+            bed_start=2,
+            bed_end=2,
+            planned_bedfeet=50,
+            planned_plant_date=mon,
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon,
+            planned_total_yield=Decimal("50"),
+            variety_obj=v2,
+        )
+        rows = build_seed_order_rows([p1, p2], 1.0)
+        labels = sorted({r["variety_label"] for r in rows})
+        self.assertEqual(labels, ["Alpha", "Beta"])
