@@ -1,0 +1,57 @@
+{# operations/pack_prep.html #}
+{% extends "base.html" %}
+{% block title %}Pack prep{% endblock %}
+{% block content %}
+<section class="page-header">
+    <h1>Pack prep</h1>
+    <p>Plan vs packed quantities and crop cooler balance for a market day.</p>
+    <p><a class="btn" href="{% url 'operations:pack_batch_record' %}">Record pack batch</a></p>
+</section>
+
+<form method="get" class="panel" style="margin-bottom:1rem;">
+    <label>Channel
+        <select name="channel" onchange="this.form.submit()">
+            {% for ch in channels %}
+            <option value="{{ ch.id }}" {% if channel and ch.id == channel.id %}selected{% endif %}>{{ ch.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Pack / market date
+        <input type="date" name="pack_date" value="{{ pack_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+    </label>
+    <noscript><button type="submit" class="btn">Apply</button></noscript>
+</form>
+
+{% if channel %}
+<section class="panel">
+    <div class="fp-table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Planned</th>
+                <th>Packed</th>
+                <th>Shortfall</th>
+                <th>Crop balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.product.product_name }}</td>
+                <td>{{ row.planned_qty|floatformat:2 }} {{ row.product.sale_unit }}</td>
+                <td>{{ row.packed_qty|floatformat:2 }}</td>
+                <td>{% if row.shortfall > 0 %}<strong>{{ row.shortfall|floatformat:2 }}</strong>{% else %}—{% endif %}</td>
+                <td>{{ row.crop_balance|floatformat:2 }} {{ row.product.crop.harvest_unit }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No plan rows for this channel and date. Use Sales Plan to add <code>PLAN</code> sales events.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% else %}
+<p class="muted">Create a sales channel first.</p>
+{% endif %}
+{% endblock %}

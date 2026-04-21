@@ -1,22 +1,29 @@
 {# operations/inventory.html #}
 {% extends "base.html" %}
 
-{% block title %}Storage Inventory{% endblock %}
+{% block title %}Inventory{% endblock %}
 
 {% block content %}
 <section class="page-header">
-    <h1>Storage Inventory</h1>
+    <h1>Inventory (fresh + storage)</h1>
     <p>
-        Inventory items: {{ total_items }} |
+        Items: {{ total_items }} |
         Critical: {{ critical_count }} |
         Warning: {{ warning_count }}
     </p>
-    <p>Estimated value: ${{ total_value|floatformat:2 }}</p>
+    <p>Estimated value (all): ${{ total_value|floatformat:2 }}</p>
     <p><a class="btn" href="{% url 'operations:inventory_add' %}">Record Inventory Transaction</a></p>
 </section>
 
-{% if items %}
+{% if fresh_items %}
 <section class="panel">
+    <h2>Fresh (cooler / field)</h2>
+    <p>
+        Items: {{ fresh_rollup.total_items }} |
+        Critical: {{ fresh_rollup.critical_count }} |
+        Warning: {{ fresh_rollup.warning_count }} |
+        Est. value: ${{ fresh_rollup.total_value|floatformat:2 }}
+    </p>
     <div class="fp-table-scroll">
     <table>
         <thead>
@@ -31,7 +38,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in items %}
+            {% for item in fresh_items %}
             <tr>
                 <td>{{ item.crop.name }}</td>
                 <td>{{ item.balance|floatformat:2 }} {{ item.unit }}</td>
@@ -58,10 +65,64 @@
     </table>
     </div>
 </section>
-{% else %}
+{% endif %}
+
+{% if storage_items %}
 <section class="panel">
-    <h2>No storage inventory yet</h2>
-    <p>Use "Record Inventory Transaction" to create the first ledger entry.</p>
+    <h2>Storage crops</h2>
+    <p>
+        Items: {{ storage_rollup.total_items }} |
+        Critical: {{ storage_rollup.critical_count }} |
+        Warning: {{ storage_rollup.warning_count }} |
+        Est. value: ${{ storage_rollup.total_value|floatformat:2 }}
+    </p>
+    <div class="fp-table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Crop</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Weekly Draw</th>
+                <th>Runout</th>
+                <th>Expiry</th>
+                <th>Storage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in storage_items %}
+            <tr>
+                <td>{{ item.crop.name }}</td>
+                <td>{{ item.balance|floatformat:2 }} {{ item.unit }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.weekly_draw|floatformat:2 }} {{ item.unit }}</td>
+                <td>
+                    {% if item.runout_date %}
+                    {{ item.runout_date|date:"Y-m-d" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.expiry_date %}
+                    {{ item.expiry_date|date:"Y-m-d" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ item.storage_location|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% endif %}
+
+{% if not fresh_items and not storage_items %}
+<section class="panel">
+    <h2>No inventory yet</h2>
+    <p>Record harvest actuals (auto ledger), use harvest-to-inventory adjustments, or add a transaction to seed balances.</p>
 </section>
 {% endif %}
 {% endblock %}

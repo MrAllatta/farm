@@ -14,6 +14,21 @@ from reference.models import SalesChannel, CropSalesFormat
 from operations.models import PackAllocation
 
 
+def _carryover_return_events(channel, product, sale_date, days=14):
+    """Prior market days with returns (candidate sources for resale lineage)."""
+    since = sale_date - timedelta(days=days)
+    return list(
+        SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=channel,
+            product=product,
+            sale_date__lt=sale_date,
+            sale_date__gte=since,
+            returned_quantity__gt=0,
+        ).order_by("-sale_date")
+    )
+
+
 class MarketSalesEntryView(TemplateView):
     """Record sales for a market day — quick or detailed mode."""
 
@@ -84,6 +99,8 @@ class MarketSalesEntryView(TemplateView):
                         "existing_sold": existing.actual_quantity if existing else None,
                         "existing_revenue": existing.actual_revenue if existing else None,
                         "existing_returned": existing.returned_quantity if existing else None,
+                        "carryovers": _carryover_return_events(channel, pa.product, sale_date),
+                        "existing_drawn_id": existing.drawn_from_return_id if existing else None,
                     }
                 )
         elif products:
@@ -97,6 +114,8 @@ class MarketSalesEntryView(TemplateView):
                         "existing_sold": existing.actual_quantity if existing else None,
                         "existing_revenue": existing.actual_revenue if existing else None,
                         "existing_returned": existing.returned_quantity if existing else None,
+                        "carryovers": _carryover_return_events(channel, product, sale_date),
+                        "existing_drawn_id": existing.drawn_from_return_id if existing else None,
                     }
                 )
 
@@ -226,20 +245,40 @@ class MarketSalesEntryView(TemplateView):
                     .first()
                 )
 
+                drawn_key = f"drawn_from_return_{product_id}"
+                drawn_from_return_id = None
+                if drawn_key in request.POST:
+                    raw_dr = (request.POST.get(drawn_key) or "").strip()
+                    if raw_dr:
+                        try:
+                            SalesEvent.objects.get(
+                                pk=int(raw_dr),
+                                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                                channel=channel,
+                                product=product,
+                            )
+                            drawn_from_return_id = int(raw_dr)
+                        except (ValueError, SalesEvent.DoesNotExist):
+                            drawn_from_return_id = None
+
+                defaults = {
+                    "actual_quantity": sold_qty,
+                    "actual_revenue": revenue,
+                    "actual_price": actual_price,
+                    "brought_quantity": brought_qty,
+                    "returned_quantity": returned_qty,
+                    "pack_batch_id": pack_batch,
+                    "notes": notes,
+                }
+                if drawn_key in request.POST:
+                    defaults["drawn_from_return_id"] = drawn_from_return_id
+
                 SalesEvent.objects.update_or_create(
                     entry_kind=SalesEvent.EntryKind.ACTUAL,
                     channel=channel,
                     sale_date=sale_date,
                     product=product,
-                    defaults={
-                        "actual_quantity": sold_qty,
-                        "actual_revenue": revenue,
-                        "actual_price": actual_price,
-                        "brought_quantity": brought_qty,
-                        "returned_quantity": returned_qty,
-                        "pack_batch_id": pack_batch,
-                        "notes": notes,
-                    },
+                    defaults=defaults,
                 )
 
                 total_revenue += revenue

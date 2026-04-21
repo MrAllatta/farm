@@ -1753,11 +1753,15 @@ class Command(BaseCommand):
                     data["notes"] = row.get("Notes", "").strip()
 
                     if not self.write_disabled:
-                        obj, created = HarvestEvent.objects.update_or_create(
-                            planting=planting,
-                            planned_date=planned_date,
-                            defaults=data,
-                        )
+                        obj = HarvestEvent.objects.filter(
+                            planting=planting, planned_date=planned_date
+                        ).first()
+                        created = obj is None
+                        if created:
+                            obj = HarvestEvent(planting=planting)
+                        for k, v in data.items():
+                            setattr(obj, k, v)
+                        obj.save(skip_inventory_ledger_sync=True)
                         self.stats["HarvestEvent"]["created" if created else "processed"] += 1
                         # Cache harvest events for inventory lookups
                         cache_key = (planting_id, str(planned_date))
@@ -2365,13 +2369,23 @@ class Command(BaseCommand):
                             data["pack_batch"] = batch
 
                     if not self.write_disabled:
-                        obj, created = SalesEvent.objects.update_or_create(
+                        obj = SalesEvent.objects.filter(
                             entry_kind=SalesEvent.EntryKind.ACTUAL,
                             channel=channel,
                             sale_date=data["sale_date"],
                             product=product_obj,
-                            defaults=data,
-                        )
+                        ).first()
+                        created = obj is None
+                        if created:
+                            obj = SalesEvent(
+                                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                                channel=channel,
+                                sale_date=data["sale_date"],
+                                product=product_obj,
+                            )
+                        for k, v in data.items():
+                            setattr(obj, k, v)
+                        obj.save(skip_inventory_ledger_sync=True)
                         self.stats["SalesEvent"]["created" if created else "processed"] += 1
                     else:
                         self.stats["SalesEvent"]["processed"] += 1

@@ -148,6 +148,9 @@ class PackBatch(models.Model):
     def post_component_consumption(self):
         """
         Write deterministic inventory drawdown for crop-backed component rows.
+
+        TODO: event_type uses ``sale_out`` today; a dedicated ``pack_out`` (or
+        nested finished-goods ledger) would separate mix consumption from customer sales.
         """
         components = self.components.select_related("source_crop").all()
         if not components.exists():

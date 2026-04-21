@@ -10,7 +10,18 @@
         <a href="{% url 'planning:nursery_records' %}">Record</a>
     </li>
     {% empty %}
-    <li class="muted">Nothing due.</li>
+    <li class="muted">Nothing due in greenhouse.</li>
+    {% endfor %}
+</ul>
+<h2>Direct seed (field)</h2>
+<ul>
+    {% for p in direct_seed_plantings %}
+    <li>
+        <strong>{{ p.planned_plant_date }}</strong> — Direct seed —
+        {{ p.crop.name }} ({{ p.block.name }} b{{ p.bed_start }}-{{ p.bed_end }})
+    </li>
+    {% empty %}
+    <li class="muted">No direct-seed plantings in this window.</li>
     {% endfor %}
 </ul>
 {% endblock %}

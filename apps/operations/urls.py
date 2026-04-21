@@ -33,4 +33,6 @@ urlpatterns = [
     path("missing-plantings/", views.MissingPlantingsView.as_view(), name="missing_plantings"),
     path("print/planting-list/", views.PrintablePlantingListView.as_view(), name="planting_list_print"),
     path("print/seeding-todo/", views.PrintableSeedingTodoView.as_view(), name="seeding_todo_print"),
+    path("pack/prep/", views.PackPrepView.as_view(), name="pack_prep"),
+    path("pack/record/", views.PackBatchRecordView.as_view(), name="pack_batch_record"),
 ]

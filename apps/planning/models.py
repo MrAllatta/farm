@@ -82,6 +82,11 @@ class Planting(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        old_actual_plant_date = None
+        if self.pk:
+            old_actual_plant_date = (
+                Planting.objects.filter(pk=self.pk).values_list("actual_plant_date", flat=True).first()
+            )
         # Auto-calculate planned fields from crop_season
         if not self.planned_first_harvest_date and self.planned_plant_date:
             self.planned_first_harvest_date = self.planned_plant_date + timedelta(
@@ -96,6 +101,25 @@ class Planting(models.Model):
                 self.planned_bedfeet * self.crop_season.total_yield_per_bedfoot
             )
         super().save(*args, **kwargs)
+        self._apply_actual_plant_date_harvest_shift(old_actual_plant_date)
+
+    PLANT_DATE_DRIFT_DAYS = 3
+
+    def _apply_actual_plant_date_harvest_shift(self, old_actual_plant_date) -> None:
+        """When actual_plant_date is first set and far from planned, shift pending harvest weeks."""
+        new_date = self.actual_plant_date
+        if new_date is None:
+            return
+        if old_actual_plant_date is not None:
+            return
+        delta = new_date - self.planned_plant_date
+        if abs(delta.days) <= self.PLANT_DATE_DRIFT_DAYS:
+            return
+        shift = timedelta(days=delta.days)
+        pending = self.harvest_events.filter(actual_quantity__isnull=True)
+        for he in pending:
+            he.planned_date = he.planned_date + shift
+            he.save(update_fields=["planned_date"])
 
     def generate_nursery_events(self):
         """Create nursery events from crop info."""
@@ -225,6 +249,23 @@ class HarvestEvent(models.Model):
     @property
     def planned_week(self):
         return self.planned_date.isocalendar()[1]
+
+    def save(self, *args, **kwargs):
+        skip_inv = kwargs.pop("skip_inventory_ledger_sync", False)
+        old_actual = None
+        if self.pk:
+            old_actual = (
+                HarvestEvent.objects.filter(pk=self.pk)
+                .values_list("actual_quantity", flat=True)
+                .first()
+            )
+        super().save(*args, **kwargs)
+        if skip_inv:
+            return
+        if self.actual_quantity is not None:
+            from operations.services.inventory_ledger_sync import sync_harvest_event_ledger
+
+            sync_harvest_event_ledger(self, old_actual)
 
     def record_bins(self, bin_count, bin_type=None):
         """Convert bin count to quantity using crop info."""

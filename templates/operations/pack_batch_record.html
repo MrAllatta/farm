@@ -1,0 +1,28 @@
+{# operations/pack_batch_record.html #}
+{% extends "base.html" %}
+{% block title %}Record pack batch{% endblock %}
+{% block content %}
+<section class="page-header">
+    <h1>Record pack batch</h1>
+    <p>Creates a <code>PackBatch</code>, optional mix components from the active recipe, a <code>PackAllocation</code> to the channel, and optionally posts inventory consumption for mixes.</p>
+    <p><a class="btn" href="{% url 'operations:pack_prep' %}">← Pack prep</a></p>
+</section>
+
+<section class="panel">
+    <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="message message-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <table class="detail-table">
+            {% for field in form %}
+            <tr>
+                <th>{{ field.label_tag }}</th>
+                <td>{{ field }}{% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}{{ field.errors }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</section>
+{% endblock %}

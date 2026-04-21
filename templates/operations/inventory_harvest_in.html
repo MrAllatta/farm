@@ -25,6 +25,17 @@
 </section>
 
 <section class="panel">
+    <h2>Manual adjustment</h2>
+    <p>Add or remove inventory for this crop (e.g. cooler count correction). Uses an <code>adjustment</code> ledger row.</p>
+    <form method="post">
+        {% csrf_token %}
+        <label>Quantity (+ add / − remove) <input type="text" name="adjustment_quantity" required placeholder="e.g. -2.5"></label>
+        <label>Notes <input type="text" name="notes" style="width:min(100%,28rem);"></label>
+        <button type="submit" class="btn">Save adjustment</button>
+    </form>
+</section>
+
+<section class="panel">
     <h2>Recent Inventory Entries</h2>
     {% if recent_ledger_entries %}
     <div class="fp-table-scroll">

@@ -12,7 +12,7 @@ from core.planning_year import resolve_current_planning_year
 from planning.models import HarvestEvent, NurseryEvent, Planting
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import Block, SalesChannel, CropSalesFormat
-from operations.models import PackBatch, PackBatchComponent
+from operations.models import InventoryLedger, PackAllocation, PackBatch, PackBatchComponent
 from .mixins import AnalyzeViewMixin, ReportContextMixin
 from .services.crop_maps import CropMapOccupancyService
 
@@ -122,7 +122,7 @@ class WeeklySchedulePrintView(ReportContextMixin, TemplateView):
 
 
 class PackListPrintView(ReportContextMixin, TemplateView):
-    """Pack list print"""
+    """Pack list print — primary source: PackAllocation rows for the week."""
 
     template_name = "reports/pack_list_print.html"
 
@@ -132,18 +132,7 @@ class PackListPrintView(ReportContextMixin, TemplateView):
         week_num = self.resolve_week(kwargs["week"])
         week_monday, week_sunday = self.week_window(year_obj.year, week_num)
         channels = list(SalesChannel.objects.all())
-        harvest_events = list(
-            HarvestEvent.objects.filter(
-                planting__planning_year=year_obj,
-                planned_date__gte=week_monday,
-                planned_date__lte=week_sunday,
-            )
-            .exclude(planting__status__in=self.excluded_statuses)
-            .select_related("planting__crop", "planting__block")
-            .order_by("planting__crop__name", "planting__block__walk_route_order", "planting__bed_start")
-        )
 
-        fresh_items = []
         projected_revenue = {}
         for channel in channels:
             planned_total = (
@@ -158,19 +147,60 @@ class PackListPrintView(ReportContextMixin, TemplateView):
             )
             projected_revenue[channel.id] = planned_total
 
-        for event in harvest_events:
-            crop = event.planting.crop
-            best_format = crop.sales_formats.filter(is_active=True).order_by("-sale_price").first()
-            fresh_items.append(
-                {
-                    "product_name": best_format.product_name if best_format else crop.name,
-                    "price": best_format.sale_price if best_format else Decimal("0"),
-                    "harvested": event.planned_quantity,
-                    "unit": event.planned_units,
-                    "channel_qtys": {},
-                    "wholesale_qty": event.planned_quantity,
-                }
+        allocations = (
+            PackAllocation.objects.filter(
+                pack_date__gte=week_monday,
+                pack_date__lte=week_sunday,
             )
+            .select_related("product", "product__crop", "channel")
+            .order_by("product__crop__name", "product__product_name", "channel_id")
+        )
+
+        by_product: dict[int, dict] = {}
+        for pa in allocations:
+            pid = pa.product_id
+            if pid not in by_product:
+                p = pa.product
+                crop = p.crop
+                by_product[pid] = {
+                    "product": p,
+                    "product_name": p.product_name,
+                    "price": p.sale_price,
+                    "unit": p.sale_unit,
+                    "crop": crop,
+                    "channel_qtys": {c.id: Decimal("0") for c in channels},
+                    "packed_total": Decimal("0"),
+                }
+            by_product[pid]["channel_qtys"][pa.channel_id] = by_product[pid]["channel_qtys"].get(
+                pa.channel_id, Decimal("0")
+            ) + pa.quantity
+            by_product[pid]["packed_total"] += pa.quantity
+
+        def _ledger_on_hand(crop_id):
+            last = (
+                InventoryLedger.objects.filter(crop_id=crop_id)
+                .order_by("-event_date", "-created_at", "-id")
+                .first()
+            )
+            return last.running_balance if last else Decimal("0")
+
+        fresh_items = []
+        storage_items = []
+        for row in sorted(by_product.values(), key=lambda r: (r["crop"].name, r["product_name"])):
+            crop = row["crop"]
+            item = {
+                "product_name": row["product_name"],
+                "price": row["price"],
+                "harvested": row["packed_total"],
+                "unit": row["unit"],
+                "channel_qtys": row["channel_qtys"],
+                "wholesale_qty": row["packed_total"],
+            }
+            if crop.fresh_or_storage == "storage":
+                item["on_hand"] = _ledger_on_hand(crop.id)
+                storage_items.append(item)
+            else:
+                fresh_items.append(item)
 
         ctx.update(
             {
@@ -178,7 +208,7 @@ class PackListPrintView(ReportContextMixin, TemplateView):
                 "pack_date": week_monday + timedelta(days=4),
                 "channels": channels,
                 "fresh_items": fresh_items,
-                "storage_items": [],
+                "storage_items": storage_items,
                 "projected_revenue": projected_revenue,
             }
         )

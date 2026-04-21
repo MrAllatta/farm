@@ -1,2 +1,94 @@
 {# sales/market_entry.html #}
 {% extends "base.html" %}
+{% block title %}Market sales — {{ channel.name }}{% endblock %}
+{% block content %}
+<section class="page-header">
+    <h1>Market sales</h1>
+    <p>{{ channel.name }} · {{ sale_date|date:"l, F j, Y" }}</p>
+    <form method="get" style="display:inline-flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+        <label>Channel
+            <select name="channel" onchange="this.form.submit()">
+                {% for ch in channels %}
+                <option value="{{ ch.id }}" {% if ch.id == channel.id %}selected{% endif %}>{{ ch.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Date <input type="date" name="date" value="{{ sale_date|date:'Y-m-d' }}" onchange="this.form.submit()"></label>
+        <noscript><button type="submit" class="btn">Go</button></noscript>
+    </form>
+    <p class="muted">
+        <a href="?channel={{ channel.id }}&date={{ prev_date|date:'Y-m-d' }}">← prior week</a>
+        ·
+        <a href="?channel={{ channel.id }}&date={{ next_date|date:'Y-m-d' }}">next week →</a>
+    </p>
+</section>
+
+<section class="panel">
+    <h2>Quick entry (totals only)</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="channel_id" value="{{ channel.id }}">
+        <input type="hidden" name="sale_date" value="{{ sale_date|date:'Y-m-d' }}">
+        <input type="hidden" name="mode" value="quick">
+        <label>Cash <input type="text" name="total_cash" value="{{ quick_entry.total_cash|default:'0' }}"></label>
+        <label>Card <input type="text" name="total_card" value="{{ quick_entry.total_card|default:'0' }}"></label>
+        <label>Notes <input type="text" name="notes" value="{{ quick_entry.notes|default:'' }}" style="width:min(100%,24rem);"></label>
+        <button type="submit" class="btn btn-primary">Save quick entry</button>
+    </form>
+</section>
+
+<section class="panel">
+    <h2>Detailed by product</h2>
+    {% if weekly_target %}
+    <p>Weekly revenue target (active week): ${{ weekly_target|floatformat:2 }}</p>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="channel_id" value="{{ channel.id }}">
+        <input type="hidden" name="sale_date" value="{{ sale_date|date:'Y-m-d' }}">
+        <input type="hidden" name="mode" value="detailed">
+        <div class="fp-table-scroll">
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Brought</th>
+                    <th>Sold</th>
+                    <th>Price</th>
+                    <th>Prior returns (resale)</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in entry_items %}
+                <tr>
+                    <td>{{ row.product.product_name }} <small class="muted">{{ row.product.crop.name }}</small></td>
+                    <td><input type="text" name="brought_{{ row.product.id }}" value="{{ row.brought|default:'' }}" size="6"></td>
+                    <td><input type="text" name="sold_{{ row.product.id }}" value="{{ row.existing_sold|default:'' }}" size="6"></td>
+                    <td><input type="text" name="price_{{ row.product.id }}" value="{{ row.product.sale_price|floatformat:2 }}" size="6"></td>
+                    <td>
+                        {% if row.carryovers %}
+                        <select name="drawn_from_return_{{ row.product.id }}">
+                            <option value="">—</option>
+                            {% for co in row.carryovers %}
+                            <option value="{{ co.id }}" {% if row.existing_drawn_id == co.id %}selected{% endif %}>
+                                {{ co.sale_date }}: returned {{ co.returned_quantity|floatformat:1 }} {{ row.product.sale_unit }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td><input type="text" name="notes_{{ row.product.id }}" placeholder="notes" style="width:8rem;"></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No products. Add pack allocations or active crop products.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <button type="submit" class="btn btn-primary">Save detailed entries</button>
+    </form>
+</section>
+{% endblock %}

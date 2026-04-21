@@ -25,6 +25,13 @@
         in {{ rotation_last_year }} ({{ rotation_gap }}yr gap, minimum {{ rotation_min }}yr)
     </div>
     {% endif %}
+
+    {% if plant_date_drift_banner %}
+    <div class="warning">
+        Actual plant date differs from plan by {{ plant_date_drift_banner }} day(s) (&gt; {{ planting.PLANT_DATE_DRIFT_DAYS }}d).
+        Pending harvest weeks were shifted when actual plant date was first recorded.
+    </div>
+    {% endif %}
     
     <table class="detail-table">
         <tr>

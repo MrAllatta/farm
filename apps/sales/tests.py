@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from operations.models import PackBatch
+from operations.models import InventoryLedger, PackBatch
 from reference.models import CropInfo, CropSalesFormat, SalesChannel
 from planning.models import PlanningYear
 from sales.models import QuickSalesEntry, SalesEvent
@@ -124,3 +124,39 @@ class SalesModelTests(TestCase):
             actual_revenue=Decimal("31.50"),
         )
         self.assertEqual(event.pack_batch, pack_batch)
+
+    def test_actual_sales_event_writes_sale_out_ledger(self):
+        SalesEvent.objects.create(
+            channel=self.channel,
+            sale_date=date(2026, 7, 1),
+            product=self.product,
+            actual_quantity=Decimal("4.00"),
+            actual_revenue=Decimal("14.00"),
+        )
+        le = InventoryLedger.objects.filter(crop=self.product.crop, event_type="sale_out").first()
+        self.assertIsNotNone(le)
+        self.assertEqual(le.quantity, Decimal("-4.00"))
+
+    def test_return_in_ledger_and_resale_drawn_from_return(self):
+        prior = SalesEvent.objects.create(
+            channel=self.channel,
+            sale_date=date(2026, 7, 1),
+            product=self.product,
+            actual_quantity=Decimal("10.00"),
+            brought_quantity=Decimal("12.00"),
+            returned_quantity=Decimal("2.00"),
+        )
+        ret = InventoryLedger.objects.filter(
+            crop=self.product.crop, event_type="return_in"
+        ).order_by("-id").first()
+        self.assertIsNotNone(ret)
+        self.assertEqual(ret.quantity, Decimal("2.00"))
+
+        resale = SalesEvent.objects.create(
+            channel=self.channel,
+            sale_date=date(2026, 7, 8),
+            product=self.product,
+            actual_quantity=Decimal("1.50"),
+            drawn_from_return=prior,
+        )
+        self.assertEqual(resale.drawn_from_return_id, prior.pk)

@@ -38,6 +38,13 @@ class SalesEvent(models.Model):
         blank=True,
         related_name="sales_events",
     )
+    drawn_from_return = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resale_draws",
+    )
 
     planned_quantity = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     planned_revenue = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -61,6 +68,26 @@ class SalesEvent(models.Model):
     @property
     def sale_week(self):
         return self.sale_date.isocalendar()[1]
+
+    def save(self, *args, **kwargs):
+        skip_inv = kwargs.pop("skip_inventory_ledger_sync", False)
+        old_actual = None
+        old_returned = None
+        if self.pk:
+            prev = (
+                SalesEvent.objects.filter(pk=self.pk)
+                .values("actual_quantity", "returned_quantity")
+                .first()
+            )
+            if prev:
+                old_actual = prev["actual_quantity"]
+                old_returned = prev["returned_quantity"]
+        super().save(*args, **kwargs)
+        if skip_inv:
+            return
+        from operations.services.inventory_ledger_sync import sync_sales_event_ledger
+
+        sync_sales_event_ledger(self, old_actual, old_returned)
 
     class Meta:
         ordering = ["sale_date", "channel"]

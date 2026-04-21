@@ -3,13 +3,16 @@
 from django.views.generic import TemplateView, FormView
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.db.models import Q, Max, Subquery, OuterRef, Sum
 from django.http import Http404, HttpResponse
+from django.urls import reverse
 from datetime import date, timedelta
 from isoweek import Week
 from django import forms
-from reference.models import CropInfo, CropSalesFormat
-from operations.models import InventoryLedger, FieldWalkNote
+from reference.models import CropInfo, CropSalesFormat, ProductRecipe, SalesChannel
+from operations.models import InventoryLedger, FieldWalkNote, PackAllocation, PackBatch, PackBatchComponent
+from sales.models import SalesEvent
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlantingStatus
 from core.planning_year import get_effective_planning_year
 from decimal import Decimal
@@ -31,9 +34,43 @@ class OperationsPlanningYearMixin:
 
 
 class InventoryHarvestInView(TemplateView):
-    """Add harvest to inventory"""
+    """Harvest to inventory: review auto ledger rows and post manual adjustments."""
 
     template_name = "operations/inventory_harvest_in.html"
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
+        harvest_event = get_object_or_404(
+            HarvestEvent.objects.select_related("planting", "planting__crop"),
+            pk=kwargs["harvest_event_id"],
+        )
+        raw = (request.POST.get("adjustment_quantity") or "").strip()
+        notes = (request.POST.get("notes") or "").strip()
+        try:
+            qty = Decimal(raw)
+        except Exception:
+            messages.warning(request, "Invalid adjustment quantity.")
+            return redirect("operations:inventory_harvest_in", harvest_event_id=harvest_event.pk)
+        if qty == 0:
+            messages.warning(request, "Enter a non-zero adjustment (use negative to remove inventory).")
+            return redirect("operations:inventory_harvest_in", harvest_event_id=harvest_event.pk)
+
+        from operations.services.inventory_ledger_sync import append_ledger_entry
+
+        crop = harvest_event.planting.crop
+        append_ledger_entry(
+            crop,
+            date.today(),
+            "adjustment",
+            qty,
+            harvest_event=harvest_event,
+            notes=f"Manual harvest/inventory adjustment. {notes}".strip(),
+        )
+        messages.success(request, f"Recorded adjustment of {qty} {crop.harvest_unit} for {crop.name}.")
+        return redirect("operations:inventory_harvest_in", harvest_event_id=harvest_event.pk)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -237,6 +274,9 @@ class WeeklyHarvestEntryView(TemplateView):
                     "has_actual": he.actual_quantity is not None,
                     "actual_qty": he.actual_quantity,
                     "actual_bins": he.actual_bins,
+                    "cooler_in_url": reverse(
+                        "operations:inventory_harvest_in", kwargs={"harvest_event_id": he.id}
+                    ),
                 }
             )
 
@@ -315,7 +355,7 @@ class WeeklyHarvestEntryView(TemplateView):
 
 
 class InventoryDashboardView(TemplateView):
-    """Storage crop inventory with drawdown projections."""
+    """Crop inventory (fresh + storage) with drawdown projections."""
 
     template_name = "operations/inventory.html"
 
@@ -441,9 +481,26 @@ class InventoryDashboardView(TemplateView):
             else:
                 item["estimated_value"] = None
 
+        fresh_items = [i for i in inventory_items if i["crop"].fresh_or_storage == "fresh"]
+        storage_items = [i for i in inventory_items if i["crop"].fresh_or_storage == "storage"]
+
+        def _rollup(section):
+            return {
+                "total_items": len(section),
+                "total_value": sum(
+                    (i["estimated_value"] or Decimal("0")) for i in section
+                ),
+                "critical_count": sum(1 for i in section if i["status"] == "critical"),
+                "warning_count": sum(1 for i in section if i["status"] == "warning"),
+            }
+
         ctx.update(
             {
                 "items": inventory_items,
+                "fresh_items": fresh_items,
+                "storage_items": storage_items,
+                "fresh_rollup": _rollup(fresh_items),
+                "storage_rollup": _rollup(storage_items),
                 "total_items": len(inventory_items),
                 "total_value": total_value,
                 "critical_count": sum(1 for i in inventory_items if i["status"] == "critical"),
@@ -459,7 +516,9 @@ class InventoryTransactionView(FormView):
     template_name = "operations/inventory_transaction.html"
 
     class TransactionForm(forms.Form):
-        crop = forms.ModelChoiceField(queryset=CropInfo.objects.filter(fresh_or_storage="storage"))
+        crop = forms.ModelChoiceField(
+            queryset=CropInfo.objects.all().order_by("fresh_or_storage", "crop_type", "name")
+        )
         event_type = forms.ChoiceField(
             choices=[
                 ("sale_out", "Sold / Packed for Market"),
@@ -959,3 +1018,169 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
             }
         )
         return ctx
+
+
+class PackPrepView(OperationsPlanningYearMixin, TemplateView):
+    """Packing checklist: plan vs packed vs cooler balance for a channel and date."""
+
+    template_name = "operations/pack_prep.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        channel_id = self.request.GET.get("channel")
+        pdate_raw = self.request.GET.get("pack_date")
+        channel = (
+            get_object_or_404(SalesChannel, pk=channel_id)
+            if channel_id
+            else SalesChannel.objects.order_by("allocation_priority", "id").first()
+        )
+        pack_date = date.today()
+        if pdate_raw:
+            try:
+                pack_date = date.fromisoformat(pdate_raw)
+            except ValueError:
+                pass
+
+        rows = []
+        if channel:
+            plan_rows = SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.year_obj,
+                channel=channel,
+                sale_date=pack_date,
+            ).select_related("product", "product__crop")
+
+            for pl in plan_rows:
+                if not pl.product_id:
+                    continue
+                planned_qty = pl.planned_quantity or Decimal("0")
+                packed = (
+                    PackAllocation.objects.filter(
+                        channel=channel,
+                        product_id=pl.product_id,
+                        pack_date=pack_date,
+                    ).aggregate(total=Sum("quantity"))["total"]
+                    or Decimal("0")
+                )
+                crop = pl.product.crop
+                bal = (
+                    InventoryLedger.objects.filter(crop=crop)
+                    .order_by("-event_date", "-created_at", "-id")
+                    .first()
+                )
+                on_hand = bal.running_balance if bal else Decimal("0")
+                rows.append(
+                    {
+                        "product": pl.product,
+                        "planned_qty": planned_qty,
+                        "packed_qty": packed,
+                        "shortfall": max(Decimal("0"), planned_qty - packed),
+                        "crop_balance": on_hand,
+                    }
+                )
+
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "channel": channel,
+                "channels": SalesChannel.objects.order_by("allocation_priority", "name"),
+                "pack_date": pack_date,
+                "rows": rows,
+            }
+        )
+        return ctx
+
+
+class PackBatchRecordForm(forms.Form):
+    channel = forms.ModelChoiceField(
+        queryset=SalesChannel.objects.all().order_by("allocation_priority", "name")
+    )
+    product = forms.ModelChoiceField(
+        queryset=CropSalesFormat.objects.filter(is_active=True)
+        .select_related("crop")
+        .order_by("crop__name", "product_name")
+    )
+    pack_date = forms.DateField()
+    packed_quantity = forms.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal("0.01"))
+    packed_unit = forms.CharField(max_length=20, required=False, help_text="Defaults to product sale unit.")
+    post_consumption = forms.BooleanField(
+        required=False,
+        initial=True,
+        help_text="For mix products, post crop drawdown to inventory ledger after save.",
+    )
+
+
+class PackBatchRecordView(OperationsPlanningYearMixin, FormView):
+    template_name = "operations/pack_batch_record.html"
+    form_class = PackBatchRecordForm
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={self.request.path}")
+        if not self.request.user.is_staff:
+            return HttpResponse(status=403)
+
+        channel = form.cleaned_data["channel"]
+        product = form.cleaned_data["product"]
+        pack_date = form.cleaned_data["pack_date"]
+        pq = form.cleaned_data["packed_quantity"]
+        pu = (form.cleaned_data["packed_unit"] or "").strip() or product.sale_unit
+        post_consume = form.cleaned_data["post_consumption"]
+
+        batch = PackBatch.objects.create(
+            product=product,
+            packed_quantity=pq,
+            packed_unit=pu,
+            pack_date=pack_date,
+            notes=f"Recorded via pack batch form ({channel.name})",
+        )
+
+        recipe = ProductRecipe.objects.filter(product=product, is_active=True).first()
+        if recipe:
+            out_u = (recipe.output_unit or product.sale_unit or "").strip().casefold()
+            if out_u != pu.strip().casefold():
+                batch.delete()
+                form.add_error(
+                    None,
+                    "Packed unit must match the active recipe output unit "
+                    f"({recipe.output_unit or product.sale_unit}).",
+                )
+                return self.form_invalid(form)
+            factor = pq
+            for rc in recipe.components.select_related("source_crop", "source_product").order_by(
+                "sort_order", "id"
+            ):
+                PackBatchComponent.objects.create(
+                    pack_batch=batch,
+                    source_crop=rc.source_crop,
+                    source_product=rc.source_product,
+                    consumed_quantity=rc.component_quantity * factor,
+                    consumed_unit=rc.component_unit,
+                    component_percent=rc.component_percent,
+                )
+            if post_consume:
+                try:
+                    batch.post_component_consumption()
+                except ValidationError as e:
+                    batch.delete()
+                    form.add_error(None, e.messages[0] if e.messages else str(e))
+                    return self.form_invalid(form)
+        PackAllocation.objects.create(
+            channel=channel,
+            product=product,
+            pack_date=pack_date,
+            quantity=pq,
+            pack_batch=batch,
+        )
+        messages.success(
+            self.request,
+            f"Pack batch recorded: {product.product_name} × {pq} {pu} for {channel.name} on {pack_date}.",
+        )
+        return redirect(
+            f"{reverse('operations:pack_prep')}?channel={channel.id}&pack_date={pack_date.isoformat()}"
+        )
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.setdefault("pack_date", date.today())
+        return initial

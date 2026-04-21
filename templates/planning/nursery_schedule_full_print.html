@@ -31,6 +31,16 @@
         {% empty %}
         <tr><td colspan="6">No nursery events.</td></tr>
         {% endfor %}
+        {% for p in direct_seed_plantings %}
+        <tr style="border-bottom:1px solid #ccc;">
+            <td style="padding:0.2rem;">{{ p.planned_plant_date }}</td>
+            <td style="padding:0.2rem;">Direct seed (field)</td>
+            <td style="padding:0.2rem;">{{ p.crop.name }}</td>
+            <td style="padding:0.2rem;">{{ p.block.name }}</td>
+            <td style="padding:0.2rem; text-align:right;">—</td>
+            <td style="padding:0.2rem;">{% if p.status == 'planted' %}✓ planted{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

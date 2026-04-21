@@ -448,6 +448,11 @@ class PlantingDetailView(DetailView):
                 ctx["total_actual_yield"] / p.planned_bedfeet if p.planned_bedfeet else None
             )
 
+        if p.actual_plant_date and p.planned_plant_date:
+            drift_days = (p.actual_plant_date - p.planned_plant_date).days
+            if abs(drift_days) > Planting.PLANT_DATE_DRIFT_DAYS:
+                ctx["plant_date_drift_banner"] = drift_days
+
         return ctx
 
 
@@ -2060,6 +2065,12 @@ class NurseryRecordsView(ActivePlanningYearMixin, View):
         if notes_add:
             ev.notes = (ev.notes + "\n" + notes_add).strip()
         ev.save()
+        if ev.event_type == "seed" and ev.actual_germination_rate is not None:
+            from planning.services.germination_cascade import apply_germination_cascade
+
+            n_adj = apply_germination_cascade(ev.planting)
+            if n_adj:
+                messages.info(request, f"Adjusted {n_adj} future harvest week(s) for germination rate.")
         messages.success(request, "Nursery record updated.")
         return redirect("planning:nursery_records")
 
@@ -2084,7 +2095,25 @@ class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
             .select_related("planting", "planting__crop", "planting__block")
             .order_by("planned_date", "event_type")
         )
-        ctx.update({"year": self.year_obj, "events": events, "today": today})
+        direct_seed_plantings = list(
+            Planting.objects.filter(
+                planning_year=self.year_obj,
+                crop__nursery_weeks=0,
+                planned_plant_date__gte=today,
+                planned_plant_date__lte=horizon,
+                status__in=["planned", "seeded", "planted"],
+            )
+            .select_related("crop", "block")
+            .order_by("planned_plant_date", "block__name", "bed_start")
+        )
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "events": events,
+                "today": today,
+                "direct_seed_plantings": direct_seed_plantings,
+            }
+        )
         return ctx
 
 
@@ -2102,5 +2131,18 @@ class NurseryScheduleFullPrintView(ActivePlanningYearMixin, TemplateView):
             .select_related("planting", "planting__crop", "planting__block")
             .order_by("planned_date", "planting__crop__name", "event_type")
         )
-        ctx.update({"year": self.year_obj, "plan_year": year, "events": events})
+        direct_seed_plantings = list(
+            Planting.objects.filter(planning_year=self.year_obj, crop__nursery_weeks=0)
+            .exclude(status__in=["skipped", "failed", "revised"])
+            .select_related("crop", "block")
+            .order_by("planned_plant_date", "crop__name", "block__name", "bed_start")
+        )
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "plan_year": year,
+                "events": events,
+                "direct_seed_plantings": direct_seed_plantings,
+            }
+        )
         return ctx
