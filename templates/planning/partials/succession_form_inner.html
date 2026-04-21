@@ -85,8 +85,10 @@
                    min="1" required
                    hx-get="{% url 'planning:bedfeet_calc' %}"
                    hx-target="#succession-calc"
+                   hx-swap="innerHTML"
                    hx-trigger="change"
                    hx-include="[name='block'],[name='crop_season_id']">
+            <div id="succession-calc" class="form-calculated" aria-live="polite"></div>
             <div class="help-text">
                 Total bedfeet for each individual planting in the succession series.
             </div>
@@ -136,6 +138,8 @@
 
         <div id="succession-preview"
              hx-get="{% url 'planning:succession_preview' %}"
+             hx-target="#succession-preview"
+             hx-swap="innerHTML"
              hx-trigger="change from:form delay:400ms"
              hx-include="form"
              class="form-calculated">

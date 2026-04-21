@@ -13,7 +13,7 @@
         {% endif %}
         <button type="button"
                 onclick="if (window.cropPlannerCloseDrawer) { cropPlannerCloseDrawer(); } else { var el=document.getElementById('planting-detail'); if(el){ el.style.display='none'; el.innerHTML=''; } }"
-                class="btn planting-drawer-close" style="float: right;"
+                class="btn planting-drawer-close detail-header__close"
                 aria-label="Close">✕</button>
     </div>
     
@@ -250,6 +250,11 @@
                 Revise (keep original)
             </a>
             {% else %}
+            {% if is_htmx %}
+            <button type="button"
+                    class="btn"
+                    onclick="if (window.cropPlannerCloseDrawer) { cropPlannerCloseDrawer(); }">Close</button>
+            {% endif %}
             <a href="{% url 'planning:succession_create' %}" class="btn">
                 Multiple Successions →
             </a>

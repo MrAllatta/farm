@@ -1514,9 +1514,12 @@ body {
     overflow: hidden;
 }
 
+/* Start below sticky .main-nav (z-index 100); otherwise header/✕ sits under the bar */
 #planting-detail.planting-drawer.planting-drawer--open {
     display: flex;
     overflow-y: auto;
+    top: 3.25rem;
+    height: calc(100vh - 3.25rem);
 }
 
 .planting-drawer-backdrop {
