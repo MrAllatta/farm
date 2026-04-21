@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
+{% block title %}Field walk print — week {{ week_num }}{% endblock %}
+{% block content %}
+<h1>Field walk · Week {{ week_num }}</h1>
+<p>{{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j, Y" }}{% if year %} · {{ year.year }}{% endif %}</p>
+
+{% for group in blocks %}
+<section style="margin-bottom:1.5rem;">
+    <h2>{{ group.block.name }} <span class="muted">(route {{ group.block.walk_route_order }})</span></h2>
+    <table class="fp-table" style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr>
+                <th>Crop</th>
+                <th>Variety</th>
+                <th>Beds</th>
+                <th>Stage</th>
+                <th>Expected harvest</th>
+                <th>Last walk</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prow in group.plantings %}
+            {% with p=prow.planting %}
+            <tr>
+                <td>{{ p.crop.name }}</td>
+                <td>{{ prow.variety_label|default:"—" }}</td>
+                <td>{{ p.bed_start }}–{{ p.bed_end }}</td>
+                <td>{{ prow.expected_stage }}</td>
+                <td>{{ prow.harvest_start|date:"Y-m-d" }}</td>
+                <td>
+                    {% if prow.last_walk_note %}
+                        {{ prow.last_walk_note.walk_date|date:"Y-m-d" }} · {{ prow.last_walk_note.get_condition_display }}
+                        {% if prow.yield_adjust_pct != 100 %} · {{ prow.yield_adjust_pct }}%{% endif %}
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endfor %}
+{% endblock %}

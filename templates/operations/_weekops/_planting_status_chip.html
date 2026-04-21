@@ -1,0 +1,14 @@
+{# Expects: prow dict from week_ops with last_walk_note, days_since_walk, yield_adjust_pct #}
+<span class="planting-status-chip">
+    {% if prow.last_walk_note %}
+        {% if prow.days_since_walk is not None %}
+        <span class="chip-part">Walked {{ prow.days_since_walk }}d ago</span>
+        {% endif %}
+        <span class="chip-part">{{ prow.last_walk_note.get_condition_display }}</span>
+        {% if prow.yield_adjust_pct != 100 %}
+        <span class="chip-part chip-warn">Yield {{ prow.yield_adjust_pct }}%</span>
+        {% endif %}
+    {% else %}
+        <span class="chip-part chip-muted">No walk note yet</span>
+    {% endif %}
+</span>

@@ -11,7 +11,7 @@
         ({{ planting.planning_year.year }})
     </p>
     <p>Recorded events: {{ recorded_count }} / {{ event_count }}</p>
-    <p><a href="{% url 'operations:harvest_entry_current' %}" class="btn">Back to Weekly Harvest Entry</a></p>
+    <p><a href="{% url 'operations:weekops_record' week=operations_nav_week %}" class="btn">Back to weekly harvest entry</a></p>
 </section>
 
 {% if harvest_events %}

@@ -1,29 +1,53 @@
-{# operations/harvest_entry.html #}
-{% extends "base.html" %}
-
-{% block title %}Harvest Entry — Week {{ week_num }}{% endblock %}
-
-{% block content %}
-<div class="harvest-header">
-    <h1>🌿 Harvest Entry — Week {{ week_num }}</h1>
-    <div class="week-date">{{ week_monday|date:"l, F j, Y" }}</div>
-    <div class="harvest-nav">
-        <a href="{% url 'operations:harvest_entry_week' prev_week %}" class="btn">← Wk {{ prev_week }}</a>
-        <a href="{% url 'operations:harvest_entry_week' next_week %}" class="btn">Wk {{ next_week }} →</a>
-    </div>
+{# operations/harvest_entry.html — unified week-ops record harvest #}
+{% extends "operations/_weekops/_weekops_base.html" %}
+{% block title %}Record harvest — week {{ week_num }}{% endblock %}
+{% block weekops_body %}
+<div class="harvest-header no-print">
+    <h1>Record harvest</h1>
+    <p class="muted">Enter bins picked; notes append with today’s date. Targets reflect field-walk yield adjustments.</p>
     <div class="harvest-progress">
-        Recorded: {{ recorded }} / {{ total_items }} items
-        · Est. {{ total_bins|floatformat:0 }} bins total
+        Recorded: {{ recorded }} / {{ total_items }} picks
+        · Est. {{ total_bins|floatformat:1 }} bins target (week)
     </div>
 </div>
 
-<form method="post" id="harvest-form">
+{% if crop_variance %}
+<details class="weekops-rollup no-print" open style="margin-bottom:1rem;">
+    <summary>Variance vs target (bins, this week)</summary>
+    <div class="fp-table-scroll">
+        <table class="fp-table weekops-rollup-table">
+            <thead>
+                <tr>
+                    <th>Crop</th>
+                    <th class="num">Target bins</th>
+                    <th class="num">Actual bins</th>
+                    <th class="num">Δ %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in crop_variance %}
+                <tr>
+                    <td>{{ v.crop.name }}</td>
+                    <td class="num">{{ v.target_bins|floatformat:1 }}</td>
+                    <td class="num">{{ v.actual_bins|floatformat:1 }}</td>
+                    <td class="num">{% if v.variance_pct is not None %}{{ v.variance_pct|floatformat:0 }}%{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+{% endif %}
+
+{% include "operations/_weekops/_per_crop_rollup.html" %}
+
+<form method="post" id="harvest-form" action="{% url 'operations:weekops_record' week=week_num %}">
     {% csrf_token %}
-    
+
     {% for block_name, items in blocks.items %}
-    <div class="harvest-block">
+    <div class="harvest-block panel" style="margin-bottom:1rem;">
         <h2>{{ block_name }}</h2>
-        
+
         {% for item in items %}
         <div class="harvest-item {% if item.has_actual %}recorded{% endif %}"
              id="item-{{ item.event.id }}">
@@ -37,7 +61,11 @@
                     {% endif %}
                 </span>
             </div>
-            
+            <p class="muted no-print" style="font-size:0.85rem;">
+                {% include "operations/_weekops/_planting_status_chip.html" with prow=item.prow %}
+                · Balance: {{ item.inventory_balance|floatformat:0 }} {{ item.planting.crop.harvest_unit }}
+            </p>
+
             <div class="harvest-item-entry">
                 <label for="bins_{{ item.event.id }}">
                     {% if item.units_per_bin %}
@@ -46,7 +74,7 @@
                     {{ item.units }}:
                     {% endif %}
                 </label>
-                <input type="number" 
+                <input type="number"
                        name="bins_{{ item.event.id }}"
                        id="bins_{{ item.event.id }}"
                        step="0.5"
@@ -55,7 +83,7 @@
                        {% if item.units_per_bin %}
                        data-units-per-bin="{{ item.units_per_bin }}"
                        {% endif %}>
-                
+
                 {% if item.units_per_bin %}
                 <span class="converted-qty" id="qty_{{ item.event.id }}">
                     {% if item.actual_qty %}
@@ -63,28 +91,27 @@
                     {% endif %}
                 </span>
                 {% endif %}
-                
+
                 <input type="text"
                        name="notes_{{ item.event.id }}"
-                       placeholder="notes..."
-                       value="{{ item.event.notes }}"
+                       placeholder="Add note (appends)…"
+                       value=""
                        class="notes-input">
-                <a href="{{ item.cooler_in_url }}" class="btn" style="margin-left:0.5rem;">Cooler / ledger</a>
+                <a href="{{ item.cooler_in_url }}" class="btn no-print" style="margin-left:0.5rem;">Cooler / ledger</a>
             </div>
         </div>
         {% endfor %}
     </div>
     {% endfor %}
-    
-    <div class="harvest-actions">
+
+    <div class="harvest-actions no-print">
         <button type="submit" class="btn btn-primary btn-large">
-            Save All ({{ total_items }} items)
+            Save ({{ total_items }} picks)
         </button>
     </div>
 </form>
 
 <script>
-// Live bin-to-quantity conversion
 document.querySelectorAll('.bin-input').forEach(input => {
     input.addEventListener('input', function() {
         const unitsPerBin = this.dataset.unitsPerBin;
@@ -92,7 +119,9 @@ document.querySelectorAll('.bin-input').forEach(input => {
             const qty = parseFloat(this.value || 0) * parseFloat(unitsPerBin);
             const qtyEl = document.getElementById('qty_' + this.name.replace('bins_', ''));
             if (qtyEl) {
-                qtyEl.textContent = qty > 0 ? `= ${Math.round(qty)} ${this.closest('.harvest-item').querySelector('.target').textContent.split(' ').slice(-1)[0]}` : '';
+                const unitSpan = this.closest('.harvest-item').querySelector('.target');
+                const unitWord = unitSpan ? unitSpan.textContent.trim().split(/\s+/).pop() : '';
+                qtyEl.textContent = qty > 0 ? `= ${Math.round(qty)} ${unitWord}` : '';
             }
         }
     });

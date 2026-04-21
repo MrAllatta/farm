@@ -1,0 +1,56 @@
+{# Shared week header: phase tabs + week nav + harvest progress #}
+{% load static %}
+<div class="weekops-header no-print">
+    <div class="weekops-tabs" role="tablist" aria-label="Weekly operations">
+        <a href="{% url 'operations:weekops_walk' week=week_num %}"
+           class="weekops-tab{% if weekops_phase == 'walk' %} weekops-tab--active{% endif %}">Field walk</a>
+        <a href="{% url 'operations:weekops_needs' week=week_num %}"
+           class="weekops-tab{% if weekops_phase == 'needs' %} weekops-tab--active{% endif %}">Harvest needs</a>
+        <a href="{% url 'operations:weekops_record' week=week_num %}"
+           class="weekops-tab{% if weekops_phase == 'record' %} weekops-tab--active{% endif %}">Record harvest</a>
+    </div>
+    <div class="weekops-week-row">
+        {% if weekops_phase == "walk" %}
+        <a href="{% url 'operations:weekops_walk' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+        {% elif weekops_phase == "needs" %}
+        <a href="{% url 'operations:weekops_needs' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+        {% else %}
+        <a href="{% url 'operations:weekops_record' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+        {% endif %}
+        <div class="weekops-week-label">
+            <strong>Week {{ week_num }}</strong>
+            {% if week_monday and week_sunday %}
+            <span class="muted">{{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j, Y" }}</span>
+            {% endif %}
+            {% if year %}
+            <span class="muted">· Plan {{ year.year }}</span>
+            {% endif %}
+        </div>
+        {% if weekops_phase == "walk" %}
+        <a href="{% url 'operations:weekops_walk' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+        {% elif weekops_phase == "needs" %}
+        <a href="{% url 'operations:weekops_needs' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+        {% else %}
+        <a href="{% url 'operations:weekops_record' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+        {% endif %}
+    </div>
+    {% if progress %}
+    <div class="weekops-progress" aria-label="Harvest recording progress this week">
+        <div class="weekops-progress-track">
+            {% if progress.total_events %}
+            <div class="weekops-progress-fill" style="width: {% widthratio progress.recorded_events progress.total_events 100 %}%"></div>
+            {% endif %}
+        </div>
+        <span class="weekops-progress-text">Harvest picks recorded: {{ progress.recorded_events }} / {{ progress.total_events }}</span>
+    </div>
+    {% endif %}
+    {% if weekops_phase == "needs" %}
+    <p class="weekops-print-links no-print">
+        <a href="{% url 'operations:harvest_needs_print' week=week_num %}" class="btn btn-secondary">Print harvest needs</a>
+    </p>
+    {% elif weekops_phase == "walk" %}
+    <p class="weekops-print-links no-print">
+        <a href="{% url 'operations:field_walk_print' week=week_num %}" class="btn btn-secondary">Print walk list</a>
+    </p>
+    {% endif %}
+</div>

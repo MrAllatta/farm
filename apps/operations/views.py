@@ -1,6 +1,6 @@
 # operations/views.py
 
-from django.views.generic import TemplateView, FormView
+from django.views.generic import TemplateView, FormView, RedirectView
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -18,6 +18,22 @@ from core.planning_year import get_effective_planning_year
 from decimal import Decimal
 
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
+from operations.services import week_ops as week_ops_service
+
+
+def _weekops_header_context(phase: str, iso_week: int, year_obj, wctx: dict) -> dict:
+    """Context keys expected by ``operations/_weekops/_week_header.html``."""
+    w = max(1, min(52, int(iso_week)))
+    return {
+        "weekops_phase": phase,
+        "week_num": w,
+        "prev_week": w - 1 if w > 1 else 52,
+        "next_week": w + 1 if w < 52 else 1,
+        "year": year_obj,
+        "week_monday": wctx["week_monday"],
+        "week_sunday": wctx["week_sunday"],
+        "progress": wctx["progress"],
+    }
 
 
 class OperationsPlanningYearMixin:
@@ -213,92 +229,79 @@ class PlantingHarvestEntryView(TemplateView):
         return ctx
 
 
-class WeeklyHarvestEntryView(TemplateView):
-    """Batch harvest entry for a given week.
-
-    Shows all plantings expected to produce this week,
-    with bin-entry fields for actual quantities.
-    """
+class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
+    """Batch harvest entry for a given week (unified week-ops surface)."""
 
     template_name = "operations/harvest_entry.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        year_obj = get_effective_planning_year(self.request)
         week_num = kwargs.get("week", date.today().isocalendar()[1])
-        year = year_obj.year if year_obj else date.today().year
-
-        week_monday = Week(year, week_num).monday()
-        week_sunday = week_monday + timedelta(days=6)
-
-        # Get all harvest events for this week
-        harvest_events = (
-            HarvestEvent.objects.filter(
-                planting__planning_year=year_obj,
-                planned_date__gte=week_monday,
-                planned_date__lte=week_sunday,
-            )
-            .select_related("planting", "planting__crop", "planting__block")
-            .order_by(
-                "planting__block__walk_route_order",
-                "planting__block__name",
-                "planting__bed_start",
-            )
+        week_num = max(1, min(52, int(week_num)))
+        today = date.today()
+        wctx = week_ops_service.week_context(
+            self.year_obj, week_num, today=today, mode="harvest_entry"
         )
+        blocks_out = {}
+        total_bins = Decimal("0")
+        for group in wctx["blocks"]:
+            block_name = group["block"].name
+            if block_name not in blocks_out:
+                blocks_out[block_name] = []
+            for prow in group["plantings"]:
+                p = prow["planting"]
+                crop = p.crop
+                for he in prow["harvest_events_this_week"]:
+                    tb = week_ops_service.target_bins_for_event(he)
+                    if tb is not None:
+                        total_bins += Decimal(str(tb))
+                    blocks_out[block_name].append(
+                        {
+                            "event": he,
+                            "planting": p,
+                            "prow": prow,
+                            "crop_name": crop.name,
+                            "block": block_name,
+                            "beds": f"{p.bed_start}-{p.bed_end}",
+                            "target_qty": he.planned_quantity,
+                            "units": he.planned_units,
+                            "bin_type": crop.harvest_bin,
+                            "units_per_bin": crop.units_per_bin,
+                            "target_bins": tb,
+                            "has_actual": he.actual_quantity is not None,
+                            "actual_qty": he.actual_quantity,
+                            "actual_bins": he.actual_bins,
+                            "inventory_balance": week_ops_service.inventory_balance_for_crop(
+                                crop.id
+                            ),
+                            "cooler_in_url": reverse(
+                                "operations:inventory_harvest_in",
+                                kwargs={"harvest_event_id": he.id},
+                            ),
+                        }
+                    )
 
-        # Group by block for the harvest route
-        blocks = {}
-        for he in harvest_events:
-            block_name = he.planting.block.name
-            if block_name not in blocks:
-                blocks[block_name] = []
-
-            crop = he.planting.crop
-            blocks[block_name].append(
-                {
-                    "event": he,
-                    "planting": he.planting,
-                    "crop_name": crop.name,
-                    "block": he.planting.block.name,
-                    "beds": f"{he.planting.bed_start}-{he.planting.bed_end}",
-                    "target_qty": he.planned_quantity,
-                    "units": he.planned_units,
-                    "bin_type": crop.harvest_bin,
-                    "units_per_bin": crop.units_per_bin,
-                    "target_bins": (
-                        float(he.planned_quantity) / crop.units_per_bin
-                        if crop.units_per_bin
-                        else None
-                    ),
-                    "has_actual": he.actual_quantity is not None,
-                    "actual_qty": he.actual_quantity,
-                    "actual_bins": he.actual_bins,
-                    "cooler_in_url": reverse(
-                        "operations:inventory_harvest_in", kwargs={"harvest_event_id": he.id}
-                    ),
-                }
-            )
-
-        # Summary stats
-        total_items = harvest_events.count()
-        recorded = harvest_events.filter(actual_quantity__isnull=False).count()
-
-        total_bins = sum(
-            item["target_bins"] or 0 for block_items in blocks.values() for item in block_items
+        total_items = wctx["progress"]["total_events"]
+        recorded = wctx["progress"]["recorded_events"]
+        ctx.update(
+            _weekops_header_context("record", week_num, self.year_obj, wctx)
         )
-
+        week_rollup_list = sorted(
+            wctx["week_rollup_by_crop"].values(),
+            key=lambda r: r["crop"].name.lower(),
+        )
         ctx.update(
             {
-                "year": year_obj,
-                "week_num": week_num,
-                "week_monday": week_monday,
-                "blocks": blocks,
+                "weekops": wctx,
+                "week_rollup_by_crop": wctx["week_rollup_by_crop"],
+                "week_rollup_list": week_rollup_list,
+                "crop_variance": week_ops_service.crop_variance_for_week(
+                    self.year_obj, week_num
+                ),
+                "blocks": blocks_out,
                 "total_items": total_items,
                 "recorded": recorded,
-                "total_bins": total_bins,
-                "prev_week": week_num - 1 if week_num > 1 else 52,
-                "next_week": week_num + 1 if week_num < 52 else 1,
+                "total_bins": float(total_bins),
             }
         )
         return ctx
@@ -309,8 +312,10 @@ class WeeklyHarvestEntryView(TemplateView):
             return redirect(f"/admin/login/?next={request.path}")
         if not request.user.is_staff:
             return HttpResponse(status=403)
-        year_obj = get_effective_planning_year(request)
 
+        week_num = kwargs.get("week", date.today().isocalendar()[1])
+        week_num = max(1, min(52, int(week_num)))
+        today = date.today()
         updated = 0
         for key, value in request.POST.items():
             if key.startswith("bins_") and value:
@@ -318,16 +323,18 @@ class WeeklyHarvestEntryView(TemplateView):
                 try:
                     he = HarvestEvent.objects.get(
                         id=event_id,
-                        planting__planning_year=year_obj,
+                        planting__planning_year=self.year_obj,
                     )
                     bin_count = float(value)
                     he.record_bins(bin_count)
 
-                    # Also capture notes if provided
                     notes_key = f"notes_{event_id}"
-                    if notes_key in request.POST:
-                        he.notes = request.POST[notes_key]
-                        he.save()
+                    notes_text = (request.POST.get(notes_key) or "").strip()
+                    if notes_text:
+                        old = (he.notes or "").strip()
+                        line = f"{today.isoformat()}: {notes_text}"
+                        he.notes = f"{old}\n{line}".strip() if old else line
+                        he.save(update_fields=["notes"])
 
                     updated += 1
                 except (HarvestEvent.DoesNotExist, ValueError):
@@ -335,7 +342,6 @@ class WeeklyHarvestEntryView(TemplateView):
 
         messages.success(request, f"Recorded {updated} harvest entries.")
 
-        # Update planting status if first harvest recorded
         for key, value in request.POST.items():
             if key.startswith("bins_") and value:
                 event_id = key.replace("bins_", "")
@@ -350,8 +356,7 @@ class WeeklyHarvestEntryView(TemplateView):
                 except HarvestEvent.DoesNotExist:
                     pass
 
-        week_num = kwargs.get("week", date.today().isocalendar()[1])
-        return redirect("operations:harvest_entry_week", week=week_num)
+        return redirect("operations:weekops_record", week=week_num)
 
 
 class InventoryDashboardView(TemplateView):
@@ -598,107 +603,76 @@ class InventoryTransactionView(FormView):
         return HttpResponse(status=400)
 
 
-class FieldWalkView(TemplateView):
-    """Walk-route ordered checklist of all active plantings."""
+class FieldWalkView(OperationsPlanningYearMixin, TemplateView):
+    """Walk-route ordered checklist of all active plantings (unified week-ops)."""
 
     template_name = "operations/field_walk.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        year_obj = get_effective_planning_year(self.request)
+        week_num = kwargs.get("week", date.today().isocalendar()[1])
+        week_num = max(1, min(52, int(week_num)))
         today = date.today()
-
-        # Active plantings ordered by walk route
-        plantings = (
-            Planting.objects.filter(
-                planning_year=year_obj,
-                status__in=["planted", "growing", "harvesting"],
-            )
-            .select_related("crop", "crop_season", "block")
-            .order_by(
-                "block__walk_route_order",
-                "block__name",
-                "bed_start",
-            )
+        wctx = week_ops_service.week_context(
+            self.year_obj, week_num, today=today, mode="field_walk"
         )
-
-        # Get most recent field walk note for each planting
-
-        latest_notes = {}
-        for p in plantings:
-            note = p.field_walk_notes.order_by("-walk_date").first()
-            latest_notes[p.id] = note
-
-        # Group by block
-        blocks = {}
-        for p in plantings:
-            block_name = p.block.name
-            if block_name not in blocks:
-                blocks[block_name] = {
-                    "block": p.block,
-                    "plantings": [],
-                }
-
-            # Calculate expected stage
-            plant_date = p.actual_plant_date or p.planned_plant_date
-            days_since_plant = (today - plant_date).days if plant_date else 0
-            weeks_since_plant = days_since_plant // 7
-
-            dtm = p.crop_season.dtm_days
-            harvest_start = p.actual_first_harvest_date or p.planned_first_harvest_date
-
-            if today >= harvest_start:
-                weeks_harvesting = (today - harvest_start).days // 7
-                expected_stage = (
-                    f"Harvesting (week {weeks_harvesting + 1} of {p.crop_season.harvest_weeks})"
-                )
-            elif days_since_plant > dtm * 0.75:
-                expected_stage = f"Approaching harvest ({weeks_since_plant}wk, DTM {dtm}d)"
-            elif days_since_plant > dtm * 0.5:
-                expected_stage = f"Mid-growth ({weeks_since_plant}wk)"
-            else:
-                expected_stage = f"Establishing ({weeks_since_plant}wk)"
-
-            last_note = latest_notes.get(p.id)
-
-            blocks[block_name]["plantings"].append(
-                {
-                    "planting": p,
-                    "crop_name": p.crop.name,
-                    "variety": p.variety,
-                    "beds": f"{p.bed_start}-{p.bed_end}",
-                    "bedfeet": p.planned_bedfeet,
-                    "expected_stage": expected_stage,
-                    "expected_harvest": harvest_start,
-                    "last_note": last_note,
-                    "days_since_last_note": (
-                        (today - last_note.walk_date).days if last_note else None
-                    ),
-                }
-            )
-
+        for g in wctx["blocks"]:
+            g["kind"] = "walk"
+        total_plantings = sum(len(g["plantings"]) for g in wctx["blocks"])
+        ctx.update(_weekops_header_context("walk", week_num, self.year_obj, wctx))
         ctx.update(
             {
-                "year": year_obj,
+                "weekops": wctx,
                 "today": today,
-                "blocks": blocks,
-                "total_plantings": plantings.count(),
+                "blocks": wctx["blocks"],
+                "total_plantings": total_plantings,
             }
         )
         return ctx
 
-    def post(self, request, **kwargs):
-        """Handle field walk note submissions."""
+    def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect(f"/admin/login/?next={request.path}")
         if not request.user.is_staff:
             return HttpResponse(status=403)
-        year_obj = get_effective_planning_year(request)
+
+        week_num = kwargs.get("week", date.today().isocalendar()[1])
+        week_num = max(1, min(52, int(week_num)))
         today = date.today()
+        year_obj = self.year_obj
+        redirect_name = "operations:weekops_walk"
+        redirect_kw = {"week": week_num}
+
+        no_change_block = request.POST.get("no_change_block")
+        if no_change_block:
+            try:
+                block_id = int(no_change_block)
+            except (TypeError, ValueError):
+                block_id = None
+            if block_id is not None:
+                qs = Planting.objects.filter(
+                    planning_year=year_obj,
+                    block_id=block_id,
+                    status__in=["planted", "growing", "harvesting"],
+                )
+                n = 0
+                for planting in qs:
+                    FieldWalkNote.objects.create(
+                        planting=planting,
+                        walk_date=today,
+                        condition="good",
+                        yield_adjust_pct=100,
+                        notes="",
+                    )
+                    n += 1
+                messages.success(
+                    request,
+                    f"Recorded walk (no change) for {n} planting(s) in this block.",
+                )
+                return redirect(redirect_name, **redirect_kw)
 
         notes_created = 0
-
+        total_adj_weeks = 0
         for key, value in request.POST.items():
             if key.startswith("condition_") and value:
                 planting_id = key.replace("condition_", "")
@@ -729,9 +703,9 @@ class FieldWalkView(TemplateView):
                     notes=notes_text,
                 )
 
-                apply_yield_adjustment_to_future_harvests(planting, yield_pct)
+                n_adj = apply_yield_adjustment_to_future_harvests(planting, yield_pct)
+                total_adj_weeks += n_adj
 
-                # Parse adjusted harvest date if provided
                 if adjusted_harvest:
                     try:
                         adj_week = int(adjusted_harvest)
@@ -740,7 +714,6 @@ class FieldWalkView(TemplateView):
                     except (ValueError, TypeError):
                         pass
 
-                # Update planting status if marked as failed
                 if condition == "failed":
                     planting.status = "failed"
                     planting.notes += f"\nFailed: {today} — {notes_text}"
@@ -748,8 +721,16 @@ class FieldWalkView(TemplateView):
 
                 notes_created += 1
 
-        messages.success(request, f"Field walk complete. Recorded {notes_created} observations.")
-        return redirect("operations:field_walk_current")
+        if total_adj_weeks:
+            messages.info(
+                request,
+                f"Adjusted {total_adj_weeks} planned harvest week(s) total from yield changes.",
+            )
+        messages.success(
+            request,
+            f"Field walk complete. Recorded {notes_created} observation(s).",
+        )
+        return redirect(redirect_name, **redirect_kw)
 
 
 class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
@@ -771,11 +752,14 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
             variety_display = planting.variety_obj.name
         elif planting.variety:
             variety_display = planting.variety
+        field_notes = list(planting.field_walk_notes.order_by("-walk_date", "-id")[:25])
         ctx.update(
             {
                 "year": self.year_obj,
                 "planting": planting,
                 "variety_display": variety_display,
+                "field_walk_notes": field_notes,
+                "planting_status_choices": PlantingStatus.choices,
             }
         )
         return ctx
@@ -820,45 +804,103 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
 
 
 class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
-    """Harvest events scheduled for the selected week (operator checklist)."""
+    """Harvest events scheduled for the selected week (unified week-ops surface)."""
 
     template_name = "operations/harvest_needs.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        year_obj = self.year_obj
         week_num = kwargs.get("week", date.today().isocalendar()[1])
-        year = year_obj.year
-        week_monday = Week(year, week_num).monday()
-        week_sunday = week_monday + timedelta(days=6)
+        week_num = max(1, min(52, int(week_num)))
+        today = date.today()
+        wctx = week_ops_service.week_context(
+            self.year_obj, week_num, today=today, mode="harvest_needs"
+        )
+        harvest_blocks = []
+        for group in wctx["blocks"]:
+            rows_open = []
+            rows_done = []
+            for prow in group["plantings"]:
+                p = prow["planting"]
+                for he in prow["harvest_events_this_week"]:
+                    drow = wctx["sales_demand_by_crop"].get(p.crop_id)
+                    sales_str = ""
+                    if drow and drow.get("qty"):
+                        u = (drow.get("sale_unit") or "").strip()
+                        sales_str = f"{drow['qty']} {u}".strip()
+                    row = {
+                        "event": he,
+                        "planting": p,
+                        "prow": prow,
+                        "variety_label": prow["variety_label"],
+                        "target_bins": week_ops_service.target_bins_for_event(he),
+                        "sales_committed_str": sales_str,
+                    }
+                    if he.actual_quantity is None:
+                        rows_open.append(row)
+                    else:
+                        rows_done.append(row)
+            harvest_blocks.append(
+                {
+                    "block": group["block"],
+                    "kind": "harvest",
+                    "rows_open": rows_open,
+                    "rows_done": rows_done,
+                }
+            )
 
-        events = (
-            HarvestEvent.objects.filter(
-                planting__planning_year=year_obj,
-                planned_date__gte=week_monday,
-                planned_date__lte=week_sunday,
-            )
-            .exclude(planting__status__in=["skipped", "failed", "revised"])
-            .select_related("planting", "planting__crop", "planting__block", "planting__variety_obj")
-            .order_by(
-                "planting__block__walk_route_order",
-                "planting__block__name",
-                "planting__bed_start",
-                "planned_date",
-            )
+        ctx.update(_weekops_header_context("needs", week_num, self.year_obj, wctx))
+        week_rollup_list = sorted(
+            wctx["week_rollup_by_crop"].values(),
+            key=lambda r: r["crop"].name.lower(),
         )
         ctx.update(
             {
-                "year": year_obj,
-                "week_num": week_num,
-                "week_monday": week_monday,
-                "week_sunday": week_sunday,
-                "events": events,
-                "prev_week": week_num - 1 if week_num > 1 else 52,
-                "next_week": week_num + 1 if week_num < 52 else 1,
+                "weekops": wctx,
+                "week_rollup_by_crop": wctx["week_rollup_by_crop"],
+                "week_rollup_list": week_rollup_list,
+                "week_rollup_by_channel": wctx["week_rollup_by_channel"],
+                "sales_demand_by_crop": wctx["sales_demand_by_crop"],
+                "harvest_blocks": harvest_blocks,
             }
         )
         return ctx
+
+
+class FieldWalkPrintView(FieldWalkView):
+    """Printable walk-route list for a week."""
+
+    template_name = "operations/field_walk_print.html"
+
+
+class HarvestNeedsPrintView(HarvestNeedsView):
+    """Printable harvest-needs checklist for a week."""
+
+    template_name = "operations/harvest_needs_print.html"
+
+
+class FieldWalkCurrentRedirect(RedirectView):
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        w = max(1, min(52, date.today().isocalendar()[1]))
+        return reverse("operations:weekops_walk", kwargs={"week": w})
+
+
+class HarvestNeedsCurrentRedirect(RedirectView):
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        w = max(1, min(52, date.today().isocalendar()[1]))
+        return reverse("operations:weekops_needs", kwargs={"week": w})
+
+
+class HarvestEntryCurrentRedirect(RedirectView):
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        w = max(1, min(52, date.today().isocalendar()[1]))
+        return reverse("operations:weekops_record", kwargs={"week": w})
 
 
 class MissingPlantingsView(OperationsPlanningYearMixin, TemplateView):

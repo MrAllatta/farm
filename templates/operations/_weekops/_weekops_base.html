@@ -1,0 +1,8 @@
+{# operations/_weekops/_weekops_base.html — weekly ops shell #}
+{% extends "base.html" %}
+{% block content %}
+<div class="weekops-shell">
+    {% include "operations/_weekops/_week_header.html" %}
+    {% block weekops_body %}{% endblock %}
+</div>
+{% endblock %}

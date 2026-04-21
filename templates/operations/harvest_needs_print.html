@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
+{% block title %}Harvest needs print — week {{ week_num }}{% endblock %}
+{% block content %}
+<h1>Harvest needs · Week {{ week_num }}</h1>
+<p>{{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j, Y" }}{% if year %} · {{ year.year }}{% endif %}</p>
+
+{% for group in harvest_blocks %}
+<section style="margin-bottom:1.5rem;">
+    <h2>{{ group.block.name }} <span class="muted">(route {{ group.block.walk_route_order }})</span></h2>
+    {% if group.rows_open %}
+    <table class="fp-table" style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Crop</th>
+                <th>Variety</th>
+                <th>Condition</th>
+                <th>Yield %</th>
+                <th>Beds</th>
+                <th>Planned qty</th>
+                <th>Unit</th>
+                <th>Target bins</th>
+                <th>Sales (plan)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in group.rows_open %}
+            {% with ev=row.event p=row.planting %}
+            <tr>
+                <td>{{ ev.planned_date }}</td>
+                <td>{{ p.crop.name }}</td>
+                <td>{{ row.variety_label|default:"—" }}</td>
+                <td>{% if row.prow.last_walk_note %}{{ row.prow.last_walk_note.get_condition_display }}{% else %}—{% endif %}</td>
+                <td>{{ row.prow.yield_adjust_pct }}</td>
+                <td>b{{ p.bed_start }}-{{ p.bed_end }}</td>
+                <td>{{ ev.planned_quantity }}</td>
+                <td>{{ ev.planned_units }}</td>
+                <td>{% if row.target_bins is not None %}{{ row.target_bins|floatformat:1 }}{% else %}—{% endif %}</td>
+                <td>{{ row.sales_committed_str|default:"—" }}</td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Nothing open for this block.</p>
+    {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

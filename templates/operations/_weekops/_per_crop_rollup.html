@@ -1,0 +1,32 @@
+{# Expects: week_rollup_list (sorted list of rollup dicts with crop, event_count, …) #}
+{% if week_rollup_list %}
+<details class="weekops-rollup no-print">
+    <summary>Per-crop totals (this week)</summary>
+    <div class="fp-table-scroll">
+        <table class="fp-table weekops-rollup-table">
+            <thead>
+                <tr>
+                    <th>Crop</th>
+                    <th class="num">Events</th>
+                    <th class="num">Recorded</th>
+                    <th class="num">Target bins</th>
+                    <th class="num">Actual bins</th>
+                    <th class="num">Planned qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for roll in week_rollup_list %}
+                <tr>
+                    <td>{{ roll.crop.name }}</td>
+                    <td class="num">{{ roll.event_count }}</td>
+                    <td class="num">{{ roll.recorded_count }}</td>
+                    <td class="num">{{ roll.target_bins|floatformat:1 }}</td>
+                    <td class="num">{{ roll.actual_bins|floatformat:1 }}</td>
+                    <td class="num">{{ roll.planned_qty|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+{% endif %}

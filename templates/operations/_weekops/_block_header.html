@@ -1,0 +1,11 @@
+{# Expects: group with .block; .kind harvest|walk; .plantings and/or .rows_open/.rows_done #}
+<div class="weekops-block-head">
+    <h2>{{ group.block.name }} <span class="muted">(route {{ group.block.walk_route_order }})</span></h2>
+    <p class="muted weekops-block-meta">
+        {% if group.kind == "harvest" %}
+            {{ group.rows_open|length }} open · {{ group.rows_done|length }} recorded
+        {% else %}
+            {{ group.plantings|length }} planting{{ group.plantings|length|pluralize }} on this block
+        {% endif %}
+    </p>
+</div>

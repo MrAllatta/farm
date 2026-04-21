@@ -17,6 +17,7 @@ def append_ledger_entry(
     harvest_event=None,
     notes: str = "",
 ) -> InventoryLedger:
+    quantity = Decimal(str(quantity))
     last = (
         InventoryLedger.objects.filter(crop=crop)
         .order_by("-event_date", "-created_at", "-id")
@@ -40,6 +41,7 @@ def sync_harvest_event_ledger(harvest_event, old_actual_quantity) -> None:
     new_qty = harvest_event.actual_quantity
     if new_qty is None:
         return
+    new_qty = Decimal(str(new_qty))
 
     crop = harvest_event.planting.crop
     event_date = harvest_event.actual_date or date.today()
@@ -56,6 +58,7 @@ def sync_harvest_event_ledger(harvest_event, old_actual_quantity) -> None:
         )
         return
 
+    old = Decimal(str(old))
     delta = new_qty - old
     if delta == 0:
         return

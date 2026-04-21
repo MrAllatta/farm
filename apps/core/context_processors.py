@@ -35,12 +35,15 @@ def planning_context(request):
 
     today = date.today()
     current_week = today.isocalendar()[1]
+    # ISO week can be 53; week-ops URLs clamp to 1–52 to match HarvestEvent week helpers.
+    operations_nav_week = max(1, min(52, current_week))
 
     return {
         "current_planning_year": year_obj,
         "planning_year_scope_choices": planning_years_in_clock_scope(anchor),
         "operational_anchor_year": anchor,
         "current_week": current_week,
+        "operations_nav_week": operations_nav_week,
         "today": today,
         "crop_colors": CROP_TYPE_COLORS,
     }

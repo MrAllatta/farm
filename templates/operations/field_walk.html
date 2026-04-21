@@ -1,52 +1,65 @@
-{# operations/field_walk.html #}
-{% extends "base.html" %}
-
-{% block title %}Field Walk{% endblock %}
-
-{% block content %}
-<section class="page-header">
-    <h1>Field Walk</h1>
-    <p>
-        {% if year %}
-        Active planning year: {{ year.year }}.
-        {% else %}
-        No active planning year was found.
-        {% endif %}
-        Review each block and record crop condition updates.
+{# operations/field_walk.html — unified week-ops field walk #}
+{% extends "operations/_weekops/_weekops_base.html" %}
+{% block title %}Field walk — week {{ week_num }}{% endblock %}
+{% block weekops_body %}
+<section class="page-header no-print">
+    <h1>Field walk</h1>
+    <p class="muted">
+        Week {{ week_num }} · {{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j" }}.
+        Review each block and record crop condition updates. Yield % scales future planned harvest quantities.
     </p>
     <p>Active plantings on route: {{ total_plantings }}</p>
 </section>
 
 {% if blocks %}
-<form method="post">
+<form method="post" action="{% url 'operations:weekops_walk' week=week_num %}" class="no-print">
     {% csrf_token %}
-
-    {% for block_name, payload in blocks.items %}
+    {% for group in blocks %}
     <section class="panel">
-        <h2>{{ block_name }}</h2>
+        {% include "operations/_weekops/_block_header.html" with group=group %}
+        <p class="weekops-block-actions">
+            <button type="submit" name="no_change_block" value="{{ group.block.id }}" class="btn btn-secondary">
+                Walked, no change (whole block)
+            </button>
+        </p>
         <div class="fp-table-scroll">
-        <table>
+        <table class="fp-table">
             <thead>
                 <tr>
                     <th>Crop</th>
+                    <th>Variety</th>
                     <th>Beds</th>
                     <th>Stage</th>
-                    <th>Expected Harvest</th>
+                    <th>Expected harvest</th>
+                    <th>Last walk</th>
                     <th>Condition</th>
                     <th>Yield %</th>
+                    <th>Adj. 1st harvest (wk)</th>
                     <th>Notes</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in payload.plantings %}
+                {% for prow in group.plantings %}
+                {% with p=prow.planting %}
                 <tr>
-                    <td>{{ item.crop_name }}</td>
-                    <td>{{ item.beds }}</td>
-                    <td>{{ item.expected_stage }}</td>
-                    <td>{{ item.expected_harvest|date:"Y-m-d" }}</td>
+                    <td>{{ p.crop.name }}</td>
+                    <td>{{ prow.variety_label|default:"—" }}</td>
+                    <td>{{ p.bed_start }}–{{ p.bed_end }}</td>
+                    <td>{{ prow.expected_stage }}</td>
+                    <td>{{ prow.harvest_start|date:"Y-m-d" }}</td>
                     <td>
-                        <select name="condition_{{ item.planting.id }}">
-                            <option value="">-</option>
+                        {% if prow.last_walk_note %}
+                            {{ prow.last_walk_note.walk_date|date:"Y-m-d" }}
+                            · {{ prow.last_walk_note.get_condition_display }}
+                            {% if prow.yield_adjust_pct != 100 %}· {{ prow.yield_adjust_pct }}%{% endif %}
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <select name="condition_{{ p.id }}">
+                            <option value="">—</option>
                             <option value="good">Good</option>
                             <option value="fair">Fair</option>
                             <option value="poor">Poor</option>
@@ -54,27 +67,33 @@
                         </select>
                     </td>
                     <td>
-                        <input type="number" min="0" max="200" step="5" name="yield_{{ item.planting.id }}" value="100">
+                        <input type="number" min="0" max="200" step="5" name="yield_{{ p.id }}" value="100">
                     </td>
                     <td>
-                        <input type="text" name="notes_{{ item.planting.id }}" placeholder="Observed issues, pests, weather, etc.">
+                        <input type="number" name="adj_harvest_{{ p.id }}" min="1" max="53" placeholder="wk">
+                    </td>
+                    <td>
+                        <input type="text" name="notes_{{ p.id }}" placeholder="Observations…">
+                    </td>
+                    <td class="no-print">
+                        <a href="{% url 'operations:field_walk' pk=p.pk %}" class="btn btn-secondary">History</a>
                     </td>
                 </tr>
+                {% endwith %}
                 {% endfor %}
             </tbody>
         </table>
         </div>
     </section>
     {% endfor %}
-
-    <p>
-        <button type="submit" class="btn btn-primary">Save Field Walk Notes</button>
+    <p class="no-print" style="margin-top:1rem;">
+        <button type="submit" class="btn btn-primary">Save field walk notes (all blocks)</button>
     </p>
 </form>
 {% else %}
 <section class="panel">
     <h2>No active plantings for field walk</h2>
-    <p>Start by adding plantings in planning, then return here to record observations.</p>
+    <p>Add plantings in planning, then return here to record observations.</p>
 </section>
 {% endif %}
 {% endblock %}
