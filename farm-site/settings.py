@@ -168,6 +168,11 @@ if not DEBUG:
     if os.environ.get("DJANGO_TRUST_X_FORWARDED_PROTO", "0").lower() in {"1", "true", "yes", "on"}:
         SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Sales plan grid POSTs qty_{product_id}_{week} for every product × 52 weeks.
+# With a full crop catalog this easily exceeds the default 1000-field limit.
+# 5000 covers ~96 active products × 52 weeks with room to spare.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000
+
 TEST_RUNNER = "core.test_runner.ProjectDiscoverRunner"
 
 # Ensure production request exceptions are visible in Cloud Run logs.
