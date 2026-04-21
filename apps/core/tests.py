@@ -2,7 +2,7 @@ import csv
 import json
 import subprocess
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -2841,8 +2841,8 @@ class PrimaryRouteSmokeTests(TestCase):
     MIN_REGISTERED_ROUTES_BY_NAMESPACE = {
         "core": 3,
         "reference": 1,
-        "planning": 17,
-        "operations": 8,
+        "planning": 25,
+        "operations": 14,
         "sales": 3,
         "reports": 14,
     }
@@ -2864,6 +2864,10 @@ class PrimaryRouteSmokeTests(TestCase):
         ("planning:nursery_schedule", {}),
         ("planning:harvest_calendar", {}),
         ("planning:field_schedule", {}),
+        ("planning:successions_by_block", {}),
+        ("planning:nursery_records", {}),
+        ("planning:nursery_todo", {}),
+        ("planning:nursery_schedule_full_print", {}),
         ("operations:harvest_entry_current", {}),
         ("operations:harvest_entry_week", {"week": 12}),
         ("operations:harvest_entry", {"pk": 1}),
@@ -2872,6 +2876,11 @@ class PrimaryRouteSmokeTests(TestCase):
         ("operations:inventory", {}),
         ("operations:inventory_add", {}),
         ("operations:inventory_harvest_in", {"harvest_event_id": 1}),
+        ("operations:planting_record", {"pk": 1}),
+        ("operations:harvest_needs_current", {}),
+        ("operations:missing_plantings", {}),
+        ("operations:planting_list_print", {}),
+        ("operations:seeding_todo_print", {}),
         ("sales:market_entry", {}),
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
@@ -2903,10 +2912,19 @@ class PrimaryRouteSmokeTests(TestCase):
         ("planning:nursery_schedule", {}),
         ("planning:nursery_week", {"week": 12}),
         ("planning:harvest_calendar", {}),
+        ("planning:successions_by_block", {}),
+        ("planning:nursery_records", {}),
+        ("planning:nursery_todo", {}),
+        ("planning:nursery_schedule_full_print", {}),
         ("operations:harvest_entry_current", {}),
         ("operations:harvest_entry_week", {"week": 12}),
         ("operations:field_walk_current", {}),
         ("operations:inventory", {}),
+        ("operations:planting_record", {"pk": 1}),
+        ("operations:harvest_needs_current", {}),
+        ("operations:missing_plantings", {}),
+        ("operations:planting_list_print", {}),
+        ("operations:seeding_todo_print", {}),
         ("sales:market_entry", {}),
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
@@ -2930,23 +2948,23 @@ class PrimaryRouteSmokeTests(TestCase):
     MIN_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
         "core": 2,
         "reference": 1,
-        "planning": 11,
-        "operations": 4,
+        "planning": 14,
+        "operations": 9,
         "sales": 3,
         "reports": 16,
     }
     EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
         "core": 2,
         "reference": 1,
-        "planning": 11,
-        "operations": 4,
+        "planning": 15,
+        "operations": 9,
         "sales": 3,
         "reports": 16,
     }
 
     @classmethod
     def setUpTestData(cls):
-        PlanningYear.objects.create(year=2026, status="active")
+        year = PlanningYear.objects.create(year=2026, status="active")
         SalesChannel.objects.create(
             name="Farm Stand",
             days_of_week=["Saturday"],
@@ -2955,6 +2973,57 @@ class PrimaryRouteSmokeTests(TestCase):
             weekly_target="500.00",
             is_csa=False,
             allocation_priority=1,
+        )
+        # Routes smoke-tested with pk=1 need stable rows (planting / harvest entry / inventory in).
+        block = Block.objects.create(
+            name="S1",
+            block_type="field",
+            num_beds=10,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        crop = CropInfo.objects.create(
+            name="Smoke Greens",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("0.50"),
+            nursery_weeks=0,
+        )
+        crop_season = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("2.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        plant_date = date(2026, 6, 1)
+        first_h = plant_date + timedelta(days=21)
+        last_h = first_h + timedelta(weeks=3)
+        Planting.objects.create(
+            pk=1,
+            planning_year=year,
+            crop=crop,
+            crop_season=crop_season,
+            block=block,
+            bed_start=1,
+            bed_end=2,
+            planned_bedfeet=200,
+            planned_plant_date=plant_date,
+            planned_first_harvest_date=first_h,
+            planned_last_harvest_date=last_h,
+            planned_total_yield=Decimal("400.00"),
+        )
+        HarvestEvent.objects.create(
+            pk=1,
+            planting_id=1,
+            planned_date=first_h,
+            planned_quantity=Decimal("25.00"),
+            planned_units="pounds",
         )
 
     def test_primary_navigation_routes_do_not_raise_server_errors(self):

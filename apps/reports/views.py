@@ -199,21 +199,46 @@ class ExportCSVView(TemplateView):
 
 
 class SeedOrderReportView(ReportContextMixin, TemplateView):
-    """View seed order reports"""
+    """What-to-order seed report from planned plantings (by crop + variety)."""
 
     template_name = "reports/seed_order.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         year_obj = self.resolve_planning_year(status_priority=("planning", "active", "complete"))
+        if not year_obj:
+            ctx.update(
+                {
+                    "year": None,
+                    "overplant_pct": 0,
+                    "seed_orders": [],
+                    "direct_seeded": [],
+                    "transplanted": [],
+                    "vegetative": [],
+                }
+            )
+            return ctx
+
+        from decimal import Decimal
+
+        from .services.seed_order_report import build_seed_order_rows
+
+        overplant = float(year_obj.overplant_factor)
+        plantings = list(
+            Planting.objects.filter(planning_year=year_obj)
+            .exclude(status="skipped")
+            .select_related("crop", "crop_season", "block", "variety_obj")
+        )
+        seed_orders = build_seed_order_rows(plantings, overplant)
+
         ctx.update(
             {
                 "year": year_obj,
-                "overplant_pct": int((year_obj.overplant_factor - 1) * 100) if year_obj else 0,
-                "seed_orders": [],
-                "direct_seeded": [],
-                "transplanted": [],
-                "vegetative": [],
+                "overplant_pct": int((year_obj.overplant_factor - Decimal(1)) * Decimal(100)),
+                "seed_orders": seed_orders,
+                "direct_seeded": [s for s in seed_orders if s["method"] == "direct_seed"],
+                "transplanted": [s for s in seed_orders if s["method"] == "transplant"],
+                "vegetative": [s for s in seed_orders if s["method"] == "vegetative"],
             }
         )
         return ctx

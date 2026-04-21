@@ -1,7 +1,7 @@
 """planning.admin"""
 
 from django.contrib import admin
-from .models import PlanningYear, Planting, NurseryEvent, HarvestEvent
+from .models import HarvestEvent, NurseryEvent, PlanningYear, Planting, SeedOrder
 
 
 class NurseryEventInline(admin.TabularInline):
@@ -39,7 +39,7 @@ class PlantingAdmin(admin.ModelAdmin):
         "crop__botanical_family",
     ]
     search_fields = ["crop__name", "variety", "block__name", "notes"]
-    raw_id_fields = ["crop", "crop_season", "revision_of"]
+    raw_id_fields = ["crop", "crop_season", "revision_of", "variety_obj"]
     inlines = [NurseryEventInline]
 
     fieldsets = (
@@ -51,6 +51,7 @@ class PlantingAdmin(admin.ModelAdmin):
                     "crop",
                     "crop_season",
                     "variety",
+                    "variety_obj",
                     "block",
                     "bed_start",
                     "bed_end",
@@ -100,6 +101,13 @@ class PlantingAdmin(admin.ModelAdmin):
         return f"Wk {start}-{end}"
 
     planned_harvest_range.short_description = "Harvest"
+
+
+@admin.register(SeedOrder)
+class SeedOrderAdmin(admin.ModelAdmin):
+    list_display = ["variety", "planning_year", "planned_quantity", "unit"]
+    list_filter = ["planning_year"]
+    raw_id_fields = ["variety", "planning_year"]
 
 
 @admin.register(PlanningYear)

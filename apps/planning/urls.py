@@ -31,6 +31,15 @@ urlpatterns = [
     # Schedules
     path("nursery/", views.NurseryScheduleView.as_view(), name="nursery_schedule"),
     path("nursery/week/<int:week>/", views.NurseryScheduleView.as_view(), name="nursery_week"),
+    path("nursery/records/", views.NurseryRecordsView.as_view(), name="nursery_records"),
+    path("nursery/todo/", views.NurseryTodoView.as_view(), name="nursery_todo"),
+    path(
+        "nursery/print/full/",
+        views.NurseryScheduleFullPrintView.as_view(),
+        name="nursery_schedule_full_print",
+    ),
+    path("successions-by-block/", views.SuccessionsByBlockView.as_view(), name="successions_by_block"),
+    path("planting/move/", views.PlantingMoveView.as_view(), name="planting_move"),
     path("harvest-calendar/", views.HarvestCalendarView.as_view(), name="harvest_calendar"),
     path("sales-plan/", views.SalesPlanView.as_view(), name="sales_plan"),
     path("field-schedule/", views.FieldScheduleView.as_view(), name="field_schedule"),

@@ -117,7 +117,7 @@ def days_display(days):
 
 
 @register.simple_tag
-def render_planting_bar(row, weeks):
+def render_planting_bar(row, weeks, planning_year=None):
     """Render a planting as cells spanning correct columns in the matrix."""
     cells = []
     week_nums = [w["num"] for w in weeks]
@@ -125,6 +125,7 @@ def render_planting_bar(row, weeks):
     col_span = row["col_span"]
     css = row["css_class"]
     planting = row["planting"]
+    plan_year = planning_year or planting.planning_year.year
 
     # Empty cells before planting
     for i in range(col_start):
@@ -154,6 +155,9 @@ def render_planting_bar(row, weeks):
         f'<td class="week-cell planting-bar {css} {crop_css_class}" '
         f'colspan="{col_span}" '
         f'data-planting="{planting.id}" '
+        f'data-block-id="{planting.block_id}" '
+        f'data-planning-year="{plan_year}" '
+        f'draggable="true" '
         f'title="{title}" '
         f'hx-get="/planning/htmx/planting-detail/{planting.id}/" '
         f'hx-target="#planting-detail" '

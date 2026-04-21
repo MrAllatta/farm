@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
+{% block title %}Planting record — {{ planting.crop.name }}{% endblock %}
+{% block content %}
+<h1>Planting record</h1>
+<p class="muted">{{ planting.crop.name }}{% if variety_display %} — {{ variety_display }}{% endif %} · {{ planting.block.name }} b{{ planting.bed_start }}-{{ planting.bed_end }}</p>
+
+<form method="post" class="no-print">
+    {% csrf_token %}
+    <label>Status
+        <select name="status">
+            <option value="planned" {% if planting.status == "planned" %}selected{% endif %}>Planned</option>
+            <option value="seeded" {% if planting.status == "seeded" %}selected{% endif %}>Seeded</option>
+            <option value="planted" {% if planting.status == "planted" %}selected{% endif %}>Planted</option>
+            <option value="growing" {% if planting.status == "growing" %}selected{% endif %}>Growing</option>
+            <option value="harvesting" {% if planting.status == "harvesting" %}selected{% endif %}>Harvesting</option>
+            <option value="complete" {% if planting.status == "complete" %}selected{% endif %}>Complete</option>
+            <option value="failed" {% if planting.status == "failed" %}selected{% endif %}>Failed</option>
+            <option value="skipped" {% if planting.status == "skipped" %}selected{% endif %}>Skipped</option>
+        </select>
+    </label>
+    <label>Actual plant date <input type="date" name="actual_plant_date" value="{{ planting.actual_plant_date|date:'Y-m-d' }}"></label>
+    <label>Actual bedfeet <input type="number" name="actual_bedfeet" min="0" value="{{ planting.actual_bedfeet|default:'' }}"></label>
+    <label>Notes (appended) <textarea name="notes" rows="3"></textarea></label>
+    <button type="submit">Save</button>
+</form>
+
+<section style="margin-top:2rem;">
+    <h2>Plan snapshot</h2>
+    <ul>
+        <li>Planned plant: {{ planting.planned_plant_date }}</li>
+        <li>Harvest window: {{ planting.planned_first_harvest_date }} – {{ planting.planned_last_harvest_date }}</li>
+        <li>Planned bedfeet: {{ planting.planned_bedfeet }}</li>
+    </ul>
+    <pre style="white-space:pre-wrap;">{{ planting.notes }}</pre>
+</section>
+{% endblock %}

@@ -4,8 +4,7 @@ from django.db import models
 from decimal import Decimal
 from datetime import date, timedelta
 from django.contrib.postgres.fields import ArrayField
-from reference.models import CropInfo
-from reference.models import CropBySeason
+from reference.models import CropBySeason, CropInfo, Variety
 
 
 class PlanningYear(models.Model):
@@ -50,6 +49,13 @@ class Planting(models.Model):
     crop = models.ForeignKey(CropInfo, on_delete=models.PROTECT)
     crop_season = models.ForeignKey(CropBySeason, on_delete=models.PROTECT)
     variety = models.CharField(max_length=100, blank=True)
+    variety_obj = models.ForeignKey(
+        Variety,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="plantings",
+    )
     block = models.ForeignKey("reference.Block", on_delete=models.PROTECT)
     bed_start = models.PositiveIntegerField()
     bed_end = models.PositiveIntegerField()
@@ -133,6 +139,26 @@ class Planting(models.Model):
 
     class Meta:
         ordering = ["planned_plant_date", "block__name"]
+
+
+class SeedOrder(models.Model):
+    """Stub seed order line per variety and planning year (sheet 402 Seed Order tab)."""
+
+    variety = models.ForeignKey(Variety, on_delete=models.CASCADE, related_name="seed_order_lines")
+    planning_year = models.ForeignKey(
+        PlanningYear, on_delete=models.CASCADE, related_name="seed_orders"
+    )
+    planned_quantity = models.DecimalField(max_digits=12, decimal_places=2)
+    unit = models.CharField(max_length=20, default="ounces")
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["planning_year__year", "variety__crop__name", "variety__name"]
+
+    def __str__(self):
+        return f"{self.variety} ({self.planning_year.year}): {self.planned_quantity} {self.unit}"
 
 
 class NurseryEvent(models.Model):

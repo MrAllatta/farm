@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Missing plantings{% endblock %}
+{% block content %}
+<h1>Missing plantings</h1>
+<p class="muted">Planned plant date on or before {{ today }} but status is still <strong>planned</strong>.</p>
+<table style="width:100%; border-collapse:collapse;">
+    <thead>
+        <tr style="background:#eee;">
+            <th style="text-align:left; padding:0.35rem;">Plant date</th>
+            <th style="text-align:left; padding:0.35rem;">Crop</th>
+            <th style="text-align:left; padding:0.35rem;">Variety</th>
+            <th style="text-align:left; padding:0.35rem;">Block</th>
+            <th style="text-align:left; padding:0.35rem;">Beds</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in plantings %}
+        <tr style="border-bottom:1px solid #ddd;">
+            <td style="padding:0.35rem;">{{ p.planned_plant_date }}</td>
+            <td style="padding:0.35rem;">{{ p.crop.name }}</td>
+            <td style="padding:0.35rem;">{% if p.variety_obj %}{{ p.variety_obj.name }}{% else %}{{ p.variety|default:"—" }}{% endif %}</td>
+            <td style="padding:0.35rem;">{{ p.block.name }}</td>
+            <td style="padding:0.35rem;">b{{ p.bed_start }}-{{ p.bed_end }}</td>
+            <td style="padding:0.35rem;"><a href="{% url 'operations:planting_record' pk=p.pk %}">Record</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">None — all caught up.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

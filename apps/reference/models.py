@@ -51,6 +51,30 @@ class CropInfo(models.Model):
         return self.name
 
 
+class Variety(models.Model):
+    """Commercial variety / cultivar for a crop (sheet 402 Seed Sources semantics)."""
+
+    crop = models.ForeignKey(CropInfo, on_delete=models.CASCADE, related_name="varieties")
+    name = models.CharField(max_length=150)
+    supplier = models.CharField(max_length=120, blank=True)
+    catalog_number = models.CharField(max_length=80, blank=True)
+    source_url = models.URLField(max_length=500, blank=True)
+    notes = models.TextField(blank=True)
+    scraped_description = models.TextField(blank=True)
+    scraped_dtm_days = models.PositiveIntegerField(null=True, blank=True)
+    scraped_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    scraped_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["crop__name", "name"]
+        constraints = [
+            models.UniqueConstraint(fields=["crop", "name"], name="variety_unique_per_crop_name"),
+        ]
+
+    def __str__(self):
+        return f"{self.crop.name} — {self.name}"
+
+
 class BlockType(models.TextChoices):
     FIELD = "field", "Field"
     HIGH_TUNNEL = "high_tunnel", "High Tunnel"

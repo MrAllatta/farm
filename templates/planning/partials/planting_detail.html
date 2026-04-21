@@ -4,7 +4,9 @@
 <div class="detail-panel-content">
     <div class="detail-header">
         <h2>{{ planting.crop.name }}</h2>
-        {% if planting.variety %}
+        {% if planting.variety_obj %}
+        <span class="variety">{{ planting.variety_obj.name }}</span>
+        {% elif planting.variety %}
         <span class="variety">{{ planting.variety }}</span>
         {% endif %}
         <span class="status status-{{ planting.status }}">
@@ -121,6 +123,8 @@
     
     {# Actions #}
     <div class="detail-actions">
+        <a href="{% url 'operations:planting_record' planting.id %}"
+           class="btn">Planting record</a>
         <a href="{% url 'planning:planting_edit' planting.id %}" 
            class="btn">Edit</a>
         {% if planting.status == 'harvesting' or planting.status == 'growing' %}

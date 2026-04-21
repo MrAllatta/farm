@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
+{% block title %}Nursery schedule full print{% endblock %}
+{% block content %}
+<div class="no-print" style="margin-bottom:0.75rem;">
+    <button type="button" onclick="window.print()">Print</button>
+</div>
+<h1>Full nursery schedule — {{ plan_year }}</h1>
+<table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+    <thead>
+        <tr style="background:#eee;">
+            <th style="text-align:left; padding:0.25rem;">Date</th>
+            <th style="text-align:left; padding:0.25rem;">Type</th>
+            <th style="text-align:left; padding:0.25rem;">Crop</th>
+            <th style="text-align:left; padding:0.25rem;">Block</th>
+            <th style="text-align:right; padding:0.25rem;">Planned trays</th>
+            <th style="text-align:left; padding:0.25rem;">Done</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ev in events %}
+        <tr style="border-bottom:1px solid #ccc;">
+            <td style="padding:0.2rem;">{{ ev.planned_date }}</td>
+            <td style="padding:0.2rem;">{{ ev.get_event_type_display }}</td>
+            <td style="padding:0.2rem;">{{ ev.planting.crop.name }}</td>
+            <td style="padding:0.2rem;">{{ ev.planting.block.name }}</td>
+            <td style="padding:0.2rem; text-align:right;">{{ ev.planned_tray_count|default:"—" }}</td>
+            <td style="padding:0.2rem;">{% if ev.actual_date %}✓ {{ ev.actual_date }}{% else %}—{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No nursery events.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

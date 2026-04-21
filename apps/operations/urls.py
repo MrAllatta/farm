@@ -27,4 +27,10 @@ urlpatterns = [
         views.InventoryHarvestInView.as_view(),
         name="inventory_harvest_in",
     ),
+    path("planting/<int:pk>/record/", views.PlantingRecordView.as_view(), name="planting_record"),
+    path("harvest-needs/", views.HarvestNeedsView.as_view(), name="harvest_needs_current"),
+    path("harvest-needs/week/<int:week>/", views.HarvestNeedsView.as_view(), name="harvest_needs_week"),
+    path("missing-plantings/", views.MissingPlantingsView.as_view(), name="missing_plantings"),
+    path("print/planting-list/", views.PrintablePlantingListView.as_view(), name="planting_list_print"),
+    path("print/seeding-todo/", views.PrintableSeedingTodoView.as_view(), name="seeding_todo_print"),
 ]

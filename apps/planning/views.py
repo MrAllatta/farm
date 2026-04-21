@@ -17,12 +17,15 @@ from core.planning_year import get_effective_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 from sales.models import SalesEvent
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
 from django import forms
 from django.template.loader import render_to_string
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Optional
+from collections import defaultdict
 
 
 class PlanningMatrixView(TemplateView):
@@ -81,7 +84,7 @@ class PlanningMatrixView(TemplateView):
                 planned_last_harvest_date__gte=window_start_date,
             )
             .exclude(status="skipped")
-            .select_related("crop", "crop_season", "block")
+            .select_related("crop", "crop_season", "block", "variety_obj")
             .order_by("block__name", "bed_start", "planned_plant_date")
         )
 
@@ -133,10 +136,15 @@ class PlanningMatrixView(TemplateView):
                 if last_visible < first_visible:
                     continue  # Not visible in current window
 
+                vpart = ""
+                if getattr(p, "variety_obj_id", None) and p.variety_obj:
+                    vpart = f" — {p.variety_obj.name}"
+                elif p.variety:
+                    vpart = f" — {p.variety}"
                 rows.append(
                     {
                         "planting": p,
-                        "label": f"{p.crop.name}",
+                        "label": f"{p.crop.name}{vpart}",
                         "sublabel": f"b{p.bed_start}-{p.bed_end}",
                         "col_start": first_visible - first_week,
                         "col_span": last_visible - first_visible + 1,
@@ -175,6 +183,104 @@ class PlanningMatrixView(TemplateView):
             return "planting-planned"
 
 
+def _planting_display_variety_label(planting: Planting) -> str:
+    if getattr(planting, "variety_obj_id", None) and planting.variety_obj:
+        return planting.variety_obj.name
+    return (planting.variety or "").strip()
+
+
+def _regenerate_planting_events(planting: Planting) -> None:
+    """Recompute harvest window from planned_plant_date + crop_season; refresh pending events."""
+    cs = planting.crop_season
+    planting.planned_first_harvest_date = planting.planned_plant_date + timedelta(days=cs.dtm_days)
+    planting.planned_last_harvest_date = planting.planned_first_harvest_date + timedelta(
+        weeks=cs.harvest_weeks - 1
+    )
+    planting.planned_total_yield = planting.planned_bedfeet * cs.total_yield_per_bedfoot
+    planting.save()
+    planting.nursery_events.filter(actual_date__isnull=True).delete()
+    planting.harvest_events.filter(actual_quantity__isnull=True).delete()
+    planting.generate_nursery_events()
+    planting.generate_harvest_events()
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class PlantingMoveView(View):
+    """POST JSON: move planting to another block and/or ISO week (crop planner drag-and-drop)."""
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({"ok": False, "error": "auth"}, status=401)
+        if not request.user.is_staff:
+            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+
+        import json
+
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+
+        planting_id = payload.get("planting_id")
+        block_id = payload.get("block_id")
+        week = payload.get("week")
+        try:
+            planting_id = int(planting_id)
+            block_id = int(block_id)
+            week = int(week)
+        except (TypeError, ValueError):
+            return JsonResponse({"ok": False, "error": "bad_ids"}, status=400)
+
+        if not (1 <= week <= 52):
+            return JsonResponse({"ok": False, "error": "bad_week"}, status=400)
+
+        year_obj = get_effective_planning_year(request)
+        if not year_obj:
+            return JsonResponse({"ok": False, "error": "no_year"}, status=400)
+
+        planting = get_object_or_404(
+            Planting.objects.select_related("crop", "crop_season", "block"),
+            pk=planting_id,
+            planning_year=year_obj,
+        )
+        new_block = get_object_or_404(Block, pk=block_id)
+
+        try:
+            new_plant_date = Week(year_obj.year, week).monday()
+        except Exception:
+            return JsonResponse({"ok": False, "error": "bad_week_date"}, status=400)
+
+        planting.block = new_block
+        planting.planned_plant_date = new_plant_date
+        _regenerate_planting_events(planting)
+
+        warnings = []
+        conflicts = (
+            Planting.objects.filter(
+                planning_year=year_obj,
+                block_id=planting.block_id,
+                bed_start__lte=planting.bed_end,
+                bed_end__gte=planting.bed_start,
+                planned_last_harvest_date__gte=planting.planned_plant_date,
+                planned_plant_date__lte=planting.planned_last_harvest_date,
+            )
+            .exclude(status__in=["skipped", "failed", "revised"])
+            .exclude(pk=planting.pk)
+            .select_related("crop")
+        )
+        conflict_list = list(conflicts[:9])
+        for c in conflict_list[:8]:
+            warnings.append(
+                f"{c.crop.name} {_planting_display_variety_label(c)} b{c.bed_start}-{c.bed_end} "
+                f"({c.planned_plant_date} – {c.planned_last_harvest_date})"
+            )
+        total_c = conflicts.count()
+        if total_c > 8:
+            warnings.append(f"…and {total_c - 8} more overlaps")
+
+        return JsonResponse({"ok": True, "warnings": warnings})
+
+
 class ActivePlanningYearMixin:
     """Redirect views that require an active planning year."""
 
@@ -188,11 +294,67 @@ class ActivePlanningYearMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class SuccessionsByBlockView(ActivePlanningYearMixin, TemplateView):
+    """List plantings for a crop grouped by block (succession overview)."""
+
+    template_name = "planning/successions_by_block.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        crop_id = self.request.GET.get("crop")
+        crops = CropInfo.objects.all().order_by("crop_type", "name")
+        plantings_qs = (
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=["skipped", "failed", "revised"])
+            .select_related("crop", "block", "variety_obj")
+            .order_by("crop__name", "block__walk_route_order", "planned_plant_date")
+        )
+        if crop_id and str(crop_id).isdigit():
+            plantings_qs = plantings_qs.filter(crop_id=int(crop_id))
+
+        by_crop_map = {}
+        for p in plantings_qs:
+            entry = by_crop_map.setdefault(
+                p.crop_id,
+                {"crop": p.crop, "blocks_map": {}},
+            )
+            bmap = entry["blocks_map"]
+            if p.block_id not in bmap:
+                bmap[p.block_id] = {"block": p.block, "rows": []}
+            v = _planting_display_variety_label(p)
+            bmap[p.block_id]["rows"].append(
+                {
+                    "planting": p,
+                    "variety": v or "—",
+                    "beds": f"b{p.bed_start}-{p.bed_end}",
+                    "succession": p.succession_group or "—",
+                }
+            )
+
+        by_crop = []
+        for _cid, data in sorted(by_crop_map.items(), key=lambda x: x[1]["crop"].name):
+            blocks_sorted = sorted(data["blocks_map"].values(), key=lambda b: b["block"].walk_route_order)
+            by_crop.append({"crop": data["crop"], "blocks": blocks_sorted})
+
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "crops": crops,
+                "selected_crop_id": int(crop_id) if crop_id and str(crop_id).isdigit() else None,
+                "by_crop": by_crop,
+            }
+        )
+        return ctx
+
+
 class PlantingDetailView(DetailView):
     """HTMX partial: planting detail panel."""
 
     model = Planting
     template_name = "planning/partials/planting_detail.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("crop", "crop_season", "block", "variety_obj")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -849,6 +1011,7 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
             )
 
         peak_week = max(bench_by_week, key=lambda x: x["trays"])
+        tray_highlight_window = max((w["bench_trays"] for w in weeks_data), default=0)
 
         ctx.update(
             {
@@ -858,6 +1021,7 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
                 "greenhouse_capacity": greenhouse_capacity,
                 "bench_by_week": bench_by_week,
                 "peak_week": peak_week,
+                "tray_highlight_window": tray_highlight_window,
             }
         )
         return ctx
@@ -1090,6 +1254,21 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 summary_qty += row.planned_quantity or Decimal("0")
                 summary_revenue += row.planned_revenue or Decimal("0")
 
+        demand_totals = defaultdict(Decimal)
+        for row in SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.year_obj,
+        ).select_related("product"):
+            wk = row.sale_date.isocalendar()[1]
+            demand_totals[(row.product_id, wk)] += row.planned_quantity or Decimal("0")
+
+        harvest_totals = defaultdict(Decimal)
+        for he in HarvestEvent.objects.filter(planting__planning_year=self.year_obj).exclude(
+            planting__status__in=["skipped", "failed", "revised"]
+        ).select_related("planting"):
+            wk = he.planned_date.isocalendar()[1]
+            harvest_totals[(he.planting.crop_id, wk)] += he.planned_quantity or Decimal("0")
+
         product_rows = []
         for product in products:
             crop_profiles = seasons_by_crop.get(product.crop_id, [])
@@ -1110,13 +1289,29 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 css_class = f"sales-plan-cell sales-plan-cell--{window_state}"
                 if plan and plan.planned_quantity:
                     css_class += " sales-plan-cell--planned"
+                hq = product.harvest_qty_per_sale_unit or Decimal("1")
+                if hq <= 0:
+                    hq = Decimal("1")
+                h_units = harvest_totals.get((product.crop_id, week), Decimal("0"))
+                supply_sale_units = (h_units / hq).quantize(Decimal("0.01"))
+                demand_all_channels = demand_totals.get((product.id, week), Decimal("0"))
+                shortage = demand_all_channels > supply_sale_units + Decimal("0.0001")
+                if shortage:
+                    css_class += " sales-plan-cell--shortage"
                 week_cells.append(
                     {
                         "week": week,
                         "planned_quantity": plan.planned_quantity if plan else None,
                         "window_state": window_state,
                         "css_class": css_class,
-                        "title": f"{window_label} · Week {week}",
+                        "title": (
+                            f"{window_label} · Week {week} · "
+                            f"Demand(all channels) {demand_all_channels} · "
+                            f"Harvest→sale-units ~{supply_sale_units}"
+                        ),
+                        "demand_all_channels": demand_all_channels,
+                        "supply_sale_units": supply_sale_units,
+                        "shortage": shortage,
                     }
                 )
             product_rows.append(
@@ -1724,3 +1919,211 @@ class BedConflictCheckView(View):
 
         except (CropBySeason.DoesNotExist, ValueError):
             return HttpResponse("")
+
+
+class NurseryRecordsView(ActivePlanningYearMixin, View):
+    """Log actual nursery event dates and tray counts (near-term incomplete events)."""
+
+    def get(self, request, *args, **kwargs):
+        today = date.today()
+        horizon = today + timedelta(days=14)
+        events = (
+            NurseryEvent.objects.filter(
+                planting__planning_year=self.year_obj,
+                planned_date__lte=horizon,
+                actual_date__isnull=True,
+            )
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block")
+            .order_by("planned_date", "event_type", "planting__crop__name")
+        )
+        ctx = {
+            "year": self.year_obj,
+            "events": events,
+            "today": today,
+        }
+        return render(request, "planning/nursery_records.html", ctx)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
+        eid = request.POST.get("event_id")
+        if not eid:
+            messages.error(request, "Missing event.")
+            return redirect("planning:nursery_records")
+        ev = get_object_or_404(
+            NurseryEvent.objects.select_related("planting"),
+            pk=eid,
+            planting__planning_year=self.year_obj,
+        )
+        ad = (request.POST.get("actual_date") or "").strip()
+        if ad:
+            try:
+                ev.actual_date = date.fromisoformat(ad)
+            except ValueError:
+                messages.warning(request, "Invalid actual date.")
+        atc = (request.POST.get("actual_tray_count") or "").strip()
+        if atc:
+            try:
+                ev.actual_tray_count = int(atc)
+            except ValueError:
+                pass
+        ag = (request.POST.get("actual_germination_rate") or "").strip()
+        if ag:
+            try:
+                ev.actual_germination_rate = Decimal(ag)
+            except InvalidOperation:
+                pass
+        notes_add = (request.POST.get("notes") or "").strip()
+        if notes_add:
+            ev.notes = (ev.notes + "\n" + notes_add).strip()
+        ev.save()
+        messages.success(request, "Nursery record updated.")
+        return redirect("planning:nursery_records")
+
+
+class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
+    """Upcoming incomplete nursery tasks (next 7 days)."""
+
+    template_name = "planning/nursery_todo.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        today = date.today()
+        horizon = today + timedelta(days=7)
+        events = (
+            NurseryEvent.objects.filter(
+                planting__planning_year=self.year_obj,
+                planned_date__gte=today,
+                planned_date__lte=horizon,
+                actual_date__isnull=True,
+            )
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block")
+            .order_by("planned_date", "event_type")
+        )
+        ctx.update({"year": self.year_obj, "events": events, "today": today})
+        return ctx
+
+
+class NurseryScheduleFullPrintView(ActivePlanningYearMixin, TemplateView):
+    """Printable full-season nursery schedule."""
+
+    template_name = "planning/nursery_schedule_full_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year = self.year_obj.year
+        events = (
+            NurseryEvent.objects.filter(planting__planning_year=self.year_obj)
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block")
+            .order_by("planned_date", "planting__crop__name", "event_type")
+        )
+        ctx.update({"year": self.year_obj, "plan_year": year, "events": events})
+        return ctx
+
+
+class NurseryRecordsView(ActivePlanningYearMixin, View):
+    """Log actual nursery event dates and tray counts (near-term incomplete events)."""
+
+    def get(self, request, *args, **kwargs):
+        today = date.today()
+        horizon = today + timedelta(days=14)
+        events = (
+            NurseryEvent.objects.filter(
+                planting__planning_year=self.year_obj,
+                planned_date__lte=horizon,
+                actual_date__isnull=True,
+            )
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block")
+            .order_by("planned_date", "event_type", "planting__crop__name")
+        )
+        ctx = {
+            "year": self.year_obj,
+            "events": events,
+            "today": today,
+        }
+        return render(request, "planning/nursery_records.html", ctx)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
+        eid = request.POST.get("event_id")
+        if not eid:
+            messages.error(request, "Missing event.")
+            return redirect("planning:nursery_records")
+        ev = get_object_or_404(
+            NurseryEvent.objects.select_related("planting"),
+            pk=eid,
+            planting__planning_year=self.year_obj,
+        )
+        ad = (request.POST.get("actual_date") or "").strip()
+        if ad:
+            try:
+                ev.actual_date = date.fromisoformat(ad)
+            except ValueError:
+                messages.warning(request, "Invalid actual date.")
+        atc = (request.POST.get("actual_tray_count") or "").strip()
+        if atc:
+            try:
+                ev.actual_tray_count = int(atc)
+            except ValueError:
+                pass
+        ag = (request.POST.get("actual_germination_rate") or "").strip()
+        if ag:
+            try:
+                ev.actual_germination_rate = Decimal(ag)
+            except InvalidOperation:
+                pass
+        ev.notes = (ev.notes + "\n" + (request.POST.get("notes") or "")).strip()
+        ev.save()
+        messages.success(request, "Nursery record updated.")
+        return redirect("planning:nursery_records")
+
+
+class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
+    """Upcoming incomplete nursery tasks (next 7 days)."""
+
+    template_name = "planning/nursery_todo.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        today = date.today()
+        horizon = today + timedelta(days=7)
+        events = (
+            NurseryEvent.objects.filter(
+                planting__planning_year=self.year_obj,
+                planned_date__gte=today,
+                planned_date__lte=horizon,
+                actual_date__isnull=True,
+            )
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block")
+            .order_by("planned_date", "event_type")
+        )
+        ctx.update({"year": self.year_obj, "events": events, "today": today})
+        return ctx
+
+
+class NurseryScheduleFullPrintView(ActivePlanningYearMixin, TemplateView):
+    """Printable full-season nursery schedule."""
+
+    template_name = "planning/nursery_schedule_full_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year = self.year_obj.year
+        events = (
+            NurseryEvent.objects.filter(planting__planning_year=self.year_obj)
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block")
+            .order_by("planned_date", "planting__crop__name", "event_type")
+        )
+        ctx.update({"year": self.year_obj, "plan_year": year, "events": events})
+        return ctx

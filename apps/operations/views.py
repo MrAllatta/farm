@@ -10,9 +10,24 @@ from isoweek import Week
 from django import forms
 from reference.models import CropInfo, CropSalesFormat
 from operations.models import InventoryLedger, FieldWalkNote
-from planning.models import Planting, HarvestEvent
+from planning.models import HarvestEvent, NurseryEvent, Planting, PlantingStatus
 from core.planning_year import get_effective_planning_year
 from decimal import Decimal
+
+from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
+
+
+class OperationsPlanningYearMixin:
+    """Require an active planning year for operations views."""
+
+    year_obj = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.year_obj = get_effective_planning_year(request)
+        if not self.year_obj:
+            messages.error(request, "No active planning year configured.")
+            return redirect("planning:matrix")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class InventoryHarvestInView(TemplateView):
@@ -114,6 +129,10 @@ class FieldWalkNoteView(TemplateView):
             yield_adjust_pct=yield_pct,
             notes=notes_text,
         )
+
+        n_adj = apply_yield_adjustment_to_future_harvests(planting, yield_pct)
+        if n_adj:
+            messages.info(request, f"Adjusted {n_adj} planned harvest week(s) for yield change.")
 
         if adjusted_harvest:
             try:
@@ -651,6 +670,8 @@ class FieldWalkView(TemplateView):
                     notes=notes_text,
                 )
 
+                apply_yield_adjustment_to_future_harvests(planting, yield_pct)
+
                 # Parse adjusted harvest date if provided
                 if adjusted_harvest:
                     try:
@@ -672,213 +693,269 @@ class FieldWalkView(TemplateView):
         return redirect("operations:field_walk_current")
 
 
-class SeedOrderReportView(TemplateView):
-    """Calculate seed needs from all planned plantings."""
+class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
+    """Rich form for actual planting / plan deviation (operations entry point)."""
 
-    template_name = "reports/seed_order.html"
+    template_name = "operations/planting_record.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        year_obj = get_effective_planning_year(self.request)
-
-        plantings = (
-            Planting.objects.filter(
-                planning_year=year_obj,
-            )
-            .exclude(status="skipped")
-            .select_related("crop", "crop_season", "block")
+        planting = get_object_or_404(
+            Planting.objects.select_related(
+                "crop", "crop_season", "block", "planning_year", "variety_obj"
+            ),
+            pk=kwargs["pk"],
+            planning_year=self.year_obj,
         )
-
-        overplant = float(year_obj.overplant_factor)
-
-        # Aggregate by crop
-        crop_needs = {}  # crop_id → {crop, total_bedfeet, seed_calc}
-
-        for p in plantings:
-            crop = p.crop
-            cs = p.crop_season
-            crop_id = crop.id
-
-            if crop_id not in crop_needs:
-                crop_needs[crop_id] = {
-                    "crop": crop,
-                    "total_bedfeet": 0,
-                    "plantings": [],
-                }
-
-            crop_needs[crop_id]["total_bedfeet"] += p.planned_bedfeet
-            crop_needs[crop_id]["plantings"].append(p)
-
-        # Calculate seed quantities
-        seed_orders = []
-
-        for crop_id, data in crop_needs.items():
-            crop = data["crop"]
-            cs = data["plantings"][0].crop_season  # use first planting's profile
-            total_bf = data["total_bedfeet"]
-
-            result = self._calculate_seeds(crop, cs, total_bf, overplant)
-            result["crop"] = crop
-            result["total_bedfeet"] = total_bf
-            result["num_plantings"] = len(data["plantings"])
-            seed_orders.append(result)
-
-        # Sort: direct seeded first, then transplanted, then vegetative
-        seed_orders.sort(
-            key=lambda x: (
-                0 if x["method"] == "direct_seed" else 1 if x["method"] == "transplant" else 2,
-                x["crop"].name,
-            )
-        )
-
+        variety_display = ""
+        if planting.variety_obj_id:
+            variety_display = planting.variety_obj.name
+        elif planting.variety:
+            variety_display = planting.variety
         ctx.update(
             {
-                "year": year_obj,
-                "overplant_pct": int((overplant - 1) * 100),
-                "seed_orders": seed_orders,
-                "direct_seeded": [s for s in seed_orders if s["method"] == "direct_seed"],
-                "transplanted": [s for s in seed_orders if s["method"] == "transplant"],
-                "vegetative": [s for s in seed_orders if s["method"] == "vegetative"],
+                "year": self.year_obj,
+                "planting": planting,
+                "variety_display": variety_display,
             }
         )
         return ctx
 
-    def _calculate_seeds(self, crop, crop_season, total_bedfeet, overplant):
-        """Three calculation paths depending on propagation type."""
+    def post(self, request, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/admin/login/?next={request.path}")
+        if not request.user.is_staff:
+            return HttpResponse(status=403)
+        planting = get_object_or_404(
+            Planting.objects.select_related("crop", "crop_season", "block"),
+            pk=kwargs["pk"],
+            planning_year=self.year_obj,
+        )
 
-        if crop.propagation_type != "seed":
-            return self._calc_vegetative(crop, crop_season, total_bedfeet, overplant)
+        status = (request.POST.get("status") or planting.status).strip()
+        notes_add = (request.POST.get("notes", "") or "").strip()
+        apd = request.POST.get("actual_plant_date", "").strip()
+        abf = request.POST.get("actual_bedfeet", "").strip()
 
-        if crop_season.ds_seed_rate:
-            return self._calc_direct_seed(crop, crop_season, total_bedfeet, overplant)
+        valid = {c[0] for c in PlantingStatus.choices}
+        if status in valid:
+            planting.status = status
 
-        if crop_season.tp_inrow_spacing:
-            return self._calc_transplant(crop, crop_season, total_bedfeet, overplant)
+        if apd:
+            try:
+                planting.actual_plant_date = date.fromisoformat(apd)
+            except ValueError:
+                messages.warning(request, "Invalid actual plant date; left unchanged.")
+        if abf:
+            try:
+                planting.actual_bedfeet = int(abf)
+            except ValueError:
+                messages.warning(request, "Invalid actual bedfeet; left unchanged.")
 
-        return {
-            "method": "unknown",
-            "seeds_needed": 0,
-            "ounces_needed": 0,
-            "order_rounded": "?",
-            "calculation": "Missing seed rate and spacing data",
-        }
+        if notes_add:
+            planting.notes = (planting.notes + "\n" + notes_add).strip()
 
-    def _calc_direct_seed(self, crop, cs, total_bf, overplant):
-        rows = cs.rows_per_bed or 1
-        rate = cs.ds_seed_rate  # seeds per rowfoot
+        planting.save()
+        messages.success(request, "Planting record updated.")
+        return redirect("operations:planting_record", pk=planting.pk)
 
-        seeds = total_bf * rows * rate * overplant
 
-        ounces = None
-        order = None
-        if crop.seeds_per_ounce and crop.seeds_per_ounce > 0:
-            ounces = seeds / float(crop.seeds_per_ounce)
-            order = self._round_order(ounces)
+class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
+    """Harvest events scheduled for the selected week (operator checklist)."""
 
-        return {
-            "method": "direct_seed",
-            "seeds_needed": int(seeds),
-            "ounces_needed": ounces,
-            "order_rounded": order,
-            "calculation": (
-                f"{total_bf}bf × {rows}rows × {rate}seeds/rf "
-                f"× {overplant} overplant = {int(seeds)} seeds"
-            ),
-        }
+    template_name = "operations/harvest_needs.html"
 
-    def _calc_transplant(self, crop, cs, total_bf, overplant):
-        rows = cs.rows_per_bed or 1
-        spacing = float(cs.tp_inrow_spacing)
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.year_obj
+        week_num = kwargs.get("week", date.today().isocalendar()[1])
+        year = year_obj.year
+        week_monday = Week(year, week_num).monday()
+        week_sunday = week_monday + timedelta(days=6)
 
-        plants = total_bf * rows / spacing * overplant
+        events = (
+            HarvestEvent.objects.filter(
+                planting__planning_year=year_obj,
+                planned_date__gte=week_monday,
+                planned_date__lte=week_sunday,
+            )
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__block", "planting__variety_obj")
+            .order_by(
+                "planting__block__walk_route_order",
+                "planting__block__name",
+                "planting__bed_start",
+                "planned_date",
+            )
+        )
+        ctx.update(
+            {
+                "year": year_obj,
+                "week_num": week_num,
+                "week_monday": week_monday,
+                "week_sunday": week_sunday,
+                "events": events,
+                "prev_week": week_num - 1 if week_num > 1 else 52,
+                "next_week": week_num + 1 if week_num < 52 else 1,
+            }
+        )
+        return ctx
 
-        seeds_per_cell = crop.seeds_per_cell or 1
-        thinned = crop.thinned_plants or 0
 
-        if thinned > 0 and seeds_per_cell > 1:
-            # Multi-seed, thin to one: cells needed = plants needed
-            cells = plants
-        else:
-            cells = plants
+class MissingPlantingsView(OperationsPlanningYearMixin, TemplateView):
+    """Plantings past due plant date but still in planned status."""
 
-        seeds = cells * seeds_per_cell
+    template_name = "operations/missing_plantings.html"
 
-        # Tray count
-        trays = None
-        if crop.seeded_tray_size and crop.seeded_tray_size > 1:
-            trays = math.ceil(cells / crop.seeded_tray_size)
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.year_obj
+        today = date.today()
+        qs = (
+            Planting.objects.filter(
+                planning_year=year_obj,
+                planned_plant_date__lte=today,
+                status="planned",
+            )
+            .select_related("crop", "block", "variety_obj")
+            .order_by("planned_plant_date", "block__walk_route_order", "block__name", "bed_start")
+        )
+        ctx.update({"year": year_obj, "today": today, "plantings": qs})
+        return ctx
 
-        ounces = None
-        order = None
-        if crop.seeds_per_ounce and crop.seeds_per_ounce > 0:
-            ounces = seeds / float(crop.seeds_per_ounce)
-            order = self._round_order(ounces)
 
-        return {
-            "method": "transplant",
-            "plants_needed": int(plants),
-            "cells_needed": int(cells),
-            "seeds_needed": int(seeds),
-            "trays_needed": trays,
-            "tray_size": crop.seeded_tray_size,
-            "ounces_needed": ounces,
-            "order_rounded": order,
-            "calculation": (
-                f"{total_bf}bf × {rows}rows ÷ {spacing}ft spacing "
-                f"× {overplant} = {int(plants)} plants, "
-                f"{int(seeds)} seeds ({seeds_per_cell}/cell)"
-            ),
-        }
+class PrintablePlantingListView(OperationsPlanningYearMixin, TemplateView):
+    """Printable planting list with week range."""
 
-    def _calc_vegetative(self, crop, cs, total_bf, overplant):
-        rows = cs.rows_per_bed or 1
-        spacing = float(cs.tp_inrow_spacing) if cs.tp_inrow_spacing else 1
+    template_name = "operations/planting_list_print.html"
 
-        pieces = total_bf * rows / spacing * overplant
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.year_obj
+        req = self.request.GET
+        try:
+            wk_from = int(req.get("from_week", 1))
+            wk_to = int(req.get("to_week", 52))
+        except ValueError:
+            wk_from, wk_to = 1, 52
+        wk_from = max(1, min(52, wk_from))
+        wk_to = max(1, min(52, wk_to))
+        if wk_to < wk_from:
+            wk_from, wk_to = wk_to, wk_from
 
-        # Garlic: ~60 cloves per pound
-        # Potato: ~2 pieces per pound (cut seed potatoes)
-        weight_per_piece = {
-            "vegetative_clove": 60,  # cloves per lb
-            "vegetative_tuber": 2,  # pieces per lb
-            "vegetative_slip": None,  # ordered by count
-        }
+        year = year_obj.year
+        start_d = Week(year, wk_from).monday()
+        end_d = Week(year, wk_to).monday() + timedelta(days=6)
 
-        pcs_per_lb = weight_per_piece.get(crop.propagation_type)
-        order_weight = None
-        if pcs_per_lb:
-            order_weight = f"{math.ceil(pieces / pcs_per_lb)} lb"
-        else:
-            order_weight = f"{int(pieces)} slips"
+        plantings = (
+            Planting.objects.filter(
+                planning_year=year_obj,
+                planned_plant_date__gte=start_d,
+                planned_plant_date__lte=end_d,
+            )
+            .exclude(status__in=["skipped", "failed", "revised"])
+            .select_related("crop", "crop_season", "block", "variety_obj")
+            .order_by("block__walk_route_order", "block__name", "bed_start", "planned_plant_date")
+        )
+        rows = []
+        for p in plantings:
+            v = p.variety_obj.name if p.variety_obj_id else (p.variety or "—")
+            rows.append(
+                {
+                    "planting": p,
+                    "variety": v,
+                    "harvest_wk": f"{p.planned_first_harvest_date.isocalendar()[1]}-{p.planned_last_harvest_date.isocalendar()[1]}",
+                }
+            )
+        ctx.update(
+            {
+                "year": year_obj,
+                "wk_from": wk_from,
+                "wk_to": wk_to,
+                "rows": rows,
+            }
+        )
+        return ctx
 
-        return {
-            "method": "vegetative",
-            "pieces_needed": int(pieces),
-            "seeds_needed": 0,
-            "ounces_needed": None,
-            "order_rounded": order_weight,
-            "calculation": (
-                f"{total_bf}bf × {rows}rows ÷ {spacing}ft " f"× {overplant} = {int(pieces)} pieces"
-            ),
-        }
 
-    def _round_order(self, ounces):
-        """Round to common seed packet sizes."""
-        if ounces is None:
-            return "?"
-        if ounces < 0.1:
-            return "1 pkt"
-        if ounces < 0.25:
-            return "1/4 oz"
-        if ounces < 0.5:
-            return "1/2 oz"
-        if ounces < 1:
-            return "1 oz"
-        if ounces < 4:
-            return f"{math.ceil(ounces)} oz"
-        # Convert to pounds
-        lbs = ounces / 16
-        if lbs < 1:
-            return f"{math.ceil(ounces)} oz ({lbs:.1f} lb)"
-        return f"{math.ceil(lbs)} lb"
+class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
+    """Printable direct-seed + greenhouse seed events for a week range."""
+
+    template_name = "operations/seeding_todo_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.year_obj
+        req = self.request.GET
+        try:
+            wk_from = int(req.get("from_week", date.today().isocalendar()[1]))
+            wk_to = int(req.get("to_week", wk_from + 2))
+        except ValueError:
+            wk_from = date.today().isocalendar()[1]
+            wk_to = wk_from + 2
+        year = year_obj.year
+        start_d = Week(year, max(1, min(52, wk_from))).monday()
+        end_d = Week(year, max(1, min(52, wk_to))).monday() + timedelta(days=6)
+
+        nursery_rows = []
+        for ev in (
+            NurseryEvent.objects.filter(
+                planting__planning_year=year_obj,
+                event_type="seed",
+                planned_date__gte=start_d,
+                planned_date__lte=end_d,
+            )
+            .exclude(planting__status__in=["skipped", "failed", "revised"])
+            .select_related("planting", "planting__crop", "planting__crop_season", "planting__block")
+            .order_by("planned_date", "planting__block__walk_route_order")
+        ):
+            cs = ev.planting.crop_season
+            nursery_rows.append(
+                {
+                    "kind": "greenhouse_seed",
+                    "date": ev.planned_date,
+                    "crop": ev.planting.crop.name,
+                    "block": ev.planting.block.name,
+                    "beds": f"b{ev.planting.bed_start}-{ev.planting.bed_end}",
+                    "seeder": cs.seeder_settings if cs else "",
+                    "ds_rate": cs.ds_seed_rate if cs else None,
+                    "notes": ev.notes or "",
+                }
+            )
+
+        field_direct = []
+        for p in (
+            Planting.objects.filter(
+                planning_year=year_obj,
+                crop__nursery_weeks=0,
+                planned_plant_date__gte=start_d,
+                planned_plant_date__lte=end_d,
+            )
+            .exclude(status__in=["skipped", "failed", "revised"])
+            .select_related("crop", "crop_season", "block")
+            .order_by("planned_plant_date", "block__walk_route_order")
+        ):
+            cs = p.crop_season
+            field_direct.append(
+                {
+                    "kind": "field_direct_seed",
+                    "date": p.planned_plant_date,
+                    "crop": p.crop.name,
+                    "block": p.block.name,
+                    "beds": f"b{p.bed_start}-{p.bed_end}",
+                    "seeder": cs.seeder_settings if cs else "",
+                    "ds_rate": cs.ds_seed_rate if cs else None,
+                    "notes": p.notes or "",
+                }
+            )
+
+        ctx.update(
+            {
+                "year": year_obj,
+                "wk_from": wk_from,
+                "wk_to": wk_to,
+                "nursery_rows": nursery_rows,
+                "field_direct": field_direct,
+            }
+        )
+        return ctx

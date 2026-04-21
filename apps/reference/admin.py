@@ -2,13 +2,14 @@
 
 from django.contrib import admin
 from .models import (
-    CropInfo,
-    CropBySeason,
     Block,
+    CropBySeason,
+    CropInfo,
     CropSalesFormat,
     ProductRecipe,
     ProductRecipeComponent,
     SalesChannel,
+    Variety,
 )
 
 
@@ -33,6 +34,14 @@ class CropSalesFormatInline(admin.TabularInline):
     model = CropSalesFormat
     extra = 1
     fields = ["product_name", "sale_price", "sale_unit", "harvest_qty_per_sale_unit", "is_active"]
+
+
+@admin.register(Variety)
+class VarietyAdmin(admin.ModelAdmin):
+    list_display = ["name", "crop", "supplier", "catalog_number", "source_url"]
+    list_filter = ["crop__crop_type"]
+    search_fields = ["name", "supplier", "catalog_number", "crop__name"]
+    raw_id_fields = ["crop"]
 
 
 @admin.register(CropInfo)

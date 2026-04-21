@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
+{% block title %}Seeding todo print{% endblock %}
+{% block content %}
+<div class="no-print" style="margin-bottom:1rem;">
+    <form method="get" style="display:flex; gap:0.5rem; align-items:end;">
+        <label>From week <input type="number" name="from_week" min="1" max="52" value="{{ wk_from }}"></label>
+        <label>To week <input type="number" name="to_week" min="1" max="52" value="{{ wk_to }}"></label>
+        <button type="submit">Apply</button>
+        <button type="button" onclick="window.print()">Print</button>
+    </form>
+</div>
+<h1>Seeding todo — {{ year.year }}</h1>
+<h2>Greenhouse seed</h2>
+<table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+    <thead>
+        <tr style="background:#eee;">
+            <th style="text-align:left; padding:0.25rem;">Date</th>
+            <th style="text-align:left; padding:0.25rem;">Crop</th>
+            <th style="text-align:left; padding:0.25rem;">Block</th>
+            <th style="text-align:left; padding:0.25rem;">Seeder</th>
+            <th style="text-align:left; padding:0.25rem;">DS rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in nursery_rows %}
+        <tr style="border-bottom:1px solid #ccc;">
+            <td style="padding:0.25rem;">{{ r.date }}</td>
+            <td style="padding:0.25rem;">{{ r.crop }}</td>
+            <td style="padding:0.25rem;">{{ r.block }} {{ r.beds }}</td>
+            <td style="padding:0.25rem;">{{ r.seeder }}</td>
+            <td style="padding:0.25rem;">{{ r.ds_rate|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="muted">No greenhouse seed events in range.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h2>Field direct seed</h2>
+<table style="width:100%; border-collapse:collapse;">
+    <thead>
+        <tr style="background:#eee;">
+            <th style="text-align:left; padding:0.25rem;">Date</th>
+            <th style="text-align:left; padding:0.25rem;">Crop</th>
+            <th style="text-align:left; padding:0.25rem;">Block</th>
+            <th style="text-align:left; padding:0.25rem;">Seeder</th>
+            <th style="text-align:left; padding:0.25rem;">DS rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in field_direct %}
+        <tr style="border-bottom:1px solid #ccc;">
+            <td style="padding:0.25rem;">{{ r.date }}</td>
+            <td style="padding:0.25rem;">{{ r.crop }}</td>
+            <td style="padding:0.25rem;">{{ r.block }} {{ r.beds }}</td>
+            <td style="padding:0.25rem;">{{ r.seeder }}</td>
+            <td style="padding:0.25rem;">{{ r.ds_rate|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="muted">No direct-seed plantings in range.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

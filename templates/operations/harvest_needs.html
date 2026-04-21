@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Harvest needs — week {{ week_num }}{% endblock %}
+{% block content %}
+<h1>Harvest needs</h1>
+<p class="muted">Week {{ week_num }} · {{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j" }}</p>
+<p class="no-print">
+    <a href="{% url 'operations:harvest_needs_week' week=prev_week %}">← Prev</a>
+    ·
+    <a href="{% url 'operations:harvest_needs_week' week=next_week %}">Next →</a>
+    ·
+    <a href="{% url 'operations:harvest_entry_week' week=week_num %}">Record harvest</a>
+</p>
+<table style="width:100%; border-collapse:collapse;">
+    <thead>
+        <tr style="background:#eee;">
+            <th style="text-align:left; padding:0.35rem;">Date</th>
+            <th style="text-align:left; padding:0.35rem;">Crop</th>
+            <th style="text-align:left; padding:0.35rem;">Block</th>
+            <th style="text-align:right; padding:0.35rem;">Planned qty</th>
+            <th style="text-align:left; padding:0.35rem;">Unit</th>
+            <th style="text-align:left; padding:0.35rem;">Recorded</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ev in events %}
+        <tr style="border-bottom:1px solid #ddd;">
+            <td style="padding:0.35rem;">{{ ev.planned_date }}</td>
+            <td style="padding:0.35rem;">{{ ev.planting.crop.name }}</td>
+            <td style="padding:0.35rem;">{{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }}</td>
+            <td style="padding:0.35rem; text-align:right;">{{ ev.planned_quantity }}</td>
+            <td style="padding:0.35rem;">{{ ev.planned_units }}</td>
+            <td style="padding:0.35rem;">{% if ev.actual_quantity %}✓ {{ ev.actual_quantity }}{% else %}—{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">No harvest events this week.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

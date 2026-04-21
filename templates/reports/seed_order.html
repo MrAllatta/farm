@@ -1,175 +1,114 @@
-{# reports/seed_order.html #}
 {% extends "base.html" %}
-{% load static humanize %}
-
-{% block title %}Seed Order — {{ year.year }}{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
-{% endblock %}
-
+{% block title %}Seed order — {{ year.year }}{% endblock %}
 {% block content %}
-<div class="report-header">
-    <h1>Seed Order — {{ year.year }}</h1>
-    <div class="report-meta">
-        {{ overplant_pct }}% overplant factor applied
-        · {{ seed_orders|length }} crops
-    </div>
-    <div class="no-print" style="margin-top: 0.5rem;">
-        <button onclick="window.print()" class="btn">🖨 Print</button>
-        <a href="{% url 'reports:export_csv' %}" class="btn">📤 Export CSV</a>
-    </div>
-</div>
+<h1>Seed order (what to order)</h1>
+<p class="muted">{{ year.year }} · includes {{ overplant_pct }}% overplant buffer</p>
 
-{# ── Direct Seeded ── #}
-{% if direct_seeded %}
-<div style="margin-bottom: 1.5rem;">
-    <h2 style="font-size: 1rem; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 0.5rem;">
-        Direct Seeded ({{ direct_seeded|length }} crops)
-    </h2>
-    <div class="fp-table-scroll">
-    <table class="performance-table">
+{% if not year %}
+<p>No planning year.</p>
+{% else %}
+
+<section style="margin-bottom:2rem;">
+    <h2>Direct-seeded</h2>
+    {% if direct_seeded %}
+    <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 20%;">Crop</th>
-                <th style="width: 8%;" class="num">Bedfeet</th>
-                <th style="width: 8%;" class="num">Rows/Bed</th>
-                <th style="width: 8%;" class="num">Seeds/RF</th>
-                <th style="width: 12%;" class="num">Seeds Needed</th>
-                <th style="width: 8%;" class="num">Seeds/Oz</th>
-                <th style="width: 8%;" class="num">Oz Needed</th>
-                <th style="width: 10%;" class="num">ORDER</th>
-                <th style="width: 18%;">Calculation</th>
+                <th>Crop</th>
+                <th>Variety</th>
+                <th>Bedfeet</th>
+                <th>Plantings</th>
+                <th>Seeds</th>
+                <th>Oz est.</th>
+                <th>Order (rounded)</th>
+                <th>Calc</th>
             </tr>
         </thead>
         <tbody>
-            {% for s in direct_seeded %}
+            {% for row in direct_seeded %}
             <tr>
-                <td class="crop-name">{{ s.crop.name }}</td>
-                <td class="num">{{ s.total_bedfeet|intcomma }}</td>
-                <td class="num">{{ s.crop_season.rows_per_bed|default:"—" }}</td>
-                <td class="num">{{ s.crop_season.ds_seed_rate|default:"—" }}</td>
-                <td class="num">{{ s.seeds_needed|intcomma }}</td>
-                <td class="num">{{ s.crop.seeds_per_ounce|floatformat:0|intcomma|default:"—" }}</td>
-                <td class="num">
-                    {% if s.ounces_needed %}
-                    {{ s.ounces_needed|floatformat:2 }}
-                    {% else %}—{% endif %}
-                </td>
-                <td class="num" style="font-weight: bold;">{{ s.order_rounded }}</td>
-                <td style="font-size: 0.75rem; color: #666;">{{ s.calculation }}</td>
+                <td>{{ row.crop.name }}</td>
+                <td>{{ row.variety_label }}</td>
+                <td>{{ row.total_bedfeet }}</td>
+                <td>{{ row.num_plantings }}</td>
+                <td>{{ row.seeds_needed }}</td>
+                <td>{% if row.ounces_needed %}{{ row.ounces_needed|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td><strong>{{ row.order_rounded }}</strong></td>
+                <td><small class="muted">{{ row.calculation }}</small></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    </div>
-</div>
-{% endif %}
+    {% else %}
+    <p class="muted">None</p>
+    {% endif %}
+</section>
 
-{# ── Transplanted ── #}
-{% if transplanted %}
-<div style="margin-bottom: 1.5rem;">
-    <h2 style="font-size: 1rem; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 0.5rem;">
-        Transplanted ({{ transplanted|length }} crops)
-    </h2>
-    <div class="fp-table-scroll">
-    <table class="performance-table">
+<section style="margin-bottom:2rem;">
+    <h2>Transplanted</h2>
+    {% if transplanted %}
+    <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 18%;">Crop</th>
-                <th style="width: 7%;" class="num">Bedfeet</th>
-                <th style="width: 8%;" class="num">Plants</th>
-                <th style="width: 6%;" class="num">Cells</th>
-                <th style="width: 8%;" class="num">Seeds</th>
-                <th style="width: 7%;" class="num">Trays</th>
-                <th style="width: 6%;" class="num">Size</th>
-                <th style="width: 7%;" class="num">Oz</th>
-                <th style="width: 10%;" class="num">ORDER</th>
-                <th style="width: 23%;">Calculation</th>
+                <th>Crop</th>
+                <th>Variety</th>
+                <th>Bedfeet</th>
+                <th>Plantings</th>
+                <th>Plants</th>
+                <th>Trays</th>
+                <th>Seeds</th>
+                <th>Order (rounded)</th>
             </tr>
         </thead>
         <tbody>
-            {% for s in transplanted %}
+            {% for row in transplanted %}
             <tr>
-                <td class="crop-name">{{ s.crop.name }}</td>
-                <td class="num">{{ s.total_bedfeet|intcomma }}</td>
-                <td class="num">{{ s.plants_needed|intcomma|default:"—" }}</td>
-                <td class="num">{{ s.cells_needed|intcomma|default:"—" }}</td>
-                <td class="num">{{ s.seeds_needed|intcomma }}</td>
-                <td class="num">
-                    {% if s.trays_needed %}{{ s.trays_needed }}{% else %}—{% endif %}
-                </td>
-                <td class="num">
-                    {% if s.tray_size %}{{ s.tray_size }}{% else %}—{% endif %}
-                </td>
-                <td class="num">
-                    {% if s.ounces_needed %}{{ s.ounces_needed|floatformat:2 }}{% else %}—{% endif %}
-                </td>
-                <td class="num" style="font-weight: bold;">{{ s.order_rounded }}</td>
-                <td style="font-size: 0.75rem; color: #666;">{{ s.calculation }}</td>
+                <td>{{ row.crop.name }}</td>
+                <td>{{ row.variety_label }}</td>
+                <td>{{ row.total_bedfeet }}</td>
+                <td>{{ row.num_plantings }}</td>
+                <td>{{ row.plants_needed }}</td>
+                <td>{% if row.trays_needed %}{{ row.trays_needed }} ({{ row.tray_size }}/tray){% else %}—{% endif %}</td>
+                <td>{{ row.seeds_needed }}</td>
+                <td><strong>{{ row.order_rounded }}</strong></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    </div>
-</div>
-{% endif %}
+    {% else %}
+    <p class="muted">None</p>
+    {% endif %}
+</section>
 
-{# ── Vegetative ── #}
-{% if vegetative %}
-<div style="margin-bottom: 1.5rem;">
-    <h2 style="font-size: 1rem; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 0.5rem;">
-        Vegetative / Cloves / Tubers ({{ vegetative|length }} crops)
-    </h2>
-    <div class="fp-table-scroll">
-    <table class="performance-table">
+<section>
+    <h2>Vegetative propagation</h2>
+    {% if vegetative %}
+    <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 20%;">Crop</th>
-                <th style="width: 12%;">Propagation</th>
-                <th style="width: 10%;" class="num">Bedfeet</th>
-                <th style="width: 12%;" class="num">Pieces Needed</th>
-                <th style="width: 15%;" class="num">ORDER</th>
-                <th style="width: 31%;">Calculation</th>
+                <th>Crop</th>
+                <th>Variety</th>
+                <th>Bedfeet</th>
+                <th>Pieces</th>
+                <th>Order</th>
             </tr>
         </thead>
         <tbody>
-            {% for s in vegetative %}
+            {% for row in vegetative %}
             <tr>
-                <td class="crop-name">{{ s.crop.name }}</td>
-                <td>{{ s.crop.get_propagation_type_display }}</td>
-                <td class="num">{{ s.total_bedfeet|intcomma }}</td>
-                <td class="num">{{ s.pieces_needed|intcomma }}</td>
-                <td class="num" style="font-weight: bold;">{{ s.order_rounded }}</td>
-                <td style="font-size: 0.75rem; color: #666;">{{ s.calculation }}</td>
+                <td>{{ row.crop.name }}</td>
+                <td>{{ row.variety_label }}</td>
+                <td>{{ row.total_bedfeet }}</td>
+                <td>{{ row.pieces_needed }}</td>
+                <td><strong>{{ row.order_rounded }}</strong></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    </div>
-</div>
+    {% else %}
+    <p class="muted">None</p>
+    {% endif %}
+</section>
+
 {% endif %}
-
-{# ── Notes area for printing ── #}
-<div class="no-print" style="display: none;"><!-- hidden on screen --></div>
-<div style="border-top: 1px solid #999; padding-top: 0.5rem; margin-top: 1rem; font-size: 9pt;">
-    <div style="display: flex; gap: 2rem;">
-        <div>
-            <strong>SUPPLIER 1:</strong> _______________________
-            <br>Order placed: ___________
-            <br>Expected: ___________
-        </div>
-        <div>
-            <strong>SUPPLIER 2:</strong> _______________________
-            <br>Order placed: ___________
-            <br>Expected: ___________
-        </div>
-        <div>
-            <strong>NOTES:</strong>
-            <br>___________________________________
-            <br>___________________________________
-        </div>
-    </div>
-</div>
-
 {% endblock %}

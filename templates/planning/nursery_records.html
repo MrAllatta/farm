@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Nursery records{% endblock %}
+{% block content %}
+<h1>Nursery records</h1>
+<p class="muted">Incomplete events with planned date on or before {{ today }} + 14 days.</p>
+{% for ev in events %}
+<div style="border:1px solid #ddd; padding:0.75rem; margin-bottom:0.75rem; border-radius:6px;">
+    <strong>{{ ev.get_event_type_display }}</strong> · {{ ev.planned_date }} ·
+    {{ ev.planting.crop.name }} · {{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }}
+    <form method="post" style="margin-top:0.5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="event_id" value="{{ ev.id }}">
+        <label>Actual date <input type="date" name="actual_date" value="{{ ev.actual_date|date:'Y-m-d' }}"></label>
+        <label>Tray count <input type="number" name="actual_tray_count" min="0" value="{{ ev.actual_tray_count|default:'' }}"></label>
+        <label>Germ % <input type="number" step="0.01" name="actual_germination_rate" value="{{ ev.actual_germination_rate|default:'' }}"></label>
+        <label>Note <input type="text" name="notes" style="width:16rem;"></label>
+        <button type="submit">Save</button>
+    </form>
+</div>
+{% empty %}
+<p class="muted">No pending nursery events in this window.</p>
+{% endfor %}
+{% endblock %}

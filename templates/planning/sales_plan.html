@@ -56,6 +56,7 @@
                     </td>
                     {% for cell in row.week_cells %}
                     <td class="{{ cell.css_class }}" title="{{ cell.title }}">
+                        {% if cell.shortage %}<span class="sales-plan-shortage-mark" aria-hidden="true">!</span>{% endif %}
                         <input
                             type="number"
                             step="0.01"

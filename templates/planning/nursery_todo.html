@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Nursery todo{% endblock %}
+{% block content %}
+<h1>Nursery todo (next 7 days)</h1>
+<ul>
+    {% for ev in events %}
+    <li>
+        <strong>{{ ev.planned_date }}</strong> — {{ ev.get_event_type_display }} —
+        {{ ev.planting.crop.name }} ({{ ev.planting.block.name }})
+        <a href="{% url 'planning:nursery_records' %}">Record</a>
+    </li>
+    {% empty %}
+    <li class="muted">Nothing due.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

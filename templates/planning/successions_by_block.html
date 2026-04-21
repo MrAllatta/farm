@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Successions by block{% endblock %}
+{% block content %}
+<h1>Successions by block</h1>
+<p class="muted">{{ year.year }}</p>
+<form method="get" class="no-print" style="margin-bottom:1rem;">
+    <label>Filter crop
+        <select name="crop" onchange="this.form.submit()">
+            <option value="">All crops</option>
+            {% for c in crops %}
+            <option value="{{ c.id }}" {% if selected_crop_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+</form>
+{% for item in by_crop %}
+<section style="margin-bottom:2rem;">
+    <h2>{{ item.crop.name }}</h2>
+    {% for blockdata in item.blocks %}
+    <h3 style="margin-top:1rem;">{{ blockdata.block.name }}</h3>
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="background:#eee;">
+                <th style="text-align:left; padding:0.3rem;">Plant date</th>
+                <th style="text-align:left; padding:0.3rem;">Variety</th>
+                <th style="text-align:left; padding:0.3rem;">Beds</th>
+                <th style="text-align:left; padding:0.3rem;">Succession</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in blockdata.rows %}
+            <tr style="border-bottom:1px solid #ddd;">
+                <td style="padding:0.3rem;">{{ row.planting.planned_plant_date }}</td>
+                <td style="padding:0.3rem;">{{ row.variety }}</td>
+                <td style="padding:0.3rem;">{{ row.beds }}</td>
+                <td style="padding:0.3rem;">{{ row.succession }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+</section>
+{% empty %}
+<p class="muted">No plantings.</p>
+{% endfor %}
+{% endblock %}
