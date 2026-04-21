@@ -4,6 +4,12 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+{% if no_year %}
+<div class="empty-state">
+    <p>No planning year is configured yet.</p>
+    <a href="{% url 'admin:planning_planningyear_add' %}" class="btn btn-primary">Create a planning year in admin →</a>
+</div>
+{% else %}
 <div class="dashboard">
     
     <div class="dashboard-header">
@@ -250,4 +256,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

@@ -301,6 +301,19 @@ body {
 
 /* ── Dashboard ── */
 
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dashboard-col {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
 .dashboard-header h1 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
@@ -418,6 +431,30 @@ body {
 .task-dest {
     color: var(--color-text-muted);
     font-size: 0.85rem;
+}
+
+.print-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.empty-state {
+    max-width: 32rem;
+    padding: 2rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+    color: var(--color-text-muted);
+}
+
+.empty-state .btn {
+    margin-top: 0.25rem;
 }
 
 /* ── Planning Matrix ── */
@@ -1482,12 +1519,16 @@ body {
     overflow-y: auto;
 }
 
-#planting-detail.planting-drawer.planting-drawer--open::before {
-    content: "";
+.planting-drawer-backdrop {
+    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.15);
-    z-index: -1;
+    z-index: 59;
+}
+
+.planting-drawer-backdrop.planting-drawer-backdrop--open {
+    display: block;
 }
 
 #planting-detail.planting-drawer > * {
@@ -1722,6 +1763,10 @@ body {
 
 @media print {
     #planting-detail.planting-drawer {
+        display: none !important;
+    }
+
+    #planting-detail-backdrop.planting-drawer-backdrop {
         display: none !important;
     }
 
