@@ -7,19 +7,20 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.views.generic import TemplateView
-from django.db.models import Q, Sum
-from datetime import date
+from django.db.models import Max, Q, Sum
 from isoweek import Week
 
 from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
-from core.planning_year import get_effective_planning_year, operational_anchor_year
+from core.planning_year import get_effective_planning_year, set_session_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 from sales.models import SalesEvent
 
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
+from django.utils.http import url_has_allowed_host_and_scheme
 from django import forms
 from django.template.loader import render_to_string
 from datetime import date, timedelta
@@ -140,8 +141,9 @@ class PlanningMatrixView(TemplateView):
         # Extract week number range for display
         week_nums = [w['num'] for w in weeks]
 
-        anchor = operational_anchor_year()
-        next_planning_year_row = PlanningYear.objects.filter(year=anchor + 1).first()
+        max_year = PlanningYear.objects.aggregate(m=Max("year"))["m"]
+        next_planning_year_row = PlanningYear.objects.filter(year=year_obj.year + 1).first()
+        planning_years_qs = PlanningYear.objects.all().order_by("year")
 
         ctx.update(
             {
@@ -157,9 +159,11 @@ class PlanningMatrixView(TemplateView):
                 "prev_date": window_start_date - timedelta(weeks=8),
                 "next_date": window_end_date + timedelta(days=1),
                 "matrix_center_date": center_date.isoformat(),
-                # Next-season CTA (YP-1): only when session focus is the anchor calendar year
+                # YP-1 / YP-4: next-season CTA when viewing the latest planning year in the DB
                 "next_planning_year_row": next_planning_year_row,
-                "show_start_next_season_cta": year_obj.year == anchor,
+                "show_start_next_season_cta": max_year is not None and year_obj.year == max_year,
+                "planning_years": list(planning_years_qs),
+                "is_latest_planning_year": max_year is not None and year_obj.year == max_year,
             }
         )
         return ctx
@@ -339,6 +343,180 @@ class PlantingMoveView(View):
                 "html": row_html,
             }
         )
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class PlantingDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """POST JSON: delete a planting (crop planner drag-to-trash)."""
+
+    raise_exception = True
+
+    def test_func(self):
+        u = self.request.user
+        return u.is_authenticated and u.is_staff
+
+    def post(self, request, *args, **kwargs):
+        import json
+
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+
+        try:
+            planting_id = int(payload.get("planting_id"))
+        except (TypeError, ValueError):
+            return JsonResponse({"ok": False, "error": "bad_id"}, status=400)
+
+        year_obj = get_effective_planning_year(request)
+        if not year_obj:
+            return JsonResponse({"ok": False, "error": "no_year"}, status=400)
+
+        planting = get_object_or_404(Planting, pk=planting_id, planning_year=year_obj)
+        planting.delete()
+        return JsonResponse({"ok": True})
+
+
+class StaffPlanningMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Staff-only planning mutations (prototype gate)."""
+
+    raise_exception = True
+
+    def test_func(self):
+        u = self.request.user
+        return u.is_authenticated and u.is_staff
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class PlanningYearSetView(StaffPlanningMixin, View):
+    """POST: set session planning year from matrix (YP-4)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        next_url = request.POST.get("next") or reverse("planning:matrix")
+        if not url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            next_url = reverse("planning:matrix")
+
+        try:
+            year_id = int(request.POST.get("planning_year_id", ""))
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid planning year.")
+            return redirect(next_url)
+
+        planning_year = PlanningYear.objects.filter(pk=year_id).first()
+        if planning_year is None:
+            messages.error(request, "That planning year does not exist.")
+            return redirect(next_url)
+
+        set_session_planning_year(request, planning_year)
+        messages.success(request, f"Switched to planning year {planning_year.year}.")
+        return redirect(next_url)
+
+
+class SeasonRolloverPreviewView(StaffPlanningMixin, TemplateView):
+    """YP-5: review skeleton copy counts before commit."""
+
+    template_name = "planning/season_rollover_preview.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        source = get_effective_planning_year(self.request)
+        if not source:
+            ctx["no_year"] = True
+            return ctx
+
+        raw_ty = self.request.GET.get("target_year")
+        try:
+            target_year = int(raw_ty) if raw_ty is not None else source.year + 1
+        except (TypeError, ValueError):
+            target_year = source.year + 1
+
+        from planning.services.season_rollover import summarize_skeleton
+
+        summary = summarize_skeleton(source, target_year, dry_run=True)
+        target_row = PlanningYear.objects.filter(year=target_year).first()
+        target_has_plantings = (
+            Planting.objects.filter(planning_year=target_row).exists() if target_row else False
+        )
+
+        ctx.update(
+            {
+                "source": source,
+                "target_year": target_year,
+                "summary": summary,
+                "target_row": target_row,
+                "target_has_plantings": target_has_plantings,
+            }
+        )
+        return ctx
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class SeasonInitBlankView(StaffPlanningMixin, View):
+    """YP-2: create an empty planning year and switch session."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            target_year = int(request.POST.get("target_year", ""))
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid target year.")
+            return redirect("planning:matrix")
+
+        target, _ = PlanningYear.objects.get_or_create(
+            year=target_year,
+            defaults={"status": "planning"},
+        )
+        set_session_planning_year(request, target)
+        messages.success(
+            request,
+            f"Started blank planning year {target.year}. Add plantings on the Crop Planner.",
+        )
+        return redirect("planning:matrix")
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class SeasonRolloverCommitView(StaffPlanningMixin, View):
+    """YP-3 / YP-5: copy skeleton into target year and switch session."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            target_year = int(request.POST.get("target_year", ""))
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid target year.")
+            return redirect("planning:season_rollover_preview")
+
+        source = get_effective_planning_year(request)
+        if not source:
+            messages.error(request, "No active planning year.")
+            return redirect("planning:matrix")
+
+        target, _ = PlanningYear.objects.get_or_create(
+            year=target_year,
+            defaults={"status": "planning"},
+        )
+
+        from planning.services.season_rollover import copy_skeleton
+
+        try:
+            result = copy_skeleton(source, target, dry_run=False)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return redirect(
+                f"{reverse('planning:season_rollover_preview')}?target_year={target_year}"
+            )
+
+        set_session_planning_year(request, target)
+        messages.success(request, result.message or f"Copied plan into {target.year}.")
+        return redirect("planning:matrix")
 
 
 class ActivePlanningYearMixin:
@@ -536,8 +714,12 @@ class PlantingCreateView(ActivePlanningYearMixin, PlantingFormContextMixin, Crea
     """Create a new planting. Handles both full-page and HTMX partial."""
 
     model = Planting
-    template_name = "planning/partials/planting_form.html"
     form_class = PlantingForm
+
+    def get_template_names(self):
+        if self.request.headers.get("HX-Request"):
+            return ["planning/partials/planting_form.html"]
+        return ["planning/planting_form_page.html"]
 
     def get_initial(self):
         initial = super().get_initial()
@@ -589,8 +771,12 @@ class PlantingUpdateView(PlantingFormContextMixin, UpdateView):
     """Update a planting. Handles both full-page and HTMX partial."""
 
     model = Planting
-    template_name = "planning/partials/planting_form.html"
     form_class = PlantingForm
+
+    def get_template_names(self):
+        if self.request.headers.get("HX-Request"):
+            return ["planning/partials/planting_form.html"]
+        return ["planning/planting_form_page.html"]
 
     def get_initial(self):
         initial = super().get_initial()
@@ -801,8 +987,40 @@ class SuccessionForm(forms.Form):
 
 
 class SuccessionCreateView(ActivePlanningYearMixin, FormView):
-    template_name = "planning/succession_form.html"
     form_class = SuccessionForm
+
+    def get_template_names(self):
+        if self.request.headers.get("HX-Request"):
+            return ["planning/partials/succession_form_inner.html"]
+        return ["planning/succession_form.html"]
+
+    def get_initial(self):
+        initial = super().get_initial()
+        block_id = self.request.GET.get("block")
+        fpw = self.request.GET.get("first_plant_week")
+        lpw = self.request.GET.get("last_plant_week")
+        bt = (self.request.GET.get("block_type") or "").strip()
+        if block_id and str(block_id).isdigit():
+            blk = Block.objects.filter(pk=int(block_id)).first()
+            if blk:
+                initial["block"] = blk
+                if bt not in ("field", "high_tunnel", "greenhouse"):
+                    initial["block_type"] = blk.block_type
+                else:
+                    initial["block_type"] = bt
+        if fpw is not None and str(fpw).strip().isdigit():
+            try:
+                initial["first_plant_week"] = int(fpw)
+            except (TypeError, ValueError):
+                pass
+        if lpw is not None and str(lpw).strip().isdigit():
+            try:
+                initial["last_plant_week"] = int(lpw)
+            except (TypeError, ValueError):
+                pass
+        elif bt in ("field", "high_tunnel", "greenhouse"):
+            initial["block_type"] = bt
+        return initial
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -810,6 +1028,7 @@ class SuccessionCreateView(ActivePlanningYearMixin, FormView):
             {
                 "crop_choices": CropInfo.objects.all().order_by("crop_type", "name"),
                 "block_choices": Block.objects.all().order_by("block_type", "walk_route_order"),
+                "is_htmx": bool(self.request.headers.get("HX-Request")),
             }
         )
         return ctx
@@ -903,6 +1122,11 @@ class SuccessionCreateView(ActivePlanningYearMixin, FormView):
             f"Created {len(created)} succession plantings of {crop.name} "
             f"in {block.name}, weeks {first_week}-{last_week}.",
         )
+        if self.request.headers.get("HX-Request"):
+            return HttpResponse(
+                status=204,
+                headers={"HX-Redirect": reverse("planning:matrix")},
+            )
         return redirect("planning:matrix")
 
     def _assign_beds_sequential(self, successions, block, beds_per):
@@ -1438,8 +1662,6 @@ class PlantingReviseView(View):
     The new planting points back to the original via revision_of.
     """
 
-    template_name = "planning/partials/planting_form.html"
-
     def get(self, request, pk):
         original = get_object_or_404(Planting, pk=pk)
 
@@ -1457,7 +1679,12 @@ class PlantingReviseView(View):
         }
 
         ctx = self._build_context(request, original, initial)
-        return render(request, self.template_name, ctx)
+        tpl = (
+            "planning/partials/planting_form.html"
+            if request.headers.get("HX-Request")
+            else "planning/planting_form_page.html"
+        )
+        return render(request, tpl, ctx)
 
     def post(self, request, pk):
         if not request.user.is_authenticated:

@@ -12,7 +12,8 @@
         <h2>New Planting</h2>
         {% endif %}
         {% if is_htmx %}
-        <button type="button" onclick="document.getElementById('planting-detail').style.display='none'"
+        <button type="button"
+                onclick="if (window.cropPlannerCloseDrawer) { cropPlannerCloseDrawer(); } else { var el=document.getElementById('planting-detail'); if(el){ el.style.display='none'; el.innerHTML=''; } }"
                 class="btn" style="float: right;">✕</button>
         {% endif %}
     </div>

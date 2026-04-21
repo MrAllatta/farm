@@ -1,0 +1,52 @@
+{# planning/season_rollover_preview.html — YP-5 rollover review #}
+{% extends "base.html" %}
+
+{% block title %}Start next season — {{ source.year }}{% endblock %}
+
+{% block content %}
+{% if no_year %}
+<p class="message message-warning">No active planning year configured.</p>
+<p><a href="{% url 'planning:matrix' %}">Crop Planner</a></p>
+{% else %}
+<section class="page-header">
+    <h1>Start planning year {{ target_year }}</h1>
+    <p class="muted">Source: <strong>{{ source.year }}</strong> ({{ source.get_status_display }}). Skeleton copy shifts all planned dates by +52 weeks and drops actuals, field notes, and sales data.</p>
+</section>
+
+<section class="panel">
+    <h2>What will copy</h2>
+    <ul>
+        <li><strong>{{ summary.num_plantings }}</strong> plantings</li>
+        <li><strong>{{ summary.num_blocks }}</strong> distinct blocks</li>
+        <li><strong>{{ summary.total_bedfeet }}</strong> total planned bedfeet</li>
+    </ul>
+    {% if target_has_plantings %}
+    <p class="message message-warning">
+        {{ target_year }} already has plantings. Clear them in admin or pick another target year before copying the skeleton.
+    </p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <h2>Choose how to start</h2>
+    <div class="fp-stack" style="gap: 1rem;">
+        <form method="post" action="{% url 'planning:season_init_blank' %}">
+            {% csrf_token %}
+            <input type="hidden" name="target_year" value="{{ target_year }}">
+            <p><strong>Blank year</strong> — empty Crop Planner for {{ target_year }}; no plantings copied.</p>
+            <button type="submit" class="btn btn-secondary">Start blank {{ target_year }}</button>
+        </form>
+        <hr>
+        <form method="post" action="{% url 'planning:season_rollover_commit' %}">
+            {% csrf_token %}
+            <input type="hidden" name="target_year" value="{{ target_year }}">
+            <p><strong>Copy skeleton</strong> — copy crops, blocks, beds, and bedfeet from {{ source.year }} into {{ target_year }}; dates shift +52 weeks; new nursery and harvest schedules are generated.</p>
+            <button type="submit" class="btn btn-primary" {% if target_has_plantings %}disabled aria-disabled="true"{% endif %}>
+                Copy skeleton into {{ target_year }}
+            </button>
+        </form>
+    </div>
+    <p class="muted" style="margin-top:1rem;"><a href="{% url 'planning:matrix' %}">Back to Crop Planner</a></p>
+</section>
+{% endif %}
+{% endblock %}

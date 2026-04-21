@@ -1,0 +1,12 @@
+{# planning/planting_form_page.html — full-page wrapper for create/edit/revise planting #}
+{% extends "base.html" %}
+
+{% block title %}
+{% if is_revision %}Revise Planting{% elif object %}Edit Planting{% else %}New Planting{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="planting-form-page">
+{% include "planning/partials/planting_form.html" %}
+</div>
+{% endblock %}

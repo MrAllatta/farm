@@ -12,8 +12,13 @@
 </div>
 {% else %}
 <form id="csrf-helper" style="display:none;">{% csrf_token %}</form>
-<div id="drag-warnings" class="drag-warnings" role="status" aria-live="polite"></div>
-{% if show_start_next_season_cta %}
+<div class="crop-planner-drag-toolbar" role="toolbar" aria-label="Crop planner drag">
+    <div id="drag-warnings" class="drag-warnings" role="status" aria-live="polite"></div>
+    {% if request.user.is_staff %}
+    <div id="drag-trash" class="drag-trash" title="Drop a planting here to remove it">Trash</div>
+    {% endif %}
+</div>
+{% if show_start_next_season_cta and request.user.is_staff %}
 <div class="planning-next-season-banner" role="region" aria-label="Next season">
     {% if next_planning_year_row %}
     <p class="planning-next-season-banner__text">
@@ -29,13 +34,25 @@
     <p class="planning-next-season-banner__text">
         Ready to plan <strong>{{ year.year|add:1 }}</strong>? Copy this year&rsquo;s crop skeleton into a new planning year (no actuals).
     </p>
-    <a href="{% url 'core:clone_plan_ui' source_year=year.year %}" class="btn btn-primary">Start next season</a>
+    <a href="{% url 'planning:season_rollover_preview' %}?target_year={{ year.year|add:1 }}" class="btn btn-primary">Start next season</a>
     {% endif %}
 </div>
 {% endif %}
 <div class="planning-header">
     <h1>{{ year.year }} Crop Planner</h1>
     <p class="muted">Plantings matrix — week-by-block view (workbook Crop Planner tab).</p>
+    {% if planning_years and request.user.is_staff %}
+    <form method="post" action="{% url 'planning:set_planning_year' %}" class="planning-year-switcher no-print">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label for="id_planning_year_focus">Planning year</label>
+        <select id="id_planning_year_focus" name="planning_year_id" onchange="this.form.submit()">
+            {% for py in planning_years %}
+            <option value="{{ py.id }}" {% if py.id == year.id %}selected{% endif %}>{{ py.year }} ({{ py.get_status_display }})</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
     <div class="week-nav">
         <a href="{% url 'planning:matrix_date' prev_date.isoformat %}" 
            class="btn">← Earlier</a>
@@ -70,7 +87,7 @@
                 {% with rows=matrix|get_item:block.id %}
                 {% if rows %}
                     {% for row in rows %}
-                    <tr class="planting-row" data-block="{{ block.id }}">
+                    <tr class="planting-row" data-block="{{ block.id }}" data-block-type="{{ block.block_type }}">
                         {% if forloop.first %}
                         <td class="block-col" rowspan="{{ rows|length }}">
                             {{ block.name }}
@@ -83,12 +100,16 @@
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr class="planting-row empty-block" data-block="{{ block.id }}">
+                    <tr class="planting-row empty-block" data-block="{{ block.id }}" data-block-type="{{ block.block_type }}">
                         <td class="block-col">{{ block.name }}</td>
                         <td class="beds-col">1-{{ block.num_beds }}</td>
                         {% for w in weeks %}
                         <td class="week-cell fallow"
-                            data-block="{{ block.id }}" data-week="{{ w.num }}">
+                            data-block="{{ block.id }}" data-week="{{ w.num }}"
+                            hx-get="/planning/planting/new/block/{{ block.id }}/week/{{ w.num }}/"
+                            hx-target="#planting-detail"
+                            hx-swap="innerHTML"
+                            hx-trigger="click">
                         </td>
                         {% endfor %}
                     </tr>
@@ -105,7 +126,7 @@
                 {# Same pattern as field blocks #}
                 {% if rows %}
                     {% for row in rows %}
-                    <tr class="planting-row" data-block="{{ block.id }}">
+                    <tr class="planting-row" data-block="{{ block.id }}" data-block-type="{{ block.block_type }}">
                         {% if forloop.first %}
                         <td class="block-col" rowspan="{{ rows|length }}">
                             {{ block.name }}
@@ -116,12 +137,16 @@
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr class="planting-row empty-block" data-block="{{ block.id }}">
+                    <tr class="planting-row empty-block" data-block="{{ block.id }}" data-block-type="{{ block.block_type }}">
                         <td class="block-col">{{ block.name }}</td>
                         <td class="beds-col">1-{{ block.num_beds }}</td>
                         {% for w in weeks %}
                         <td class="week-cell fallow"
-                            data-block="{{ block.id }}" data-week="{{ w.num }}">
+                            data-block="{{ block.id }}" data-week="{{ w.num }}"
+                            hx-get="/planning/planting/new/block/{{ block.id }}/week/{{ w.num }}/"
+                            hx-target="#planting-detail"
+                            hx-swap="innerHTML"
+                            hx-trigger="click">
                         </td>
                         {% endfor %}
                     </tr>
@@ -132,9 +157,9 @@
     </table>
 </div>
 
-{# Planting detail panel — shown when clicking a planting bar #}
-<div id="planting-detail" class="detail-panel" style="display:none;">
-    {# Loaded via HTMX or JS #}
+{# Planting detail / create / succession drawer #}
+<div id="planting-detail" class="planting-drawer" aria-hidden="true">
+    {# Loaded via HTMX or range-drag JS #}
 </div>
 {% endif %}
 {% endblock %}
@@ -142,6 +167,13 @@
 {% block extra_js %}
 <script>
   window.CROP_PLANNER_MOVE_URL = "{% url 'planning:planting_move' %}";
+  {% if request.user.is_staff %}
+  window.CROP_PLANNER_DELETE_URL = "{% url 'planning:planting_delete' %}";
+  {% else %}
+  window.CROP_PLANNER_DELETE_URL = "";
+  {% endif %}
+  window.CROP_PLANNER_PREFILL_URL_TEMPLATE = "/planning/planting/new/block/__BLOCK__/week/__WEEK__/";
+  window.CROP_PLANNER_SUCCESSION_URL = "{% url 'planning:succession_create' %}";
   window.CROP_PLANNER_MATRIX_DATE = {% if matrix_center_date %}"{{ matrix_center_date }}"{% else %}null{% endif %};
 </script>
 <script src="{% static 'js/crop-planner-drag.js' %}"></script>

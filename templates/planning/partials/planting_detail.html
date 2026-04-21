@@ -2,16 +2,21 @@
 {# This is the side panel that appears when you click a planting #}
 
 <div class="detail-panel-content">
-    <div class="detail-header">
-        <h2>{{ planting.crop.name }}</h2>
-        {% if planting.variety_obj %}
-        <span class="variety">{{ planting.variety_obj.name }}</span>
-        {% elif planting.variety %}
-        <span class="variety">{{ planting.variety }}</span>
-        {% endif %}
-        <span class="status status-{{ planting.status }}">
-            {{ planting.get_status_display }}
-        </span>
+    <div class="detail-header detail-header--with-close">
+        <div class="detail-header__main">
+            <h2>{{ planting.crop.name }}</h2>
+            {% if planting.variety_obj %}
+            <span class="variety">{{ planting.variety_obj.name }}</span>
+            {% elif planting.variety %}
+            <span class="variety">{{ planting.variety }}</span>
+            {% endif %}
+            <span class="status status-{{ planting.status }}">
+                {{ planting.get_status_display }}
+            </span>
+        </div>
+        <button type="button" class="btn detail-header__close"
+                onclick="if (window.cropPlannerCloseDrawer) { cropPlannerCloseDrawer(); } else { var el=document.getElementById('planting-detail'); if(el){ el.style.display='none'; el.innerHTML=''; } }"
+                aria-label="Close">✕</button>
     </div>
     
     <div class="detail-location">

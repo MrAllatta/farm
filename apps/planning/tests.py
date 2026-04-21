@@ -221,3 +221,234 @@ class PlantingMoveViewTests(TestCase):
         self.assertEqual(data.get("html"), "")
         self.planting.refresh_from_db()
         self.assertEqual(self.planting.block_id, self.b2.pk)
+
+
+class SeasonRolloverServiceTests(TestCase):
+    """season_rollover.copy_skeleton: +52 weeks, events, idempotency, dry-run."""
+
+    def setUp(self):
+        self.source = PlanningYear.objects.create(year=3101, status="active")
+        self.target = PlanningYear.objects.create(year=3102, status="planning")
+        self.block = Block.objects.create(
+            name="R1",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        self.crop = CropInfo.objects.create(
+            name="Rollover Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        self.cs = CropBySeason.objects.create(
+            crop=self.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("2.00"),
+            harvest_weeks=3,
+            dtm_days=28,
+            rows_per_bed=4,
+        )
+        self.p0 = Planting.objects.create(
+            planning_year=self.source,
+            crop=self.crop,
+            crop_season=self.cs,
+            block=self.block,
+            bed_start=1,
+            bed_end=2,
+            planned_bedfeet=200,
+            planned_plant_date=date(3101, 5, 4),
+            planned_first_harvest_date=date(3101, 6, 1),
+            planned_last_harvest_date=date(3101, 6, 15),
+            planned_total_yield=Decimal("400.00"),
+        )
+        self.p0.generate_nursery_events()
+        self.p0.generate_harvest_events()
+
+    def test_dry_run_summary_counts(self):
+        from planning.services.season_rollover import copy_skeleton
+
+        out = copy_skeleton(self.source, self.target, dry_run=True)
+        self.assertTrue(out.dry_run)
+        self.assertEqual(out.num_plantings, 1)
+        self.assertEqual(out.num_blocks, 1)
+        self.assertEqual(out.total_bedfeet, 200)
+        self.assertEqual(Planting.objects.filter(planning_year=self.target).count(), 0)
+
+    def test_copy_shifts_dates_and_creates_events(self):
+        from planning.services.season_rollover import copy_skeleton
+
+        out = copy_skeleton(self.source, self.target, dry_run=False)
+        self.assertFalse(out.dry_run)
+        self.assertEqual(out.num_plantings, 1)
+
+        np = Planting.objects.get(planning_year=self.target)
+        self.assertEqual(np.planned_plant_date, date(3102, 5, 3))  # +timedelta(weeks=52)
+        self.assertEqual(np.status, "planned")
+        self.assertIsNone(np.actual_plant_date)
+        self.assertGreater(np.harvest_events.count(), 0)
+
+    def test_second_copy_refuses_when_target_has_plantings(self):
+        from planning.services.season_rollover import copy_skeleton
+
+        copy_skeleton(self.source, self.target, dry_run=False)
+        with self.assertRaises(ValueError):
+            copy_skeleton(self.source, self.target, dry_run=False)
+
+
+class PlantingDeleteViewTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.staff = User.objects.create_user("delstaff", password="pw", is_staff=True)
+        self.year = PlanningYear.objects.create(year=3103, status="active")
+        self.block = Block.objects.create(
+            name="D1",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        self.crop = CropInfo.objects.create(
+            name="Del Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        self.cs = CropBySeason.objects.create(
+            crop=self.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=2,
+            dtm_days=14,
+            rows_per_bed=4,
+        )
+        self.planting = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop,
+            crop_season=self.cs,
+            block=self.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=100,
+            planned_plant_date=date(3103, 4, 1),
+            planned_first_harvest_date=date(3103, 4, 15),
+            planned_last_harvest_date=date(3103, 4, 22),
+            planned_total_yield=Decimal("100.00"),
+        )
+
+    def test_delete_requires_staff(self):
+        c = Client()
+        c.login(username="delstaff", password="pw")
+        session = c.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        url = reverse("planning:planting_delete")
+        body = json.dumps({"planting_id": self.planting.pk})
+        r = c.post(url, body, content_type="application/json")
+        self.assertEqual(r.status_code, 200)
+        data = json.loads(r.content.decode())
+        self.assertTrue(data["ok"])
+        self.assertFalse(Planting.objects.filter(pk=self.planting.pk).exists())
+
+
+class CropPlannerPlantingCreateTemplateTests(TestCase):
+    """Full-page vs HTMX templates for new planting (crop planner drawer / direct URL)."""
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user("planform", password="pw", is_staff=True)
+        self.year = PlanningYear.objects.create(year=2095, status="active")
+        self.block = Block.objects.create(
+            name="PF1",
+            block_type="field",
+            num_beds=6,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+
+    def test_prefilled_create_full_page_includes_base_layout(self):
+        self.client.login(username="planform", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        url = reverse(
+            "planning:planting_create_prefilled",
+            kwargs={"block_id": self.block.pk, "week": 20},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "main-nav")
+        self.assertContains(r, "planting-form-page")
+
+    def test_prefilled_create_htmx_returns_partial_without_nav(self):
+        self.client.login(username="planform", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        url = reverse(
+            "planning:planting_create_prefilled",
+            kwargs={"block_id": self.block.pk, "week": 22},
+        )
+        r = self.client.get(url, HTTP_HX_REQUEST="true")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "planting-form")
+        self.assertNotContains(r, "main-nav")
+
+
+class SuccessionCreatePrefillTests(TestCase):
+    """GET query params prefill succession form from crop planner range drag."""
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user("succpref", password="pw", is_staff=True)
+        self.year = PlanningYear.objects.create(year=2094, status="active")
+        self.block = Block.objects.create(
+            name="S1",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+
+    def test_get_prefills_block_weeks_and_block_type(self):
+        self.client.login(username="succpref", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        url = (
+            reverse("planning:succession_create")
+            + f"?block={self.block.pk}&first_plant_week=10&last_plant_week=16&block_type=field"
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="id_first_plant_week"')
+        self.assertContains(r, 'value="10"')
+        self.assertContains(r, 'value="16"')
+        self.assertContains(r, self.block.name)
+
+    def test_get_htmx_returns_partial_without_nav(self):
+        self.client.login(username="succpref", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        url = (
+            reverse("planning:succession_create")
+            + f"?block={self.block.pk}&first_plant_week=5&last_plant_week=8&block_type=field"
+        )
+        r = self.client.get(url, HTTP_HX_REQUEST="true")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "succession-form")
+        self.assertNotContains(r, "main-nav")
