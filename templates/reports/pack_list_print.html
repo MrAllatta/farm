@@ -14,7 +14,7 @@
     <div class="no-print" style="margin-bottom: 1rem;">
         <button onclick="window.print()" class="btn btn-primary">🖨 Print</button>
         {% if week_num %}
-        <a href="{% url 'operations:harvest_entry_week' week_num %}" class="btn">← Harvest Entry</a>
+        <a href="{% url 'operations:weekops_record' week=week_num %}" class="btn">← Record harvest</a>
         {% endif %}
         <a href="{% url 'sales:market_entry' %}" class="btn">Sales Entry →</a>
     </div>

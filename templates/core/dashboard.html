@@ -51,7 +51,7 @@
             <div class="metric-sub">
                 {% if harvest_recorded < harvest_count %}
                 {% if week_num %}
-                <a href="{% url 'operations:harvest_entry_week' week_num %}">
+                <a href="{% url 'operations:weekops_record' week=week_num %}">
                     Record harvests →
                 </a>
                 {% endif %}
@@ -119,7 +119,7 @@
                 {% if harvest_recorded < harvest_count %}
                 {% if week_num %}
                 <p>
-                    <a href="{% url 'operations:harvest_entry_week' week_num %}"
+                    <a href="{% url 'operations:weekops_record' week=week_num %}"
                        class="btn btn-primary">
                         Record harvests ({{ harvest_recorded }}/{{ harvest_count }} done)
                     </a>

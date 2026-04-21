@@ -36,7 +36,7 @@
         <a href="{% url 'reports:harvest_list_print' next_week_num %}" class="btn">Wk {{ next_week_num }} →</a>
         {% endif %}
         {% if show_week_navigation and week_num %}
-        <a href="{% url 'operations:harvest_entry_week' week_num %}" class="btn">Enter Actuals</a>
+        <a href="{% url 'operations:weekops_record' week=week_num %}" class="btn">Enter actuals</a>
         {% endif %}
     </div>
     
