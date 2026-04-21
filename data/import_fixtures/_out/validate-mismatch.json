@@ -222,10 +222,10 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-21T18:00:35.378527Z",
-    "run_id": "20260421T180035290762",
+    "finished_at": "2026-04-21T18:24:58.557034Z",
+    "run_id": "20260421T182458465590",
     "start_year": 2021,
-    "started_at": "2026-04-21T18:00:35.290762Z",
+    "started_at": "2026-04-21T18:24:58.465590Z",
     "validate_only": true,
     "verbose": false
   },
