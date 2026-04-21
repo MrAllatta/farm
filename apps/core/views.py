@@ -471,6 +471,8 @@ class ClonePlanUIView(FormView):
 class CompleteSeasonView(TemplateView):
     """Mark a planning year as complete and update rotation history."""
 
+    http_method_names = ["post"]
+
     def post(self, request, **kwargs):
         year_obj = resolve_current_planning_year(status_priority=("active", "planning"))
 

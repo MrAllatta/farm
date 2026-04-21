@@ -2852,8 +2852,14 @@ class PrimaryRouteSmokeTests(TestCase):
         ("core:complete_season", {}),
         ("planning:matrix", {}),
         ("planning:planting_create", {}),
+        ("planning:planting_create_prefilled", {"block_id": 1, "week": 12}),
+        ("planning:succession_create", {}),
+        ("planning:sales_plan", {}),
+        ("planning:succession_preview", {}),
         ("planning:planting_detail", {"pk": 1}),
         ("planning:planting_edit", {"pk": 1}),
+        ("planning:planting_revise", {"pk": 1}),
+        ("planning:planting_detail_htmx", {"pk": 1}),
         ("planning:planting_status", {"pk": 1}),
         ("planning:nursery_schedule", {}),
         ("planning:harvest_calendar", {}),
@@ -2865,6 +2871,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("operations:field_walk", {"pk": 1}),
         ("operations:inventory", {}),
         ("operations:inventory_add", {}),
+        ("operations:inventory_harvest_in", {"harvest_event_id": 1}),
         ("sales:market_entry", {}),
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
@@ -2873,13 +2880,26 @@ class PrimaryRouteSmokeTests(TestCase):
         ("reports:seed_order", {}),
         ("reports:season_summary", {}),
         ("reports:plan_vs_actual", {}),
+        ("reports:crop_map_week_by_bed", {}),
+        ("reports:crop_map_week_by_block", {}),
+        ("reports:crop_map_successions", {}),
+        ("reports:crop_map_print", {"week": 12}),
+        ("reports:export_csv", {}),
+        ("reports:export_archive", {}),
+        ("core:planning_year_focus", {}),
     ]
     PRIMARY_ROUTES = [
         ("core:dashboard", {}),
+        ("core:clone_plan_ui", {"source_year": 2026}),
         ("reference:index", {}),
         ("planning:matrix", {}),
         ("planning:matrix_date", {"date": "2026-03-15"}),
         ("planning:matrix_week", {"week": 12}),
+        ("planning:planting_create", {}),
+        ("planning:succession_create", {}),
+        ("planning:sales_plan", {}),
+        ("planning:field_schedule", {}),
+        ("planning:succession_preview", {}),
         ("planning:nursery_schedule", {}),
         ("planning:nursery_week", {"week": 12}),
         ("planning:harvest_calendar", {}),
@@ -2902,22 +2922,26 @@ class PrimaryRouteSmokeTests(TestCase):
         ("reports:block_utilization", {}),
         ("reports:season_summary", {}),
         ("reports:plan_vs_actual", {}),
+        ("reports:crop_map_week_by_bed", {}),
+        ("reports:crop_map_week_by_block", {}),
+        ("reports:crop_map_successions", {}),
+        ("reports:crop_map_print", {"week": 12}),
     ]
     MIN_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
-        "core": 1,
+        "core": 2,
         "reference": 1,
-        "planning": 6,
+        "planning": 11,
         "operations": 4,
         "sales": 3,
-        "reports": 12,
+        "reports": 16,
     }
     EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
-        "core": 1,
+        "core": 2,
         "reference": 1,
-        "planning": 6,
+        "planning": 11,
         "operations": 4,
         "sales": 3,
-        "reports": 12,
+        "reports": 16,
     }
 
     @classmethod
@@ -3046,6 +3070,28 @@ class PrimaryRouteSmokeTests(TestCase):
         namespace_dict = getattr(resolver, "namespace_dict", {})
         self.assertTrue(namespace_dict)
         self.assertTrue(self.REQUIRED_NAMESPACES <= set(namespace_dict))
+
+    def test_post_only_core_routes_reject_get_with_405(self):
+        """Session/focus and season-completion endpoints must not crash on accidental GET."""
+        for route_name, kwargs in [
+            ("core:planning_year_focus", {}),
+            ("core:complete_season", {}),
+        ]:
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name, kwargs=kwargs))
+                self.assertEqual(response.status_code, 405)
+
+    def test_report_export_routes_return_download_without_server_errors(self):
+        for route_name in ("reports:export_csv", "reports:export_archive"):
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name))
+                self.assertLess(response.status_code, 500)
+                self.assertNotEqual(response.status_code, 404)
+
+    def test_inventory_add_get_renders_form_without_server_errors(self):
+        response = self.client.get(reverse("operations:inventory_add"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response.headers.get("Content-Type", ""))
 
 
 class AppBootGateTests(TestCase):

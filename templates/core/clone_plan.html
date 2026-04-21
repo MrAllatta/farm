@@ -1,0 +1,20 @@
+{# core/clone_plan.html — minimal shell; ClonePlanUIView supplies context + form #}
+{% extends "base.html" %}
+
+{% block title %}Clone plan{% endblock %}
+
+{% block content %}
+<div class="clone-plan">
+  <h1>Clone planning year</h1>
+  {% if error %}
+  <p class="error">{{ error }}</p>
+  {% else %}
+  <p>Source year {{ source.year }} → target {{ target_year }} ({{ num_plantings }} plantings).</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Clone</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

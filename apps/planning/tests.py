@@ -126,6 +126,109 @@ class PlanningSmokeTests(TestCase):
 
 
 @override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
+class PlantingPkSmokeSuite(TestCase):
+    """GET smoke for routes that need a real planting / harvest-event primary key."""
+
+    @classmethod
+    def setUpTestData(cls):
+        planning_year = PlanningYear.objects.create(year=2026, status="active")
+        cls.block = Block.objects.create(
+            name="Field 1",
+            block_type="field",
+            num_beds=10,
+            bed_width_feet="3.0",
+            bedfeet_per_bed=100,
+        )
+        crop = CropInfo.objects.create(
+            name="Carrot",
+            crop_type="Vegetables",
+            botanical_family="Apiaceae",
+            propagation_type="seed",
+            is_perennial=False,
+            fresh_or_storage="fresh",
+            storage_weeks=0,
+            harvest_unit="pounds",
+            avg_unit_weight="1.00",
+            nursery_weeks=0,
+            weeks_until_pot_up=0,
+            seeds_per_cell=1,
+            thinned_plants=0,
+        )
+        crop_season = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot="1.20",
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+        )
+        planting_date = date(2026, 4, 1)
+        first_harvest = planting_date + timedelta(days=crop_season.dtm_days)
+        last_harvest = first_harvest + timedelta(weeks=crop_season.harvest_weeks - 1)
+        cls.planting = Planting.objects.create(
+            planning_year=planning_year,
+            crop=crop,
+            crop_season=crop_season,
+            block=cls.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=100,
+            planned_plant_date=planting_date,
+            planned_first_harvest_date=first_harvest,
+            planned_last_harvest_date=last_harvest,
+            planned_total_yield="120.00",
+            status="planned",
+        )
+        cls.harvest_event = HarvestEvent.objects.create(
+            planting=cls.planting,
+            planned_date=first_harvest,
+            planned_quantity="25.00",
+            planned_units="pounds",
+        )
+
+    def test_planting_detail_edit_revise_prefilled_and_htmx_routes_return_200(self):
+        pk = self.planting.pk
+        block_id = self.block.pk
+        checks = [
+            ("planning:planting_detail", {"pk": pk}),
+            ("planning:planting_edit", {"pk": pk}),
+            ("planning:planting_revise", {"pk": pk}),
+            ("planning:planting_create_prefilled", {"block_id": block_id, "week": 12}),
+            ("planning:planting_detail_htmx", {"pk": pk}),
+        ]
+        for route_name, kwargs in checks:
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name, kwargs=kwargs))
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("text/html", response.headers.get("Content-Type", ""))
+
+    def test_operations_planting_scoped_routes_return_200(self):
+        pk = self.planting.pk
+        for route_name, kwargs in [
+            ("operations:harvest_entry", {"pk": pk}),
+            ("operations:field_walk", {"pk": pk}),
+            (
+                "operations:inventory_harvest_in",
+                {"harvest_event_id": self.harvest_event.pk},
+            ),
+        ]:
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name, kwargs=kwargs))
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("text/html", response.headers.get("Content-Type", ""))
+
+    def test_planting_status_post_anonymous_redirects_to_admin_login(self):
+        response = self.client.post(
+            reverse("planning:planting_status", kwargs={"pk": self.planting.pk}),
+            {"status": "planted"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])
+
+
+@override_settings(MIDDLEWARE=TEST_MIDDLEWARE)
 class PlanningHtmxHelperTests(TestCase):
     @classmethod
     def setUpTestData(cls):
