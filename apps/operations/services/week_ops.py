@@ -218,7 +218,7 @@ def week_context(
             entry_kind=SalesEvent.EntryKind.PLAN,
             sale_date__gte=week_monday,
             sale_date__lte=week_sunday,
-        ).select_related("channel", "channel__category", "product", "product__crop")
+        ).select_related("channel", "channel__category", "sales_category", "product", "product__crop")
     )
     sale_events = plan_events_without_shadowed_rollups(sale_events)
 
@@ -287,6 +287,8 @@ def week_context(
     by_channel: dict[int, dict[str, Any]] = {}
     for se in sale_events:
         ch = se.channel
+        if ch is None:
+            continue
         if ch.id not in by_channel:
             by_channel[ch.id] = {"channel": ch, "planned_qty": Decimal("0"), "rows": []}
         pq = se.planned_quantity or Decimal("0")
@@ -306,8 +308,9 @@ def week_context(
     by_sales_category: dict[str, dict[str, Any]] = {}
     category_sort = {"Markets": 1, "Orders": 2, "CSA": 3}
     for se in sale_events:
-        ch = se.channel
-        cat = getattr(ch, "category", None)
+        cat = getattr(se, "sales_category", None) or (
+            getattr(se.channel, "category", None) if se.channel_id else None
+        )
         if not cat:
             continue
         label = str(cat.name)
