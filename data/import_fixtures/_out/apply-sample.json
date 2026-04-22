@@ -71,7 +71,7 @@
         "updated": 9
       },
       "RotationHistory": {
-        "created": 31,
+        "created": 34,
         "error": 0,
         "skipped": 0,
         "updated": 0
@@ -91,7 +91,7 @@
     },
     "row_errors": [],
     "totals": {
-      "created": 31,
+      "created": 34,
       "error": 0,
       "skipped": 0,
       "updated": 421
@@ -102,10 +102,10 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-22T15:07:51.319669Z",
-    "run_id": "20260422T150750774847",
+    "finished_at": "2026-04-22T18:49:01.060499Z",
+    "run_id": "20260422T184900505317",
     "start_year": 2021,
-    "started_at": "2026-04-22T15:07:50.774847Z",
+    "started_at": "2026-04-22T18:49:00.505317Z",
     "validate_only": false,
     "verbose": false
   },

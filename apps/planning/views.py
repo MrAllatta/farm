@@ -10,12 +10,24 @@ from django.views.generic import TemplateView
 from django.db.models import Max, Q, Sum
 from isoweek import Week
 
-from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from reference.models import (
+    Block,
+    BlockType,
+    CropBySeason,
+    CropInfo,
+    CropSalesFormat,
+    SalesCategory,
+    SalesChannel,
+)
 from reference.sales_rollups import (
     DEFAULT_ROLLUP_SLUG,
+    ROLLUP_PLAN_CHANNEL_NAMES,
+    ROLLUP_SLUG_TO_CATEGORY_NAME,
     ROLLUP_SLUG_TO_CHANNEL_NAME,
     ROLLUP_TAB_LABELS,
+    plan_events_without_shadowed_rollups,
 )
+from planning.services.sales_plan_allocation import even_split_sale_units
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
 from core.planning_year import get_effective_planning_year, set_session_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
@@ -30,6 +42,7 @@ from django import forms
 from django.template.loader import render_to_string
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 from typing import Optional
 from collections import defaultdict
 
@@ -1408,19 +1421,21 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
 
         action = request.POST.get("action", "save")
         rollup_slug = None
+        channel = None
+        sales_category = None
 
         if self.sales_plan_mode == "rollup":
             rollup_slug = (request.POST.get("rollup") or DEFAULT_ROLLUP_SLUG).strip().lower()
-            if rollup_slug not in ROLLUP_SLUG_TO_CHANNEL_NAME:
+            if rollup_slug not in ROLLUP_SLUG_TO_CATEGORY_NAME:
                 messages.error(request, "Invalid planning bucket.")
                 return redirect(reverse("planning:sales_plan"))
-            plan_name = ROLLUP_SLUG_TO_CHANNEL_NAME[rollup_slug]
-            channel = SalesChannel.objects.filter(name=plan_name).first()
-            if not channel:
+            cat_name = ROLLUP_SLUG_TO_CATEGORY_NAME[rollup_slug]
+            sales_category = SalesCategory.objects.filter(name=cat_name).first()
+            if not sales_category:
                 messages.error(
                     request,
-                    "High-level planning channels are missing. Import product_week_plan data "
-                    "(see reference/sales_rollups.py) or add those SalesChannel rows.",
+                    "Sales categories are missing. Run reference data import or add "
+                    "Markets / Orders / CSA rows on SalesCategory.",
                 )
                 return redirect(reverse("planning:sales_plan"))
         else:
@@ -1435,23 +1450,32 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 return redirect(reverse("planning:sales_plan_by_channel"))
 
         if action == "save":
-            updated = self._save_plan_rows(request, channel)
+            if self.sales_plan_mode == "rollup":
+                updated = self._save_plan_rows(request, sales_category=sales_category)
+                messages.success(
+                    request,
+                    f"Saved {updated} planned product-week rows for {sales_category.name}.",
+                )
+                return redirect(f"{reverse('planning:sales_plan')}?rollup={rollup_slug}")
+            updated = self._save_plan_rows(request, channel=channel)
             messages.success(
                 request,
                 f"Saved {updated} planned product-week rows for {channel.name}.",
             )
-            if self.sales_plan_mode == "rollup":
-                return redirect(f"{reverse('planning:sales_plan')}?rollup={rollup_slug}")
             return redirect(f"{reverse('planning:sales_plan_by_channel')}?channel={channel.id}")
 
         if action == "draft":
             from .services.sales_plan_translation import build_demand_to_supply_draft
 
-            draft = build_demand_to_supply_draft(self.year_obj, channel)
+            if self.sales_plan_mode == "rollup":
+                draft = build_demand_to_supply_draft(self.year_obj, sales_category=sales_category)
+            else:
+                draft = build_demand_to_supply_draft(self.year_obj, channel=channel)
             ctx = self.get_context_data(
                 channel=channel,
                 draft=draft,
                 rollup_slug=rollup_slug if self.sales_plan_mode == "rollup" else None,
+                rollup_category=sales_category if self.sales_plan_mode == "rollup" else None,
             )
             messages.info(
                 request,
@@ -1465,9 +1489,83 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             return redirect(f"{reverse('planning:sales_plan')}?rollup={rs}")
         return redirect(f"{reverse('planning:sales_plan_by_channel')}?channel={channel.id}")
 
-    def _save_plan_rows(self, request, channel):
+    def _delete_category_plan_slice(self, sales_category: SalesCategory, product, sale_date) -> None:
+        SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.year_obj,
+            product=product,
+            sale_date=sale_date,
+        ).filter(Q(sales_category=sales_category) | Q(channel__category=sales_category)).delete()
+
+    def _save_plan_rows(self, request, channel=None, sales_category=None):
         updated = 0
         products = CropSalesFormat.objects.filter(is_active=True).select_related("crop")
+
+        if self.sales_plan_mode == "rollup" and sales_category is not None:
+            operational = list(
+                SalesChannel.objects.filter(category=sales_category)
+                .exclude(name__in=ROLLUP_PLAN_CHANNEL_NAMES)
+                .order_by("allocation_priority", "name", "id")
+            )
+            n = len(operational)
+            for product in products:
+                for week in range(1, 53):
+                    key = f"qty_{product.id}_{week}"
+                    raw_value = (request.POST.get(key) or "").strip()
+                    sale_date = Week(self.year_obj.year, week).monday()
+                    if not raw_value:
+                        self._delete_category_plan_slice(sales_category, product, sale_date)
+                        continue
+                    try:
+                        quantity = Decimal(raw_value)
+                    except (InvalidOperation, TypeError):
+                        continue
+                    if quantity <= 0:
+                        self._delete_category_plan_slice(sales_category, product, sale_date)
+                        continue
+
+                    self._delete_category_plan_slice(sales_category, product, sale_date)
+                    if n == 0:
+                        revenue = quantity * product.sale_price
+                        SalesEvent.objects.update_or_create(
+                            entry_kind=SalesEvent.EntryKind.PLAN,
+                            planning_year=self.year_obj,
+                            channel=None,
+                            sales_category=sales_category,
+                            product=product,
+                            sale_date=sale_date,
+                            defaults={
+                                "planned_quantity": quantity,
+                                "planned_revenue": revenue,
+                                "notes": "Sales plan entry (category)",
+                            },
+                        )
+                        updated += 1
+                    else:
+                        for ch, amt in zip(operational, even_split_sale_units(quantity, n)):
+                            if amt == 0:
+                                continue
+                            defaults = {
+                                "planned_quantity": amt,
+                                "planned_revenue": amt * product.sale_price,
+                                "notes": "Sales plan entry (allocated)",
+                            }
+                            if ch.category_id:
+                                defaults["sales_category_id"] = ch.category_id
+                            SalesEvent.objects.update_or_create(
+                                entry_kind=SalesEvent.EntryKind.PLAN,
+                                planning_year=self.year_obj,
+                                channel=ch,
+                                product=product,
+                                sale_date=sale_date,
+                                defaults=defaults,
+                            )
+                            updated += 1
+            return updated
+
+        if channel is None:
+            return 0
+
         for product in products:
             for week in range(1, 53):
                 key = f"qty_{product.id}_{week}"
@@ -1542,12 +1640,15 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
         channels = SalesChannel.objects.order_by("allocation_priority", "name")
         rollup_slug = None
         rollup_tabs = None
+        rollup_category = kwargs.get("rollup_category")
         if self.sales_plan_mode == "rollup":
             rollup_slug = (kwargs.get("rollup_slug") or self.request.GET.get("rollup") or "").strip().lower()
-            if rollup_slug not in ROLLUP_SLUG_TO_CHANNEL_NAME:
+            if rollup_slug not in ROLLUP_SLUG_TO_CATEGORY_NAME:
                 rollup_slug = DEFAULT_ROLLUP_SLUG
-            plan_name = ROLLUP_SLUG_TO_CHANNEL_NAME[rollup_slug]
-            channel = SalesChannel.objects.filter(name=plan_name).first()
+            if rollup_category is None:
+                cat_name = ROLLUP_SLUG_TO_CATEGORY_NAME[rollup_slug]
+                rollup_category = SalesCategory.objects.filter(name=cat_name).first()
+            channel = None
             rollup_tabs = [
                 {
                     "slug": slug,
@@ -1579,23 +1680,58 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
         summary_revenue = Decimal("0")
 
         if channel:
-            rows = SalesEvent.objects.filter(
-                entry_kind=SalesEvent.EntryKind.PLAN,
-                planning_year=self.year_obj,
-                channel=channel,
-            ).select_related("product")
-            for row in rows:
-                week = row.sale_date.isocalendar()[1]
-                key = (row.product_id, week)
-                planned_lookup[key] = row
-                summary_qty += row.planned_quantity or Decimal("0")
-                summary_revenue += row.planned_revenue or Decimal("0")
+            if self.sales_plan_mode == "rollup" and channel.category_id:
+                cat_rows = SalesEvent.objects.filter(
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    planning_year=self.year_obj,
+                    channel__category_id=channel.category_id,
+                ).select_related("channel", "product")
+                by_ops = defaultdict(Decimal)
+                pseudo_by_key = {}
+                for row in cat_rows:
+                    wk = row.sale_date.isocalendar()[1]
+                    key = (row.product_id, wk)
+                    if row.channel.name in ROLLUP_PLAN_CHANNEL_NAMES:
+                        pseudo_by_key[key] = row
+                    else:
+                        by_ops[key] += row.planned_quantity or Decimal("0")
+                for product in products:
+                    for week in weeks:
+                        key = (product.id, week)
+                        ops_sum = by_ops.get(key, Decimal("0"))
+                        if ops_sum > 0:
+                            planned_lookup[key] = SimpleNamespace(
+                                planned_quantity=ops_sum,
+                                planned_revenue=ops_sum * product.sale_price,
+                            )
+                            summary_qty += ops_sum
+                            summary_revenue += ops_sum * product.sale_price
+                        elif key in pseudo_by_key:
+                            pr = pseudo_by_key[key]
+                            planned_lookup[key] = pr
+                            summary_qty += pr.planned_quantity or Decimal("0")
+                            summary_revenue += pr.planned_revenue or Decimal("0")
+            else:
+                rows = SalesEvent.objects.filter(
+                    entry_kind=SalesEvent.EntryKind.PLAN,
+                    planning_year=self.year_obj,
+                    channel=channel,
+                ).select_related("product")
+                for row in rows:
+                    week = row.sale_date.isocalendar()[1]
+                    key = (row.product_id, week)
+                    planned_lookup[key] = row
+                    summary_qty += row.planned_quantity or Decimal("0")
+                    summary_revenue += row.planned_revenue or Decimal("0")
 
         demand_totals = defaultdict(Decimal)
-        for row in SalesEvent.objects.filter(
-            entry_kind=SalesEvent.EntryKind.PLAN,
-            planning_year=self.year_obj,
-        ).select_related("product"):
+        all_plan = list(
+            SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.year_obj,
+            ).select_related("product", "channel", "channel__category")
+        )
+        for row in plan_events_without_shadowed_rollups(all_plan):
             wk = row.sale_date.isocalendar()[1]
             demand_totals[(row.product_id, wk)] += row.planned_quantity or Decimal("0")
 

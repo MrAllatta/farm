@@ -13,9 +13,10 @@ Usage:
 import csv
 import json
 import os
+import re
 import sys
 from decimal import Decimal, InvalidOperation
-from datetime import datetime
+from datetime import date, datetime
 from collections import defaultdict
 from pathlib import Path
 
@@ -1865,61 +1866,10 @@ class Command(BaseCommand):
             reader = csv.DictReader(f)
             for i, row in enumerate(reader, 1):
                 try:
-                    planting_id = row.get("Planting ID", "").strip()
-                    planting = self._get_planting(planting_id)
-
-                    if not planting:
-                        self.stats["NurseryEvent"]["skipped"] += 1
-                        continue
-
-                    event_type = row.get("Event Type", "").strip().lower()
-                    if event_type not in ("seed", "pot_up", "harden", "transplant"):
-                        event_type = "seed"
-
-                    planned_date_str = row.get("Planned Date", "").strip()
-                    if not planned_date_str:
-                        self.stats["NurseryEvent"]["skipped"] += 1
-                        continue
-
-                    data = {
-                        "event_type": event_type,
-                        "planned_date": self._parse_date(planned_date_str),
-                        "planned_tray_count": self._int_or_none(row.get("Planned Tray Count")),
-                        "planned_tray_size": self._int_or_none(row.get("Planned Tray Size")),
-                    }
-
-                    # Actual fields
-                    actual_date_str = row.get("Actual Date", "").strip()
-                    if actual_date_str:
-                        data["actual_date"] = self._parse_date(actual_date_str)
-                        data["actual_tray_count"] = self._int_or_none(row.get("Actual Tray Count"))
-                        data["actual_tray_size"] = self._int_or_none(row.get("Actual Tray Size"))
-                        data["actual_germination_rate"] = self._dec_or_none(
-                            row.get("Actual Germination Rate")
-                        )
-
-                    data["notes"] = row.get("Notes", "").strip()
-
-                    if data.get("product") is not None and not self.write_disabled:
-                        batch = self._get_pack_batch(
-                            channel.id,
-                            data["product"].id,
-                            data["sale_date"],
-                        )
-                        if batch:
-                            data["pack_batch"] = batch
-
-                    if not self.write_disabled:
-                        obj, created = NurseryEvent.objects.update_or_create(
-                            planting=planting,
-                            planned_date=data["planned_date"],
-                            event_type=event_type,
-                            defaults=data,
-                        )
-                        self.stats["NurseryEvent"]["created" if created else "processed"] += 1
+                    if self._nursery_row_is_workbook_402_plan_tab_shape(row):
+                        self._import_nursery_events_workbook_402_plan_tab_row(i, row, year)
                     else:
-                        self.stats["NurseryEvent"]["processed"] += 1
-
+                        self._import_nursery_events_canonical_row(i, row)
                 except (
                     ValueError,
                     KeyError,
@@ -1936,6 +1886,216 @@ class Command(BaseCommand):
             f"{self.stats['NurseryEvent']['skipped']} skipped, "
             f"{self.stats['NurseryEvent']['errors']} errors\n"
         )
+
+    def _normalize_csv_header_label(self, header):
+        if header is None:
+            return ""
+        return " ".join(str(header).replace("\n", " ").strip().lower().split())
+
+    def _nursery_row_is_workbook_402_plan_tab_shape(self, row):
+        """True when row carries workbook 402 ``Nursery Plan 502`` week columns (wide shape)."""
+        for k in row:
+            nk = self._normalize_csv_header_label(k)
+            if nk in {"nursery seeding year", "nursery seeding week", "nursery pot up year", "nursery pot up week"}:
+                if (row.get(k) or "").strip():
+                    return True
+        return False
+
+    def _nursery_sheet_crop_variety_cell(self, row):
+        for key in row:
+            nk = self._normalize_csv_header_label(key)
+            if nk in ("crop // variety", "crop & variety"):
+                raw = row.get(key) or ""
+                return " ".join(str(raw).replace("\n", " ").split()).strip()
+        return ""
+
+    def _split_crop_variety_for_nursery_sheet(self, cell):
+        cell = " ".join(cell.replace("\n", " ").split())
+        if "//" in cell:
+            return self._split_crop_variety(cell)
+        if " & " in cell:
+            left, right = cell.split(" & ", 1)
+            return left.strip(), right.strip()
+        return cell, ""
+
+    def _date_from_plan_year_week(self, year_raw, week_raw):
+        try:
+            y = int(str(year_raw).strip())
+            w = int(str(week_raw).strip())
+            if y <= 0 or w <= 0:
+                return None
+            return date.fromisocalendar(y, w, 1)
+        except (ValueError, TypeError, OverflowError):
+            return None
+
+    def _int_from_tray_size_cell(self, raw):
+        """Parse a positive tray/cell count from values like ``128`` or ``128-cell``."""
+        if raw is None:
+            return None
+        s = str(raw).strip()
+        if not s or s.lower() in ("na", "n/a", "-", "—"):
+            return None
+        m = re.search(r"\d+", s)
+        if not m:
+            return None
+        try:
+            v = int(m.group(0))
+            return v if v > 0 else None
+        except ValueError:
+            return None
+
+    def _resolve_nursery_planting_from_plan_tab(self, row, year):
+        """Resolve a planting for ``Nursery Plan 502`` rows (no ``Planting ID``).
+
+        Prefer the same natural key as ``field_walk_notes`` when ``Block``, ``Bed``,
+        ``Plan Field Year``, and ``Plan Field Week`` are all present.
+
+        Otherwise require ``Plan Field Week`` plus a crop label cell and match **uniquely**
+        on ``(Plan Field Year or import folder year, crop, optional variety, ISO week of
+        ``planned_plant_date``)**.
+        """
+        crop_variety = self._nursery_sheet_crop_variety_cell(row)
+        plan_week_raw = (row.get("Plan Field Week") or "").strip()
+        if not crop_variety or not plan_week_raw:
+            return None
+
+        plan_year_raw = (row.get("Plan Field Year") or "").strip()
+        plan_year = self._int(plan_year_raw, year) if plan_year_raw else year
+        plan_week = self._int(plan_week_raw, 0)
+        if plan_week <= 0:
+            return None
+
+        block_name = (row.get("Block") or "").strip()
+        bed_raw = (row.get("Bed") or "").strip()
+        if block_name and bed_raw:
+            synthetic = {
+                "Crop // Variety": crop_variety,
+                "Block": block_name,
+                "Bed": bed_raw,
+                "Plan Field Year": str(plan_year),
+                "Plan Field Week": str(plan_week),
+            }
+            return self._resolve_field_walk_planting_from_context(synthetic, year)
+
+        crop_name, variety = self._split_crop_variety_for_nursery_sheet(crop_variety)
+        if not crop_name:
+            return None
+        crop = self._get_crop(crop_name)
+        if not crop:
+            return None
+
+        candidates = Planting.objects.filter(planning_year__year=plan_year, crop=crop).order_by("id")
+        if variety:
+            candidates = candidates.filter(variety__iexact=variety)
+
+        matches = []
+        for planting in candidates:
+            iso_year, iso_week, _ = planting.planned_plant_date.isocalendar()
+            if iso_year == plan_year and iso_week == plan_week:
+                matches.append(planting)
+
+        if len(matches) == 1:
+            return matches[0]
+        return None
+
+    def _nursery_upsert_event(self, planting, event_type, planned_date, save_defaults):
+        """Persist one nursery event (``save_defaults`` excludes lookup key fields)."""
+        if not self.write_disabled:
+            _, created = NurseryEvent.objects.update_or_create(
+                planting=planting,
+                planned_date=planned_date,
+                event_type=event_type,
+                defaults=save_defaults,
+            )
+            self.stats["NurseryEvent"]["created" if created else "processed"] += 1
+        else:
+            self.stats["NurseryEvent"]["processed"] += 1
+
+    def _import_nursery_events_workbook_402_plan_tab_row(self, i, row, year):
+        """Import seed / pot-up events from one ``Nursery Plan 502`` wide row."""
+        planting_id = (row.get("Planting ID") or "").strip()
+        planting = self._get_planting(planting_id) if planting_id else None
+        if not planting:
+            planting = self._resolve_nursery_planting_from_plan_tab(row, year)
+        if not planting:
+            self.stats["NurseryEvent"]["skipped"] += 1
+            return
+
+        note_lines = []
+        for label, col in (
+            ("Germ temp", "Germ Temp"),
+            ("Days to germ", "Days To Germ"),
+            ("Germ notes", "Germ Notes"),
+            ("Nursery seeding notes", "Nursery Seeding Notes"),
+        ):
+            v = (row.get(col) or "").strip()
+            if v:
+                note_lines.append(f"{label}: {v}")
+        spc = (row.get("Seeds Per Cell") or "").strip()
+        if spc:
+            note_lines.append(f"Seeds per cell: {spc}")
+        seed_notes = "\n".join(note_lines)
+
+        seed_y = (row.get("Nursery Seeding Year") or "").strip()
+        seed_w = (row.get("Nursery Seeding Week") or "").strip()
+        if seed_y and seed_w:
+            seed_date = self._date_from_plan_year_week(seed_y, seed_w)
+            if seed_date:
+                save_defaults = {
+                    "planned_tray_count": self._int_or_none(row.get("Trays To Seed")),
+                    "planned_tray_size": self._int_from_tray_size_cell(row.get("Seeded Tray Size")),
+                    "notes": seed_notes,
+                }
+                self._nursery_upsert_event(planting, "seed", seed_date, save_defaults)
+
+        pot_y = (row.get("Nursery Pot Up Year") or "").strip()
+        pot_w = (row.get("Nursery Pot Up Week") or "").strip()
+        if pot_y and pot_w:
+            pot_date = self._date_from_plan_year_week(pot_y, pot_w)
+            if pot_date:
+                save_defaults = {
+                    "planned_tray_count": self._int_or_none(row.get("Trays To Pot Up")),
+                    "planned_tray_size": self._int_from_tray_size_cell(row.get("Pot Up Tray Size")),
+                    "notes": "",
+                }
+                self._nursery_upsert_event(planting, "pot_up", pot_date, save_defaults)
+
+    def _import_nursery_events_canonical_row(self, i, row):
+        """Import one canonical ``nursery_events.csv`` row (``Planting ID`` + ``Planned Date``)."""
+        planting_id = row.get("Planting ID", "").strip()
+        planting = self._get_planting(planting_id)
+
+        if not planting:
+            self.stats["NurseryEvent"]["skipped"] += 1
+            return
+
+        event_type = row.get("Event Type", "").strip().lower()
+        if event_type not in ("seed", "pot_up", "harden", "transplant"):
+            event_type = "seed"
+
+        planned_date_str = row.get("Planned Date", "").strip()
+        if not planned_date_str:
+            self.stats["NurseryEvent"]["skipped"] += 1
+            return
+
+        planned_date = self._parse_date(planned_date_str)
+        save_defaults = {
+            "planned_tray_count": self._int_or_none(row.get("Planned Tray Count")),
+            "planned_tray_size": self._int_or_none(row.get("Planned Tray Size")),
+        }
+
+        actual_date_str = row.get("Actual Date", "").strip()
+        if actual_date_str:
+            save_defaults["actual_date"] = self._parse_date(actual_date_str)
+            save_defaults["actual_tray_count"] = self._int_or_none(row.get("Actual Tray Count"))
+            save_defaults["actual_tray_size"] = self._int_or_none(row.get("Actual Tray Size"))
+            save_defaults["actual_germination_rate"] = self._dec_or_none(
+                row.get("Actual Germination Rate")
+            )
+
+        save_defaults["notes"] = row.get("Notes", "").strip()
+
+        self._nursery_upsert_event(planting, event_type, planned_date, save_defaults)
 
     def _import_harvest_events(self, year, year_dir):
         """Import harvest events."""

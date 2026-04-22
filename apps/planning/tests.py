@@ -95,7 +95,7 @@ class SalesPlanShortageTests(TestCase):
 
     def test_shortage_magnitude_and_row_totals(self):
         response = self.client.get(
-            reverse("planning:sales_plan"),
+            reverse("planning:sales_plan_by_channel"),
             {"channel": str(self.channel.pk)},
         )
         self.assertEqual(response.status_code, 200)
@@ -107,6 +107,18 @@ class SalesPlanShortageTests(TestCase):
         self.assertGreater(row["row_total_demand"], Decimal("0"))
         self.assertGreater(row["row_total_supply"], Decimal("0"))
         self.assertIsNotNone(row["row_ratio"])
+
+
+class EvenSplitSaleUnitsTests(TestCase):
+    def test_sum_matches_total_with_remainder_to_first(self):
+        from planning.services.sales_plan_allocation import even_split_sale_units
+
+        parts = even_split_sale_units(Decimal("10.00"), 3)
+        self.assertEqual(len(parts), 3)
+        self.assertEqual(sum(parts), Decimal("10.00"))
+        self.assertEqual(parts[0], Decimal("3.34"))
+        self.assertEqual(parts[1], Decimal("3.33"))
+        self.assertEqual(parts[2], Decimal("3.33"))
 
 
 class PlantingMoveViewTests(TestCase):

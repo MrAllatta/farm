@@ -2010,6 +2010,44 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(comps[0].consumed_quantity, Decimal("12"))
         self.assertEqual(comps[0].consumed_unit, "bunch")
 
+    def test_nursery_plan_402_wide_row_resolves_planting_and_upserts_events(self):
+        """``Nursery Plan 502``-shaped CSV rows map to ``NurseryEvent`` seed and pot-up rows."""
+        from datetime import date
+
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "plantings.csv",
+                [
+                    "ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status",
+                    "P1,Carrot,Field 1,Nantes,1,1,100,2021-04-01,Planned",
+                ],
+            )
+            self._write_csv(
+                year_dir,
+                "nursery_events.csv",
+                [
+                    "CROP & VARIETY,Nursery Seeding Year,Nursery Seeding Week,Seeded Tray Size,Seeds Per Cell,Trays To Seed,Nursery Pot Up Year,Nursery Pot Up Week,Pot Up Tray Size,Trays To Pot Up,Plan Field Week,Germ Temp,Days To Germ,Germ Notes,Nursery Seeding Notes",
+                    "Carrot & Nantes,2021,5,128-cell,2,4,2021,8,72-cell,3,13,72,7,,keep covered",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-nursery-402-wide.json")
+
+        self.assertEqual(summary["status"], "ok")
+        planting = Planting.objects.get()
+        events = {e.event_type: e for e in NurseryEvent.objects.filter(planting=planting)}
+        self.assertEqual(set(events), {"seed", "pot_up"})
+        self.assertEqual(events["seed"].planned_date, date.fromisocalendar(2021, 5, 1))
+        self.assertEqual(events["seed"].planned_tray_count, 4)
+        self.assertEqual(events["seed"].planned_tray_size, 128)
+        self.assertIn("Seeds per cell: 2", events["seed"].notes)
+        self.assertEqual(events["pot_up"].planned_date, date.fromisocalendar(2021, 8, 1))
+        self.assertEqual(events["pot_up"].planned_tray_count, 3)
+        self.assertEqual(events["pot_up"].planned_tray_size, 72)
+
 
 class StageA2OfflineConnectorTests(TestCase):
     def test_normalizer_detects_header_after_irregular_preamble_using_contract_scan(self):
@@ -2039,6 +2077,66 @@ class StageA2OfflineConnectorTests(TestCase):
             ["Block", "Block Type", "# of Beds", "Bed Width (feet)", "Bedfeet per Bed"],
         )
         self.assertEqual(normalized["rows"][1], ["Field 1", "Field", "10", "3", "100"])
+
+    def test_normalizer_nursery_plan_502_row_zero_wide_shape(self):
+        """Workbook 402 ``Nursery Plan 502``: header on row 0, passthrough wide columns."""
+        rows = [
+            [
+                "CROP & VARIETY",
+                "Nursery Seeding Year",
+                "Nursery Seeding Week",
+                "Seeded Tray Size",
+                "Seeds Per Cell",
+                "Trays To Seed",
+                "Nursery Pot Up Year",
+                "Nursery Pot Up Week",
+                "Pot Up Tray Size",
+                "Trays To Pot Up",
+                "Plan Field Week",
+                "Germ Temp",
+                "Days To Germ",
+                "Germ Notes",
+                "Nursery Seeding Notes",
+            ],
+            [
+                "Carrot & Nantes",
+                "2026",
+                "5",
+                "128-cell",
+                "2",
+                "4",
+                "2026",
+                "8",
+                "72-cell",
+                "3",
+                "15",
+                "72",
+                "7",
+                "",
+                "keep covered",
+            ],
+        ]
+
+        normalized = normalize_rows(
+            rows,
+            required_headers=[
+                "CROP & VARIETY",
+                "Nursery Seeding Year",
+                "Plan Field Week",
+            ],
+            header_row_index=0,
+            stop_on_blank_in=["CROP & VARIETY"],
+        )
+
+        self.assertEqual(normalized["header_row_index"], 0)
+        self.assertIn(
+            normalized["strategy"],
+            ("required_header_set_scan", "header_row_index"),
+        )
+        self.assertEqual(len(normalized["rows"]), 2)
+        self.assertEqual(normalized["rows"][0][0], "CROP & VARIETY")
+        self.assertEqual(normalized["rows"][1][0], "Carrot & Nantes")
+        self.assertEqual(normalized["rows"][1][3], "128-cell")
 
     def test_normalizer_supports_anchor_token_fallback_when_header_aliases_are_insufficient(self):
         rows = [
@@ -2867,7 +2965,7 @@ class PrimaryRouteSmokeTests(TestCase):
     MIN_REGISTERED_ROUTES_BY_NAMESPACE = {
         "core": 3,
         "reference": 1,
-        "planning": 25,
+        "planning": 26,
         "operations": 16,
         "sales": 3,
         "reports": 14,
@@ -2881,6 +2979,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("planning:planting_create_prefilled", {"block_id": 1, "week": 12}),
         ("planning:succession_create", {}),
         ("planning:sales_plan", {}),
+        ("planning:sales_plan_by_channel", {}),
         ("planning:succession_preview", {}),
         ("planning:planting_detail", {"pk": 1}),
         ("planning:planting_edit", {"pk": 1}),

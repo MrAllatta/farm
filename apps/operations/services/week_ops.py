@@ -13,6 +13,7 @@ from isoweek import Week
 
 from operations.models import FieldWalkNote, InventoryLedger
 from planning.models import HarvestEvent, Planting, PlantingStatus
+from reference.sales_rollups import plan_events_without_shadowed_rollups
 from sales.models import SalesEvent
 
 Mode = Literal["field_walk", "harvest_needs", "harvest_entry"]
@@ -211,6 +212,16 @@ def week_context(
 
     week_events_for_progress: list[HarvestEvent] = []
 
+    sale_events = list(
+        SalesEvent.objects.filter(
+            planning_year=planning_year,
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            sale_date__gte=week_monday,
+            sale_date__lte=week_sunday,
+        ).select_related("channel", "channel__category", "product", "product__crop")
+    )
+    sale_events = plan_events_without_shadowed_rollups(sale_events)
+
     for p in plantings:
         blk = p.block
         bucket = ensure_block(blk)
@@ -274,15 +285,6 @@ def week_context(
             entry["actual_bins"] += Decimal(str(ab))
 
     by_channel: dict[int, dict[str, Any]] = {}
-    sale_events = (
-        SalesEvent.objects.filter(
-            planning_year=planning_year,
-            entry_kind=SalesEvent.EntryKind.PLAN,
-            sale_date__gte=week_monday,
-            sale_date__lte=week_sunday,
-        )
-        .select_related("channel", "channel__category", "product", "product__crop")
-    )
     for se in sale_events:
         ch = se.channel
         if ch.id not in by_channel:

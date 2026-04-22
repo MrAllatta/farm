@@ -1,6 +1,9 @@
 """sales/models.py"""
 
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
+
 from reference.models import SalesChannel
 from reference.models import CropSalesFormat
 from planning.models import PlanningYear
@@ -11,7 +14,22 @@ class SalesEvent(models.Model):
         PLAN = "plan", "Plan"
         ACTUAL = "actual", "Actual"
 
-    channel = models.ForeignKey(SalesChannel, on_delete=models.PROTECT)
+    # Operational outlet (required for actuals; required for outlet-level weekly plans).
+    channel = models.ForeignKey(
+        SalesChannel,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    # Workbook 302 / category-level annual demand (Markets, Orders, CSA) — mutually exclusive
+    # with ``channel`` for *category-only* plan rows (channel is null).
+    sales_category = models.ForeignKey(
+        "reference.SalesCategory",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="sales_events",
+    )
     sale_date = models.DateField()
     planning_year = models.ForeignKey(
         PlanningYear,
@@ -69,6 +87,17 @@ class SalesEvent(models.Model):
     def sale_week(self):
         return self.sale_date.isocalendar()[1]
 
+    def clean(self):
+        super().clean()
+        if self.entry_kind == self.EntryKind.ACTUAL:
+            if self.channel_id is None:
+                raise ValidationError({"channel": "Actual sales events require a sales channel."})
+        elif self.entry_kind == self.EntryKind.PLAN:
+            if self.channel_id is None and self.sales_category_id is None:
+                raise ValidationError(
+                    "Planned sales events require either a sales channel or a sales category."
+                )
+
     def save(self, *args, **kwargs):
         skip_inv = kwargs.pop("skip_inventory_ledger_sync", False)
         old_actual = None
@@ -90,12 +119,30 @@ class SalesEvent(models.Model):
         sync_sales_event_ledger(self, old_actual, old_returned)
 
     class Meta:
-        ordering = ["sale_date", "channel"]
+        ordering = ["sale_date", "channel_id", "sales_category_id"]
         constraints = [
+            models.CheckConstraint(
+                condition=(
+                    ~Q(entry_kind="plan", channel__isnull=True, sales_category__isnull=True)
+                    & ~Q(entry_kind="actual", channel__isnull=True)
+                ),
+                name="salesevent_plan_or_actual_needs_channel_or_cat",
+            ),
             models.UniqueConstraint(
                 fields=["entry_kind", "channel", "sale_date", "product"],
-                name="sales_event_kind_channel_date_product_uniq",
-            )
+                condition=Q(entry_kind="plan", channel__isnull=False),
+                name="salesevent_uniq_plan_channel_date_product",
+            ),
+            models.UniqueConstraint(
+                fields=["entry_kind", "sales_category", "sale_date", "product"],
+                condition=Q(entry_kind="plan", channel__isnull=True, sales_category__isnull=False),
+                name="salesevent_uniq_plan_category_date_product",
+            ),
+            models.UniqueConstraint(
+                fields=["entry_kind", "channel", "sale_date", "product"],
+                condition=Q(entry_kind="actual"),
+                name="salesevent_uniq_actual_channel_date_product",
+            ),
         ]
 
 

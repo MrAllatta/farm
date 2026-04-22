@@ -97,7 +97,7 @@
         "updated": 0
       },
       "RotationHistory": {
-        "created": 31,
+        "created": 34,
         "error": 0,
         "skipped": 0,
         "updated": 0
@@ -211,7 +211,7 @@
       }
     ],
     "totals": {
-      "created": 31,
+      "created": 34,
       "error": 15,
       "skipped": 1,
       "updated": 4
@@ -222,10 +222,10 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-22T15:07:49.443201Z",
-    "run_id": "20260422T150749344555",
+    "finished_at": "2026-04-22T18:48:59.215834Z",
+    "run_id": "20260422T184859146651",
     "start_year": 2021,
-    "started_at": "2026-04-22T15:07:49.344555Z",
+    "started_at": "2026-04-22T18:48:59.146651Z",
     "validate_only": false,
     "verbose": false
   },
