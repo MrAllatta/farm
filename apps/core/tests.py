@@ -5365,6 +5365,111 @@ class StageA2BaselineBundleTests(TestCase):
                 ],
             )
 
+
+class ChannelRollupContractTests(TestCase):
+    def _write_csv(self, directory, filename, lines):
+        path = Path(directory) / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(lines), encoding="utf-8")
+
+    def _write_text(self, path, contents):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+
+    def _write_minimal_import_fixture(self, base_dir):
+        self._write_text(
+            base_dir / "reference" / "sales_channels.csv",
+            "\n".join(
+                [
+                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                    "KFM,Saturday,1,52,1000,false,1",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "year_2021" / "sales_events.csv",
+            "\n".join(
+                [
+                    "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Brought Quantity,Returned Quantity,Notes",
+                    "KFM,2021-06-01,,10,0,0,0,0,0,0,contract test",
+                ]
+            ),
+        )
+
+    def test_missing_channel_rollup_assignment_records_contract_error(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            summary_path = Path(tmp) / "summary.json"
+            self._write_minimal_import_fixture(data_dir)
+            self._write_text(
+                data_dir / "reference" / "channel_rollups.csv",
+                "\n".join(
+                    [
+                        "Channel Name,Rollup Group",
+                        "BFM,Markets",
+                    ]
+                ),
+            )
+
+            call_command(
+                "import_historical_data",
+                str(data_dir),
+                "--start-year",
+                "2021",
+                "--end-year",
+                "2021",
+                "--validate-only",
+                "--summary-json",
+                str(summary_path),
+            )
+
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertIn(
+                {
+                    "model": "SalesEvent",
+                    "row": 1,
+                    "code": "missing_required",
+                    "field_path": "sales_events.channel_rollup",
+                    "message": "missing rollup assignment for sales channel 'KFM' in channel_rollups.csv",
+                },
+                summary["results"]["row_errors"],
+            )
+
+    def test_channel_rollup_assignment_allows_import_path(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            summary_path = Path(tmp) / "summary.json"
+            self._write_minimal_import_fixture(data_dir)
+            self._write_text(
+                data_dir / "reference" / "channel_rollups.csv",
+                "\n".join(
+                    [
+                        "Channel Name,Rollup Group",
+                        "KFM,Markets",
+                    ]
+                ),
+            )
+
+            call_command(
+                "import_historical_data",
+                str(data_dir),
+                "--start-year",
+                "2021",
+                "--end-year",
+                "2021",
+                "--validate-only",
+                "--summary-json",
+                str(summary_path),
+            )
+
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            rollup_errors = [
+                row_error
+                for row_error in summary["results"]["row_errors"]
+                if row_error["field_path"] == "sales_events.channel_rollup"
+            ]
+            self.assertEqual(rollup_errors, [])
+
     def test_baseline_bundle_plus_support_inputs_can_run_validate_only_import(self):
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)

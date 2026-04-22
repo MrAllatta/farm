@@ -104,6 +104,7 @@ class Command(BaseCommand):
             "manifest": "manifest.json",
         },
     }
+    CHANNEL_ROLLUP_ALLOWED_VALUES = {"markets", "wholesale", "csa"}
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -198,6 +199,8 @@ class Command(BaseCommand):
         self.crop_cache = {}
         self.block_cache = {}
         self.channel_cache = {}
+        self.channel_rollup_map = {}
+        self.channel_rollup_required = False
         self.product_cache = {}
         self.recipe_cache = {}
         self.planning_year_cache = {}
@@ -334,9 +337,64 @@ class Command(BaseCommand):
         self._ensure_placeholder_crops_for_sales_format_catalog()
         self._import_crop_by_season()
         self._import_sales_channels()
+        self._load_channel_rollup_contract()
         self._import_crop_sales_formats()
         self._import_product_recipe_components()
         self._warm_recipe_cache()
+
+    def _load_channel_rollup_contract(self):
+        """Load optional specific-channel -> rollup-group mapping contract."""
+        path = self._resolve_reference_path("channel_rollups.csv")
+        if not os.path.exists(path):
+            self.channel_rollup_required = False
+            return
+
+        self.stdout.write("Loading channel rollup contract...")
+        loaded = {}
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                channel_name = (row.get("Channel Name") or "").strip()
+                raw_group = (row.get("Rollup Group") or "").strip()
+                if not channel_name:
+                    continue
+                if not raw_group:
+                    raise CommandError(
+                        f"channel_rollups.csv row {i}: missing Rollup Group for '{channel_name}'"
+                    )
+                normalized_group = raw_group.casefold()
+                if normalized_group not in self.CHANNEL_ROLLUP_ALLOWED_VALUES:
+                    allowed = ", ".join(sorted(v.title() for v in self.CHANNEL_ROLLUP_ALLOWED_VALUES))
+                    raise CommandError(
+                        f"channel_rollups.csv row {i}: invalid Rollup Group '{raw_group}' "
+                        f"for '{channel_name}' (allowed: {allowed})"
+                    )
+                canonical_group = normalized_group.title()
+                if channel_name in loaded and loaded[channel_name] != canonical_group:
+                    raise CommandError(
+                        f"channel_rollups.csv row {i}: conflicting Rollup Group for '{channel_name}'"
+                    )
+                loaded[channel_name] = canonical_group
+
+        self.channel_rollup_map = loaded
+        self.channel_rollup_required = True
+        self.stdout.write(f"  loaded {len(self.channel_rollup_map)} channel rollup assignments\n")
+
+    def _has_channel_rollup_assignment(self, model_name, row_number, field_path, channel_name):
+        if not self.channel_rollup_required:
+            return True
+        if channel_name in self.channel_rollup_map:
+            return True
+        message = f"missing rollup assignment for sales channel '{channel_name}' in channel_rollups.csv"
+        self.stderr.write(f"    ERROR row {row_number}: {message}")
+        self._record_row_error(
+            model_name,
+            row_number,
+            code="missing_required",
+            field_path=field_path,
+            message=message,
+        )
+        return False
 
     def _resolve_reference_path(self, filename):
         """Support both legacy root-level fixtures and Stage A2 `reference/` bundles."""
@@ -1533,6 +1591,14 @@ class Command(BaseCommand):
                         )
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
+                    if not self._has_channel_rollup_assignment(
+                        "SalesEvent",
+                        i,
+                        "product_week_plan.channel_rollup",
+                        channel_name,
+                    ):
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
 
                     product = self._get_product_by_name(product_name)
                     if not product:
@@ -2114,6 +2180,14 @@ class Command(BaseCommand):
                         )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
+                    if not self._has_channel_rollup_assignment(
+                        "PackAllocation",
+                        i,
+                        "pack_allocations.channel_rollup",
+                        channel_name,
+                    ):
+                        self.stats["PackAllocation"]["skipped"] += 1
+                        continue
                     if not product:
                         self._record_stale_fk(
                             "PackAllocation",
@@ -2309,6 +2383,14 @@ class Command(BaseCommand):
                         )
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
+                    if not self._has_channel_rollup_assignment(
+                        "SalesEvent",
+                        i,
+                        "sales_events.channel_rollup",
+                        channel_name,
+                    ):
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
 
                     data = {
                         "channel": channel,
@@ -2452,6 +2534,14 @@ class Command(BaseCommand):
                             "sales channel",
                             channel_name,
                         )
+                        self.stats["QuickSalesEntry"]["skipped"] += 1
+                        continue
+                    if not self._has_channel_rollup_assignment(
+                        "QuickSalesEntry",
+                        i,
+                        "quick_sales_entries.channel_rollup",
+                        channel_name,
+                    ):
                         self.stats["QuickSalesEntry"]["skipped"] += 1
                         continue
 
