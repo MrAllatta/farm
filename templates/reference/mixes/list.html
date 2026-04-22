@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Mix recipes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Mix recipes</h1>
+    <p class="muted">Edit <code>ProductRecipe</code> components for each sellable product. Staff only.</p>
+    <p><a href="{% url 'reference:index' %}">&larr; Reference home</a></p>
+
+    <div class="fp-table-scroll">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Crop</th>
+                    <th>Active recipe</th>
+                    <th># components</th>
+                    <th>Output unit</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td>{{ p.product_name }}</td>
+                    <td>{{ p.crop.name }}</td>
+                    <td>{% if p.active_recipe_count %}Yes{% else %}No{% endif %}</td>
+                    <td>{{ p.component_count }}</td>
+                    <td>{{ p.active_output_unit|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'reference:mix_edit' p.pk %}">Edit</a>
+                        {% if p.active_recipe_count %}
+                        <form method="post" action="{% url 'reference:mix_deactivate' p.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Deactivate active recipe for this product?');">Deactivate</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No active sellable products.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

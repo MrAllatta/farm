@@ -11,6 +11,11 @@ from django.db.models import Max, Q, Sum
 from isoweek import Week
 
 from reference.models import Block, BlockType, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from reference.sales_rollups import (
+    DEFAULT_ROLLUP_SLUG,
+    ROLLUP_SLUG_TO_CHANNEL_NAME,
+    ROLLUP_TAB_LABELS,
+)
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
 from core.planning_year import get_effective_planning_year, set_session_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
@@ -1390,9 +1395,10 @@ class HarvestCalendarView(ActivePlanningYearMixin, TemplateView):
 
 
 class SalesPlanView(ActivePlanningYearMixin, TemplateView):
-    """Product-by-week sales demand planning grid (301 semantics)."""
+    """Product-by-week sales demand grid aligned to workbook rollups (Markets / Orders / CSA)."""
 
     template_name = "planning/sales_plan.html"
+    sales_plan_mode = "rollup"  # SalesPlanByChannelView sets "by_channel"
 
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -1401,16 +1407,32 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             return HttpResponse(status=403)
 
         action = request.POST.get("action", "save")
-        channel_id = request.POST.get("channel")
-        if not channel_id:
-            messages.error(request, "Channel is required.")
-            return redirect(reverse("planning:sales_plan"))
+        rollup_slug = None
 
-        try:
-            channel = SalesChannel.objects.get(id=channel_id)
-        except SalesChannel.DoesNotExist:
-            messages.error(request, "Invalid channel.")
-            return redirect(reverse("planning:sales_plan"))
+        if self.sales_plan_mode == "rollup":
+            rollup_slug = (request.POST.get("rollup") or DEFAULT_ROLLUP_SLUG).strip().lower()
+            if rollup_slug not in ROLLUP_SLUG_TO_CHANNEL_NAME:
+                messages.error(request, "Invalid planning bucket.")
+                return redirect(reverse("planning:sales_plan"))
+            plan_name = ROLLUP_SLUG_TO_CHANNEL_NAME[rollup_slug]
+            channel = SalesChannel.objects.filter(name=plan_name).first()
+            if not channel:
+                messages.error(
+                    request,
+                    "High-level planning channels are missing. Import product_week_plan data "
+                    "(see reference/sales_rollups.py) or add those SalesChannel rows.",
+                )
+                return redirect(reverse("planning:sales_plan"))
+        else:
+            channel_id = request.POST.get("channel")
+            if not channel_id:
+                messages.error(request, "Channel is required.")
+                return redirect(reverse("planning:sales_plan_by_channel"))
+            try:
+                channel = SalesChannel.objects.get(id=channel_id)
+            except SalesChannel.DoesNotExist:
+                messages.error(request, "Invalid channel.")
+                return redirect(reverse("planning:sales_plan_by_channel"))
 
         if action == "save":
             updated = self._save_plan_rows(request, channel)
@@ -1418,13 +1440,19 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 request,
                 f"Saved {updated} planned product-week rows for {channel.name}.",
             )
-            return redirect(f"{reverse('planning:sales_plan')}?channel={channel.id}")
+            if self.sales_plan_mode == "rollup":
+                return redirect(f"{reverse('planning:sales_plan')}?rollup={rollup_slug}")
+            return redirect(f"{reverse('planning:sales_plan_by_channel')}?channel={channel.id}")
 
         if action == "draft":
             from .services.sales_plan_translation import build_demand_to_supply_draft
 
             draft = build_demand_to_supply_draft(self.year_obj, channel)
-            ctx = self.get_context_data(channel=channel, draft=draft)
+            ctx = self.get_context_data(
+                channel=channel,
+                draft=draft,
+                rollup_slug=rollup_slug if self.sales_plan_mode == "rollup" else None,
+            )
             messages.info(
                 request,
                 "Generated demand-to-supply draft recommendations from current planned demand.",
@@ -1432,7 +1460,10 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             return render(request, self.template_name, ctx)
 
         messages.error(request, "Unsupported action.")
-        return redirect(f"{reverse('planning:sales_plan')}?channel={channel.id}")
+        if self.sales_plan_mode == "rollup":
+            rs = rollup_slug or DEFAULT_ROLLUP_SLUG
+            return redirect(f"{reverse('planning:sales_plan')}?rollup={rs}")
+        return redirect(f"{reverse('planning:sales_plan_by_channel')}?channel={channel.id}")
 
     def _save_plan_rows(self, request, channel):
         updated = 0
@@ -1509,7 +1540,24 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         channel = kwargs.get("channel")
         channels = SalesChannel.objects.order_by("allocation_priority", "name")
-        if channel is None:
+        rollup_slug = None
+        rollup_tabs = None
+        if self.sales_plan_mode == "rollup":
+            rollup_slug = (kwargs.get("rollup_slug") or self.request.GET.get("rollup") or "").strip().lower()
+            if rollup_slug not in ROLLUP_SLUG_TO_CHANNEL_NAME:
+                rollup_slug = DEFAULT_ROLLUP_SLUG
+            plan_name = ROLLUP_SLUG_TO_CHANNEL_NAME[rollup_slug]
+            channel = SalesChannel.objects.filter(name=plan_name).first()
+            rollup_tabs = [
+                {
+                    "slug": slug,
+                    "label": ROLLUP_TAB_LABELS.get(slug, slug.title()),
+                    "href": f"{reverse('planning:sales_plan')}?rollup={slug}",
+                    "active": slug == rollup_slug,
+                }
+                for slug in ("markets", "orders", "csa")
+            ]
+        elif channel is None:
             selected_channel_id = self.request.GET.get("channel")
             channel = channels.filter(id=selected_channel_id).first() if selected_channel_id else channels.first()
 
@@ -1650,9 +1698,18 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "summary_qty": summary_qty,
                 "summary_revenue": summary_revenue,
                 "draft": kwargs.get("draft"),
+                "plan_mode": self.sales_plan_mode,
+                "rollup_slug": rollup_slug,
+                "rollup_tabs": rollup_tabs,
             }
         )
         return ctx
+
+
+class SalesPlanByChannelView(SalesPlanView):
+    """Weekly product plan for one operational sales channel (outlet-level)."""
+
+    sales_plan_mode = "by_channel"
 
 
 class PlantingReviseView(View):

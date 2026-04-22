@@ -34,7 +34,8 @@ from reference.models import (
     SalesChannel,
     SalesPlanBucket,
 )
-from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
+from reference.sales_rollups import ANNUAL_PLAN_SALES_CHANNELS
+from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent, PlantingStatus
 from operations.models import (
     FieldWalkNote,
     InventoryLedger,
@@ -112,7 +113,6 @@ class Command(BaseCommand):
         SalesCategory.CategoryName.ORDERS: 20,
         SalesCategory.CategoryName.CSA: 30,
     }
-
     def add_arguments(self, parser):
         parser.add_argument(
             "data_dir",
@@ -206,6 +206,7 @@ class Command(BaseCommand):
         self.crop_cache = {}
         self.block_cache = {}
         self.channel_cache = {}
+        self.channel_name_aliases = {}
         self.channel_rollup_map = {}
         self.channel_rollup_required = False
         self.product_cache = {}
@@ -262,6 +263,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
     def _run_import_pipeline(self):
+        self._load_channel_name_aliases()
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
         self.stdout.write("TIER 1: Reference Data (Independent)\n")
         self.stdout.write("=" * 70)
@@ -342,7 +344,11 @@ class Command(BaseCommand):
     def _category_for_sales_channel(self, channel_name, is_csa):
         if is_csa:
             return SalesCategory.CategoryName.CSA
-        if str(channel_name or "").strip().casefold() in {"wholesale", "orders"}:
+        exact = str(channel_name or "").strip()
+        for plan_name, cat in ANNUAL_PLAN_SALES_CHANNELS:
+            if exact == plan_name:
+                return cat
+        if exact.casefold() in {"wholesale", "orders"}:
             return SalesCategory.CategoryName.ORDERS
         return SalesCategory.CategoryName.MARKETS
 
@@ -368,9 +374,36 @@ class Command(BaseCommand):
         self._import_crop_by_season()
         self._import_sales_channels()
         self._load_channel_rollup_contract()
+        self._ensure_annual_plan_sales_channels_if_needed()
         self._import_crop_sales_formats()
         self._import_product_recipe_components()
         self._warm_recipe_cache()
+
+    def _load_channel_name_aliases(self):
+        """Optional reference/channel_name_aliases.csv: map planner/sheet labels to SalesChannel.name."""
+        path = self._resolve_reference_path("channel_name_aliases.csv")
+        if not os.path.exists(path):
+            return
+        self.stdout.write("Loading channel name aliases...")
+        loaded = 0
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                alias = (row.get("Alias") or row.get("alias") or "").strip()
+                canonical = (
+                    (row.get("Channel Name") or row.get("channel_name") or row.get("Canonical") or "")
+                    .strip()
+                )
+                if not alias or not canonical:
+                    continue
+                key = self._normalize_lookup_value(alias)
+                if key in self.channel_name_aliases and self.channel_name_aliases[key] != canonical:
+                    raise CommandError(
+                        f"channel_name_aliases.csv row {i}: conflicting canonical channel for alias '{alias}'"
+                    )
+                self.channel_name_aliases[key] = canonical
+                loaded += 1
+        self.stdout.write(f"  loaded {loaded} channel name aliases\n")
 
     def _load_channel_rollup_contract(self):
         """Load optional specific-channel -> rollup-group mapping contract."""
@@ -443,6 +476,63 @@ class Command(BaseCommand):
                 )
                 self.channel_cache[channel_name] = channel_obj
         self.stdout.write(f"  loaded {len(self.channel_rollup_map)} channel rollup assignments\n")
+
+    def _bundle_has_product_week_plan_csv(self):
+        """True when this bundle carries annual product/week demand rows (301-style grids)."""
+        data_path = Path(self.data_dir)
+        if not data_path.is_dir():
+            return False
+        return any(data_path.glob("year_*/product_week_plan.csv"))
+
+    def _ensure_annual_plan_sales_channels_if_needed(self):
+        """Only seed rollup-level planning channels when product_week_plan data is present."""
+        if not self._bundle_has_product_week_plan_csv():
+            return
+        self._ensure_annual_plan_sales_channels()
+
+    def _ensure_annual_plan_sales_channels(self):
+        """Create rollup-level SalesChannel rows for annual plan grids (301 Markets/Orders tabs).
+
+        Operational outlets (BFM, KFM, Wholesale, …) roll up into Markets vs Orders categories;
+        the wide planning worksheets are category targets, not a single outlet.
+        """
+        if self.write_disabled:
+            return
+        self.stdout.write("Ensuring annual-plan sales channels (rollup-level planning)...")
+        default_bucket_by_category = {
+            SalesCategory.CategoryName.ORDERS: "Wholesale",
+            SalesCategory.CategoryName.MARKETS: "Markets",
+            SalesCategory.CategoryName.CSA: "CSA",
+        }
+        for channel_name, category_name in ANNUAL_PLAN_SALES_CHANNELS:
+            category = self._ensure_sales_category(category_name)
+            default_bucket_name = default_bucket_by_category.get(category_name)
+            plan_bucket = SalesPlanBucket.objects.filter(category=category, name=channel_name).first()
+            if plan_bucket is None and default_bucket_name:
+                plan_bucket = SalesPlanBucket.objects.filter(
+                    category=category,
+                    name=default_bucket_name,
+                ).first()
+            channel_defaults = {
+                "category": category,
+                "plan_bucket": plan_bucket,
+                "days_of_week": [],
+                "start_week": 1,
+                "end_week": 52,
+                "weekly_target": Decimal("0"),
+                "is_csa": category_name == SalesCategory.CategoryName.CSA,
+                "allocation_priority": self.SALES_CATEGORY_PRIORITY[category_name],
+            }
+            channel_obj, created_flag = SalesChannel.objects.update_or_create(
+                name=channel_name,
+                defaults=channel_defaults,
+            )
+            self.channel_cache[channel_name] = channel_obj
+            self.channel_rollup_map[channel_name] = category_name
+            if not self.write_disabled:
+                key = "created" if created_flag else "processed"
+                self.stats["SalesChannel"][key] += 1
+        self.stdout.write(f"  ensured {len(ANNUAL_PLAN_SALES_CHANNELS)} annual-plan channels\n")
 
     def _has_channel_rollup_assignment(self, model_name, row_number, field_path, channel_name):
         if not self.channel_rollup_required:
@@ -1674,7 +1764,7 @@ class Command(BaseCommand):
                         "SalesEvent",
                         i,
                         "product_week_plan.channel_rollup",
-                        channel_name,
+                        channel.name,
                     ):
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
@@ -1936,13 +2026,14 @@ class Command(BaseCommand):
     # ============================================================================
 
     def _import_operations_tier(self):
-        """Import operations: field walk notes, inventory ledger, pack allocations."""
+        """Import operations: field walk notes, planting field-record actuals, inventory, packs."""
         for year in range(self.start_year, self.end_year + 1):
             year_dir = os.path.join(self.data_dir, f"year_{year}")
             if not os.path.isdir(year_dir):
                 continue
 
             self._import_field_walk_notes(year, year_dir)
+            self._import_planting_field_records(year, year_dir)
             self._import_inventory_ledger(year, year_dir)
             self._import_pack_allocations(year, year_dir)
 
@@ -2024,6 +2115,100 @@ class Command(BaseCommand):
             f"{self.stats['FieldWalkNote']['skipped']} skipped, "
             f"{self.stats['FieldWalkNote']['errors']} errors\n"
         )
+
+    def _import_planting_field_records(self, year, year_dir):
+        """Apply Field Records Online-style actuals to existing plantings.
+
+        Source: year_YYYY/planting_field_records.csv — optional Stage A2 export from
+        workbook 501 ``Field Records Online`` (columns A–F mapped here; plan identity G+).
+        """
+        path = os.path.join(year_dir, "planting_field_records.csv")
+        if not os.path.exists(path):
+            return
+
+        self.stdout.write(f"Importing planting field records {year}...")
+
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                try:
+                    if not self._planting_field_record_row_has_payload(row):
+                        self.stats["PlantingFieldActuals"]["skipped"] += 1
+                        continue
+
+                    planting = self._resolve_planting_for_field_records(row, year)
+                    if not planting:
+                        self.stats["PlantingFieldActuals"]["skipped"] += 1
+                        continue
+
+                    updates = {}
+                    date_str = (row.get("Actual Field Date") or "").strip()
+                    if date_str:
+                        updates["actual_plant_date"] = self._parse_date(date_str)
+
+                    bedft_str = (row.get("Actual Bedft") or "").strip()
+                    if bedft_str:
+                        bf = self._int_or_none(bedft_str)
+                        if bf is not None:
+                            updates["actual_bedfeet"] = bf
+
+                    fin = (row.get("Finished Harvesting") or "").strip().upper()
+                    if fin in ("TRUE", "1", "YES", "Y"):
+                        updates["status"] = PlantingStatus.COMPLETE
+
+                    notes_add = (row.get("Notes") or "").strip()
+
+                    if not self.write_disabled:
+                        if notes_add:
+                            prev = (planting.notes or "").strip()
+                            planting.notes = f"{prev}\n{notes_add}".strip() if prev else notes_add
+
+                        for field, value in updates.items():
+                            setattr(planting, field, value)
+
+                        save_fields = list(updates.keys())
+                        if notes_add:
+                            save_fields.append("notes")
+                        planting.save(update_fields=sorted(set(save_fields)))
+
+                        self.stats["PlantingFieldActuals"]["updated"] += 1
+                    else:
+                        self.stats["PlantingFieldActuals"]["processed"] += 1
+
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
+                    self.stderr.write(f"    ERROR row {i}: {e}")
+                    self.stats["PlantingFieldActuals"]["errors"] += 1
+
+        self.stdout.write(
+            f" {self.stats['PlantingFieldActuals'].get('processed', 0)} processed, "
+            f"{self.stats['PlantingFieldActuals'].get('updated', 0)} updated, "
+            f"{self.stats['PlantingFieldActuals']['skipped']} skipped, "
+            f"{self.stats['PlantingFieldActuals']['errors']} errors\n"
+        )
+
+    def _planting_field_record_row_has_payload(self, row):
+        """True when the row carries at least one field-record field to apply."""
+        date_str = (row.get("Actual Field Date") or "").strip()
+        bedft_str = (row.get("Actual Bedft") or "").strip()
+        notes_str = (row.get("Notes") or "").strip()
+        fin = (row.get("Finished Harvesting") or "").strip().upper()
+        finished_true = fin in ("TRUE", "1", "YES", "Y")
+        return bool(date_str or bedft_str or notes_str or finished_true)
+
+    def _resolve_planting_for_field_records(self, row, year):
+        """Resolve Planting by Planting ID / ID cache, else same natural key as field_walk_notes."""
+        planting_id = (row.get("Planting ID") or row.get("ID") or "").strip()
+        planting = self._get_planting(planting_id) if planting_id else None
+        if planting:
+            return planting
+        return self._resolve_field_walk_planting_from_context(row, year)
 
     def _resolve_field_walk_planting_from_context(self, row, year):
         """Resolve FieldWalkNote planting when Planting ID is missing.
@@ -2263,7 +2448,7 @@ class Command(BaseCommand):
                         "PackAllocation",
                         i,
                         "pack_allocations.channel_rollup",
-                        channel_name,
+                        channel.name,
                     ):
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
@@ -2466,7 +2651,7 @@ class Command(BaseCommand):
                         "SalesEvent",
                         i,
                         "sales_events.channel_rollup",
-                        channel_name,
+                        channel.name,
                     ):
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
@@ -2619,7 +2804,7 @@ class Command(BaseCommand):
                         "QuickSalesEntry",
                         i,
                         "quick_sales_entries.channel_rollup",
-                        channel_name,
+                        channel.name,
                     ):
                         self.stats["QuickSalesEntry"]["skipped"] += 1
                         continue
@@ -2722,10 +2907,15 @@ class Command(BaseCommand):
     def _get_channel(self, channel_name):
         """Get or cache sales channel by name."""
         if channel_name not in self.channel_cache:
+            lookup_name = channel_name
+            if channel_name:
+                alias_key = self._normalize_lookup_value(channel_name)
+                if alias_key in self.channel_name_aliases:
+                    lookup_name = self.channel_name_aliases[alias_key]
             self.channel_cache[channel_name] = self._resolve_fk_by_text(
                 SalesChannel,
                 "name",
-                channel_name,
+                lookup_name,
                 label="sales channel",
             )
         return self.channel_cache[channel_name]

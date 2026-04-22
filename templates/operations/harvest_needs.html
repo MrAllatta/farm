@@ -9,9 +9,20 @@
     </p>
 </div>
 
+{% if week_rollup_by_sales_category %}
+<details class="weekops-rollup no-print" style="margin-bottom:1rem;">
+    <summary>Planned sales (PLAN) this week by category (Markets / Orders / CSA)</summary>
+    <ul class="muted" style="margin:0.5rem 0 0 1rem;">
+        {% for row in week_rollup_by_sales_category %}
+        <li><strong>{{ row.label }}</strong>: {{ row.planned_qty|floatformat:0 }} planned (sale units)</li>
+        {% endfor %}
+    </ul>
+</details>
+{% endif %}
+
 {% if week_rollup_by_channel %}
 <details class="weekops-rollup no-print" style="margin-bottom:1rem;">
-    <summary>Planned sales (PLAN) this week by channel</summary>
+    <summary>Planned sales (PLAN) this week by sales channel</summary>
     <ul class="muted" style="margin:0.5rem 0 0 1rem;">
         {% for cid, chroll in week_rollup_by_channel.items %}
         <li><strong>{{ chroll.channel.name }}</strong>: {{ chroll.planned_qty|floatformat:0 }} planned (sum of product lines)</li>

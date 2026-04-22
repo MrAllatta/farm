@@ -860,6 +860,7 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
                 "week_rollup_by_crop": wctx["week_rollup_by_crop"],
                 "week_rollup_list": week_rollup_list,
                 "week_rollup_by_channel": wctx["week_rollup_by_channel"],
+                "week_rollup_by_sales_category": wctx["week_rollup_by_sales_category"],
                 "sales_demand_by_crop": wctx["sales_demand_by_crop"],
                 "harvest_blocks": harvest_blocks,
             }

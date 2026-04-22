@@ -27,7 +27,7 @@ from core.planning_year import (
     resolve_current_planning_year,
 )
 from core.google_sheets_connector import extract_drive_folder_id, extract_spreadsheet_id
-from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear
+from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear, PlantingStatus
 from sales.models import QuickSalesEntry, SalesEvent
 from reference.models import (
     Block,
@@ -552,6 +552,32 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(note.yield_adjust_pct, 95)
             self.assertEqual(note.notes, "resolved-by-lookup")
             self.assertEqual(note.planting.variety, "Nantes")
+
+    def test_planting_field_records_resolve_planting_and_apply_actuals(self):
+        """501 Field Records-style CSV updates plantings by same context key as field_walk_notes."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "planting_field_records.csv",
+                [
+                    "Actual Field Date,Actual Bedft,Notes,Finished Harvesting,Crop // Variety,Block,Bed,Plan Field Year,Plan Field Week",
+                    "2021-04-15,95,field-records note,TRUE,Carrot // Nantes,Field 1,1,2021,13",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-field-records.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["results"]["models"]["PlantingFieldActuals"]["updated"], 1)
+            self.assertEqual(summary["results"]["models"]["PlantingFieldActuals"]["error"], 0)
+
+            planting = Planting.objects.get()
+            self.assertEqual(planting.actual_plant_date.isoformat(), "2021-04-15")
+            self.assertEqual(planting.actual_bedfeet, 95)
+            self.assertEqual(planting.status, PlantingStatus.COMPLETE)
+            self.assertEqual(planting.notes.strip(), "field-records note")
 
     def test_known_mismatch_fixture_validate_only_reports_expected_skips_and_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:

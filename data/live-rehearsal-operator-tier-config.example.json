@@ -76,81 +76,55 @@
     {
       "spreadsheet_id": "1mM9pkhqmmU9ze1M5_tBoZeA8zfuGiJv8YdXdFAh1xi4",
       "worksheet_title": "Harvest Plan 401+402+801",
-      "output_path": "year_2026/harvest_events.csv",
+      "output_path": "year_2026/product_week_plan.csv",
       "required_headers": [
-        "Planting ID",
-        "Planned Date",
-        "Planned Quantity",
-        "Planned Units"
+        "Channel",
+        "Crop",
+        "Harvest Year",
+        "Harvest Week",
+        "Harvest Unit",
+        "Qty to Harvest",
+        "Value"
       ],
-      "output_headers": [
-        "Planting ID",
-        "Planned Date",
-        "Planned Quantity",
-        "Planned Units",
-        "Actual Date",
-        "Actual Quantity",
-        "Actual Units",
-        "Actual Bins",
-        "Actual Bin Type",
-        "Actual Hours",
-        "Actual Workers",
-        "Quality Grade",
-        "Notes"
-      ],
-      "column_map": {
-        "Planting ID": "Planting ID",
-        "Planned Date": "Planned Date",
-        "Planned Quantity": "Planned Quantity",
-        "Planned Units": "Planned Units",
-        "Actual Date": "Actual Date",
-        "Actual Quantity": "Actual Quantity",
-        "Actual Units": "Actual Units",
-        "Actual Bins": "Actual Bins",
-        "Actual Bin Type": "Actual Bin Type",
-        "Actual Hours": "Actual Hours",
-        "Actual Workers": "Actual Workers",
-        "Quality Grade": "Quality Grade",
-        "Notes": "Notes"
-      }
-    },
-    {
-      "spreadsheet_id": "1aVIqZZPZhAG9YxbV-LYxeLV069bPlmOXaDCeKmOjvmI",
-      "worksheet_title": "Nursery Plan 402",
-      "output_path": "year_2026/nursery_events.csv",
-      "required_headers": [
-        "Planting ID",
-        "Planned Date",
-        "Planned Tray Count",
-        "Planned Tray Size"
-      ],
-      "output_headers": [
-        "Planting ID",
-        "Planned Date",
-        "Event Type",
-        "Planned Tray Count",
-        "Planned Tray Size",
-        "Actual Date",
-        "Actual Tray Count",
-        "Actual Tray Size",
-        "Actual Germination Rate",
-        "Notes"
-      ],
-      "column_map": {
-        "Planting ID": "Planting ID",
-        "Planned Date": "Planned Date",
-        "Event Type": "Event Type",
-        "Planned Tray Count": "Planned Tray Count",
-        "Planned Tray Size": "Planned Tray Size",
-        "Actual Date": "Actual Date",
-        "Actual Tray Count": "Actual Tray Count",
-        "Actual Tray Size": "Actual Tray Size",
-        "Actual Germination Rate": "Actual Germination Rate",
-        "Notes": "Notes"
-      },
-      "default_values": {
-        "Event Type": "seed"
-      }
+      "source_regions": [
+        {
+          "header_row_index": 0,
+          "required_headers": [
+            "Channel",
+            "Crop",
+            "Harvest Year",
+            "Harvest Week",
+            "Harvest Unit",
+            "Qty to Harvest",
+            "Value"
+          ],
+          "output_headers": [
+            "Channel Name",
+            "Product Name",
+            "Week",
+            "Planned Quantity",
+            "Planned Revenue",
+            "Harvest Year",
+            "Harvest Unit",
+            "Notes"
+          ],
+          "column_map": {
+            "Channel Name": "Channel",
+            "Product Name": "Crop",
+            "Week": "Harvest Week",
+            "Planned Quantity": "Qty to Harvest",
+            "Planned Revenue": "Value",
+            "Harvest Year": "Harvest Year",
+            "Harvest Unit": "Harvest Unit"
+          },
+          "default_values": {
+            "Notes": ""
+          },
+          "stop_on_blank_in": [
+            "Channel"
+          ]
+        }
+      ]
     }
   ]
 }

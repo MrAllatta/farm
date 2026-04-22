@@ -281,7 +281,7 @@ def week_context(
             sale_date__gte=week_monday,
             sale_date__lte=week_sunday,
         )
-        .select_related("channel", "product", "product__crop")
+        .select_related("channel", "channel__category", "product", "product__crop")
     )
     for se in sale_events:
         ch = se.channel
@@ -300,6 +300,26 @@ def week_context(
                 "sale_unit": se.product.sale_unit if se.product_id else "",
             }
         )
+
+    by_sales_category: dict[str, dict[str, Any]] = {}
+    category_sort = {"Markets": 1, "Orders": 2, "CSA": 3}
+    for se in sale_events:
+        ch = se.channel
+        cat = getattr(ch, "category", None)
+        if not cat:
+            continue
+        label = str(cat.name)
+        if label not in by_sales_category:
+            by_sales_category[label] = {
+                "label": label,
+                "planned_qty": Decimal("0"),
+                "sort": category_sort.get(label, 99),
+            }
+        by_sales_category[label]["planned_qty"] += se.planned_quantity or Decimal("0")
+    week_rollup_by_sales_category = sorted(
+        by_sales_category.values(),
+        key=lambda row: (row["sort"], row["label"]),
+    )
 
     demand_by_crop: dict[int, dict[str, Any]] = defaultdict(
         lambda: {"qty": Decimal("0"), "sale_unit": "", "label": ""}
@@ -323,6 +343,7 @@ def week_context(
         "blocks": blocks_out,
         "week_rollup_by_crop": by_crop,
         "week_rollup_by_channel": by_channel,
+        "week_rollup_by_sales_category": week_rollup_by_sales_category,
         "sales_demand_by_crop": dict(demand_by_crop),
         "progress": {
             "total_events": total_events,

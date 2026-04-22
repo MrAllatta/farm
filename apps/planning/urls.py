@@ -51,6 +51,11 @@ urlpatterns = [
     ),
     path("harvest-calendar/", views.HarvestCalendarView.as_view(), name="harvest_calendar"),
     path("sales-plan/", views.SalesPlanView.as_view(), name="sales_plan"),
+    path(
+        "sales-plan/by-channel/",
+        views.SalesPlanByChannelView.as_view(),
+        name="sales_plan_by_channel",
+    ),
     path("field-schedule/", views.FieldScheduleView.as_view(), name="field_schedule"),
     # HTMX helpers
     path(

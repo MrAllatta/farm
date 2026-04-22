@@ -4,3 +4,4 @@ __pycache__/
 *~
 *.pyc
 data/import_fixtures/_out/
+data/_backups/
