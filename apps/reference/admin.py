@@ -8,7 +8,9 @@ from .models import (
     CropSalesFormat,
     ProductRecipe,
     ProductRecipeComponent,
+    SalesCategory,
     SalesChannel,
+    SalesPlanBucket,
     Variety,
 )
 
@@ -128,6 +130,8 @@ class BlockAdmin(admin.ModelAdmin):
 class SalesChannelAdmin(admin.ModelAdmin):
     list_display = [
         "name",
+        "category",
+        "plan_bucket",
         "days_of_week",
         "start_week",
         "end_week",
@@ -137,6 +141,29 @@ class SalesChannelAdmin(admin.ModelAdmin):
         "allocation_priority",
     ]
     list_editable = ["weekly_target", "allocation_priority"]
+
+
+@admin.register(SalesCategory)
+class SalesCategoryAdmin(admin.ModelAdmin):
+    list_display = ["name", "allocation_priority"]
+    list_editable = ["allocation_priority"]
+    ordering = ["allocation_priority", "name"]
+
+
+@admin.register(SalesPlanBucket)
+class SalesPlanBucketAdmin(admin.ModelAdmin):
+    list_display = [
+        "name",
+        "category",
+        "start_week",
+        "end_week",
+        "weekly_target",
+        "annual_target",
+        "allocation_priority",
+        "is_active",
+    ]
+    list_filter = ["category", "is_active"]
+    list_editable = ["weekly_target", "allocation_priority", "is_active"]
 
 
 class ProductRecipeComponentInline(admin.TabularInline):

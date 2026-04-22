@@ -182,12 +182,72 @@ class CropSalesFormat(models.Model):
 
 class SalesChannel(models.Model):
     name = models.CharField(max_length=100)
+    category = models.ForeignKey(
+        "SalesCategory",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="channels",
+    )
+    plan_bucket = models.ForeignKey(
+        "SalesPlanBucket",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="channels",
+    )
     days_of_week = models.JSONField(default=list)
     start_week = models.PositiveIntegerField()
     end_week = models.PositiveIntegerField()
     weekly_target = models.DecimalField(max_digits=10, decimal_places=2)
     is_csa = models.BooleanField(default=False)
     allocation_priority = models.PositiveIntegerField(default=10)
+
+    @property
+    def num_weeks(self):
+        if self.end_week >= self.start_week:
+            return self.end_week - self.start_week + 1
+        return (52 - self.start_week + 1) + self.end_week
+
+    @property
+    def annual_target(self):
+        return self.weekly_target * self.num_weeks
+
+    class Meta:
+        ordering = ["allocation_priority", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class SalesCategory(models.Model):
+    class CategoryName(models.TextChoices):
+        MARKETS = "Markets", "Markets"
+        ORDERS = "Orders", "Orders"
+        CSA = "CSA", "CSA"
+
+    name = models.CharField(max_length=30, unique=True, choices=CategoryName.choices)
+    allocation_priority = models.PositiveIntegerField(default=10)
+
+    class Meta:
+        ordering = ["allocation_priority", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class SalesPlanBucket(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    category = models.ForeignKey(
+        SalesCategory,
+        on_delete=models.PROTECT,
+        related_name="plan_buckets",
+    )
+    start_week = models.PositiveIntegerField(default=1)
+    end_week = models.PositiveIntegerField(default=52)
+    weekly_target = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0"))
+    allocation_priority = models.PositiveIntegerField(default=10)
+    is_active = models.BooleanField(default=True)
 
     @property
     def num_weeks(self):

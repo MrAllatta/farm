@@ -30,7 +30,9 @@ from reference.models import (
     CropSalesFormat,
     ProductRecipe,
     ProductRecipeComponent,
+    SalesCategory,
     SalesChannel,
+    SalesPlanBucket,
 )
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
 from operations.models import (
@@ -104,7 +106,12 @@ class Command(BaseCommand):
             "manifest": "manifest.json",
         },
     }
-    CHANNEL_ROLLUP_ALLOWED_VALUES = {"markets", "wholesale", "csa"}
+    CHANNEL_ROLLUP_ALLOWED_VALUES = {"markets", "orders", "wholesale", "csa"}
+    SALES_CATEGORY_PRIORITY = {
+        SalesCategory.CategoryName.MARKETS: 10,
+        SalesCategory.CategoryName.ORDERS: 20,
+        SalesCategory.CategoryName.CSA: 30,
+    }
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -322,6 +329,29 @@ class Command(BaseCommand):
             message=message,
         )
 
+    def _normalize_rollup_group_to_category(self, group_name):
+        normalized = str(group_name or "").strip().casefold()
+        if normalized in {"markets", "market"}:
+            return SalesCategory.CategoryName.MARKETS
+        if normalized in {"orders", "order", "wholesale"}:
+            return SalesCategory.CategoryName.ORDERS
+        if normalized == "csa":
+            return SalesCategory.CategoryName.CSA
+        return None
+
+    def _category_for_sales_channel(self, channel_name, is_csa):
+        if is_csa:
+            return SalesCategory.CategoryName.CSA
+        if str(channel_name or "").strip().casefold() in {"wholesale", "orders"}:
+            return SalesCategory.CategoryName.ORDERS
+        return SalesCategory.CategoryName.MARKETS
+
+    def _ensure_sales_category(self, category_name):
+        return SalesCategory.objects.update_or_create(
+            name=category_name,
+            defaults={"allocation_priority": self.SALES_CATEGORY_PRIORITY[category_name]},
+        )[0]
+
     def get_live_source_normalizer_contract(self):
         """Expose Stage A2 normalizer contract scaffold for future connector work."""
         return self.LIVE_SOURCE_NORMALIZER_CONTRACT
@@ -362,14 +392,14 @@ class Command(BaseCommand):
                     raise CommandError(
                         f"channel_rollups.csv row {i}: missing Rollup Group for '{channel_name}'"
                     )
-                normalized_group = raw_group.casefold()
-                if normalized_group not in self.CHANNEL_ROLLUP_ALLOWED_VALUES:
+                category_name = self._normalize_rollup_group_to_category(raw_group)
+                if category_name is None:
                     allowed = ", ".join(sorted(v.title() for v in self.CHANNEL_ROLLUP_ALLOWED_VALUES))
                     raise CommandError(
                         f"channel_rollups.csv row {i}: invalid Rollup Group '{raw_group}' "
                         f"for '{channel_name}' (allowed: {allowed})"
                     )
-                canonical_group = normalized_group.title()
+                canonical_group = category_name
                 if channel_name in loaded and loaded[channel_name] != canonical_group:
                     raise CommandError(
                         f"channel_rollups.csv row {i}: conflicting Rollup Group for '{channel_name}'"
@@ -378,6 +408,40 @@ class Command(BaseCommand):
 
         self.channel_rollup_map = loaded
         self.channel_rollup_required = True
+        if not self.write_disabled:
+            default_bucket_by_category = {
+                SalesCategory.CategoryName.ORDERS: "Wholesale",
+                SalesCategory.CategoryName.MARKETS: "Markets",
+                SalesCategory.CategoryName.CSA: "CSA",
+            }
+            for channel_name, category_name in self.channel_rollup_map.items():
+                category = self._ensure_sales_category(category_name)
+                plan_bucket = SalesPlanBucket.objects.filter(
+                    category=category,
+                    name=channel_name,
+                ).first()
+                if plan_bucket is None:
+                    default_bucket_name = default_bucket_by_category.get(category_name)
+                    if default_bucket_name:
+                        plan_bucket = SalesPlanBucket.objects.filter(
+                            category=category,
+                            name=default_bucket_name,
+                        ).first()
+                channel_defaults = {
+                    "category": category,
+                    "plan_bucket": plan_bucket,
+                    "days_of_week": [],
+                    "start_week": 1,
+                    "end_week": 52,
+                    "weekly_target": Decimal("0"),
+                    "is_csa": category_name == SalesCategory.CategoryName.CSA,
+                    "allocation_priority": self.SALES_CATEGORY_PRIORITY[category_name],
+                }
+                channel_obj, _ = SalesChannel.objects.update_or_create(
+                    name=channel_name,
+                    defaults=channel_defaults,
+                )
+                self.channel_cache[channel_name] = channel_obj
         self.stdout.write(f"  loaded {len(self.channel_rollup_map)} channel rollup assignments\n")
 
     def _has_channel_rollup_assignment(self, model_name, row_number, field_path, channel_name):
@@ -766,6 +830,7 @@ class Command(BaseCommand):
                     target = self._dec(target_raw.replace("$", "").replace(",", ""))
 
                     is_csa = row.get("is_csa", "false").strip().lower() == "true"
+                    category_name = self._category_for_sales_channel(name, is_csa)
 
                     data = {
                         "days_of_week": days,
@@ -777,6 +842,20 @@ class Command(BaseCommand):
                     }
 
                     if not self.write_disabled:
+                        category = self._ensure_sales_category(category_name)
+                        plan_bucket, _ = SalesPlanBucket.objects.update_or_create(
+                            name=name,
+                            defaults={
+                                "category": category,
+                                "start_week": data["start_week"],
+                                "end_week": data["end_week"],
+                                "weekly_target": data["weekly_target"],
+                                "allocation_priority": data["allocation_priority"],
+                                "is_active": True,
+                            },
+                        )
+                        data["category"] = category
+                        data["plan_bucket"] = plan_bucket
                         obj, created = SalesChannel.objects.update_or_create(
                             name=name, defaults=data
                         )

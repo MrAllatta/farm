@@ -15,7 +15,7 @@ from isoweek import Week
 from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent
 from operations.models import InventoryLedger
 from sales.models import SalesEvent, QuickSalesEntry
-from reference.models import SalesChannel
+from reference.models import SalesPlanBucket
 from core.planning_year import (
     get_effective_planning_year,
     operational_anchor_year,
@@ -174,9 +174,10 @@ class DashboardView(TemplateView):
 
         # Week target
         week_target = (
-            SalesChannel.objects.filter(
+            SalesPlanBucket.objects.filter(
                 start_week__lte=current_week,
                 end_week__gte=current_week,
+                is_active=True,
             ).aggregate(total=Sum("weekly_target"))["total"]
             or 0
         )
@@ -198,7 +199,7 @@ class DashboardView(TemplateView):
         )
         ytd_sales += (quick_ytd["cash"] or 0) + (quick_ytd["card"] or 0)
 
-        annual_target = sum(ch.annual_target for ch in SalesChannel.objects.all())
+        annual_target = sum(bucket.annual_target for bucket in SalesPlanBucket.objects.filter(is_active=True))
 
         # ── Planting Stats ──
 

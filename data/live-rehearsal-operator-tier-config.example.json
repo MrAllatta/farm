@@ -46,7 +46,7 @@
             "Channel Name": "Orders"
           },
           "default_values": {
-            "Rollup Group": "Wholesale"
+            "Rollup Group": "Orders"
           },
           "stop_on_blank_in": [
             "Channel Name"

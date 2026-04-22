@@ -6,7 +6,14 @@ from decimal import Decimal, InvalidOperation
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, IntegrityError
-from reference.models import CropInfo, CropBySeason, Block, SalesChannel
+from reference.models import (
+    Block,
+    CropBySeason,
+    CropInfo,
+    SalesCategory,
+    SalesChannel,
+    SalesPlanBucket,
+)
 
 
 class Command(BaseCommand):
@@ -101,6 +108,11 @@ class Command(BaseCommand):
                 "target per week": "$ Target per week",
             },
         },
+    }
+    SALES_CATEGORY_PRIORITY = {
+        SalesCategory.CategoryName.MARKETS: 10,
+        SalesCategory.CategoryName.ORDERS: 20,
+        SalesCategory.CategoryName.CSA: 30,
     }
 
     def add_arguments(self, parser):
@@ -415,6 +427,12 @@ class Command(BaseCommand):
                     target = Decimal(target_raw.replace("$", "").replace(",", "").strip() or "0")
 
                     is_csa = row.get("is_csa", "false").strip().lower() == "true"
+                    if is_csa:
+                        category_name = SalesCategory.CategoryName.CSA
+                    elif name.strip().casefold() in {"wholesale", "orders"}:
+                        category_name = SalesCategory.CategoryName.ORDERS
+                    else:
+                        category_name = SalesCategory.CategoryName.MARKETS
 
                     data = {
                         "days_of_week": days,
@@ -426,6 +444,25 @@ class Command(BaseCommand):
                     }
 
                     if not dry_run:
+                        category, _ = SalesCategory.objects.update_or_create(
+                            name=category_name,
+                            defaults={
+                                "allocation_priority": self.SALES_CATEGORY_PRIORITY[category_name],
+                            },
+                        )
+                        plan_bucket, _ = SalesPlanBucket.objects.update_or_create(
+                            name=name,
+                            defaults={
+                                "category": category,
+                                "start_week": data["start_week"],
+                                "end_week": data["end_week"],
+                                "weekly_target": data["weekly_target"],
+                                "allocation_priority": data["allocation_priority"],
+                                "is_active": True,
+                            },
+                        )
+                        data["category"] = category
+                        data["plan_bucket"] = plan_bucket
                         SalesChannel.objects.update_or_create(name=name, defaults=data)
 
                     count += 1
