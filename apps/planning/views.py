@@ -1679,57 +1679,61 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
         summary_qty = Decimal("0")
         summary_revenue = Decimal("0")
 
-        if channel:
-            if self.sales_plan_mode == "rollup" and channel.category_id:
-                cat_rows = SalesEvent.objects.filter(
-                    entry_kind=SalesEvent.EntryKind.PLAN,
-                    planning_year=self.year_obj,
-                    channel__category_id=channel.category_id,
-                ).select_related("channel", "product")
-                by_ops = defaultdict(Decimal)
-                pseudo_by_key = {}
-                for row in cat_rows:
-                    wk = row.sale_date.isocalendar()[1]
-                    key = (row.product_id, wk)
-                    if row.channel.name in ROLLUP_PLAN_CHANNEL_NAMES:
-                        pseudo_by_key[key] = row
-                    else:
-                        by_ops[key] += row.planned_quantity or Decimal("0")
-                for product in products:
-                    for week in weeks:
-                        key = (product.id, week)
-                        ops_sum = by_ops.get(key, Decimal("0"))
-                        if ops_sum > 0:
-                            planned_lookup[key] = SimpleNamespace(
-                                planned_quantity=ops_sum,
-                                planned_revenue=ops_sum * product.sale_price,
-                            )
-                            summary_qty += ops_sum
-                            summary_revenue += ops_sum * product.sale_price
-                        elif key in pseudo_by_key:
-                            pr = pseudo_by_key[key]
-                            planned_lookup[key] = pr
-                            summary_qty += pr.planned_quantity or Decimal("0")
-                            summary_revenue += pr.planned_revenue or Decimal("0")
-            else:
-                rows = SalesEvent.objects.filter(
-                    entry_kind=SalesEvent.EntryKind.PLAN,
-                    planning_year=self.year_obj,
-                    channel=channel,
-                ).select_related("product")
-                for row in rows:
-                    week = row.sale_date.isocalendar()[1]
-                    key = (row.product_id, week)
-                    planned_lookup[key] = row
-                    summary_qty += row.planned_quantity or Decimal("0")
-                    summary_revenue += row.planned_revenue or Decimal("0")
+        if self.sales_plan_mode == "rollup" and rollup_category:
+            cat_rows = SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.year_obj,
+            ).filter(
+                Q(sales_category=rollup_category) | Q(channel__category=rollup_category)
+            ).select_related("channel", "product", "sales_category")
+            by_ops = defaultdict(Decimal)
+            rollup_by_key = {}
+            for row in cat_rows:
+                wk = row.sale_date.isocalendar()[1]
+                key = (row.product_id, wk)
+                ch = row.channel
+                if ch is None and row.sales_category_id:
+                    rollup_by_key[key] = row
+                elif ch and ch.name in ROLLUP_PLAN_CHANNEL_NAMES:
+                    if key not in rollup_by_key:
+                        rollup_by_key[key] = row
+                elif ch:
+                    by_ops[key] += row.planned_quantity or Decimal("0")
+            for product in products:
+                for week in weeks:
+                    key = (product.id, week)
+                    ops_sum = by_ops.get(key, Decimal("0"))
+                    if ops_sum > 0:
+                        planned_lookup[key] = SimpleNamespace(
+                            planned_quantity=ops_sum,
+                            planned_revenue=ops_sum * product.sale_price,
+                        )
+                        summary_qty += ops_sum
+                        summary_revenue += ops_sum * product.sale_price
+                    elif key in rollup_by_key:
+                        pr = rollup_by_key[key]
+                        planned_lookup[key] = pr
+                        summary_qty += pr.planned_quantity or Decimal("0")
+                        summary_revenue += pr.planned_revenue or Decimal("0")
+        elif channel:
+            rows = SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.PLAN,
+                planning_year=self.year_obj,
+                channel=channel,
+            ).select_related("product")
+            for row in rows:
+                week = row.sale_date.isocalendar()[1]
+                key = (row.product_id, week)
+                planned_lookup[key] = row
+                summary_qty += row.planned_quantity or Decimal("0")
+                summary_revenue += row.planned_revenue or Decimal("0")
 
         demand_totals = defaultdict(Decimal)
         all_plan = list(
             SalesEvent.objects.filter(
                 entry_kind=SalesEvent.EntryKind.PLAN,
                 planning_year=self.year_obj,
-            ).select_related("product", "channel", "channel__category")
+            ).select_related("product", "channel", "channel__category", "sales_category")
         )
         for row in plan_events_without_shadowed_rollups(all_plan):
             wk = row.sale_date.isocalendar()[1]
@@ -1829,6 +1833,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "year": self.year_obj,
                 "channels": channels,
                 "channel": channel,
+                "rollup_category": rollup_category,
                 "product_rows": product_rows,
                 "weeks": weeks,
                 "summary_qty": summary_qty,
