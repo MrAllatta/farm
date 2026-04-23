@@ -43,6 +43,7 @@ class Command(BaseCommand):
                 "Botanical Family",
                 "Fresh or Storage",
                 "Storage Weeks",
+                "Can Hold In Field",
                 "Harvest Units",
                 "Average Unit Weight",
                 "Units Per Bin",
@@ -133,19 +134,27 @@ class Command(BaseCommand):
         self._import_crop_by_season(data_dir, dry_run)
         self._import_channels(data_dir, dry_run)
 
+    def _resolve_reference_path(self, data_dir, filename):
+        """Support flat fixtures and Stage A2 bundles (`reference/<csv>` under the lane root)."""
+        root_path = os.path.join(data_dir, filename)
+        if os.path.exists(root_path):
+            return root_path
+        return os.path.join(data_dir, "reference", filename)
+
     def _import_blocks(self, data_dir, dry_run):
         filename = "blocks.csv"
-        path = os.path.join(data_dir, filename)
+        path = self._resolve_reference_path(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping blocks — {path} not found\n")
             return
 
         self.stdout.write("Importing blocks...\n")
 
+        # Same normalization as crop_by_season / historical blocks import (103 sheet enum casing).
         type_map = {
-            "Field": "field",
-            "High Tunnel": "high_tunnel",
-            "Greenhouse": "greenhouse",
+            "field": "field",
+            "high tunnel": "high_tunnel",
+            "greenhouse": "greenhouse",
         }
 
         count = 0
@@ -159,7 +168,9 @@ class Command(BaseCommand):
                     if not name:
                         continue
 
-                    block_type = type_map.get(row["Block Type"].strip(), "field")
+                    block_type_raw = row["Block Type"].strip()
+                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                    block_type = type_map.get(normalized_block_type, "field")
 
                     data = {
                         "block_type": block_type,
@@ -181,7 +192,7 @@ class Command(BaseCommand):
 
     def _import_crops(self, data_dir, dry_run):
         filename = "crop_info.csv"
-        path = os.path.join(data_dir, filename)
+        path = self._resolve_reference_path(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping crops — {path} not found\n")
             return
@@ -256,6 +267,7 @@ class Command(BaseCommand):
                         "is_perennial": is_perennial,
                         "fresh_or_storage": fresh_or_storage,
                         "storage_weeks": self._int(row.get("Storage Weeks", 0)),
+                        "can_hold_in_field": self._bool_csv(row.get("Can Hold In Field")),
                         "harvest_unit": harvest_unit,
                         "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
                         "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
@@ -288,7 +300,7 @@ class Command(BaseCommand):
 
     def _import_crop_by_season(self, data_dir, dry_run):
         filename = "crop_by_season.csv"
-        path = os.path.join(data_dir, filename)
+        path = self._resolve_reference_path(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping crop_by_season — {path} not found\n")
             return
@@ -296,9 +308,9 @@ class Command(BaseCommand):
         self.stdout.write("Importing crop by season...\n")
 
         type_map = {
-            "Field": "field",
-            "High Tunnel": "high_tunnel",
-            "Greenhouse": "greenhouse",
+            "field": "field",
+            "high tunnel": "high_tunnel",
+            "greenhouse": "greenhouse",
         }
 
         count = 0
@@ -317,7 +329,8 @@ class Command(BaseCommand):
                         skipped += 1
                         continue
 
-                    block_type = type_map.get(block_type_raw)
+                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                    block_type = type_map.get(normalized_block_type)
                     if not block_type:
                         self.stderr.write(
                             f"  Unknown block type '{block_type_raw}' " f"for {crop_name}\n"
@@ -400,7 +413,7 @@ class Command(BaseCommand):
 
     def _import_channels(self, data_dir, dry_run):
         filename = "sales_channels.csv"
-        path = os.path.join(data_dir, filename)
+        path = self._resolve_reference_path(data_dir, filename)
         if not os.path.exists(path):
             self.stdout.write(f"  Skipping channels — {path} not found\n")
             return
@@ -480,6 +493,17 @@ class Command(BaseCommand):
         self.stdout.write(f"  Channels: {count} imported, {errors} errors\n")
 
     # Helper methods for parsing messy spreadsheet data
+
+    def _bool_csv(self, value, default=False):
+        """Parse spreadsheet boolean cells (e.g. Crop Info column I)."""
+        s = str(value if value is not None else "").strip().lower()
+        if not s:
+            return default
+        if s in ("1", "true", "yes", "y", "on"):
+            return True
+        if s in ("0", "false", "no", "n", "off"):
+            return False
+        return default
 
     def _int(self, value, default=0):
         if not value:

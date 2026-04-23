@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import subprocess
 import sys
 from datetime import date, datetime, timedelta
@@ -10,7 +11,7 @@ from io import StringIO
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.core.management.base import SystemCheckError
+from django.core.management.base import CommandError, SystemCheckError
 from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -27,7 +28,7 @@ from core.planning_year import (
     resolve_current_planning_year,
 )
 from core.google_sheets_connector import extract_drive_folder_id, extract_spreadsheet_id
-from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear, PlantingStatus
+from planning.models import HarvestEvent, NurseryEvent, Planting, PlanningYear, PlantingStatus, SeedOrder
 from sales.models import QuickSalesEntry, SalesEvent
 from reference.models import (
     Block,
@@ -37,6 +38,7 @@ from reference.models import (
     ProductRecipe,
     ProductRecipeComponent,
     SalesChannel,
+    Variety,
 )
 from core.spreadsheet_connector import normalize_rows
 
@@ -100,8 +102,8 @@ class ImportHistoricalDataCommandTests(TestCase):
             data_dir,
             "crop_info.csv",
             [
-                "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+                "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
             ],
         )
         self._write_csv(
@@ -365,7 +367,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         expected_atomic_apply=None,
     ):
         self.assertEqual(set(summary.keys()), self.SUMMARY_TOP_LEVEL_KEYS)
-        self.assertEqual(summary["schema_version"], "1.3")
+        self.assertEqual(summary["schema_version"], "1.4")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
         self.assertEqual(set(summary["run"].keys()), self.SUMMARY_RUN_KEYS)
@@ -578,6 +580,29 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(planting.actual_bedfeet, 95)
             self.assertEqual(planting.status, PlantingStatus.COMPLETE)
             self.assertEqual(planting.notes.strip(), "field-records note")
+
+    def test_planting_field_records_sets_planted_when_not_finished(self):
+        """501-style row with Actual Field Date but not finished -> planned becomes planted."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "planting_field_records.csv",
+                [
+                    "Actual Field Date,Actual Bedft,Notes,Finished Harvesting,Crop // Variety,Block,Bed,Plan Field Year,Plan Field Week",
+                    "2021-04-15,95,in-field only,FALSE,Carrot // Nantes,Field 1,1,2021,13",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-field-records-planted.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["results"]["models"]["PlantingFieldActuals"]["updated"], 1)
+
+            planting = Planting.objects.get()
+            self.assertEqual(planting.actual_plant_date.isoformat(), "2021-04-15")
+            self.assertEqual(planting.status, PlantingStatus.PLANTED)
 
     def test_known_mismatch_fixture_validate_only_reports_expected_skips_and_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -1504,6 +1529,25 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(CropBySeason.objects.count(), 1)
             self.assertEqual(CropBySeason.objects.first().block_type, "high_tunnel")
 
+    def test_blocks_import_normalizes_title_case_block_types(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_csv(
+                data_dir,
+                "blocks.csv",
+                [
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed",
+                    "Tunnel,High Tunnel,2,3,20",
+                    "House,Greenhouse,1,3,10",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-blocks-enum.json")
+
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["results"]["models"]["Block"]["error"], 0)
+            self.assertEqual(Block.objects.get(name="Tunnel").block_type, "high_tunnel")
+            self.assertEqual(Block.objects.get(name="House").block_type, "greenhouse")
+
     def test_clean_fixture_apply_is_idempotent_on_repeat_runs(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_clean_fixture(data_dir)
@@ -2047,6 +2091,133 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(events["pot_up"].planned_date, date.fromisocalendar(2021, 8, 1))
         self.assertEqual(events["pot_up"].planned_tray_count, 3)
         self.assertEqual(events["pot_up"].planned_tray_size, 72)
+
+    def test_import_seed_sources_reference_tier(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_csv(
+                data_dir,
+                "seed_sources.csv",
+                [
+                    "Crop,Variety,Supplier,Catalog Number,Source URL,Notes",
+                    "Carrot,Nantes,Johnny's,C-101,https://example.com/nantes,main line",
+                    "Ghost Crop,Phantom,,,,",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-seed-sources.json")
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(Variety.objects.count(), 1)
+        variety = Variety.objects.get()
+        self.assertEqual(variety.crop.name, "Carrot")
+        self.assertEqual(variety.name, "Nantes")
+        self.assertEqual(variety.supplier, "Johnny's")
+        self.assertEqual(summary["results"]["models"]["Variety"]["created"], 1)
+        self.assertEqual(summary["results"]["models"]["Variety"]["skipped"], 1)
+        self.assertEqual(summary["results"]["models"]["Variety"]["error"], 0)
+
+    def test_import_seed_orders_reference_tier(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            self._write_csv(
+                data_dir,
+                "seed_sources.csv",
+                [
+                    "Crop,Variety,Supplier,Catalog Number,Source URL,Notes",
+                    "Carrot,Nantes,Johnny's,C-101,https://example.com/nantes,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "seed_orders.csv",
+                [
+                    "Crop,Variety,Season Year,Planned Quantity,Unit,Notes",
+                    "Carrot,Nantes,2021,12,ounces,valid",
+                    "Carrot,Missing Variety,2021,4,ounces,missing variety",
+                    "Carrot,Nantes,2030,6,ounces,missing planning year",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(output_dir) / "summary-seed-orders.json")
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(Variety.objects.count(), 2)
+        self.assertEqual(SeedOrder.objects.count(), 2)
+        so_nantes = SeedOrder.objects.get(variety__name="Nantes")
+        self.assertEqual(so_nantes.planning_year.year, 2021)
+        self.assertEqual(so_nantes.planned_quantity, Decimal("12"))
+        so_missing = SeedOrder.objects.get(variety__name="Missing Variety")
+        self.assertEqual(so_missing.planned_quantity, Decimal("4"))
+        self.assertEqual(summary["results"]["models"]["SeedOrder"]["created"], 2)
+        self.assertEqual(summary["results"]["models"]["SeedOrder"]["skipped"], 1)
+        self.assertEqual(summary["results"]["models"]["SeedOrder"]["error"], 0)
+
+
+class LiveImportValidateCommandTests(TestCase):
+    def _write_json(self, directory, name, payload):
+        Path(directory, name).write_text(json.dumps(payload), encoding="utf-8")
+
+    def test_live_import_validate_accepts_valid_config(self):
+        with TemporaryDirectory() as config_dir:
+            self._write_json(
+                config_dir,
+                "reference.json",
+                {
+                    "tabs": [
+                        {
+                            "worksheet_title": "Crop Info",
+                            "output_path": "reference/crop_info.csv",
+                            "required_headers": ["Crop", "Type"],
+                        }
+                    ]
+                },
+            )
+            call_command("live_import_validate", config_dir)
+
+    def test_live_import_validate_rejects_unknown_transform(self):
+        with TemporaryDirectory() as config_dir:
+            self._write_json(
+                config_dir,
+                "crop-plan.json",
+                {
+                    "tabs": [
+                        {
+                            "worksheet_title": "Crop Planner",
+                            "output_path": "year_2026/plantings.csv",
+                            "required_headers": ["Crop", "Week"],
+                            "row_transforms": [{"type": "mystery_transform"}],
+                        }
+                    ]
+                },
+            )
+            with self.assertRaises(CommandError) as exc:
+                call_command("live_import_validate", config_dir)
+        self.assertIn("unknown transform type", str(exc.exception))
+
+    def test_live_import_validate_rejects_invalid_output_path_and_column_map_source(self):
+        with TemporaryDirectory() as config_dir:
+            self._write_json(
+                config_dir,
+                "sales-plan.json",
+                {
+                    "tabs": [
+                        {
+                            "worksheet_title": "Sales Plan 302",
+                            "output_path": "foo/sales_plan_302.csv",
+                            "required_headers": ["Channel", "Product"],
+                            "column_map": {
+                                "Sales Category": "Channel",
+                                "Product Name": "Unknown Header",
+                            },
+                        }
+                    ]
+                },
+            )
+            with self.assertRaises(CommandError) as exc:
+                call_command("live_import_validate", config_dir)
+        message = str(exc.exception)
+        self.assertIn("output_path", message)
+        self.assertIn("Unknown Header", message)
 
 
 class StageA2OfflineConnectorTests(TestCase):
@@ -3639,7 +3810,7 @@ class BetaGateEvidenceTests(TestCase):
         return json.loads(summary_path.read_text(encoding="utf-8"))
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
-        self.assertIn(summary["schema_version"], {"1.1", "1.2", "1.3"})
+        self.assertIn(summary["schema_version"], {"1.1", "1.2", "1.3", "1.4"})
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
@@ -4796,8 +4967,8 @@ class ImportReferenceDataCommandTests(TestCase):
             data_dir,
             "crop_info.csv",
             [
-                "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+                "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
             ],
         )
         self._write_csv(
@@ -4841,6 +5012,20 @@ class ImportReferenceDataCommandTests(TestCase):
             self.assertEqual(SalesChannel.objects.count(), 0)
             self.assertEqual(CropSalesFormat.objects.count(), 0)
 
+    def test_import_finds_csvs_under_reference_subdir(self):
+        """Stage A2 lane roots (e.g. live_import_bundle/reference/) nest CSVs under reference/."""
+        with TemporaryDirectory() as bundle_root:
+            nested = os.path.join(bundle_root, "reference")
+            os.makedirs(nested, exist_ok=True)
+            self._write_reference_fixture(nested)
+
+            call_command("import_reference_data", bundle_root)
+
+            self.assertEqual(Block.objects.count(), 1)
+            self.assertEqual(CropInfo.objects.count(), 1)
+            self.assertEqual(CropBySeason.objects.count(), 1)
+            self.assertEqual(SalesChannel.objects.count(), 1)
+
     def test_import_writes_minimal_reference_records(self):
         with TemporaryDirectory() as data_dir:
             self._write_reference_fixture(data_dir)
@@ -4856,6 +5041,7 @@ class ImportReferenceDataCommandTests(TestCase):
             crop = CropInfo.objects.get(name="Carrot")
             self.assertEqual(crop.harvest_unit, "pounds")
             self.assertEqual(crop.fresh_or_storage, "fresh")
+            self.assertFalse(crop.can_hold_in_field)
 
             self.assertEqual(CropBySeason.objects.count(), 1)
             season = CropBySeason.objects.get(crop=crop, block_type="field")
@@ -4866,6 +5052,27 @@ class ImportReferenceDataCommandTests(TestCase):
             channel = SalesChannel.objects.get(name="Farm Stand")
             self.assertEqual(channel.days_of_week, ["Saturday", "Sunday"])
             self.assertEqual(str(channel.weekly_target), "500.00")
+
+    def test_blocks_import_resolves_block_type_case_insensitive(self):
+        """103 Define Field Blocks column B uses title case; historical import used lowercase keys only."""
+        with TemporaryDirectory() as data_dir:
+            self._write_reference_fixture(data_dir)
+            self._write_csv(
+                data_dir,
+                "blocks.csv",
+                [
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed",
+                    "Tunnel A,High Tunnel,4,3,50",
+                    "Tunnel B,HIGH   TUNNEL,2,3,40",
+                    "House,Greenhouse,1,3,30",
+                ],
+            )
+
+            call_command("import_reference_data", data_dir)
+
+            self.assertEqual(Block.objects.get(name="Tunnel A").block_type, "high_tunnel")
+            self.assertEqual(Block.objects.get(name="Tunnel B").block_type, "high_tunnel")
+            self.assertEqual(Block.objects.get(name="House").block_type, "greenhouse")
 
     def test_reference_import_detects_header_after_variable_preamble(self):
         with TemporaryDirectory() as data_dir:
@@ -4885,8 +5092,8 @@ class ImportReferenceDataCommandTests(TestCase):
                 "crop_info.csv",
                 [
                     "Notes,Reference crop table",
-                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                    "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
                 ],
             )
             self._write_csv(
@@ -4930,8 +5137,8 @@ class ImportReferenceDataCommandTests(TestCase):
                 data_dir,
                 "crop_info.csv",
                 [
-                    "Crop Name,Type,Botanical Family,Fresh/Storage,Storage Weeks,Harvest Units,Average Unit Wt,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate Units Per Hour,Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                    "Carrot,Vegetables,Apiaceae,Fresh,0,pounds,1,,,,,0,0,,,1,0,",
+                    "Crop Name,Type,Botanical Family,Fresh/Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Wt,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate Units Per Hour,Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
                 ],
             )
             self._write_csv(
@@ -5276,8 +5483,8 @@ class StageA2BaselineBundleTests(TestCase):
                 "crop_info.csv",
                 [
                     "Crop Catalog",
-                    "Crop,PRODUCT Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Unit,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Name,Seeded Tray Name,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                    "Crop,PRODUCT Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Unit,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Name,Seeded Tray Name,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,FALSE,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
                 ],
             )
             self._write_csv(
@@ -5325,6 +5532,7 @@ class StageA2BaselineBundleTests(TestCase):
                                     "Botanical Family",
                                     "Fresh or Storage",
                                     "Storage Weeks",
+                                    "Can Hold In Field",
                                     "Harvest Unit",
                                     "Average Unit Weight",
                                     "Units Per Bin",
@@ -5345,6 +5553,7 @@ class StageA2BaselineBundleTests(TestCase):
                                     "Botanical Family",
                                     "Fresh or Storage",
                                     "Storage Weeks",
+                                    "Can Hold In Field",
                                     "Harvest Units",
                                     "Average Unit Weight",
                                     "Units Per Bin",
@@ -5471,8 +5680,8 @@ class StageA2BaselineBundleTests(TestCase):
             self.assertEqual(
                 (output_dir / "reference" / "crop_info.csv").read_text(encoding="utf-8").splitlines(),
                 [
-                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,FALSE,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
                 ],
             )
             self.assertEqual(
@@ -5617,8 +5826,8 @@ class ChannelRollupContractTests(TestCase):
                 "crop_info.csv",
                 [
                     "Crop Catalog",
-                    "Crop,PRODUCT Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Unit,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Name,Seeded Tray Name,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                    "Crop,PRODUCT Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Unit,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Name,Seeded Tray Name,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,FALSE,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
                 ],
             )
             self._write_csv(
@@ -5666,6 +5875,7 @@ class ChannelRollupContractTests(TestCase):
                                     "Botanical Family",
                                     "Fresh or Storage",
                                     "Storage Weeks",
+                                    "Can Hold In Field",
                                     "Harvest Unit",
                                     "Average Unit Weight",
                                     "Units Per Bin",
@@ -5686,6 +5896,7 @@ class ChannelRollupContractTests(TestCase):
                                     "Botanical Family",
                                     "Fresh or Storage",
                                     "Storage Weeks",
+                                    "Can Hold In Field",
                                     "Harvest Units",
                                     "Average Unit Weight",
                                     "Units Per Bin",
@@ -5979,8 +6190,8 @@ class ChannelRollupContractTests(TestCase):
             ],
             [
                 ["Crop Catalog"],
-                ["Crop", "PRODUCT Type", "Botanical Family", "Fresh or Storage", "Storage Weeks", "Harvest Unit", "Average Unit Weight", "Units Per Bin", "Harvest Bin", "Harvest Tools", "Harvest Rate (units per hour)", "Nursery Weeks", "Weeks Until Pot Up", "Pot Up Tray Name", "Seeded Tray Name", "Seeds Per Cell", "Thinned Plants", "Seeds Per Ounce"],
-                ["Arugula", "Greens", "Brassicaceae", "Fresh", "0", "bunch", "0.25", "40", "Tote", "Knife", "30", "0", "0", "", "", "1", "0", "12000"],
+                ["Crop", "PRODUCT Type", "Botanical Family", "Fresh or Storage", "Storage Weeks", "Can Hold In Field", "Harvest Unit", "Average Unit Weight", "Units Per Bin", "Harvest Bin", "Harvest Tools", "Harvest Rate (units per hour)", "Nursery Weeks", "Weeks Until Pot Up", "Pot Up Tray Name", "Seeded Tray Name", "Seeds Per Cell", "Thinned Plants", "Seeds Per Ounce"],
+                ["Arugula", "Greens", "Brassicaceae", "Fresh", "0", "FALSE", "bunch", "0.25", "40", "Tote", "Knife", "30", "0", "0", "", "", "1", "0", "12000"],
             ],
             [
                 ["Product Formats"],
@@ -6026,6 +6237,7 @@ class ChannelRollupContractTests(TestCase):
                                     "Botanical Family",
                                     "Fresh or Storage",
                                     "Storage Weeks",
+                                    "Can Hold In Field",
                                     "Harvest Unit",
                                     "Average Unit Weight",
                                     "Units Per Bin",
@@ -6046,6 +6258,7 @@ class ChannelRollupContractTests(TestCase):
                                     "Botanical Family",
                                     "Fresh or Storage",
                                     "Storage Weeks",
+                                    "Can Hold In Field",
                                     "Harvest Units",
                                     "Average Unit Weight",
                                     "Units Per Bin",
@@ -6178,8 +6391,8 @@ class ChannelRollupContractTests(TestCase):
             self.assertEqual(
                 (output_dir / "reference" / "crop_info.csv").read_text(encoding="utf-8").splitlines(),
                 [
-                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
-                    "Arugula,Greens,Brassicaceae,Fresh,0,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Arugula,Greens,Brassicaceae,Fresh,0,FALSE,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,12000",
                 ],
             )
             self.assertEqual(
@@ -6189,3 +6402,96 @@ class ChannelRollupContractTests(TestCase):
                     "Arugula,Astro,Field 1,11,11,2026-04-06,100,Planned",
                 ],
             )
+
+
+_STAFF_LOGIN_MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.FarmLoginRequiredMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+
+@override_settings(MIDDLEWARE=_STAFF_LOGIN_MIDDLEWARE)
+class StaffLoginAndRuntimeConfigTests(TestCase):
+    def test_anonymous_app_redirects_to_login(self):
+        resp = self.client.get(reverse("core:dashboard"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp["Location"])
+
+    def test_staff_login_and_runtime_config(self):
+        User = get_user_model()
+        User.objects.create_user("sam", password="pw-test-sam", is_staff=True, is_superuser=True)
+
+        login_resp = self.client.post(
+            reverse("core:login"),
+            {"username": "sam", "password": "pw-test-sam"},
+        )
+        self.assertEqual(login_resp.status_code, 302)
+
+        dash = self.client.get(reverse("core:dashboard"))
+        self.assertEqual(dash.status_code, 200)
+
+        cfg = self.client.get(reverse("core:runtime_config"))
+        self.assertEqual(cfg.status_code, 200)
+        self.assertContains(cfg, "Deployment channel")
+
+    def test_non_staff_login_rejected(self):
+        User = get_user_model()
+        User.objects.create_user("crew", password="pw-test-crew", is_staff=False)
+
+        resp = self.client.post(
+            reverse("core:login"),
+            {"username": "crew", "password": "pw-test-crew"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "not authorized for staff access", status_code=200)
+
+
+class EnsureAdminsCommandTests(TestCase):
+    def test_ensure_admins_creates_staff_superusers(self):
+        User = get_user_model()
+        env = {
+            "FARM_ADMIN_USERNAMES": "alpha,beta",
+            "FARM_ADMIN_BOOTSTRAP_PASSWORD": "bootstrap-pw",
+        }
+        with patch.dict(os.environ, env, clear=False):
+            call_command("ensure_admins")
+        self.assertTrue(User.objects.get(username="alpha").check_password("bootstrap-pw"))
+        self.assertTrue(User.objects.get(username="beta").is_staff)
+        self.assertTrue(User.objects.get(username="beta").is_superuser)
+
+    def test_ensure_admins_requires_usernames(self):
+        with patch.dict(os.environ, {"FARM_ADMIN_USERNAMES": ""}, clear=False):
+            with self.assertRaises(CommandError):
+                call_command("ensure_admins")
+
+
+class LiveImportPlanningYearSeedTests(TestCase):
+    """Crop-plan bundle carries planning_year.csv for fresh-database historical import."""
+
+    def test_planning_year_seed_csvs_match_importer_contract(self):
+        farm_root = Path(__file__).resolve().parents[2]
+        y2024 = farm_root / "data" / "live_import_bundle" / "crop-plan" / "year_2024" / "planning_year.csv"
+        y2026 = farm_root / "data" / "live_import_bundle" / "crop-plan" / "year_2026" / "planning_year.csv"
+        self.assertTrue(y2024.is_file())
+        self.assertTrue(y2026.is_file())
+
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            (t / "year_2024").mkdir(parents=True)
+            (t / "year_2026").mkdir(parents=True)
+            (t / "year_2024" / "planning_year.csv").write_text(y2024.read_text(encoding="utf-8"), encoding="utf-8")
+            (t / "year_2026" / "planning_year.csv").write_text(y2026.read_text(encoding="utf-8"), encoding="utf-8")
+            call_command("import_historical_data", str(t), start_year=2024, end_year=2026)
+
+        py2026 = PlanningYear.objects.get(year=2026)
+        self.assertEqual(py2026.status, "active")
+        self.assertEqual(py2026.overplant_factor, Decimal("1.10"))
+        py2024 = PlanningYear.objects.get(year=2024)
+        self.assertEqual(py2024.status, "archived")
+        self.assertEqual(py2024.overplant_factor, Decimal("1.10"))
