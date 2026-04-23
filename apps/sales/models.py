@@ -119,7 +119,7 @@ class SalesEvent(models.Model):
         sync_sales_event_ledger(self, old_actual, old_returned)
 
     class Meta:
-        ordering = ["sale_date", "channel_id", "sales_category_id"]
+        ordering = ["sale_date", "channel", "sales_category"]
         constraints = [
             models.CheckConstraint(
                 condition=(

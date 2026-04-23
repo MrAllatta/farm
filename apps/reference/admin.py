@@ -53,6 +53,7 @@ class CropInfoAdmin(admin.ModelAdmin):
         "crop_type",
         "botanical_family",
         "fresh_or_storage",
+        "can_hold_in_field",
         "harvest_unit",
         "nursery_weeks",
     ]
@@ -60,6 +61,7 @@ class CropInfoAdmin(admin.ModelAdmin):
         "crop_type",
         "botanical_family",
         "fresh_or_storage",
+        "can_hold_in_field",
         "propagation_type",
         "is_perennial",
     ]
@@ -85,6 +87,7 @@ class CropInfoAdmin(admin.ModelAdmin):
                 "fields": (
                     "fresh_or_storage",
                     "storage_weeks",
+                    "can_hold_in_field",
                     "harvest_unit",
                     "avg_unit_weight",
                     "units_per_bin",

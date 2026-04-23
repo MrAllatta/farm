@@ -7,7 +7,11 @@ from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.db import connection, DatabaseError
 from django.http import JsonResponse
-from django.urls import get_resolver, reverse
+from django.urls import get_resolver, reverse, reverse_lazy
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.decorators import login_not_required
+from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from isoweek import Week
@@ -25,6 +29,9 @@ from core.planning_year import (
 
 from django.views.generic import FormView
 from django import forms
+
+from core.forms import StaffAuthenticationForm
+from core.runtime_env import build_runtime_config_rows
 
 
 def healthz(request):
@@ -530,3 +537,27 @@ class CompleteSeasonView(TemplateView):
         )
 
         return redirect("reports:season_summary")
+
+
+@method_decorator(login_not_required, name="dispatch")
+class StaffLoginView(LoginView):
+    template_name = "core/login.html"
+    authentication_form = StaffAuthenticationForm
+    redirect_authenticated_user = True
+
+
+@method_decorator(login_not_required, name="dispatch")
+class StaffLogoutView(LogoutView):
+    next_page = reverse_lazy("core:login")
+
+
+class RuntimeConfigView(UserPassesTestMixin, TemplateView):
+    template_name = "core/runtime_config.html"
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["runtime_rows"] = build_runtime_config_rows()
+        return ctx

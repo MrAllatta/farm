@@ -1,0 +1,4 @@
+Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority
+KFM,1,1,1,"$3,700.00",false,100
+BFM,1,1,1,"$3,638.00",false,100
+Wholesale,2,18,46,"$1,100.00",false,100

@@ -6,6 +6,9 @@ from . import views
 app_name = "core"
 
 urlpatterns = [
+    path("accounts/login/", views.StaffLoginView.as_view(), name="login"),
+    path("accounts/logout/", views.StaffLogoutView.as_view(), name="logout"),
+    path("runtime-config/", views.RuntimeConfigView.as_view(), name="runtime_config"),
     path(
         "planning-year/focus/",
         views.PlanningYearFocusView.as_view(),

@@ -79,16 +79,16 @@
         "updated": 1
       },
       "CropSalesFormat": {
-        "created": 0,
+        "created": 1,
         "error": 3,
         "skipped": 0,
-        "updated": 1
+        "updated": 0
       },
       "PlanningYear": {
-        "created": 0,
+        "created": 1,
         "error": 0,
         "skipped": 0,
-        "updated": 1
+        "updated": 0
       },
       "Planting": {
         "created": 0,
@@ -97,7 +97,7 @@
         "updated": 0
       },
       "RotationHistory": {
-        "created": 34,
+        "created": 23,
         "error": 0,
         "skipped": 0,
         "updated": 0
@@ -211,10 +211,10 @@
       }
     ],
     "totals": {
-      "created": 34,
+      "created": 25,
       "error": 15,
       "skipped": 1,
-      "updated": 4
+      "updated": 2
     }
   },
   "run": {
@@ -222,13 +222,13 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-22T18:48:59.215834Z",
-    "run_id": "20260422T184859146651",
+    "finished_at": "2026-04-23T16:49:04.416413Z",
+    "run_id": "20260423T164904324263",
     "start_year": 2021,
-    "started_at": "2026-04-22T18:48:59.146651Z",
+    "started_at": "2026-04-23T16:49:04.324263Z",
     "validate_only": false,
     "verbose": false
   },
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "status": "ok"
 }

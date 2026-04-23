@@ -1,0 +1,317 @@
+{
+  "fatal_error": null,
+  "results": {
+    "escalation_summary": [
+      {
+        "count": 23,
+        "escalation_path": "ops-oncall -> reference-data",
+        "owner_area": "reference-data",
+        "owner_team": "import-pipeline",
+        "recovery_steps": [
+          "seed missing reference rows and rerun --validate-only"
+        ],
+        "severity": "high",
+        "signatures": [
+          "stale_fk"
+        ]
+      }
+    ],
+    "failure_signatures": [
+      {
+        "count": 23,
+        "escalation_path": "ops-oncall -> reference-data",
+        "example": {
+          "field_path": "product_recipe_components.mix_product",
+          "message": "product not found 'Braising Mix'",
+          "model": "ProductRecipeComponent"
+        },
+        "owner_area": "reference-data",
+        "owner_team": "import-pipeline",
+        "recovery": "seed missing reference rows and rerun --validate-only",
+        "severity": "high",
+        "signature": "stale_fk"
+      }
+    ],
+    "models": {
+      "Block": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 4
+      },
+      "CropBySeason": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 21
+      },
+      "CropInfo": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 12
+      },
+      "CropSalesFormat": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 20
+      },
+      "FieldWalkNote": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 30
+      },
+      "HarvestEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 106
+      },
+      "InventoryLedger": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 138
+      },
+      "NurseryEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 18
+      },
+      "PlanningYear": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 2
+      },
+      "Planting": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 22
+      },
+      "ProductRecipe": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "ProductRecipeComponent": {
+        "created": 0,
+        "error": 23,
+        "skipped": 0,
+        "updated": 0
+      },
+      "QuickSalesEntry": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 9
+      },
+      "RotationHistory": {
+        "created": 34,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesChannel": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 6
+      },
+      "SalesEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 33
+      }
+    },
+    "row_errors": [
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 1
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 2
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 3
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 4
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 5
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 6
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 7
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 8
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 9
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 10
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 11
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 12
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 13
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 14
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 15
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 16
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 17
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 18
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 19
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Salad Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 20
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 21
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 22
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "product_recipe_components.mix_product",
+        "message": "product not found 'Braising Mix'",
+        "model": "ProductRecipeComponent",
+        "row": 23
+      }
+    ],
+    "totals": {
+      "created": 34,
+      "error": 23,
+      "skipped": 0,
+      "updated": 421
+    }
+  },
+  "run": {
+    "atomic_apply": true,
+    "data_dir": "farm/data/sample_import",
+    "dry_run": false,
+    "end_year": 2025,
+    "finished_at": "2026-04-22T18:52:33.506860Z",
+    "run_id": "20260422T185232932088",
+    "start_year": 2021,
+    "started_at": "2026-04-22T18:52:32.932088Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.3",
+  "status": "ok"
+}

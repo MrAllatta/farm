@@ -1,0 +1,40 @@
+{# core/login.html #}
+{% extends "base.html" %}
+
+{% block title %}Staff login{% endblock %}
+
+{% block content %}
+<div class="empty-state" style="max-width: 28rem; margin: 3rem auto;">
+    <h1>Staff login</h1>
+    <p class="muted">Staff accounts only. Use the same credentials as Django admin.</p>
+
+    {% if form.non_field_errors %}
+    <div class="messages">
+        {% for err in form.non_field_errors %}
+        <div class="message message-error">{{ err }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'core:login' %}" style="margin-top: 1.5rem;">
+        {% csrf_token %}
+        {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+
+        <p style="margin-bottom: 1rem;">
+            <label for="id_username">Username</label><br>
+            <input id="id_username" type="text" name="username" value="{{ form.username.value|default_if_none:'' }}" maxlength="150" autofocus autocapitalize="none" autocomplete="username" style="width: 100%; max-width: 100%; padding: 0.5rem; box-sizing: border-box;">
+            {% for err in form.username.errors %}<span class="message message-error">{{ err }}</span>{% endfor %}
+        </p>
+
+        <p style="margin-bottom: 1rem;">
+            <label for="id_password">Password</label><br>
+            <input id="id_password" type="password" name="password" autocomplete="current-password" style="width: 100%; max-width: 100%; padding: 0.5rem; box-sizing: border-box;">
+            {% for err in form.password.errors %}<span class="message message-error">{{ err }}</span>{% endfor %}
+        </p>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Sign in</button>
+    </form>
+</div>
+{% endblock %}

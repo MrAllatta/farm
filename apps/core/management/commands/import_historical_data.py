@@ -26,6 +26,7 @@ from django.db import transaction, DatabaseError, IntegrityError
 
 from reference.models import (
     CropInfo,
+    Variety,
     Block,
     CropBySeason,
     CropSalesFormat,
@@ -36,7 +37,14 @@ from reference.models import (
     SalesPlanBucket,
 )
 from reference.sales_rollups import ANNUAL_PLAN_SALES_CHANNELS
-from planning.models import PlanningYear, Planting, NurseryEvent, HarvestEvent, PlantingStatus
+from planning.models import (
+    PlanningYear,
+    Planting,
+    SeedOrder,
+    NurseryEvent,
+    HarvestEvent,
+    PlantingStatus,
+)
 from operations.models import (
     FieldWalkNote,
     InventoryLedger,
@@ -378,6 +386,7 @@ class Command(BaseCommand):
         self._ensure_annual_plan_sales_channels_if_needed()
         self._import_crop_sales_formats()
         self._import_product_recipe_components()
+        self._import_seed_sources()
         self._warm_recipe_cache()
 
     def _load_channel_name_aliases(self):
@@ -567,6 +576,7 @@ class Command(BaseCommand):
 
         self.stdout.write("Importing blocks...")
 
+        # Match crop_by_season: keys are casefolded, collapsed whitespace (sheet / API casing varies).
         type_map = {
             "field": "field",
             "high tunnel": "high_tunnel",
@@ -581,7 +591,9 @@ class Command(BaseCommand):
                     if not name:
                         continue
 
-                    block_type = type_map.get(row["Block Type"].strip(), "field")
+                    block_type_raw = row["Block Type"].strip()
+                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                    block_type = type_map.get(normalized_block_type, "field")
 
                     data = {
                         "block_type": block_type,
@@ -660,6 +672,7 @@ class Command(BaseCommand):
                         "is_perennial": is_perennial,
                         "fresh_or_storage": fresh_or_storage,
                         "storage_weeks": self._int(row.get("Storage Weeks", 0)),
+                        "can_hold_in_field": self._bool_csv(row.get("Can Hold In Field")),
                         "harvest_unit": row.get("Harvest Units", "pounds").strip() or "pounds",
                         "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
                         "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
@@ -1193,6 +1206,221 @@ class Command(BaseCommand):
             f"{rc.get('errors', 0)} component errors\n"
         )
 
+    def _import_seed_sources(self):
+        """Import reference/seed_sources.csv into Variety."""
+        path = self._resolve_reference_path("seed_sources.csv")
+        if not os.path.exists(path):
+            self.stdout.write("  ⊘ seed_sources.csv not found\n")
+            return
+
+        self.stdout.write("Importing seed sources...")
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                crop_name = (row.get("Crop") or "").strip()
+                variety_name = (row.get("Variety") or "").strip()
+                if not crop_name and not variety_name:
+                    continue
+                if not crop_name:
+                    self._record_missing_required("Variety", i, "seed_sources.crop", "Crop")
+                    self.stats["Variety"]["errors"] += 1
+                    continue
+                if not variety_name:
+                    self._record_missing_required("Variety", i, "seed_sources.variety", "Variety")
+                    self.stats["Variety"]["errors"] += 1
+                    continue
+
+                crop = self._get_crop(crop_name)
+                if not crop:
+                    self._record_stale_fk("Variety", i, "seed_sources.crop", "crop", crop_name)
+                    self.stats["Variety"]["skipped"] += 1
+                    continue
+
+                defaults = {
+                    "supplier": (row.get("Supplier") or "").strip(),
+                    "catalog_number": (row.get("Catalog Number") or row.get("Catalog") or "").strip(),
+                    "source_url": (row.get("Source URL") or row.get("URL") or "").strip()[:500],
+                    "notes": (row.get("Notes") or "").strip(),
+                }
+                try:
+                    if not self.write_disabled:
+                        _, created = Variety.objects.update_or_create(
+                            crop=crop, name=variety_name, defaults=defaults
+                        )
+                        self.stats["Variety"]["created" if created else "processed"] += 1
+                    else:
+                        self.stats["Variety"]["processed"] += 1
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
+                    self.stderr.write(f"    ERROR row {i}: {e}")
+                    self.stats["Variety"]["errors"] += 1
+
+        self.stdout.write(
+            f" {self.stats['Variety']['processed']} processed, "
+            f"{self.stats['Variety']['skipped']} skipped, "
+            f"{self.stats['Variety']['errors']} errors\n"
+        )
+
+    def _import_seed_orders(self):
+        """Import reference/seed_orders.csv into SeedOrder."""
+        path = self._resolve_reference_path("seed_orders.csv")
+        if not os.path.exists(path):
+            self.stdout.write("  ⊘ seed_orders.csv not found\n")
+            return
+
+        self.stdout.write("Importing seed orders...")
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                crop_name = (row.get("Crop") or "").strip()
+                variety_name = (row.get("Variety") or "").strip()
+                year_raw = (row.get("Season Year") or "").strip()
+                qty_raw = (row.get("Planned Quantity") or "").strip()
+                unit = (row.get("Unit") or "ounces").strip()[:20]
+                notes = (row.get("Notes") or "").strip()
+
+                if not any([crop_name, variety_name, year_raw, qty_raw, unit, notes]):
+                    continue
+                if not crop_name:
+                    self._record_missing_required("SeedOrder", i, "seed_orders.crop", "Crop")
+                    self.stats["SeedOrder"]["errors"] += 1
+                    continue
+                if not variety_name:
+                    self._record_missing_required("SeedOrder", i, "seed_orders.variety", "Variety")
+                    self.stats["SeedOrder"]["errors"] += 1
+                    continue
+                if not year_raw:
+                    self._record_missing_required(
+                        "SeedOrder", i, "seed_orders.season_year", "Season Year"
+                    )
+                    self.stats["SeedOrder"]["errors"] += 1
+                    continue
+                if not qty_raw:
+                    self._record_missing_required(
+                        "SeedOrder",
+                        i,
+                        "seed_orders.planned_quantity",
+                        "Planned Quantity",
+                    )
+                    self.stats["SeedOrder"]["errors"] += 1
+                    continue
+
+                try:
+                    year = self._int(year_raw)
+                except (ValueError, TypeError):
+                    self._record_row_error(
+                        "SeedOrder",
+                        i,
+                        code="namespace_mismatch",
+                        field_path="seed_orders.season_year",
+                        message=f"invalid Season Year '{year_raw}'",
+                    )
+                    self.stats["SeedOrder"]["errors"] += 1
+                    continue
+
+                planning_year = self._get_planning_year(year)
+                if not planning_year:
+                    self._record_stale_fk(
+                        "SeedOrder",
+                        i,
+                        "seed_orders.planning_year",
+                        "planning year",
+                        str(year),
+                    )
+                    self.stats["SeedOrder"]["skipped"] += 1
+                    continue
+
+                crop = self._get_crop(crop_name)
+                if not crop:
+                    self._record_stale_fk("SeedOrder", i, "seed_orders.crop", "crop", crop_name)
+                    self.stats["SeedOrder"]["skipped"] += 1
+                    continue
+
+                try:
+                    qty = self._dec(qty_raw)
+                except (InvalidOperation, ValueError, TypeError):
+                    self._record_row_error(
+                        "SeedOrder",
+                        i,
+                        code="namespace_mismatch",
+                        field_path="seed_orders.planned_quantity",
+                        message=f"invalid Planned Quantity '{qty_raw}'",
+                    )
+                    self.stats["SeedOrder"]["errors"] += 1
+                    continue
+
+                if qty <= 0:
+                    self.stats["SeedOrder"]["skipped"] += 1
+                    continue
+
+                variety = Variety.objects.filter(crop=crop, name=variety_name).order_by("id").first()
+                if not variety:
+                    vdefaults = {
+                        "supplier": (row.get("Supplier") or "").strip(),
+                        "catalog_number": (row.get("Catalog Number") or row.get("Catalog") or "").strip(),
+                        "source_url": (row.get("Source URL") or row.get("URL") or "").strip()[:500],
+                        "notes": (row.get("Variety Notes") or "").strip(),
+                    }
+                    try:
+                        if not self.write_disabled:
+                            variety, vcreated = Variety.objects.update_or_create(
+                                crop=crop, name=variety_name, defaults=vdefaults
+                            )
+                            self.stats["Variety"]["created" if vcreated else "processed"] += 1
+                        else:
+                            self.stats["Variety"]["processed"] += 1
+                            variety = None
+                    except (
+                        ValueError,
+                        KeyError,
+                        InvalidOperation,
+                        ValidationError,
+                        IntegrityError,
+                        DatabaseError,
+                    ) as e:
+                        self.stderr.write(f"    ERROR row {i}: {e}")
+                        self.stats["Variety"]["errors"] += 1
+                        self.stats["SeedOrder"]["errors"] += 1
+                        continue
+
+                defaults = {
+                    "planned_quantity": qty,
+                    "unit": unit,
+                    "notes": notes,
+                }
+                try:
+                    if not self.write_disabled:
+                        _, created = SeedOrder.objects.update_or_create(
+                            variety=variety,
+                            planning_year=planning_year,
+                            defaults=defaults,
+                        )
+                        self.stats["SeedOrder"]["created" if created else "processed"] += 1
+                    else:
+                        self.stats["SeedOrder"]["processed"] += 1
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
+                    self.stderr.write(f"    ERROR row {i}: {e}")
+                    self.stats["SeedOrder"]["errors"] += 1
+
+        self.stdout.write(
+            f" {self.stats['SeedOrder']['processed']} processed, "
+            f"{self.stats['SeedOrder']['skipped']} skipped, "
+            f"{self.stats['SeedOrder']['errors']} errors\n"
+        )
+
     def _prc_sort_key(self, row, row_num):
         lo = self._prc_field(row, "Line Order")
         if lo:
@@ -1500,8 +1728,12 @@ class Command(BaseCommand):
                 continue
 
             self._import_planning_year(year, year_dir)
-            self._import_product_week_plan(year, year_dir)
+            if (Path(year_dir) / "sales_plan_302.csv").exists():
+                self._import_sales_plan_302(year, year_dir)
+            else:
+                self._import_product_week_plan(year, year_dir)
             self._import_plantings(year, year_dir)
+        self._import_seed_orders()
 
     def _import_planning_year(self, year, year_dir):
         """Import planning year record."""
@@ -1816,6 +2048,195 @@ class Command(BaseCommand):
                         _, created = SalesEvent.objects.update_or_create(
                             entry_kind=SalesEvent.EntryKind.PLAN,
                             channel=channel,
+                            sale_date=sale_date,
+                            product=product,
+                            defaults=defaults,
+                        )
+                        self.stats["SalesEvent"]["created" if created else "processed"] += 1
+                    else:
+                        self.stats["SalesEvent"]["processed"] += 1
+                except (
+                    ValueError,
+                    KeyError,
+                    InvalidOperation,
+                    ValidationError,
+                    IntegrityError,
+                    DatabaseError,
+                ) as e:
+                    self.stderr.write(f"    ERROR row {i}: {e}")
+                    self.stats["SalesEvent"]["errors"] += 1
+
+        self.stdout.write(
+            f" {self.stats['SalesEvent']['processed']} processed, "
+            f"{self.stats['SalesEvent']['skipped']} skipped, "
+            f"{self.stats['SalesEvent']['errors']} errors\n"
+        )
+
+    def _resolve_sales_plan_302_category(self, raw_label: str):
+        """Map workbook 302 ``Channel`` column (Markets / Orders / CSA) to SalesCategory name."""
+        normalized = self._normalize_lookup_value(raw_label)
+        if normalized in {"markets", "market"}:
+            return SalesCategory.CategoryName.MARKETS
+        if normalized in {"orders", "order", "wholesale"}:
+            return SalesCategory.CategoryName.ORDERS
+        if normalized == "csa":
+            return SalesCategory.CategoryName.CSA
+        return None
+
+    def _import_sales_plan_302(self, year, year_dir):
+        """Import workbook 302 long-table rows: category + product + harvest ISO week + qty/value.
+
+        Headers: Channel|Product|Harvest Year|Harvest Week|Qty|Value
+        ``Channel`` is **sales category** (not an outlet). Rows are stored as ``SalesEvent`` PLAN
+        rows with ``sales_category`` set and ``channel`` null.
+        """
+        path = os.path.join(year_dir, "sales_plan_302.csv")
+        if not os.path.exists(path):
+            return
+
+        self.stdout.write(f"Importing Sales Plan 302 (category demand) {year}...")
+
+        planning_year = self._get_planning_year(year)
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                try:
+                    cat_raw = (
+                        row.get("Channel")
+                        or row.get("channel")
+                        or row.get("Category")
+                        or row.get("category")
+                        or ""
+                    ).strip()
+                    product_name = (row.get("Product") or row.get("Product Name") or "").strip()
+                    hy_raw = (
+                        row.get("Harvest Year")
+                        or row.get("Year")
+                        or row.get("harvest_year")
+                        or ""
+                    ).strip()
+                    hw_raw = (
+                        row.get("Harvest Week")
+                        or row.get("Week")
+                        or row.get("harvest_week")
+                        or ""
+                    ).strip()
+                    qty_raw = (row.get("Qty") or row.get("Quantity") or row.get("Planned Quantity") or "").strip()
+                    value_raw = (row.get("Value") or row.get("Planned Revenue") or "").strip()
+
+                    if not cat_raw:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "sales_plan_302.category",
+                            "Channel",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+                    if not product_name:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "sales_plan_302.product",
+                            "Product",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+                    if not hy_raw or not hw_raw:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "sales_plan_302.harvest_week",
+                            "Harvest Year / Harvest Week",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+                    if not qty_raw:
+                        self._record_missing_required(
+                            "SalesEvent",
+                            i,
+                            "sales_plan_302.qty",
+                            "Qty",
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+
+                    cat_name = self._resolve_sales_plan_302_category(cat_raw)
+                    if cat_name is None:
+                        message = f"unknown sales category in Channel column '{cat_raw}'"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "SalesEvent",
+                            i,
+                            code="namespace_mismatch",
+                            field_path="sales_plan_302.channel",
+                            message=message,
+                        )
+                        self.stats["SalesEvent"]["errors"] += 1
+                        continue
+
+                    harvest_year = self._int(hy_raw, 0)
+                    week = self._int(hw_raw, 0)
+                    if harvest_year != year:
+                        message = f"Harvest Year {harvest_year} does not match import year folder {year}"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "SalesEvent",
+                            i,
+                            code="namespace_mismatch",
+                            field_path="sales_plan_302.harvest_year",
+                            message=message,
+                        )
+                        self.stats["SalesEvent"]["errors"] += 1
+                        continue
+                    if week < 1 or week > 53:
+                        message = f"invalid harvest week '{hw_raw}'"
+                        self.stderr.write(f"    ERROR row {i}: {message}")
+                        self._record_row_error(
+                            "SalesEvent",
+                            i,
+                            code="namespace_mismatch",
+                            field_path="sales_plan_302.harvest_week",
+                            message=message,
+                        )
+                        self.stats["SalesEvent"]["errors"] += 1
+                        continue
+
+                    product = self._get_product_by_name(product_name)
+                    if not product:
+                        self._record_stale_fk(
+                            "SalesEvent",
+                            i,
+                            "sales_plan_302.product",
+                            "product",
+                            product_name,
+                        )
+                        self.stats["SalesEvent"]["skipped"] += 1
+                        continue
+
+                    category = self._ensure_sales_category(cat_name)
+                    sale_date = datetime.fromisocalendar(harvest_year, week, 1).date()
+                    planned_quantity = self._dec(qty_raw)
+                    if value_raw:
+                        planned_revenue = self._dec(value_raw)
+                    else:
+                        planned_revenue = planned_quantity * product.sale_price
+
+                    defaults = {
+                        "planning_year": planning_year,
+                        "entry_kind": SalesEvent.EntryKind.PLAN,
+                        "channel": None,
+                        "planned_quantity": planned_quantity,
+                        "planned_revenue": planned_revenue,
+                        "notes": (row.get("Notes") or "").strip(),
+                    }
+
+                    if not self.write_disabled:
+                        _, created = SalesEvent.objects.update_or_create(
+                            entry_kind=SalesEvent.EntryKind.PLAN,
+                            planning_year=planning_year,
+                            channel=None,
+                            sales_category=category,
                             sale_date=sale_date,
                             product=product,
                             defaults=defaults,
@@ -2313,8 +2734,13 @@ class Command(BaseCommand):
                             updates["actual_bedfeet"] = bf
 
                     fin = (row.get("Finished Harvesting") or "").strip().upper()
-                    if fin in ("TRUE", "1", "YES", "Y"):
+                    finished_true = fin in ("TRUE", "1", "YES", "Y")
+                    if finished_true:
                         updates["status"] = PlantingStatus.COMPLETE
+                    elif date_str and planting.status == PlantingStatus.PLANNED:
+                        # 501 Field Records: first in-field actual marks planned rows planted;
+                        # subsequent field-walk notes advance planted -> growing in the UI.
+                        updates["status"] = PlantingStatus.PLANTED
 
                     notes_add = (row.get("Notes") or "").strip()
 
@@ -3269,6 +3695,17 @@ class Command(BaseCommand):
         except (InvalidOperation, TypeError):
             return None
 
+    def _bool_csv(self, value, default=False):
+        """Parse spreadsheet-style booleans; missing/blank -> default."""
+        s = str(value if value is not None else "").strip().lower()
+        if not s:
+            return default
+        if s in ("1", "true", "yes", "y", "on"):
+            return True
+        if s in ("0", "false", "no", "n", "off"):
+            return False
+        return default
+
     def _print_summary(self):
         """Print summary statistics."""
         self.stdout.write("\n📊 SUMMARY\n")
@@ -3448,7 +3885,7 @@ class Command(BaseCommand):
 
         failure_signatures = self._build_failure_signatures(status, fatal_error)
         payload = {
-            "schema_version": "1.3",
+            "schema_version": "1.4",
             "status": status,
             "fatal_error": fatal_error,
             "run": {

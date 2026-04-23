@@ -1,0 +1,423 @@
+{
+  "source_id": "live-import-reference",
+  "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+  "tabs": [
+    {
+      "spreadsheet_id": "1ctvRIZbFq0sANnif1mc9C4baMy3Je55wnvPCJ_3OYkY",
+      "worksheet_title": "Sales Channels",
+      "output_path": "reference/sales_channels.csv",
+      "required_headers": [
+        "Channel Name",
+        "Days of the Week",
+        "Start Week Num",
+        "End Week Num"
+      ],
+      "output_headers": [
+        "Channel Name",
+        "Days of the Week",
+        "Start Week Num",
+        "End Week Num",
+        "$ Target per week",
+        "is_csa",
+        "Priority"
+      ],
+      "source_regions": [
+        {
+          "anchor_token": "Sales Channels Other Than CSA",
+          "prefer_anchor_token": true,
+          "required_headers": [
+            "Channel Name",
+            "Days of the Week",
+            "Start Week Num",
+            "End Week Num",
+            "$ Target per week"
+          ],
+          "column_map": {
+            "Channel Name": "Channel Name",
+            "Days of the Week": "Days of the Week",
+            "Start Week Num": "Start Week Num",
+            "End Week Num": "End Week Num",
+            "$ Target per week": "$ Target per week"
+          },
+          "default_values": {
+            "is_csa": "false",
+            "Priority": "100"
+          },
+          "stop_on_blank_in": [
+            "Channel Name"
+          ]
+        },
+        {
+          "anchor_token": "CSA Channels",
+          "prefer_anchor_token": true,
+          "required_headers": [
+            "Channel Name",
+            "Days of the Week",
+            "Start Week Num",
+            "End Week Num",
+            "$/week per member"
+          ],
+          "column_map": {
+            "Channel Name": "Channel Name",
+            "Days of the Week": "Days of the Week",
+            "Start Week Num": "Start Week Num",
+            "End Week Num": "End Week Num",
+            "$ Target per week": "$/week per member"
+          },
+          "default_values": {
+            "is_csa": "true",
+            "Priority": "100"
+          },
+          "stop_on_blank_in": [
+            "Channel Name"
+          ]
+        }
+      ]
+    },
+    {
+      "spreadsheet_id": "1NQGxq_jfX2vli6HBvltXOQQBGLUbLM1S03e_vzbf6Z4",
+      "worksheet_title": "Define Field Blocks",
+      "output_path": "reference/blocks.csv",
+      "required_headers": [
+        "Block",
+        "Block Type",
+        "# of Beds",
+        "Bed Width (feet)",
+        "Bedfeet per Bed"
+      ]
+    },
+    {
+      "spreadsheet_id": "1290SHLKSll1yniq5xeBWt4HcsQKNOIqviukvO7DU0r4",
+      "worksheet_title": "Crop Info",
+      "output_path": "reference/crop_info.csv",
+      "required_headers": [
+        "Crop",
+        "PRODUCT Type",
+        "Botanical Family",
+        "Fresh or Storage",
+        "Storage Weeks",
+        "Can Hold In Field",
+        "Harvest Unit",
+        "Average Unit Weight",
+        "Units Per Bin",
+        "Harvest Bin",
+        "Harvest Tools",
+        "Harvest Rate (units per hour)",
+        "Nursery Weeks",
+        "Weeks Until Pot Up",
+        "Pot Up Tray Name",
+        "Seeded Tray Name",
+        "Seeds Per Cell",
+        "Thinned Plants",
+        "Seeds Per Ounce"
+      ],
+      "output_headers": [
+        "Crop",
+        "Type",
+        "Botanical Family",
+        "Fresh or Storage",
+        "Storage Weeks",
+        "Can Hold In Field",
+        "Harvest Units",
+        "Average Unit Weight",
+        "Units Per Bin",
+        "Harvest Bin",
+        "Harvest Tools",
+        "Harvest Rate (units per hour)",
+        "Nursery Weeks",
+        "Weeks Until Pot Up",
+        "Pot Up Tray Size",
+        "Seeded Tray Size",
+        "Seeds Per Cell",
+        "Thinned Plants",
+        "Seeds Per Ounce"
+      ],
+      "column_map": {
+        "Type": "PRODUCT Type",
+        "Harvest Units": "Harvest Unit",
+        "Pot Up Tray Size": "Pot Up Tray Name",
+        "Seeded Tray Size": "Seeded Tray Name"
+      }
+    },
+    {
+      "spreadsheet_id": "1290SHLKSll1yniq5xeBWt4HcsQKNOIqviukvO7DU0r4",
+      "worksheet_title": "Crop By Season",
+      "output_path": "reference/crop_by_season.csv",
+      "required_headers": [
+        "Crop",
+        "Block Type",
+        "Field Week Start",
+        "Field Week End",
+        "Plan On Total Yield Per Bedfoot",
+        "Harvest Weeks",
+        "DTM Days To Maturity",
+        "Rows Per Bed",
+        "DS Seed Rate (seeds/ rowfoot)",
+        "TP Inrow Spacing (ft)",
+        "Seeder Settings",
+        "Trellis System",
+        "Mulch",
+        "Row Cover",
+        "Irrigation"
+      ],
+      "output_headers": [
+        "Crop",
+        "Block Type",
+        "Field Week Start",
+        "Field Week End",
+        "Total Yield Per Bedfoot",
+        "Harvest Weeks",
+        "DTM Days To Maturity",
+        "Rows Per Bed",
+        "DS Seed Rate (seeds/ rowfoot)",
+        "TP Inrow Spacing (ft)",
+        "Seeder Settings",
+        "Trellis System",
+        "Mulch",
+        "Row Cover",
+        "Irrigation"
+      ],
+      "column_map": {
+        "Total Yield Per Bedfoot": "Plan On Total Yield Per Bedfoot"
+      }
+    },
+    {
+      "spreadsheet_id": "1sAhf4s4Tlisq49FK_KLt8wvZh6C2gesAXB2HLjxOUZw",
+      "worksheet_title": "Farm Crop Formats",
+      "output_path": "reference/crop_sales_formats.csv",
+      "required_headers": [
+        "Format",
+        "Product",
+        "Sale price",
+        "Sale Units",
+        "Harvest Qty",
+        "Product SKU"
+      ],
+      "output_headers": [
+        "Crop Name",
+        "Product Name",
+        "Sale Price",
+        "Sale Unit",
+        "Harvest Qty Per Sale Unit",
+        "SKU",
+        "Is Active"
+      ],
+      "column_map": {
+        "Crop Name": "Product",
+        "Product Name": "Format",
+        "Sale Price": "Sale price",
+        "Sale Unit": "Sale Units",
+        "Harvest Qty Per Sale Unit": "Harvest Qty",
+        "SKU": "Product SKU"
+      },
+      "default_values": {
+        "Is Active": "true"
+      }
+    },
+    {
+      "spreadsheet_id": "1sAhf4s4Tlisq49FK_KLt8wvZh6C2gesAXB2HLjxOUZw",
+      "worksheet_title": "Design Crop Mixes",
+      "output_path": "reference/crop_sales_formats.csv",
+      "append_without_header": true,
+      "required_headers": [
+        "Name",
+        "PRODUCT Type",
+        "Harvest Unit",
+        "Approx Unit Weight"
+      ],
+      "source_regions": [
+        {
+          "required_headers": [
+            "Name",
+            "PRODUCT Type",
+            "Harvest Unit",
+            "Approx Unit Weight"
+          ],
+          "output_headers": [
+            "Crop Name",
+            "Product Name",
+            "Sale Price",
+            "Sale Unit",
+            "Harvest Qty Per Sale Unit",
+            "SKU",
+            "Is Active"
+          ],
+          "column_map": {
+            "Crop Name": "Name",
+            "Product Name": "Name",
+            "Sale Unit": "Harvest Unit",
+            "Harvest Qty Per Sale Unit": "Approx Unit Weight"
+          },
+          "default_values": {
+            "Sale Price": "0",
+            "SKU": "",
+            "Is Active": "true"
+          },
+          "stop_on_blank_in": [
+            "Name"
+          ]
+        }
+      ]
+    },
+    {
+      "spreadsheet_id": "1sAhf4s4Tlisq49FK_KLt8wvZh6C2gesAXB2HLjxOUZw",
+      "worksheet_title": "Design Crop Mixes",
+      "output_path": "reference/product_recipe_components.csv",
+      "required_headers": [
+        "Choose Mix",
+        "Choose Ingredients",
+        "Qty"
+      ],
+      "output_headers": [
+        "Mix Product Name",
+        "Mix Crop Name",
+        "Component Source Type",
+        "Component Crop Name",
+        "Component Quantity",
+        "Component Unit"
+      ],
+      "column_map": {
+        "Mix Product Name": "Choose Mix",
+        "Component Crop Name": "Choose Ingredients",
+        "Component Quantity": "Qty"
+      },
+      "default_values": {
+        "Mix Crop Name": "",
+        "Component Source Type": "crop",
+        "Component Unit": "each"
+      },
+      "stop_on_blank_in": [
+        "Choose Mix"
+      ]
+    },
+    {
+      "spreadsheet_id": "1ZQqefizNHY25xJfhvuTqfG84Gl2muCITchA3zBfK6cI",
+      "worksheet_title": "Channels",
+      "output_path": "reference/channel_rollups.csv",
+      "required_headers": [
+        "Market"
+      ],
+      "output_headers": [
+        "Channel Name",
+        "Rollup Group"
+      ],
+      "source_regions": [
+        {
+          "required_headers": [
+            "Market"
+          ],
+          "header_row_index": 0,
+          "output_headers": [
+            "Channel Name",
+            "Rollup Group"
+          ],
+          "column_map": {
+            "Channel Name": "Market"
+          },
+          "default_values": {
+            "Rollup Group": "Markets"
+          },
+          "stop_on_blank_in": [
+            "Channel Name"
+          ]
+        },
+        {
+          "required_headers": [
+            "Orders"
+          ],
+          "header_row_index": 0,
+          "output_headers": [
+            "Channel Name",
+            "Rollup Group"
+          ],
+          "column_map": {
+            "Channel Name": "Orders"
+          },
+          "default_values": {
+            "Rollup Group": "Orders"
+          },
+          "stop_on_blank_in": [
+            "Channel Name"
+          ]
+        },
+        {
+          "required_headers": [
+            "CSA"
+          ],
+          "header_row_index": 0,
+          "output_headers": [
+            "Channel Name",
+            "Rollup Group"
+          ],
+          "column_map": {
+            "Channel Name": "CSA"
+          },
+          "default_values": {
+            "Rollup Group": "CSA"
+          },
+          "stop_on_blank_in": [
+            "Channel Name"
+          ]
+        }
+      ]
+    },
+    {
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "worksheet_title": "Seed Order",
+      "output_path": "reference/seed_sources.csv",
+      "required_headers": [
+        "Crop",
+        "Variety",
+        "Seed Source",
+        "Item #"
+      ],
+      "output_headers": [
+        "Crop",
+        "Variety",
+        "Supplier",
+        "Catalog Number",
+        "Source URL",
+        "Notes"
+      ],
+      "column_map": {
+        "Supplier": "Seed Source",
+        "Catalog Number": "Item #"
+      },
+      "default_values": {
+        "Source URL": ""
+      },
+      "stop_on_blank_in": [
+        "Crop"
+      ]
+    },
+    {
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "worksheet_title": "Seed Order",
+      "output_path": "reference/seed_orders.csv",
+      "required_headers": [
+        "Crop",
+        "Variety",
+        "Seed For Plan",
+        "Unit Format"
+      ],
+      "output_headers": [
+        "Crop",
+        "Variety",
+        "Season Year",
+        "Planned Quantity",
+        "Unit",
+        "Notes"
+      ],
+      "column_map": {
+        "Planned Quantity": "Seed For Plan",
+        "Unit": "Unit Format"
+      },
+      "default_values": {
+        "Season Year": "2026"
+      },
+      "stop_on_blank_in": [
+        "Crop"
+      ]
+    }
+  ]
+}

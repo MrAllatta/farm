@@ -1,0 +1,128 @@
+{
+  "source_id": "live-import-crop-plan",
+  "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+  "tabs": [
+    {
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "worksheet_title": "Crop Planner",
+      "output_path": "year_2026/plantings.csv",
+      "required_headers": [
+        "Crop // Variety",
+        "Block",
+        "Bed #",
+        "Plan Field Year",
+        "Plan Field Week",
+        "Plan Bedft"
+      ],
+      "header_row_index": 2,
+      "output_headers": [
+        "Crop",
+        "Variety",
+        "Block",
+        "Bed Start",
+        "Bed End",
+        "Planned Plant Date",
+        "Planned Bedfeet",
+        "Status"
+      ],
+      "column_map": {
+        "Crop": 0,
+        "Variety": 0,
+        "Block": "Block",
+        "Bed Start": "Bed #",
+        "Bed End": "Bed #",
+        "Planned Bedfeet": "Plan Bedft"
+      },
+      "default_values": {
+        "Status": "Planned"
+      },
+      "row_transforms": [
+        {
+          "type": "split",
+          "source": "Crop",
+          "delimiter": "//",
+          "left_target": "Crop",
+          "right_target": "Variety"
+        },
+        {
+          "type": "copy",
+          "source": "Bed Start",
+          "targets": [
+            "Bed End"
+          ]
+        },
+        {
+          "type": "week_monday",
+          "year_source": "Plan Field Year",
+          "week_source": "Plan Field Week",
+          "target": "Planned Plant Date"
+        }
+      ]
+    },
+    {
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "worksheet_title": "Nursery Plan 502",
+      "output_path": "year_2026/nursery_events.csv",
+      "header_row_index": 0,
+      "required_headers": [
+        "CROP & VARIETY",
+        "Nursery Seeding Year",
+        "Nursery Seeding Week",
+        "Plan Field Week"
+      ],
+      "aliases": {
+        "crop & variety": "CROP & VARIETY"
+      },
+      "stop_on_blank_in": [
+        "CROP & VARIETY"
+      ]
+    },
+    {
+      "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "worksheet_title": "Field Records Online",
+      "output_path": "year_2026/planting_field_records.csv",
+      "header_row_index": 5,
+      "max_scan_rows": 5,
+      "required_headers": [
+        "Crop // Variety",
+        "Block",
+        "Bed",
+        "Plan Field Year",
+        "Plan Field Week",
+        "Actual Field Week",
+        "Actual Field Date",
+        "Actual Bedft",
+        "Notes",
+        "Rank YIeld Estimate from (1-10)",
+        "Finished Harvesting"
+      ],
+      "aliases": {
+        "Rank Yield Estimate from (1-10)": "Rank YIeld Estimate from (1-10)"
+      },
+      "output_headers": [
+        "Crop // Variety",
+        "Block",
+        "Bed",
+        "Plan Field Year",
+        "Plan Field Week",
+        "Actual Field Week",
+        "Actual Field Date",
+        "Actual Bedft",
+        "Notes",
+        "Finished Harvesting"
+      ],
+      "column_map": {
+        "Crop // Variety": "Crop // Variety",
+        "Block": "Block",
+        "Bed": "Bed",
+        "Plan Field Year": "Plan Field Year",
+        "Plan Field Week": "Plan Field Week",
+        "Actual Field Week": "Actual Field Week",
+        "Actual Field Date": "Actual Field Date",
+        "Actual Bedft": "Actual Bedft",
+        "Notes": "Notes",
+        "Finished Harvesting": "Finished Harvesting"
+      }
+    }
+  ]
+}

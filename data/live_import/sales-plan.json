@@ -1,0 +1,22 @@
+{
+  "source_id": "live-import-sales-plan",
+  "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+  "tabs": [
+    {
+      "spreadsheet_id": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "worksheet_title": "Sales Plan 302",
+      "output_path": "year_2026/sales_plan_302.csv",
+      "required_headers": [
+        "Channel",
+        "Product",
+        "Harvest Year",
+        "Harvest Week",
+        "Qty",
+        "Value"
+      ],
+      "stop_on_blank_in": [
+        "Channel"
+      ]
+    }
+  ]
+}

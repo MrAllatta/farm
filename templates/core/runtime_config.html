@@ -1,0 +1,28 @@
+{# core/runtime_config.html #}
+{% extends "base.html" %}
+
+{% block title %}Runtime configuration{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Runtime configuration</h1>
+    <p>Non-secret deployment snapshot for local vs cloud troubleshooting. Staff only.</p>
+</div>
+
+<table class="config-table" style="width: 100%; max-width: 48rem; border-collapse: collapse; margin-top: 1.5rem;">
+    <thead>
+        <tr>
+            <th scope="col" style="text-align: left; padding: 0.5rem; border-bottom: 1px solid #ccc;">Setting</th>
+            <th scope="col" style="text-align: left; padding: 0.5rem; border-bottom: 1px solid #ccc;">Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for label, value in runtime_rows %}
+        <tr>
+            <td style="padding: 0.45rem 0.5rem; vertical-align: top; border-bottom: 1px solid #eee; white-space: nowrap;">{{ label }}</td>
+            <td style="padding: 0.45rem 0.5rem; vertical-align: top; border-bottom: 1px solid #eee; word-break: break-word;">{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

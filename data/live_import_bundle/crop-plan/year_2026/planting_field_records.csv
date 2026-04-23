@@ -1,0 +1,2986 @@
+Crop // Variety,Block,Bed,Plan Field Year,Plan Field Week,Actual Field Week,Actual Field Date,Actual Bedft,Notes,Finished Harvesting
+Asparagus // Jersey Supreme,A2,25,2025,1,1,2025-01-01,200,,TRUE
+Asparagus // Jersey Supreme,A2,24,2025,1,1,2025-01-01,200,,TRUE
+Asparagus // Jersey Supreme,A2,23,2025,1,1,2025-01-01,100,,TRUE
+Asparagus // Millenium,A2,23,2025,1,1,2025-01-01,100,,TRUE
+Asparagus // Millenium,A2,22,2025,1,1,2025-01-01,200,,TRUE
+Asparagus // Millenium,A2,21,2025,1,1,2025-01-01,200,,TRUE
+Garlic // German White,D1,2,2025,1,1,2025-01-01,200,Planted Nov 2024,TRUE
+Garlic // German White,D1,3,2025,1,1,2025-01-01,125,Planted Nov 2024,TRUE
+Garlic // German White,D1,4,2025,1,1,2025-01-01,200,Planted Nov 2024,TRUE
+Garlic // Hardneck - Em,D1,7,2025,1,1,2025-01-01,100,Planted Nov 2024,TRUE
+Garlic // Hardneck - Em,D1,8,2025,1,1,2025-01-01,100,Planted Nov 2024,TRUE
+Garlic // Music,D1,4,2025,1,1,2025-01-01,75,Planted Nov 2024,TRUE
+Garlic // Music,D1,5,2025,1,1,2025-01-01,200,Planted Nov 2024,TRUE
+Garlic // Music,D1,6,2025,1,1,2025-01-01,150,Planted Nov 2024,TRUE
+Garlic // Softneck - Em,D1,6,2025,1,1,2025-01-01,50,Planted Nov 2024,TRUE
+Garlic // Softneck - Em,D1,7,2025,1,1,2025-01-01,100,Planted Nov 2024,TRUE
+Greens Mix Baby Kale // Red Russian Kale,HT3,6,2025,6,6,2025-02-07,50,Went in SN bed after botrytis die off,TRUE
+Arugula // Astro,HT5,8,2025,6,6,2025-02-07,50,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,HT5,8,2025,6,6,2025-02-07,50,,TRUE
+Bok Choy // Bopak,HT3,4,2024,7,8,2024-02-21,94,"planted 80', filled in with more raab",TRUE
+Broccoli Raab // Novantina,HT3,3,2024,7,8,2024-02-21,47,west side,TRUE
+Broccoli Raab // Quarantina,HT3,3,2024,7,8,2024-02-21,47,east side,TRUE
+Arugula // Astro,HT5,,2025,7,1,2025-01-01,NA,Cancel,TRUE
+Peas Snap PP // Sugar Snap,HT3,5,2024,8,8,2024-02-23,94,,TRUE
+Peas Snap PP // Sugar Snap,HT3,6,2024,8,8,2024-02-23,94,,TRUE
+Bok Choy // Little Shanghai,HT5,,2025,8,1,2025-01-01,NA,Cancel,TRUE
+Bok Choy // Bopak,HT1,8,2024,9,11,2024-03-14,94,,TRUE
+Greens Mix Misc // Red Russian Kale,HT1,6,2024,9,11,2024-03-14,47,,TRUE
+Kale Lacinato // Black Magic,CAT3,1,2024,10,9,2024-02-28,90,Eaten by critters!,TRUE
+Lettuce Mix SN // Red Sweet Crisp,HT1,1,2024,10,13,2024-03-28,94,,TRUE
+Arugula // Astro,HT2,5,2024,10,11,2024-03-14,54,,TRUE
+Lettuce Mini Gem // Rosaine,HT5,8,2024,10,9,2024-02-28,94,,TRUE
+Broccolini // BC1611,JSS,3,2024,10,9,2024-02-28,90,Plant 2 rows 1' next time,TRUE
+Spinach // Kolibri,CAT3,1,2025,10,13,2025-03-28,100,,TRUE
+Spinach // Kolibri,CAT3,2,2025,10,13,2025-03-26,100,,TRUE
+Spinach // Kolibri,CAT3,3,2025,10,13,2025-03-26,100,,TRUE
+Arugula // Astro,HT5,5,2025,10,10,2025-03-05,100,Interplant with peas,TRUE
+Arugula // Astro,HT5,7,2025,10,10,2025-03-05,100,Interplant with peas,TRUE
+Arugula // Astro,HT5,1,2025,10,12,2025-03-21,100,Interplant with peas,TRUE
+Arugula // Astro,HT5,3,2025,10,12,2025-03-21,100,Interplant with peas,TRUE
+Bok Choy // Little Shanghai,HT5,4,2025,10,11,2025-03-14,100,75' mei qing / 25' Bl summer,TRUE
+Greens Mix Baby Kale // Red Russian Kale,HT5,6,2025,10,10,2025-03-05,50,"Not in plan, replaced missed Bok Choy from wk 8",TRUE
+Greens Mix Cheap Frills // Cheap Frills,HT5,6,2025,10,10,2025-03-05,50,"Not in plan, replaced missed Bok Choy from wk 8",TRUE
+Peas Snap PP // Super Sugar Snap,HT5,1,2025,10,12,2025-03-21,100,"Soaked, then Direct Seeded 5# / bed",TRUE
+Peas Snap PP // Super Sugar Snap,HT5,3,2025,10,12,2025-03-21,100,"Soaked, then Direct Seeded 5# / bed",TRUE
+Peas Snap PP // Sweet Gem,HT5,7,2025,10,10,2025-03-05,100,,TRUE
+Peas Snap PP // Sweet Gem,HT5,5,2025,10,10,2025-03-05,100,,TRUE
+Spinach // Kolibri,CAT3,1,2024,11,13,2024-03-28,90,"4x6"" dibble spacing",TRUE
+Spinach // Kolibri,CAT3,2,2024,11,13,2024-03-28,90,"4x6"" dibble spacing",TRUE
+Spinach // Kolibri,CAT3,3,2024,11,13,2024-03-28,90,"4x6"" dibble spacing",TRUE
+Kale Lacinato // Ebony,CAT1,1,2025,11,12,2025-03-21,100,,TRUE
+Kale Lacinato // Ebony,CAT1,2,2025,11,12,2025-03-21,100,,TRUE
+Kale Lacinato // Ebony,CAT1,3,2025,11,14,2025-04-04,100,,TRUE
+Arugula // Astro,HT2,5,2024,12,13,2024-03-28,54,,TRUE
+Pea Snap // Sugar Snap,HT3,7,2024,12,14,2024-04-05,94,Pre-soaked,TRUE
+Pea Snap // Sugar Snap,HT3,8,2024,12,14,2024-04-05,94,Pre-soaked,TRUE
+Bok Choy // Little Shanghai,HT5,2,2025,12,12,2025-03-21,100,"50 Li Ren, 25' Black Summer', DS Frills in additional 25'",TRUE
+Greens Mix Cheap Frills // Cheap Frills,HT5,2,2025,12,12,2025-03-21,25,"Not in plan, filled in space at end of Bok bed",TRUE
+Scallion // Nabechan,CAT2,1,2024,13,13,2024-03-28,90,"1/2 plants started wk 3, 1/2 from wk 6 (intended orginally to go outside)",TRUE
+Spinach // Kolibri,CAT3,7,2024,13,13,2024-03-28,94,,TRUE
+Spinach // Kolibri,CAT3,8,2024,13,13,2024-03-28,94,,TRUE
+Kale Lacinato // Black Magic,CAT4,1,2024,13,13,2024-03-27,90,"2x12"" large dibbles",TRUE
+Kale Lacinato // Black Magic,CAT4,2,2024,13,13,2024-03-27,90,"2x12"" large dibbles",TRUE
+Kale Lacinato // Black Magic,CAT4,3,2024,13,13,2024-03-27,90,"2x12"" large dibbles",TRUE
+Radish French Breakfast // French Breakfast,HT3,1,2024,13,13,2024-03-28,94,seeded under bc1611 transplants,TRUE
+Radish Red // Sora,HT3,6,2024,13,13,2024-03-29,94,Stacy's first seeding!,TRUE
+Radish Round Purple // Bacchus,HT3,5,2024,13,13,2024-03-29,94,,TRUE
+Turnip // Hakurei,JSS,3,2024,13,13,2024-03-28,90,"Violet Queen, seeded beneath bc1611 transplants",TRUE
+Arugula // Astro,A3,1,2025,14,14,2025-04-04,100,,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,1,2025,14,14,2025-04-04,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,1,2025,14,14,2025-04-04,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,1,2025,14,14,2025-04-04,10,,TRUE
+Greens Mix Rosie // Rosie,A3,1,2025,14,14,2025-04-04,10,,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,1,2025,14,14,2025-04-04,10,,TRUE
+Radish French Breakfast // French Breakfast,A3,2,2025,14,14,2025-04-04,100,,TRUE
+Radish Purple // Bacchus,A3,2,2025,14,14,2025-04-04,100,,TRUE
+Radish Red // Sora,A3,3,2025,14,14,2025-04-04,100,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D2,1,2025,14,14,2025-04-04,200,,TRUE
+Lettuce Head // Alkindus,D2,2,2025,14,14,2025-04-04,25,,TRUE
+Lettuce Head // Monte Carlo,D2,2,2025,14,14,2025-04-04,25,,TRUE
+Lettuce Head // Queen of Hearts,D2,2,2025,14,14,2025-04-04,25,,TRUE
+Lettuce Mini Gem // Gatsbi,D2,2,2025,14,14,2025-04-04,50,,TRUE
+Lettuce Mini Gem // Rosaine,D2,2,2025,14,14,2025-04-04,75,,TRUE
+Frisee // Curlesi,D2,3,2025,14,14,2025-04-04,75,,TRUE
+Lettuce Head // Alkindus,D2,3,2025,14,14,2025-04-04,25,"extra, planted with frisee",TRUE
+Pea Shelling // PLS595,CAT1,1,2025,15,14,2025-04-04,100,"PP Transplanted 100' cat 1 bed 1, and 100' Cat 4 bed 3",TRUE
+Onion Spring // Expression,A2,1,2025,15,17,2025-04-25,200,,TRUE
+Onion Spring // Monastrell,A2,3,2025,15,17,2025-04-25,200,,TRUE
+Onion Spring // Red Tropea,A2,3,2025,15,52,2000-01-01,0,Cancelled - tropea seed was old and didnt germ,TRUE
+Arugula // Astro,A3,3,2025,15,15,2025-04-11,100,,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,4,2025,15,15,2025-04-11,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,4,2025,15,15,2025-04-11,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,4,2025,15,15,2025-04-11,10,,TRUE
+Greens Mix Rosie // Rosie,A3,4,2025,15,15,2025-04-11,10,,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,4,2025,15,15,2025-04-11,10,,TRUE
+Radish French Breakfast // French Breakfast,A3,4,2025,15,15,2025-04-11,100,,TRUE
+Radish Purple // Bacchus,A3,5,2025,15,15,2025-04-11,100,,TRUE
+Radish Red // Sora,A3,5,2025,15,15,2025-04-11,100,,TRUE
+Scallion // Parade,B3,29,2025,15,15,2025-04-11,200,,TRUE
+Cilantro // Cruiser,B3,30,2025,15,15,2025-04-11,200,,TRUE
+Arugula // Astro,A3,6,2025,16,16,2025-04-18,100,,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,6,2025,16,16,2025-04-18,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,6,2025,16,16,2025-04-18,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,6,2025,16,16,2025-04-18,10,,TRUE
+Greens Mix Purslane // Golden ,A3,6,2025,16,16,2025-04-18,10,yyj-24 down,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,6,2025,16,16,2025-04-18,10,,TRUE
+Radish French Breakfast // French Breakfast,A3,7,2025,16,16,2025-04-18,100,,TRUE
+Radish Purple // Bacchus,A3,7,2025,16,16,2025-04-18,100,,TRUE
+Radish Red // Sora,A3,8,2025,16,16,2025-04-18,100,,TRUE
+Bok Choy // Little Shanghai,B2,28,2025,16,16,2025-04-18,200,,TRUE
+Broccolini // BC1611,B2,27,2025,16,16,2025-04-18,200,,TRUE
+Broccolini // BC1611,B2,26,2025,16,16,2025-04-18,200,,TRUE
+Broccolini // BC1611,B2,25,2025,16,16,2025-04-18,200,,TRUE
+Broccolini // BC1611,B2,24,2025,16,16,2025-04-18,200,,TRUE
+Broccolini // BC1611,B2,23,2025,16,16,2025-04-18,200,,TRUE
+Cabbage Savoy // Alcosa,B2,22,2025,16,16,2025-04-18,200,,TRUE
+Parsley // Giant of Italy,B3,27,2025,16,17,2025-04-23,200,,TRUE
+Scallion // Parade,B3,28,2025,16,16,2025-04-17,100,,TRUE
+Chard // Bright Lights,C1,1,2025,16,16,2025-04-17,200,,TRUE
+Collards // Flash,C1,2,2025,16,16,2025-04-17,200,,TRUE
+Collards // Flash,C1,3,2025,16,16,2025-04-17,200,,TRUE
+Kale Curly // Winterbor,C1,4,2025,16,16,2025-04-17,200,,TRUE
+Kale Curly // Winterbor,C1,5,2025,16,16,2025-04-17,200,,TRUE
+Kale Curly // Winterbor,C1,6,2025,16,16,2025-04-17,200,,TRUE
+Kale Lacinato // Ebony,C1,7,2025,16,16,2025-04-17,200,,TRUE
+Kale Lacinato // Ebony,C1,8,2025,16,16,2025-04-17,200,,TRUE
+Kale Lacinato // Ebony,C1,9,2025,16,16,2025-04-17,200,,TRUE
+Kale Lacinato // Ebony,C1,10,2025,16,16,2025-04-17,200,,TRUE
+Kale Lacinato // Ebony,C1,11,2025,16,16,2025-04-17,200,,TRUE
+Dandelion // Clio,D2,4,2025,16,16,2025-04-16,200,,TRUE
+Escarole // Eros,D2,5,2025,16,16,2025-04-16,200,,TRUE
+Fennel // Orazio,D2,6,2025,16,16,2025-04-16,200,,TRUE
+Lettuce Head // Alkindus,D2,7,2025,16,16,2025-04-16,25,,TRUE
+Lettuce Head // Monte Carlo,D2,7,2025,16,16,2025-04-16,25,,TRUE
+Lettuce Head // Queen of Hearts,D2,7,2025,16,16,2025-04-16,25,,TRUE
+Lettuce Mini Gem // Gatsbi,D2,7,2025,16,16,2025-04-16,50,,TRUE
+Lettuce Mini Gem // Rosaine,D2,7,2025,16,16,2025-04-16,75,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D2,8,2025,16,16,2025-04-16,200,,TRUE
+Radicchio Round // Indigo,D2,9,2025,16,16,2025-04-18,200,,TRUE
+Radicchio Variegated // Giorgine,D2,10,2025,16,16,2025-04-18,200,,TRUE
+Zucchini Green // Noche,D3,1,2025,16,16,2025-04-18,200,,TRUE
+Zucchini Green // Noche,D3,2,2025,16,16,2025-04-18,200,,TRUE
+Arugula // Astro,A3,8,2025,17,17,2025-04-25,100,,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,9,2025,17,17,2025-04-25,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,9,2025,17,17,2025-04-25,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,9,2025,17,17,2025-04-25,10,,TRUE
+Greens Mix Purslane // Golden ,A3,9,2025,17,17,2025-04-25,10,,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,9,2025,17,17,2025-04-25,10,,TRUE
+Radish French Breakfast // French Breakfast,A3,9,2025,17,17,2025-04-25,100,,TRUE
+Radish Purple // Bacchus,A3,10,2025,17,17,2025-04-25,100,,TRUE
+Radish Red // Sora,A3,10,2025,17,17,2025-04-25,100,,TRUE
+Cabbage Chinese // Minuet,B2,21,2025,17,17,2025-04-24,200,,TRUE
+Cabbage Chinese // Minuet,B2,20,2025,17,17,2025-04-24,200,,TRUE
+Cabbage Cone // Caraflex,B2,17,2025,17,17,2025-04-24,100,plus 60' of omero,TRUE
+Cabbage Red // Omero,B2,19,2025,17,17,2025-04-24,200,,TRUE
+Cabbage Red // Omero,B2,18,2025,17,17,2025-04-24,200,,TRUE
+Cauliflower Sprouting // Fioretto 70,B2,16,2025,17,17,2025-04-24,200,,TRUE
+Cauliflower Sprouting // Fioretto 70,B2,15,2025,17,17,2025-04-24,200,,TRUE
+Cauliflower Sprouting // Fioretto 70,B2,14,2025,17,17,2025-04-24,200,,TRUE
+Scallion // Parade,B3,28,2025,17,17,2024-04-23,100,,TRUE
+Frisee // Curlesi,D2,3,2025,17,17,2024-04-23,100,,TRUE
+Zucchini Green // Noche,D3,7,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Green // Noche,D3,8,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Green // Noche,D3,9,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Green // Noche,D3,10,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Striped // Pantheon,D3,11,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Striped // Pantheon,D3,12,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,13,2025,17,17,2025-04-24,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,14,2025,17,17,2025-04-24,200,,TRUE
+Onion Spring // Expression,A2,2,2025,18,17,2025-04-25,100,replace tropea,TRUE
+Onion Spring // Monastrell,A2,2,2025,18,17,2025-04-25,100,replace tropea,TRUE
+Arugula // Astro,A3,11,2025,18,19,2025-05-08,100,,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,11,2025,18,19,2025-05-08,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,11,2025,18,19,2025-05-08,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,11,2025,18,19,2025-05-08,10,,TRUE
+Greens Mix Purslane // Golden ,A3,11,2025,18,1,2025-01-01,0,Cancelled due to rain - too wet to seed or make beds,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,11,2025,18,19,2025-05-08,10,,TRUE
+Radish French Breakfast // French Breakfast,A3,12,2025,18,1,2025-01-01,0,Cancelled due to rain - too wet to seed or make beds,TRUE
+Radish Purple // Bacchus,A3,12,2025,18,1,2025-01-01,0,Cancelled due to rain - too wet to seed or make beds,TRUE
+Radish Red // Sora,A3,13,2025,18,1,2025-01-01,0,Cancelled due to rain - too wet to seed or make beds,TRUE
+Bok Choy // Little Shanghai,B2,10,2025,18,18,2025-04-30,200,,TRUE
+Broccolini // BC1611,B2,13,2025,18,18,2025-04-30,200,,TRUE
+Broccolini // BC1611,B2,12,2025,18,18,2025-04-30,200,,TRUE
+Broccolini // BC1611,B2,11,2025,18,18,2025-04-30,200,,TRUE
+Celery // merengo,B3,22,2025,18,20,2025-05-13,200,"delayed 2 weeks - plants not ready, then too much rain",TRUE
+Scallion // Parade,B3,24,2025,18,18,2025-04-30,100,,TRUE
+Parsley // Giant of Italy,B3,25,2025,18,19,2025-05-05,200,,TRUE
+Cilantro // Cruiser,B3,26,2025,18,18,2025-05-02,200,,TRUE
+Collards // Flash,C1,12,2025,18,18,2025-04-30,200,,TRUE
+Collards // Flash,C1,13,2025,18,18,2025-04-30,200,,TRUE
+Kale Curly // Winterbor,C1,14,2025,18,18,2025-04-30,200,,TRUE
+Kale Curly // Winterbor,C1,15,2025,18,18,2025-04-30,200,,TRUE
+Kale Lacinato // Ebony,C1,16,2025,18,18,2025-04-30,200,,TRUE
+Kale Lacinato // Ebony,C1,17,2025,18,18,2025-04-30,200,,TRUE
+Kale Lacinato // Ebony,C1,18,2025,18,18,2025-04-30,200,,TRUE
+Kale Lacinato // Ebony,C1,19,2025,18,18,2025-04-30,200,,TRUE
+Chard // Bright Lights,C1,20,2025,18,18,2025-05-02,200,,TRUE
+Chard // Bright Lights,C1,21,2025,18,18,2025-05-02,200,,TRUE
+Beets Golden // Yellow Sunrise,C3,1,2025,18,18,2025-05-02,200,,TRUE
+Beets Golden // Yellow Sunrise,C3,2,2025,18,18,2025-05-02,200,,TRUE
+Beets Red // Red Ace F1,C3,3,2025,18,18,2025-05-02,200,,TRUE
+Escarole // Eliance,D2,11,2025,18,18,2025-04-30,200,,TRUE
+Lettuce Head // Alkindus,D2,12,2025,18,18,2025-04-30,25,,TRUE
+Lettuce Head // Monte Carlo,D2,12,2025,18,18,2025-04-30,25,,TRUE
+Lettuce Head // Queen of Hearts,D2,12,2025,18,18,2025-04-30,25,,TRUE
+Lettuce Mini Gem // Gatsbi,D2,12,2025,18,18,2025-04-30,50,,TRUE
+Lettuce Mini Gem // Rosaine,D2,12,2025,18,18,2025-04-30,75,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D2,13,2025,18,18,2025-04-30,200,,TRUE
+Cucumber // Corinto,HT3,4,2025,18,18,2025-05-02,100,,TRUE
+Cucumber Persian // Katrina,HT3,1,2025,18,18,2025-05-02,100,,TRUE
+Cucumber Persian // Katrina,HT3,2,2025,18,18,2025-05-02,100,,TRUE
+Cucumber Pickling // Excelsior,HT3,3,2025,18,18,2025-05-02,100,,TRUE
+Radish French Breakfast // French Breakfast,A3,12,2025,19,20,2025-05-15,200,increased seeding size due to missed planting previous week.,TRUE
+Arugula // Astro,A3,13,2025,19,1,2025-01-01,0,cancelled due to weather,TRUE
+Radish Purple // Bacchus,A3,13,2025,19,20,2025-05-15,200,increased seeding size due to missed planting previous week.,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,14,2025,19,1,2025-01-01,0,cancelled due to weather,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,14,2025,19,1,2025-01-01,0,cancelled due to weather,TRUE
+Greens Mix Mizuna // Central Red,A3,14,2025,19,1,2025-01-01,0,cancelled due to weather,TRUE
+Greens Mix Purslane // Golden ,A3,14,2025,19,1,2025-01-01,0,cancelled due to weather,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,14,2025,19,1,2025-01-01,0,cancelled due to weather,TRUE
+Radish Red // Sora,A3,14,2025,19,20,2025-05-15,200,increased seeding size due to missed planting previous week.,TRUE
+Cabbage Cone // Caraflex,B2,8,2025,19,20,2025-05-14,200,,TRUE
+Cabbage Cone // Caraflex,B2,7,2025,19,20,2025-05-14,200,,TRUE
+Cabbage Red // Omero,B2,4,2025,19,20,2025-05-14,200,,TRUE
+Cabbage Red // Omero,B2,5,2025,19,20,2025-05-14,200,,TRUE
+Cabbage Red // Omero,B2,6,2025,19,20,2025-05-14,200,,TRUE
+Cabbage Savoy // Alcosa,B2,3,2025,19,20,2025-05-14,200,,TRUE
+Dill // Thalia,B3,21,2025,19,20,2025-05-15,50,"edited plan so that dill is planted on the same schedule as Cilantro, reduced cilantro to 150""",TRUE
+Scallion // Parade,B3,24,2025,19,19,2025-05-08,100,,TRUE
+Fennel // Orazio,D2,14,2025,19,20,2025-05-13,200,,TRUE
+Radicchio Round // Indigo,D2,19,2025,19,20,2025-05-15,200,,TRUE
+Radicchio Variegated // Giorgine,D2,20,2025,19,20,2025-05-15,200,,TRUE
+Zucchini Green // Noche,D3,15,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Green // Noche,D3,16,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Green // Noche,D3,17,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Green // Noche,D3,18,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Striped // Pantheon,D3,19,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,20,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,21,2025,19,20,2025-05-12,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,22,2025,19,20,2025-05-12,200,,TRUE
+Potato White // Dark Red Norland,X1,1,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Dark Red Norland,X1,2,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Dark Red Norland,X1,3,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Dark Red Norland,X1,4,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Potato White // Kennebec,X1,5,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,6,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,7,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,8,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,9,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,10,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,11,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,12,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,13,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Kennebec,X1,14,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Potato White // Purple Viking,X1,15,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Purple Viking,X1,16,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Purple Viking,X1,17,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Potato Yellow // Satina,X1,18,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,19,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,20,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,21,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,22,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,23,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,24,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,25,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,26,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Yellow // Satina,X1,27,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Potato Blue // Adirondack Blue,X2,23,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Blue // Adirondack Blue,X2,24,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Blue // Adirondack Blue,X2,25,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Potato Blue // All Blue,X2,26,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Blue // All Blue,X2,27,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato Blue // All Blue,X2,28,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Potato White // Dark Red Norland,X2,29,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,TRUE
+Potato White // Dark Red Norland,X2,30,2025,19,20,2025-05-12,200,pounds per bed were based on dividing the total order by the number of beds for all varieties. ,FALSE
+Tomato Cherry Mix // Artemis,HT4,8,2025,19,19,2025-05-09,25,,TRUE
+Tomato Cherry Mix // Chocolate Sprinkles,HT4,8,2025,19,19,2025-05-09,50,,TRUE
+Tomato Cherry Mix // Favorita,HT4,8,2025,19,19,2025-05-09,25,,TRUE
+Tomato Cherry Mix // Honey Bee,HT4,7,2025,19,19,2025-05-09,40,,TRUE
+Tomato Cherry Mix // HoneyCrisp,HT4,7,2025,19,19,2025-05-09,10,,TRUE
+Tomato Cherry Mix // HoneyGold,HT4,7,2025,19,19,2025-05-09,10,,TRUE
+Tomato Cherry Mix // Mimi,HT4,7,2025,19,19,2025-05-09,40,,TRUE
+Tomato Cherry Mix // SunGreen,HT4,6,2025,19,19,2025-05-09,50,,TRUE
+Tomato Cherry Mix // Sunpeach,HT4,6,2025,19,19,2025-05-09,50,,TRUE
+Tomato Cherry Sungold // SunOrange,HT4,5,2025,19,19,2025-05-09,100,,TRUE
+Tomato Cherry Sungold // SunOrange,HT4,4,2025,19,19,2025-05-09,100,,TRUE
+Tomato Cherry Sungold // SunOrange,HT4,3,2025,19,19,2025-05-09,100,,TRUE
+Tomato Heirloom // Beorange,HT4,2,2025,19,19,2025-05-09,100,,TRUE
+Tomato Heirloom // Marnouar,HT4,1,2025,19,19,2025-05-09,100,,TRUE
+Okra // Carmine Splendor,JSS,1,2025,19,19,2025-05-07,100,,TRUE
+Okra // Carmine Splendor,JSS,2,2025,19,19,2025-05-07,100,,TRUE
+Okra // Jambalaya,JSS,3,2025,19,19,2025-05-07,100,,TRUE
+Bitter Melon // Green Skin,HT3,8,2025,20,1,2025-01-01,0,CANCEL.  never started seeds.,TRUE
+Cucumber // Corinto,HT3,5,2025,20,20,2025-05-15,100,,TRUE
+Cucumber // Corinto,HT3,6,2025,20,20,2025-05-15,100,,TRUE
+Cucumber // Corinto,HT3,7,2025,20,20,2025-05-15,100,,TRUE
+Cucumber Pickling // Excelsior,HT3,8,2025,20,20,2025-05-15,100,,TRUE
+Eggplant Asian // Ping Tung,A2,4,2025,20,22,2025-05-27,100,not pulling for week 21 planting.  ,FALSE
+Eggplant Asian // Shinkasen,A2,4,2025,20,21,2025-05-20,100,,FALSE
+Eggplant Italian Black // Gaudi,A2,5,2025,20,21,2025-05-20,200,,FALSE
+Eggplant Italian Striped // Annina,A2,6,2025,20,21,2025-05-20,200,,TRUE
+Eggplant Italian Striped // Annina,A2,7,2025,20,21,2025-05-20,200,,FALSE
+Eggplant Mini // Fairytale,A2,8,2025,20,21,2025-05-20,200,,TRUE
+Eggplant Mini // Fairytale,A2,9,2025,20,21,2025-05-20,200,,FALSE
+Arugula // Astro,A3,15,2025,20,20,2025-05-15,100,,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,15,2025,20,20,2025-05-15,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,15,2025,20,20,2025-05-15,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,15,2025,20,20,2025-05-15,10,,TRUE
+Greens Mix Purslane // Golden ,A3,15,2025,20,20,2025-05-15,10,,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,15,2025,20,20,2025-05-15,10,,TRUE
+Bok Choy // Little Shanghai,B2,9,2025,20,20,2025-05-13,200,,TRUE
+Parsley // Giant of Italy,B3,20,2025,20,20,2025-05-15,200,,TRUE
+Cilantro // Cruiser,B3,21,2025,20,20,2025-05-15,150,seeded 50 ft. of dill at the western end.  updated future seedings to be 150' cilantro and 50' dill.,TRUE
+Scallion // Parade,B3,23,2025,20,20,2025-05-16,100,,TRUE
+Collards // Flash,C1,22,2025,20,20,2025-05-13,200,,TRUE
+Kale Curly // Winterbor,C1,23,2025,20,20,2025-05-13,200,,TRUE
+Kale Curly // Winterbor,C1,24,2025,20,20,2025-05-13,200,,TRUE
+Kale Lacinato // Ebony,C1,25,2025,20,20,2025-05-13,200,,TRUE
+Kale Lacinato // Ebony,C1,26,2025,20,20,2025-05-13,200,,TRUE
+Kale Lacinato // Ebony,C1,27,2025,20,20,2025-05-13,200,,TRUE
+Kale Lacinato // Ebony,C1,28,2025,20,20,2025-05-13,200,,TRUE
+Dandelion // Clio,D2,15,2025,20,20,2025-05-13,200,,TRUE
+Escarole // Eliance,D2,16,2025,20,20,2025-05-13,110,filled with 15 feet of queen of hearts.,TRUE
+Frisee // Curlesi,D2,16,2025,20,20,2025-05-13,75,,TRUE
+Lettuce Head // Alkindus,D2,17,2025,20,20,2025-05-13,25,,TRUE
+Lettuce Head // Monte Carlo,D2,17,2025,20,20,2025-05-13,50,,TRUE
+Lettuce Head // Queen of Hearts,D2,17,2025,20,20,2025-05-13,25,,TRUE
+Lettuce Mini Gem // Gatsbi,D2,17,2025,20,20,2025-05-13,25,,TRUE
+Lettuce Mini Gem // Rosaine,D2,17,2025,20,20,2025-05-13,75,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D2,18,2025,20,20,2025-05-13,200,,TRUE
+Pepper Carmen // Carmen,A2,10,2025,21,22,2025-05-28,200,,TRUE
+Pepper Carmen // Carmen,A2,11,2025,21,22,2025-05-28,200,,TRUE
+Pepper Carmen // Carmen,A2,12,2025,21,22,2025-05-28,200,,TRUE
+Pepper Carmen // Carmen,A2,13,2025,21,22,2025-05-28,200,,FALSE
+Pepper Carmen // Carmen,A2,14,2025,21,22,2025-05-28,100,added 100 ft carmen because we had the bed space and the plants,TRUE
+Pepper Hot // Amazing,A2,14,2025,21,22,2025-05-28,50,,FALSE
+Pepper Hot // Jedi Jalapeno,A2,14,2025,21,22,2025-05-28,50,,FALSE
+Pepper Shishito // Shishimai,A2,15,2025,21,22,2025-05-28,200,,FALSE
+Arugula // Astro,A3,16,2025,21,21,2025-05-21,100,added extra planting,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,16,2025,21,21,2025-05-21,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,16,2025,21,21,2025-05-21,60,,TRUE
+Greens Mix Mizuna // Central Red,A3,16,2025,21,21,2025-05-21,10,,TRUE
+Greens Mix Purslane // Golden ,A3,16,2025,21,21,2025-05-21,10,,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,16,2025,21,21,2025-05-21,10,,TRUE
+Cabbage Flat // Tendersweet,B2,1,2025,21,21,2025-05-20,200,,TRUE
+Cabbage Flat // Tendersweet,B2,2,2025,21,21,2025-05-20,200,,TRUE
+Basil // Prospera DMR CG1,B3,18,2025,21,21,2025-05-21,200,,TRUE
+Celery // merengo,B3,19,2025,21,21,2025-05-20,200,,TRUE
+Scallion // Parade,B3,23,2025,21,22,2025-05-26,100,field too wet for week 21 planting,TRUE
+Beets Golden // Yellow Sunrise,C3,4,2025,21,21,2025-05-21,200,,TRUE
+Beets Golden // Yellow Sunrise,C3,5,2025,21,21,2025-05-21,200,,TRUE
+Radicchio Pink // Rosa Alba,D2,20,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Beets Red // Red Ace F1,C3,6,2025,21,21,2025-05-21,200,,TRUE
+Radicchio Round // Indigo,D2,22,2025,21,21,2025-05-21,200,,TRUE
+Radicchio Variegated // Giorgine,D2,23,2025,21,21,2025-05-21,200,,TRUE
+Zucchini Green // Noche,D3,19,2025,21,22,2025-05-28,200,"pushed all 1 week.  too cold, field not ready. ",TRUE
+Zucchini Green // Noche,D3,20,2025,21,22,2025-05-28,200,,TRUE
+Zucchini Green // Noche,D3,21,2025,21,22,2025-05-28,200,,TRUE
+Zucchini Green // Noche,D3,22,2025,21,22,2025-05-28,200,,TRUE
+Zucchini Striped // Pantheon,D3,25,2025,21,22,2025-05-28,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,26,2025,21,22,2025-05-28,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,23,2025,21,22,2025-05-28,200,,TRUE
+Zucchini Yellow // Golden Glory,D3,24,2025,21,22,2025-05-28,200,,TRUE
+Greens Mix Tokyo Bekana // Tokyo Bekana,A3,17,2025,22,1,2025-01-01,0,cancel.  had to skip the week and it was too late in the season to seed.,TRUE
+Bok Choy // Little Shanghai,A3,17,2025,22,22,2025-05-30,200,did 4 inch spacing,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,18,2025,22,23,2025-06-06,10,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,18,2025,22,23,2025-06-06,145,combined with week 23 frills,TRUE
+Greens Mix Mizuna // Central Red,A3,18,2025,22,23,2025-06-06,10,,TRUE
+Greens Mix Purslane // Golden ,A3,18,2025,22,23,2025-06-06,10,,TRUE
+Cilantro // Cruiser,B3,17,2025,22,22,2025-05-30,150,,TRUE
+Dill // Thalia,B3,17,2025,22,22,2025-05-30,50,,TRUE
+Chard // Bright Lights,C1,29,2025,22,22,2025-05-29,200,,TRUE
+Chard // Bright Lights,C1,30,2025,22,22,2025-05-29,200,,TRUE
+Lettuce Head // Alkindus,D2,24,2025,22,22,2025-05-30,25,,TRUE
+Lettuce Head // Monte Carlo,D2,24,2025,22,22,2025-05-30,25,,TRUE
+Lettuce Head // Queen of Hearts,D2,24,2025,22,22,2025-05-30,25,,TRUE
+Lettuce Mini Gem // Gatsbi,D2,24,2025,22,22,2025-05-30,50,,TRUE
+Lettuce Mini Gem // Rosaine,D2,24,2025,22,22,2025-05-30,75,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D2,25,2025,22,22,2025-05-30,200,,TRUE
+Collards // Flash,E1,1,2025,22,22,2025-05-30,200,,TRUE
+Collards // Flash,E1,2,2025,22,22,2025-05-30,200,,FALSE
+Kale Curly // Winterbor,E1,3,2025,22,22,2025-05-30,200,,TRUE
+Kale Curly // Winterbor,E1,4,2025,22,22,2025-05-30,200,,TRUE
+Kale Lacinato // Ebony,E1,5,2025,22,22,2025-05-30,200,,TRUE
+Kale Lacinato // Ebony,E1,6,2025,22,22,2025-05-30,200,,TRUE
+Kale Lacinato // Ebony,E1,7,2025,22,22,2025-05-30,200,,TRUE
+Kale Lacinato // Ebony,E1,8,2025,22,22,2025-05-30,200,,FALSE
+Sweet Potato Covington // Covington,X2,15,2025,22,23,2025-06-06,200,,FALSE
+Sweet Potato Covington // Covington,X2,16,2025,22,23,2025-06-06,200,,TRUE
+Sweet Potato Covington // Covington,X2,17,2025,22,23,2025-06-06,200,,TRUE
+Sweet Potato Murasaki // Murasaki,X2,19,2025,22,23,2025-06-05,200,,FALSE
+Sweet Potato Murasaki // Murasaki,X2,20,2025,22,23,2025-06-05,200,,TRUE
+Sweet Potato Murasaki // Murasaki,X2,21,2025,22,23,2025-06-05,200,,TRUE
+Sweet Potato Murasaki // Purple Majesty (Trial),X2,18,2025,22,23,2025-06-05,200,,FALSE
+Sweet Potato Murasaki // Murasaki,X2,4,2025,22,1,2025-01-01,0,Cancel,TRUE
+Greens Mix Amaranth // Polish,A3,18,2025,23,23,2025-06-06,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,18,2025,23,1,2025-01-01,0,cancel. combined with week 22 seeding.,TRUE
+Tomato Sauce // Tiren,A2,16,2025,24,25,2025-06-16,200,,FALSE
+Greens Mix Amaranth // Polish,A3,18,2025,24,24,2025-06-13,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,18,2025,24,24,2025-06-13,75,,TRUE
+Bok Choy // Little Shanghai,A3,19,2025,24,24,2025-06-11,200,,TRUE
+Cilantro // Cruiser,B3,14,2025,24,24,2025-06-13,150,,TRUE
+Dill // Thalia,B3,14,2025,24,24,2025-06-13,50,,TRUE
+Basil // Prospera DMR CG1,B3,15,2025,24,24,2025-06-11,200,,TRUE
+Parsley // Giant of Italy,B3,16,2025,24,24,2025-06-11,200,,TRUE
+Carrot // Naval F1,C3,8,2025,24,26,2025-06-27,200,,TRUE
+Carrot // Naval F1,C3,9,2025,24,26,2025-06-27,200,,TRUE
+Carrot // Naval F1,C3,7,2025,24,26,2025-06-27,200,,FALSE
+Lettuce Head // Fusion,D2,26,2025,24,24,2025-06-11,37.5,,TRUE
+Lettuce Head // Monte Carlo,D2,26,2025,24,24,2025-06-11,25,,TRUE
+Lettuce Head // Muir,D2,26,2025,24,24,2025-06-11,37.5,,TRUE
+Lettuce Head // Pomegranate Crunch,D2,26,2025,24,24,2025-06-11,25,,TRUE
+Lettuce Head // Purple Fusion,D2,26,2025,24,24,2025-06-11,75,,TRUE
+Lettuce Mix SN // (Summer) Foundation Mix + Batavia,D2,27,2025,24,24,2025-06-11,200,,TRUE
+Chard // Bright Lights,E1,9,2025,24,25,2025-06-16,200,,FALSE
+Kale Curly // Winterbor,E1,10,2025,24,25,2025-06-16,200,,TRUE
+Kale Curly // Winterbor,E1,11,2025,24,25,2025-06-16,200,,FALSE
+Kale Lacinato // Ebony,E1,12,2025,24,25,2025-06-16,200,,TRUE
+Kale Lacinato // Ebony,E1,13,2025,24,25,2025-06-16,200,,TRUE
+Kale Lacinato // Ebony,E1,14,2025,24,25,2025-06-16,200,,FALSE
+Winter Squash Acorn // Night Shift,X2,13,2025,24,24,2025-06-11,200,,TRUE
+Winter Squash Acorn // Night Shift,X2,12,2025,24,24,2025-06-11,200,,FALSE
+Winter Squash Butternut // Waltham,X2,7,2025,24,24,2025-06-11,200,,TRUE
+Winter Squash Butternut // Waltham,X2,6,2025,24,24,2025-06-11,200,,FALSE
+Winter Squash Delicata // Delicata JS,X2,11,2025,24,24,2025-06-11,200,,FALSE
+Winter Squash Delicata // Honeyboat,X2,10,2025,24,24,2025-06-11,200,,TRUE
+Winter Squash Delicata // Honeyboat,X2,9,2025,24,24,2025-06-11,200,,FALSE
+Winter Squash Kabocha // Black Futsu,X2,4,2025,24,24,2025-06-12,200,,TRUE
+Winter Squash Kabocha // Tetsukabuto,X2,3,2025,24,24,2025-06-12,200,,TRUE
+Winter Squash Kabocha // Tetsukabuto,X2,2,2025,24,24,2025-06-12,200,,FALSE
+Winter Squash Honeynut // Honeynut,X3,30,2025,24,24,2025-06-12,200,,TRUE
+Winter Squash Honeynut // Honeynut,X3,29,2025,24,24,2025-06-12,200,,FALSE
+Winter Squash Koginut // Autumn Frost,X3,28,2025,24,24,2025-06-12,200,,TRUE
+Greens Mix Amaranth // Polish,A3,20,2025,25,25,2025-06-20,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,20,2025,25,25,2025-06-20,75,,TRUE
+Cilantro // Cruiser,B3,13,2025,25,25,2025-06-20,150,,TRUE
+Dill // Thalia,B3,13,2025,25,25,2025-06-20,50,,TRUE
+Celery // merengo,B3,15,2025,25,28,2025-07-10,200,,FALSE
+Greens Mix Amaranth // Polish,A3,21,2025,26,26,2025-06-27,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,21,2025,26,26,2025-06-27,75,,TRUE
+Parsley // Giant of Italy,B3,14,2025,26,28,2025-07-10,200,,FALSE
+Lettuce Head // Fusion,D1,28,2025,26,27,2025-07-01,37.5,,FALSE
+Lettuce Head // Monte Carlo,D1,28,2025,26,27,2025-07-01,25,,TRUE
+Lettuce Head // Muir,D1,28,2025,26,27,2025-07-01,37.5,,TRUE
+Lettuce Head // Pomegranate Crunch,D1,28,2025,26,27,2025-07-01,25,,TRUE
+Lettuce Head // Purple Fusion,D1,28,2025,26,27,2025-07-01,75,,TRUE
+Lettuce Mix SN // (Summer) Foundation Mix + Batavia,D2,27,2025,26,27,2025-07-01,200,,FALSE
+Cauliflower Sprouting // Fioretto 70,X3,25,2025,26,27,2025-07-01,200,,FALSE
+Greens Mix Amaranth // Polish,A3,21,2025,27,27,2025-07-04,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,21,2025,27,27,2025-07-04,75,,TRUE
+Basil // Prospera DMR CG1,B3,13,2025,27,28,2025-07-11,200,,FALSE
+Carrot Bulk // Bolero,C3,11,2025,27,27,2025-07-04,200,,FALSE
+Carrot Bulk // Bolero,C3,12,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,13,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,14,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,15,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,16,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,17,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,18,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,19,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,20,2025,27,27,2025-07-04,200,,TRUE
+Carrot Bulk // Bolero,C3,10,2025,27,27,2025-07-04,200,,TRUE
+Cauliflower // Denali,X3,24,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Denali,X3,23,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Denali,X3,22,2025,27,27,2025-07-02,200,,FALSE
+Cauliflower // Lavender,X3,21,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Lavender,X3,20,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Lavender,X3,19,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Lavender,X3,18,2025,27,27,2025-07-02,200,,FALSE
+Cauliflower // Puntaverde,X3,17,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Puntaverde,X3,16,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Puntaverde,X3,15,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Puntaverde,X3,14,2025,27,27,2025-07-02,200,,FALSE
+Cauliflower // Skywalker,X3,13,2025,27,27,2025-07-02,200,,TRUE
+Cauliflower // Skywalker,X3,12,2025,27,27,2025-07-02,200,,FALSE
+Greens Mix Amaranth // Polish,A3,22,2025,28,29,2025-07-14,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,22,2025,28,29,2025-07-14,75,,TRUE
+Parsley // Giant of Italy,B3,11,2025,28,28,2025-07-11,200,,FALSE
+Celery // merengo,B3,12,2025,28,28,2025-07-10,200,,FALSE
+Cilantro // Cruiser,B3,9,2025,28,29,2025-07-14,200,,FALSE
+Escarole // Eliance,D2,29,2025,28,29,2025-07-15,40,,FALSE
+Lettuce Head // Alkindus,D2,29,2025,28,29,2025-07-15,40,,TRUE
+Lettuce Head // Monte Carlo,D2,29,2025,28,29,2025-07-15,40,,TRUE
+Lettuce Head // Queen of Hearts,D2,29,2025,28,29,2025-07-15,40,,TRUE
+Lettuce Head // Truchas,D2,29,2025,28,29,2025-07-15,40,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D2,30,2025,28,29,2025-07-15,200,,FALSE
+Bok Choy // Little Shanghai,E1,19,2025,28,29,2025-07-15,200,,FALSE
+Broccolini // BC1611,E1,16,2025,28,28,2025-07-09,200,,TRUE
+Broccolini // BC1611,E1,17,2025,28,28,2025-07-09,200,,TRUE
+Broccolini // BC1611,E1,18,2025,28,28,2025-07-09,200,,TRUE
+Broccolini // BC1611,E1,15,2025,28,28,2025-07-09,200,,FALSE
+Brussels Sprouts // Dagan,X3,5,2025,28,29,2025-07-17,175,,TRUE
+Brussels Sprouts // Dagan,X3,6,2025,28,29,2025-07-17,175,,TRUE
+Brussels Sprouts // Dagan,X3,7,2025,28,29,2025-07-17,200,,TRUE
+Brussels Sprouts // Dagan,X3,8,2025,28,29,2025-07-17,200,,TRUE
+Brussels Sprouts // Dagan,X3,9,2025,28,29,2025-07-17,200,,FALSE
+Cauliflower Sprouting // Fioretto 70,X3,3,2025,28,29,2025-07-17,125,,TRUE
+Cauliflower Sprouting // Fioretto 70,X3,4,2025,28,29,2025-07-17,150,,FALSE
+Cauliflower Sprouting // Murasaki Fioretto,X3,1,2025,28,29,2025-07-17,50,,TRUE
+Cauliflower Sprouting // Murasaki Fioretto,X3,2,2025,28,29,2025-07-17,100,,FALSE
+Greens Mix Amaranth // Polish,A3,22,2025,29,29,2025-07-18,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,22,2025,29,29,2025-07-18,75,,TRUE
+Puntarelle // Medusa,D1,5,2025,29,29,2025-07-16,200,,TRUE
+Puntarelle // Medusa,D1,6,2025,29,29,2025-07-16,200,,FALSE
+Radicchio Pink // Rosa Alba,D1,1,2025,29,29,2025-07-16,200,,TRUE
+Radicchio Pink // Rosa Alba,D1,2,2025,29,29,2025-07-16,200,,TRUE
+Radicchio Pink // Rosa Alba,D1,3,2025,29,29,2025-07-16,200,,TRUE
+Radicchio Pink // Rosa Alba,D1,4,2025,29,29,2025-07-16,200,,FALSE
+Lettuce Head // Alkindus,D2,29,2025,29,29,2025-07-15,0,combined with week 28 plantings,TRUE
+Lettuce Head // Monte Carlo,D2,29,2025,29,29,2025-07-15,0,combined with week 28 plantings,TRUE
+Lettuce Head // Queen of Hearts,D2,29,2025,29,29,2025-07-15,0,combined with week 28 plantings,TRUE
+Lettuce Head // Truchas,D2,29,2025,29,29,2025-07-15,0,combined with week 28 plantings,TRUE
+Cabbage Chinese // Merlot,Y1,1,2025,29,30,2025-07-23,200,,FALSE
+Cabbage Chinese // Merlot,Y1,2,2025,29,30,2025-07-23,200,,TRUE
+Cabbage Chinese // Minuet,Y1,3,2025,29,30,2025-07-23,200,,FALSE
+Cabbage Cone // Caraflex,Y1,4,2025,29,30,2025-07-23,200,,FALSE
+Cabbage Cone Storage // Murdoc,Y1,5,2025,29,30,2025-07-23,200,,FALSE
+Cabbage Cone Storage // Murdoc,Y1,8,2025,29,30,2025-07-23,25,Ran out of Murdoc.  filled in with 175' promise.,TRUE
+Cabbage Green Storage // Promise,Y1,8,2025,29,30,2025-07-23,175,,TRUE
+Cabbage Green Storage // Promise,Y1,6,2025,29,30,2025-07-23,200,,TRUE
+Cabbage Green Storage // Promise,Y1,7,2025,29,30,2025-07-23,200,,FALSE
+Cabbage Red // Omero,Y1,9,2025,29,30,2025-07-23,200,,FALSE
+Cabbage Red // Pink Cabbage Hybrid,Y1,10,2025,29,30,2025-07-24,200,,FALSE
+Cabbage Red // Ruby Perfection,Y1,11,2025,29,30,2025-07-24,200,,TRUE
+Cabbage Red // Ruby Perfection,Y1,12,2025,29,30,2025-07-24,200,,FALSE
+Cabbage Savoy // Famosa,Y1,13,2025,29,30,2025-07-24,200,,TRUE
+Cabbage Savoy // Famosa,Y1,14,2025,29,30,2025-07-24,200,,FALSE
+Greens Mix Amaranth // Polish,A3,23,2025,30,30,2025-07-24,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,23,2025,30,30,2025-07-24,75,,TRUE
+Celery // merengo,B3,7,2025,30,31,2025-07-29,200,,FALSE
+Cilantro // Cruiser,B3,8,2025,30,30,2025-07-24,200,,FALSE
+Scallion // Parade,B3,6,2025,30,31,2025-07-28,100,,FALSE
+Collards // Flash,C2,1,2025,30,30,2025-07-22,200,,TRUE
+Collards // Flash,C2,2,2025,30,30,2025-07-22,200,,FALSE
+Kale Curly // Winterbor,C2,3,2025,30,30,2025-07-22,200,,TRUE
+Kale Curly // Winterbor,C2,4,2025,30,30,2025-07-22,200,,FALSE
+Kale Lacinato // Ebony,C2,5,2025,30,30,2025-07-22,200,,TRUE
+Kale Lacinato // Ebony,C2,6,2025,30,30,2025-07-22,200,,TRUE
+Kale Lacinato // Ebony,C2,7,2025,30,30,2025-07-22,200,,TRUE
+Kale Lacinato // Ebony,C2,8,2025,30,30,2025-07-22,200,,FALSE
+Dandelion // Clio,D1,19,2025,30,31,2025-07-29,200,,FALSE
+Escarole // Eliance,D1,18,2025,30,30,2025-07-25,100,,FALSE
+Fennel // Orazio,D1,17,2025,30,30,2025-07-25,200,,FALSE
+Frisee // Curlesi,D1,18,2025,30,31,2025-07-29,100,,FALSE
+Lettuce Head // Alkindus,D1,20,2025,30,31,2025-07-29,20,combined with week 31 planting,TRUE
+Lettuce Head // Monte Carlo,D1,20,2025,30,31,2025-07-29,25,combined with week 31 planting,TRUE
+Lettuce Head // Queen of Hearts,D1,20,2025,30,31,2025-07-29,25,combined with week 31 planting,TRUE
+Lettuce Head // Truchas,D1,20,2025,30,31,2025-07-29,30,combined with week 31 planting,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D1,21,2025,30,31,2025-07-29,200,,FALSE
+Radicchio Round // Indigo,D1,7,2025,30,30,2025-07-22,200,,FALSE
+Radicchio Round // T&T,D1,8,2025,30,30,2025-07-22,200,,FALSE
+Radicchio Round // Vasari,D1,9,2025,30,30,2025-07-22,200,,TRUE
+Radicchio Round // Vasari,D1,10,2025,30,30,2025-07-22,200,,FALSE
+Radicchio Treviso // Baldo ,D1,11,2025,30,30,2025-07-22,200,,FALSE
+Radicchio Treviso // Regina Rosa,D1,12,2025,30,30,2025-07-22,200,,FALSE
+Radicchio Treviso // Sangria,D1,13,2025,30,30,2025-07-25,200,,FALSE
+Radicchio Variegated // Beatrice,D1,14,2025,30,30,2025-07-25,200,,FALSE
+Radicchio Variegated // Giorgine,D1,16,2025,30,30,2025-07-25,200,125' Giorgine; 50' Mirabella; 25' Beatrice,TRUE
+Radicchio Variegated // Mirabella,D1,15,2025,30,30,2025-07-25,200,,TRUE
+Bok Choy // Little Shanghai,E1,20,2025,30,31,2025-07-29,200,,TRUE
+Broccolini // BC1611,E1,21,2025,30,30,2025-07-23,200,,TRUE
+Broccolini // BC1611,E1,22,2025,30,30,2025-07-23,200,,TRUE
+Broccolini // BC1611,E1,23,2025,30,30,2025-07-23,200,,TRUE
+Broccolini // BC1611,E1,24,2025,30,30,2025-07-23,200,,FALSE
+Chard // Bright Lights,E1,25,2025,30,30,2025-07-24,200,,TRUE
+Chard // Bright Lights,E1,26,2025,30,30,2025-07-24,200,,FALSE
+Cauliflower Sprouting // Fioretto 70,Y1,15,2025,30,30,2025-07-24,200,,FALSE
+Cauliflower Sprouting // Murasaki Fioretto,Y1,16,2025,30,30,2025-07-24,200,125' Mur Fio.  filled in with 30' Rose and 30' Fio,FALSE
+Arugula // Astro,A3,22,2025,31,1,2025-01-01,,Cancel,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,22,2025,31,1,2025-01-01,,Cancel,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,22,2025,31,1,2025-01-01,,Cancel,TRUE
+Greens Mix Rosie // Rosie,A3,22,2025,31,1,2025-01-01,,Cancel,TRUE
+Radish French Breakfast // French Breakfast,A3,23,2025,31,1,2025-01-01,,Cancel,TRUE
+Radish Purple // Bacchus,A3,23,2025,31,1,2025-01-01,,Cancel,TRUE
+Radish Red // Sora,A3,24,2025,31,1,2025-01-01,,Cancel,TRUE
+Scallion // Parade,B3,6,2025,31,31,2025-07-28,100,,FALSE
+Beets Bulk Golden // Boldor,C3,22,2025,31,31,2025-07-30,200,,FALSE
+Beets Bulk Golden // Boldor,C3,23,2025,31,31,2025-07-30,200,,TRUE
+Beets Bulk Red // Boro F1,C3,24,2025,31,31,2025-07-30,200,,FALSE
+Beets Bulk Red // Boro F1,C3,25,2025,31,31,2025-07-30,200,,TRUE
+Lettuce Head // Alkindus,D1,7,2025,31,31,2025-07-29,20,combined with week 30 planting,TRUE
+Lettuce Head // Monte Carlo,D1,7,2025,31,31,2025-07-29,25,combined with week 30 planting,TRUE
+Lettuce Head // Queen of Hearts,D1,7,2025,31,31,2025-07-29,25,combined with week 30 planting,TRUE
+Lettuce Head // Truchas,D1,7,2025,31,31,2025-07-29,30,combined with week 30 planting,TRUE
+Radicchio Round // Leonardo,D1,19,2025,31,32,2025-08-05,200,,TRUE
+Cabbage Chinese // Minuet,X3,7,2025,31,33,2025-08-13,200,,FALSE
+Cilantro // Cruiser,A3,24,2025,32,34,2025-08-18,200,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,A3,24,2025,32,1,2025-01-01,,Cancel,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,24,2025,32,1,2025-01-01,,Cancel,TRUE
+Greens Mix Rosie // Rosie,A3,24,2025,32,1,2025-01-01,,Cancel,TRUE
+Scallion // Parade,B3,28,2025,32,33,2025-08-14,100,,FALSE
+Chard // Bright Lights,C2,9,2025,32,34,2025-08-21,200,,FALSE
+Chard // Bright Lights,C2,10,2025,32,34,2025-08-21,200,,TRUE
+Collards // Flash,C2,11,2025,32,33,2025-08-13,200,,FALSE
+Collards // Flash,C2,12,2025,32,33,2025-08-13,200,,TRUE
+Kale Curly // Winterbor,C2,13,2025,32,33,2025-08-13,200,,FALSE
+Kale Curly // Winterbor,C2,14,2025,32,33,2025-08-13,200,,TRUE
+Kale Lacinato // Ebony,C2,15,2025,32,33,2025-08-13,200,,FALSE
+Kale Lacinato // Ebony,C2,16,2025,32,33,2025-08-13,200,,TRUE
+Kale Lacinato // Ebony,C2,17,2025,32,33,2025-08-13,200,,TRUE
+Kale Lacinato // Ebony,C2,18,2025,32,33,2025-08-13,200,,TRUE
+Kale Lacinato // Ebony,C2,19,2025,32,33,2025-08-13,200,,TRUE
+Kale Lacinato // Ebony,C2,20,2025,32,33,2025-08-13,200,,TRUE
+Dandelion // Clio,D1,20,2025,32,33,2025-08-13,200,,FALSE
+Escarole // Eliance,D1,4,2025,32,33,2025-08-13,100,,FALSE
+Fennel // Orazio,D1,21,2025,32,33,2025-08-13,200,,FALSE
+Frisee // Curlesi,D1,6,2025,32,33,2025-08-13,100,,FALSE
+Lettuce Head // Alkindus,D1,22,2025,32,33,2025-08-13,25,,FALSE
+Lettuce Head // Monte Carlo,D1,22,2025,32,33,2025-08-13,25,,TRUE
+Lettuce Head // Queen of Hearts,D1,22,2025,32,33,2025-08-13,25,,TRUE
+Lettuce Head // Truchas,D1,22,2025,32,33,2025-08-13,25,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,D1,23,2025,32,32,2025-08-05,200,,FALSE
+Radish Daikon Bulk // Artesia,D1,24,2025,32,33,2025-08-14,50,,TRUE
+Radish Daikon Bulk // Bora Nam,D1,24,2025,32,33,2025-08-14,50,,TRUE
+Radish Daikon Bulk // Red King 2,D1,24,2025,32,33,2025-08-14,50,,TRUE
+Radish Daikon Bulk // Red Meat,D1,24,2025,32,33,2025-08-14,50,,FALSE
+Turnip // Hakurei,D1,25,2025,32,33,2025-08-14,100,,FALSE
+Turnip // Hirosaki,D1,25,2025,32,33,2025-08-14,100,,FALSE
+Turnip Bulk // Purple Top,D1,26,2025,32,33,2025-08-14,100,& 75' Scarlet Queen,FALSE
+Bok Choy // Little Shanghai,E1,27,2025,32,33,2025-08-13,100,,FALSE
+Broccolini // BC1611,E1,28,2025,32,33,2025-08-13,200,,FALSE
+Broccolini // BC1611,E1,29,2025,32,33,2025-08-13,200,,TRUE
+Broccolini // BC1611,E1,30,2025,32,33,2025-08-13,200,,TRUE
+Kohlrabi // Kolibri,X3,32,2025,32,33,2025-08-13,150,,FALSE
+Kohlrabi Storage // Kossak,X3,33,2025,32,33,2025-08-13,150,,FALSE
+Radish Daikon Bulk // Artesia,Y1,1,2025,32,33,2025-08-13,200,,FALSE
+Radish Daikon Bulk // Bora Nam,Y1,2,2025,32,33,2025-08-13,200,,FALSE
+Radish Daikon Bulk // Red King 2,Y1,3,2025,32,33,2025-08-13,200,,FALSE
+Scallion // Nabechan,CAT2,3,2024,36,36,2024-09-04,100,,TRUE
+Kale Curly // Winterbor,HT1,6,2024,36,36,2024-09-04,100,,TRUE
+Kale Curly // Winterbor,HT1,7,2024,36,36,2024-09-04,100,,TRUE
+Kale Curly // Winterbor,HT1,8,2024,36,36,2024-09-04,100,,TRUE
+Kale Lacinato // Ebony,HT1,1,2024,36,36,2024-09-04,100,,TRUE
+Kale Lacinato // Ebony,HT1,2,2024,36,36,2024-09-04,100,,TRUE
+Kale Lacinato // Ebony,HT1,3,2024,36,36,2024-09-04,100,,TRUE
+Kale Lacinato // Ebony,HT1,4,2024,36,36,2024-09-04,100,,TRUE
+Kale Lacinato // Ebony,HT1,5,2024,36,36,2024-09-04,100,,TRUE
+Lettuce Mini Gem // Rosaine,CAT1,1,2024,37,37,2024-09-11,100,,TRUE
+Lettuce Mini Gem // Rosaine,CAT1,2,2024,37,37,2024-09-11,100,,TRUE
+Kale Russian // Siberian,HT2,1,2024,37,37,2024-09-11,110,,FALSE
+Kale Russian // Siberian,HT2,2,2024,37,37,2024-09-11,110,,TRUE
+Lettuce Mini Gem // Rosaine,CAT1,3,2024,38,38,2024-09-18,100,,TRUE
+Dandelion // Clio,CAT4,1,2024,38,38,2024-09-18,100,,FALSE
+Dandelion // Clio,CAT4,2,2024,38,38,2024-09-18,100,,TRUE
+Kale Russian // Siberian,HT2,4,2024,38,38,2024-09-18,110,,TRUE
+Kale Russian // Siberian,HT2,3,2024,38,38,2024-09-18,110,,TRUE
+Kale Russian // Siberian,HT2,5,2024,38,38,2024-09-18,110,,TRUE
+Arugula // Astro,HT3,1,2024,38,38,2024-09-18,50,,TRUE
+Bok Choy // Li Ren,HT3,7,2024,38,38,2024-09-18,100,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,HT3,1,2024,38,38,2024-09-18,50,,TRUE
+Lettuce Mix SN // Green Inscised SN,HT3,2,2024,38,38,2024-09-18,100,,TRUE
+Lettuce Mix SN // Green Sweet Crisp,HT3,3,2024,38,38,2024-09-18,100,,TRUE
+Lettuce Mix SN // Red Sweet Crisp,HT3,5,2024,38,38,2024-09-18,100,,TRUE
+Lettuce Mix SN // Red Tango,HT3,6,2024,38,38,2024-09-18,100,,TRUE
+Mustard // Miike Giant,HT3,4,2024,38,38,2024-09-18,100,,TRUE
+Chard // Bright Lights,HT4,4,2024,38,38,2024-09-18,100,,FALSE
+Chard // Bright Lights,HT4,5,2024,38,38,2024-09-18,100,,TRUE
+Chard // Bright Lights,HT4,6,2024,38,38,2024-09-18,50,,TRUE
+Cilantro // Calypso,JSS,3,2024,38,38,2024-09-18,50,,TRUE
+Scallion // Nabechan,CAT2,2,2024,39,39,2024-09-25,100,,TRUE
+Spinach // Kolibri,HT4,1,2024,39,39,2024-09-25,100,,FALSE
+Spinach // Kolibri,HT4,2,2024,39,39,2024-09-25,100,,FALSE
+Spinach // Kolibri,HT4,3,2024,39,39,2024-09-25,100,,FALSE
+Lettuce Mini Gem // Rosaine,HT2,8,2024,40,40,2024-10-02,110,,FALSE
+Lettuce Mix SN // Green Inscised SN,HT2,7,2024,40,40,2024-10-02,110,,TRUE
+Lettuce Mix SN // Green Sweet Crisp,HT2,6,2024,40,40,2024-10-02,110,,TRUE
+Scallion // Nabechan,CAT2,1,2024,42,41,2024-10-09,100,,TRUE
+Spinach // Kolibri,HT4,8,2024,43,42,2024-10-16,100,,FALSE
+Spinach // Kolibri,HT4,7,2024,43,42,2024-10-16,100,,FALSE
+Spinach // Kolibri,HT4,6,2024,43,42,2024-10-16,50,,FALSE
+Arugula // Astro,HT3,8,2024,46,46,2024-11-13,50,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,HT3,8,2024,46,46,2024-11-13,50,,TRUE
+Radicchio Round // Indigo,A2,20,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Sweet Potato Murasaki // Murasaki,A3,1,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Cabbage Cone Storage // Murdoc,B3,1,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Cabbage Red // Omero,B3,2,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Cabbage Savoy // Famosa,B3,3,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Cabbage Green Storage // Storage No. 4,B3,4,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Potato Yellow // Satina,C1,1,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Carrot Bulk // Bolero,D3,11,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Radish Daikon Bulk // Artesia,E1,20,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Turnip Bulk // Purple Top,E1,19,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Sweet Potato Covington // Covington,A3,2,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Winter Squash Koginut // Koginut,A3,3,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Winter Squash Kabocha // Tetsukabuto,A3,4,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Potato White // Kennebec,C1,10,2024,NA,22,2024-06-01,200,2024 Bulk Harvest,TRUE
+Radish Daikon Bulk // Red Meat,Y1,4,2025,32,33,2025-08-13,200,,FALSE
+Arugula // Astro,A3,25,2025,33,34,2025-08-18,100,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,A3,25,2025,33,34,2025-08-18,25,,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,25,2025,33,34,2025-08-18,100,,FALSE
+Greens Mix Rosie // Rosie,A3,25,2025,33,34,2025-08-18,25,,TRUE
+Radish French Breakfast // French Breakfast,A3,26,2025,33,34,2025-08-18,100,,FALSE
+Radish Purple // Bacchus,A3,26,2025,33,34,2025-08-18,100,,FALSE
+Radish Red // Sora,A3,27,2025,33,34,2025-08-18,100,,FALSE
+Scallion // Parade,B3,28,2025,33,33,2025-08-14,100,,FALSE
+Beets Bulk Golden // Yellow Sunrise,C3,26,2025,33,33,2025-08-12,200,,FALSE
+Beets Bulk Golden // Yellow Sunrise,C3,27,2025,33,33,2025-08-12,200,"S row Boldor, N row Surise",TRUE
+Beets Bulk Red // Boro F1,C3,28,2025,33,33,2025-08-12,200,S row W 1/2 is Red Ace,FALSE
+Beets Red // Red Ace F1,C3,29,2025,33,33,2025-08-12,200,"Plan was Boro, ran out of seed, seeded Red Ace",TRUE
+Lettuce Head // Alkindus,D1,22,2025,33,1,2025-01-01,,Cancel,TRUE
+Lettuce Head // Monte Carlo,D1,22,2025,33,1,2025-01-01,,Cancel,TRUE
+Lettuce Head // Queen of Hearts,D1,22,2025,33,1,2025-01-01,,Cancel,TRUE
+Lettuce Head // Truchas,D1,22,2025,33,1,2025-01-01,,Cancel,TRUE
+Greens Mix Baby Kale // Red Russian Kale,A3,27,2025,34,1,2025-01-01,,Cancel,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,27,2025,34,1,2025-01-01,,Cancel,TRUE
+Greens Mix Rosie // Rosie,A3,27,2025,34,1,2025-01-01,,Cancel,TRUE
+Cilantro // Cruiser,B3,29,2025,34,1,2025-01-01,,Cancel,TRUE
+Broccolini // Burgundy,C2,21,2025,34,34,2025-08-22,200,,FALSE
+Broccolini // Burgundy,C2,22,2025,34,34,2025-08-22,200,,TRUE
+Broccolini // Burgundy,C2,23,2025,34,34,2025-08-22,200,,TRUE
+Chard // Bright Lights,C2,24,2025,34,34,2025-08-22,200,,FALSE
+Kale Lacinato // Ebony,C2,25,2025,34,34,2025-08-22,200,,FALSE
+Kale Lacinato // Ebony,C2,26,2025,34,34,2025-08-22,200,,TRUE
+Kale Lacinato // Ebony,C2,27,2025,34,34,2025-08-22,200,,TRUE
+Kale Lacinato // Ebony,C2,28,2025,34,34,2025-08-22,200,,TRUE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,C2,27,2025,34,36,2025-09-04,200,1 bed in C2,FALSE
+Turnip // Hakurei,D1,26,2025,34,1,2025-01-01,,Cancel,TRUE
+Bok Choy // Little Shanghai,E1,27,2025,34,1,2025-01-01,,Cancel,TRUE
+Arugula // Astro,A3,28,2025,35,36,2025-09-03,100,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,A3,28,2025,35,1,2025-01-01,,Cancel,TRUE
+Greens Mix Cheap Frills // Cheap Frills,A3,28,2025,35,1,2025-01-01,,Cancel,TRUE
+Greens Mix Rosie // Rosie,A3,28,2025,35,1,2025-01-01,,Cancel,TRUE
+Radish French Breakfast // French Breakfast,A3,29,2025,35,36,2025-09-03,100,,TRUE
+Radish Purple // Bacchus,A3,29,2025,35,36,2025-09-03,100,,TRUE
+Radish Red // Sora,A3,30,2025,35,1,2025-01-01,,Cancel,TRUE
+Cilantro // Cruiser,B3,30,2025,35,1,2025-01-01,,Cancel,TRUE
+Dandelion // Clio,CAT3,1,2025,36,37,2025-09-10,100,,FALSE
+Dandelion // Clio,CAT3,2,2025,36,37,2025-09-10,100,,TRUE
+Lettuce Mix SN // (Winter) Prismatic + Batavian,CAT3,3,2025,36,37,2025-09-10,100,,FALSE
+Chard // Bright Lights,HT1,1,2025,36,38,2025-09-15,100,,FALSE
+Chard // Bright Lights,HT1,2,2025,36,38,2025-09-15,100,,TRUE
+Chard // Bright Lights,HT1,3,2025,36,38,2025-09-15,100,,TRUE
+Chard // Bright Lights,HT1,4,2025,36,38,2025-09-15,100,,TRUE
+Scallion // Parade,HT1,5,2025,36,38,2025-09-16,100,,FALSE
+Bok Choy // Little Shanghai,HT2,1,2025,36,38,2025-09-16,55,,FALSE
+Mustard // Miike Giant,HT2,7,2025,36,38,2025-09-16,110,planted 25' of mizuna,FALSE
+Greens Mix Baby Kale // Red Russian Kale,A3,30,2025,36,36,2025-09-03,25,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,A3,30,2025,36,36,2025-09-03,100,,FALSE
+Greens Mix Rosie // Rosie,A3,30,2025,36,36,2025-09-03,25,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,C2,28,2025,36,36,2025-09-04,400,2 beds in C2,FALSE
+Kale Lacinato // Ebony,HT5,6,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,7,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,8,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,1,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,2,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,3,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,4,2025,36,36,2025-09-04,100,,FALSE
+Kale Lacinato // Ebony,HT5,5,2025,36,36,2025-09-04,100,,FALSE
+Bok Choy // Little Shanghai,HT2,1,2025,37,38,2025-09-16,55,,FALSE
+Arugula Wild // Bellezia,CAT1,1,2025,38,39,2025-09-22,100,,FALSE
+Arugula Wild // Bellezia,CAT1,2,2025,38,39,2025-09-22,100,,FALSE
+Arugula Wild // Bellezia,CAT1,3,2025,38,39,2025-09-22,100,,FALSE
+Scallion // Parade,HT1,6,2025,38,38,2025-09-16,100,,FALSE
+Bok Choy // Little Shanghai,HT2,2,2025,38,41,2025-10-08,55,,FALSE
+Mustard // Miike Giant,HT2,8,2025,38,38,2025-09-18,100,short 10',FALSE
+Spinach // Kolibri,HT3,1,2025,38,39,2025-09-22,100,PP trays were spotty due to damping off (8/20 seeding),FALSE
+Spinach // Kolibri,HT3,2,2025,38,39,2025-09-22,100,PP trays were spotty due to damping off (8/20 seeding),FALSE
+Spinach // Kolibri,HT3,3,2025,38,39,2025-09-22,100,from 9/5 seeding,FALSE
+Spinach // Kolibri,HT3,4,2025,38,39,2025-09-24,100,DS Kolibiri - PP trays of other types un-usable due to damping off,FALSE
+Spinach // Kolibri,HT3,5,2025,38,39,2025-09-24,100,DS Kolibiri - PP trays of other types un-usable due to damping off,FALSE
+Spinach // Kolibri,HT3,6,2025,38,39,2025-09-24,100,DS Kolibiri - PP trays of other types un-usable due to damping off,FALSE
+Kale Russian // Siberian,HT4,6,2025,38,39,2025-09-26,100,,FALSE
+Kale Russian // Siberian,HT4,7,2025,38,39,2025-09-26,100,,FALSE
+Kale Russian // Siberian,HT4,3,2025,38,39,2025-09-26,100,,FALSE
+Lettuce Mix SN // (Winter) Prismatic + Batavian,HT4,4,2025,38,40,2025-10-03,100,,FALSE
+Bok Choy // Little Shanghai,HT2,2,2025,39,41,2025-10-08,20,,FALSE
+Lettuce Mix SN // (Winter) Prismatic + Batavian,HT4,5,2025,39,40,2025-10-03,100,,FALSE
+Arugula // Astro,JSS,1,2025,39,43,2025-10-20,50,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,JSS,1,2025,39,43,2025-10-20,50,,FALSE
+Scallion // Parade,HT1,7,2025,40,41,2025-10-08,100,,FALSE
+Bok Choy // Little Shanghai,HT2,3,2025,40,1,2025-01-01,0,Cancel,FALSE
+Spinach // Kolibri,HT3,5,2025,40,1,2025-01-01,0,Cancel,FALSE
+Spinach // Kolibri,HT3,6,2025,40,1,2025-01-01,0,Cancel,FALSE
+Spinach // Rangitoto,HT3,7,2025,40,39,2025-09-26,50,West side,FALSE
+Spinach // Space,HT3,7,2025,40,1,2025-01-01,0,Cancel,FALSE
+Spinach // Sunangel,HT3,8,2025,40,39,2025-09-26,75,"3 N rows Sunangel, S row Rangitoto to W, Tarisier E",FALSE
+Spinach // Tarsier,HT3,7,2025,40,39,2025-09-26,50,East side,FALSE
+Lettuce Mix SN // (Winter) Prismatic + Batavian,HT4,6,2025,40,42,2025-10-13,100,,FALSE
+Bok Choy // Little Shanghai,HT2,3,2025,41,43,2025-10-20,55,,FALSE
+Lettuce Mix SN // (Winter) Prismatic + Batavian,HT4,7,2025,41,42,2025-10-13,100,,FALSE
+Arugula // Astro,JSS,2,2025,41,43,2025-10-20,50,Date is approximate,FALSE
+Greens Mix Cheap Frills // Cheap Frills,JSS,2,2025,41,43,2025-10-20,50,Date is approximate,FALSE
+Scallion // Parade,HT1,8,2025,42,43,2025-10-20,100,Date is approximate,FALSE
+Bok Choy // Little Shanghai,HT2,4,2025,42,43,2025-10-20,55,Date is approximate,FALSE
+Lettuce Mix SN // (Winter) Prismatic + Batavian,HT4,8,2025,42,43,2025-10-20,100,Date is approximate,FALSE
+Bok Choy // Little Shanghai,HT2,4,2025,43,43,2025-10-20,55,Date is approximate,FALSE
+Arugula // Astro,JSS,3,2025,43,45,2025-11-04,50,Date is approximate,FALSE
+Greens Mix Cheap Frills // Cheap Frills,JSS,3,2025,43,45,2025-11-04,50,Date is approximate,FALSE
+Bok Choy // Bopak,HT2,5,2025,44,45,2025-11-04,55,"Date is approximate / assorted choy varieties, used best plants.",FALSE
+Bok Choy // Bopak,HT2,5,2025,45,45,2025-11-04,55,"Date is approximate / assorted choy varieties, used best plants.",FALSE
+Bok Choy // Bopak,HT2,6,2025,46,45,2025-11-04,55,"Date is approximate / assorted choy varieties, used best plants.",FALSE
+Bok Choy // Bopak,HT2,6,2025,47,45,2025-11-04,55,"Date is approximate / assorted choy varieties, used best plants.",FALSE
+Greens Mix Baby Kale // Red Russian Kale,CAT2,3,2026,10,,,,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,CAT3,3,2026,10,,,,,FALSE
+Radish French Breakfast // French Breakfast,CAT2,2,2026,10,,,,,FALSE
+Radish Purple // Bacchus,CAT2,1,2026,10,,,,,FALSE
+Arugula // Astro,HT2,3,2026,8,9,2026-02-25,50,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,HT2,4,2026,8,9,2026-02-24,50,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,HT2,3,2026,8,9,2026-02-24,50,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,HT2,4,2026,9,,,,,FALSE
+Arugula // Astro,HT2,5,2026,10,,,,,FALSE
+Garlic // German White,B3,28,2026,12,14,2026-03-31,190,,FALSE
+Garlic // German White,B3,27,2026,12,14,2026-03-31,200,,FALSE
+Garlic // Hardneck - Em,B3,30,2026,12,14,2026-03-31,75,E side,FALSE
+Garlic // Hardneck - Em,B3,29,2026,12,14,2026-03-31,50,E side,FALSE
+Garlic // Music,B3,29,2026,12,14,2026-03-31,150,,FALSE
+Garlic // Music,B3,28,2026,12,14,2026-03-31,10,W side,FALSE
+Garlic // Softneck - Em,B3,30,2026,12,14,2026-03-31,125,W side,FALSE
+Pea Shelling // PLS595,HT4,2,2026,12,,,,,FALSE
+Pea Shelling // PLS595,HT4,1,2026,12,,,,,FALSE
+Pea Snap // Super Sugar Snap,JSS,1,2026,12,16,2026-04-15,100,3.3#/bed. soaked 1 day. drained/seeded day 3,FALSE
+Pea Snap // Super Sugar Snap,JSS,2,2026,12,16,2026-04-15,100,3.3#/bed. soaked 1 day. drained/seeded day 3,TRUE
+Pea Snap // Super Sugar Snap,JSS,3,2026,12,16,2026-04-15,100,3.3#/bed. soaked 1 day. drained/seeded day 3,TRUE
+Pea Snap // Sweet Gem,CAT4,1,2026,12,16,2026-04-15,100,3.3#/bed. soaked 1 day. drained/seeded day 3,FALSE
+Pea Snap // Sweet Gem,CAT4,2,2026,12,16,2026-04-15,100,3.3#/bed. soaked 1 day. drained/seeded day 3,TRUE
+Pea Snap // Sweet Gem,CAT4,3,2026,12,16,2026-04-15,100,3.3#/bed. soaked 1 day. drained/seeded day 3,TRUE
+Arugula // Astro,B1,1,2026,14,14,2026-04-01,100,,FALSE
+Frisee // Curlesi,B1,2,2026,14,14,2026-04-01,100,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,B1,3,2026,14,14,2026-04-01,15,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,B1,3,2026,14,14,2026-04-01,85,,FALSE
+Lettuce Head // Alkindus,B1,4,2026,14,14,2026-04-01,0,,FALSE
+Lettuce Mini Gem // Gatsbi,B1,4,2026,14,14,2026-04-01,100,last 20' Rosaine,FALSE
+Lettuce Mini Gem // Rosaine,B1,5,2026,14,14,2026-04-01,100,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B1,6,2026,14,14,2026-04-01,100,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B1,7,2026,14,14,2026-04-01,100,,FALSE
+Radish French Breakfast // French Breakfast,B1,8,2026,14,14,2026-04-01,100,,FALSE
+Radish Purple // Bacchus,B1,9,2026,14,14,2026-04-01,100,,FALSE
+Radish Red // Sora,B1,10,2026,14,14,2026-04-01,100,,FALSE
+Arugula // Astro,B1,11,2026,15,15,2026-04-10,100,,FALSE
+Cilantro // Cruiser,C3,1,2026,15,15,2026-04-10,200,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,B1,12,2026,15,15,2026-04-10,15,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,B1,12,2026,15,15,2026-04-10,85,,FALSE
+Radish French Breakfast // French Breakfast,B1,13,2026,15,15,2026-04-10,100,came out a little light,FALSE
+Radish Purple // Bacchus,B1,14,2026,15,15,2026-04-10,100,,FALSE
+Radish Red // Sora,B1,15,2026,15,15,2026-04-10,100,,FALSE
+Scallion // Parade,C3,2,2026,15,15,2026-04-10,200,,FALSE
+Arugula // Astro,B1,16,2026,16,16,2026-04-17,100,,FALSE
+Bok Choy // Li Ren Choi,B1,16,2026,16,16,2026-04-14,100,,FALSE
+Bok Choy // Li Ren Choi,B1,17,2026,16,16,2026-04-14,100,,TRUE
+Broccolini // BC1611,E2,1,2026,16,,,,,FALSE
+Broccolini // BC1611,E2,2,2026,16,,,,,FALSE
+Broccolini // BC1611,E2,3,2026,16,,,,,FALSE
+Chard // Bright Lights,D3,1,2026,16,16,2026-04-17,200,,FALSE
+Collards // Flash,D3,5,2026,16,16,2026-04-17,50,,FALSE
+Dandelion // Clio,B2,1,2026,16,16,2026-04-14,175,filled in with fennel,FALSE
+Escarole // Eros,B2,2,2026,16,1,2026-01-01,0,CANCEL plants died,FALSE
+Fennel // Orazio,B2,2,2026,16,16,2026-04-14,200,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,B1,19,2026,16,16,2026-04-17,15,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,B1,19,2026,16,16,2026-04-17,85,,FALSE
+Kale Curly // Winterbor,D3,5,2026,16,16,2026-04-17,150,,FALSE
+Kale Curly // Winterbor,D3,4,2026,16,1,2026-01-01,0,CANCEL plants died,FALSE
+Kale Lacinato // Ebony,D3,2,2026,16,16,2026-04-17,200,,FALSE
+Kale Lacinato // Ebony,D3,3,2026,16,16,2026-04-17,200,,TRUE
+Kale Lacinato // Ebony,D3,4,2026,16,16,2026-04-17,200,,TRUE
+Kale Lacinato // Ebony,D3,8,2026,16,1,2026-01-01,0,CANCEL,FALSE
+Lettuce Head // Alkindus,B2,3,2026,16,16,2026-04-13,85,,FALSE
+Lettuce Mini Gem // Gatsbi,B2,3,2026,16,16,2026-04-13,15,,FALSE
+Lettuce Mini Gem // Rosaine,B2,3,2026,16,16,2026-04-13,100,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,4,2026,16,16,2026-04-13,200,,FALSE
+Parsley // Giant of Italy,C3,4,2026,16,16,2026-04-13,150,,FALSE
+Radicchio Round // Indigo,B2,6,2026,16,,,,delayed til week 17,FALSE
+Radicchio Variegated // Giorgine,B2,7,2026,16,,,,delayed til week 17,FALSE
+Radish French Breakfast // French Breakfast,B1,20,2026,16,16,2026-04-17,100,,FALSE
+Radish Purple // Bacchus,B1,21,2026,16,16,2026-04-17,100,,FALSE
+Radish Red // Sora,B1,22,2026,16,16,2026-04-17,100,,FALSE
+Scallion // Parade,C3,4,2026,16,,,,,FALSE
+Zucchini Green // Noche,C1,1,2026,16,,,,,FALSE
+Zucchini Green // Noche,C1,2,2026,16,,,,,FALSE
+Arugula // Astro,B1,23,2026,17,,,,,FALSE
+Cabbage Chinese // Minuet,E2,4,2026,17,,,,,FALSE
+Cabbage Chinese // Minuet,E2,5,2026,17,,,,,FALSE
+Cabbage Savoy // Alcosa,E2,6,2026,17,,,,,FALSE
+Cauliflower Sprouting // Song,E2,7,2026,17,,,,,FALSE
+Cauliflower Sprouting // Song,E2,8,2026,17,,,,,FALSE
+Frisee // Curlesi,B1,28,2026,17,,,,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,B1,24,2026,17,,,,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,B1,24,2026,17,,,,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,8,2026,17,,,,,FALSE
+Radish French Breakfast // French Breakfast,B1,25,2026,17,,,,,FALSE
+Radish Purple // Bacchus,B1,26,2026,17,,,,,FALSE
+Radish Red // Sora,B1,27,2026,17,,,,,FALSE
+Scallion // Parade,C3,4,2026,17,,,,,FALSE
+Zucchini Green // Noche,C1,3,2026,17,,,,,FALSE
+Zucchini Green // Noche,C1,4,2026,17,,,,,FALSE
+Zucchini Green // Noche,C1,5,2026,17,,,,,FALSE
+Zucchini Green // Noche,C1,6,2026,17,,,,,FALSE
+Zucchini Striped // Pantheon,C1,7,2026,17,,,,,FALSE
+Zucchini Striped // Pantheon,C1,8,2026,17,,,,,FALSE
+Zucchini Yellow // Golden Glory,C1,9,2026,17,,,,,FALSE
+Zucchini Yellow // Golden Glory,C1,10,2026,17,,,,,FALSE
+Arugula // Astro,B1,29,2026,18,,,,,FALSE
+Beets Golden // Yellow Sunrise,D2,1,2026,18,,,,,FALSE
+Beets Golden // Yellow Sunrise,D2,2,2026,18,,,,,FALSE
+Beets Red // Red Ace F1,D2,3,2026,18,,,,,FALSE
+Bok Choy // Li Ren Choi,D1,1,2026,18,,,,,FALSE
+Broccolini // Bella Verde,E2,9,2026,18,,,,,FALSE
+Broccolini // Bella Verde,E2,10,2026,18,,,,,FALSE
+Broccolini // Happy Rich,E2,11,2026,18,,,,,FALSE
+Broccolini // Happy Rich,E2,12,2026,18,,,,,FALSE
+Broccolini // Happy Rich,E2,13,2026,18,,,,,FALSE
+Cauliflower Sprouting // Song,E2,14,2026,18,,,,,FALSE
+Cauliflower Sprouting // Song,E2,15,2026,18,,,,,FALSE
+Celery // merengo,C3,6,2026,18,,,,,FALSE
+Chard // Bright Lights,D3,9,2026,18,,,,,FALSE
+Chard // Bright Lights,D3,10,2026,18,,,,,FALSE
+Cilantro // Cruiser,C3,7,2026,18,,,,,FALSE
+Collards // Flash,D3,11,2026,18,,,,,FALSE
+Collards // Flash,D3,12,2026,18,,,,,FALSE
+Cucumber // Corinto,HT5,3,2026,18,,,,,FALSE
+Cucumber Katrina // Katrina,HT5,1,2026,18,,,,,FALSE
+Cucumber Katrina // Katrina,HT5,2,2026,18,,,,,FALSE
+Cucumber Pickling // Excelsior,HT5,4,2026,18,,,,,FALSE
+Escarole // Eliance,B2,9,2026,18,,,,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,D1,2,2026,18,,,,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,D1,2,2026,18,,,,,FALSE
+Kale Curly // Winterbor,D3,13,2026,18,,,,,FALSE
+Kale Curly // Winterbor,D3,14,2026,18,,,,,FALSE
+Kale Lacinato // Ebony,D3,15,2026,18,,,,,FALSE
+Kale Lacinato // Ebony,D3,16,2026,18,,,,,FALSE
+Kale Lacinato // Ebony,D3,17,2026,18,,,,,FALSE
+Kale Lacinato // Ebony,D3,18,2026,18,,,,,FALSE
+Lettuce Head // Alkindus,B2,10,2026,18,,,,,FALSE
+Lettuce Mini Gem // Gatsbi,B2,10,2026,18,,,,,FALSE
+Lettuce Mini Gem // Rosaine,B2,10,2026,18,,,,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,11,2026,18,,,,,FALSE
+Radish French Breakfast // French Breakfast,D1,2,2026,18,,,,,FALSE
+Radish Purple // Bacchus,D1,3,2026,18,,,,,FALSE
+Radish Red // Sora,D1,3,2026,18,,,,,FALSE
+Scallion // Parade,C3,5,2026,18,,,,,FALSE
+Arugula // Astro,D1,4,2026,19,,,,,FALSE
+Bean Snap TP // Nor'easter,HT4,6,2026,19,,,,,FALSE
+Bean Snap TP // Nor'easter,HT4,8,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,15,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,16,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,17,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,18,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,19,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,20,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,21,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,22,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,23,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,24,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,25,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,26,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,27,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,28,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,29,2026,19,,,,,FALSE
+Buckwheat // Standard,C3,30,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,15,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,16,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,17,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,18,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,19,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,20,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,21,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,22,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,23,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,24,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,25,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,26,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,27,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,28,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,29,2026,19,,,,,FALSE
+Buckwheat // Standard,D1,30,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,7,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,8,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,9,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,10,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,11,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,12,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,13,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,14,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,15,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,16,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,17,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,18,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,19,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,20,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,21,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,22,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,23,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,24,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,25,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,26,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,27,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,28,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,29,2026,19,,,,,FALSE
+Buckwheat // Standard,D2,30,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,1,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,2,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,3,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,4,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,5,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,6,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,7,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,8,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,9,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,10,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,11,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,12,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,13,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,14,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,15,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,16,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,17,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,18,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,19,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,20,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,21,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,22,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,23,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,24,2026,19,,,,,FALSE
+Buckwheat // Standard,E1,25,2026,19,,,,,FALSE
+Cabbage Cone // Caraflex,E2,16,2026,19,,,,,FALSE
+Cabbage Cone // Caraflex,E2,17,2026,19,,,,,FALSE
+Cabbage Cone // Caraflex,E2,18,2026,19,,,,,FALSE
+Cabbage Red // Omero,E2,19,2026,19,,,,,FALSE
+Cabbage Red // Omero,E2,20,2026,19,,,,,FALSE
+Cabbage Red // Omero,X1,1,2026,19,,,,,FALSE
+Cabbage Red // Omero,X1,2,2026,19,,,,,FALSE
+Cabbage Red // Omero,X1,3,2026,19,,,,,FALSE
+Cabbage Savoy // Alcosa,X1,4,2026,19,,,,,FALSE
+Fennel // Orazio,B2,12,2026,19,,,,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,D1,4,2026,19,,,,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,D1,4,2026,19,,,,,FALSE
+Greens Mix Rosie // Rosie,D1,5,2026,19,,,,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,13,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,1,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,2,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,3,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,4,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,5,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,6,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,7,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,8,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,9,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,10,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,11,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,12,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,13,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,14,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,15,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,16,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,17,2026,19,,,,,FALSE
+Oats & Peas // Standard,A2,18,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,1,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,2,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,3,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,4,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,5,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,6,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,7,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,8,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,9,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,10,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,11,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,12,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,13,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,14,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,15,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,16,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,17,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,18,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,19,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,20,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,21,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,22,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,23,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,24,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,25,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,26,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,27,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,28,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,29,2026,19,,,,,FALSE
+Oats & Peas // Standard,A3,30,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,1,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,2,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,3,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,4,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,5,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,6,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,7,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,8,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,9,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,10,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,11,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,12,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,13,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,14,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,15,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,16,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,17,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,18,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,19,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,20,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,21,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,22,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,23,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,24,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,25,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,26,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,27,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,28,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,29,2026,19,,,,,FALSE
+Oats & Peas // Standard,B3,30,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,19,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,20,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,21,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,22,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,23,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,24,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,25,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,26,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,27,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,28,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,29,2026,19,,,,,FALSE
+Oats & Peas // Standard,C1,30,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,15,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,16,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,17,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,18,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,19,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,20,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,21,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,22,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,23,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,24,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,25,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,26,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,27,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,28,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,29,2026,19,,,,,FALSE
+Oats & Peas // Standard,C2,30,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,1,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,2,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,3,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,4,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,5,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,6,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,7,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,8,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,9,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,10,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,11,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,12,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,13,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,14,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,15,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,16,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,17,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,18,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,19,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,20,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,21,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,22,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,23,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,24,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,25,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,26,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,27,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,28,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,29,2026,19,,,,,FALSE
+Oats & Peas // Standard,X1,30,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,1,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,2,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,3,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,4,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,5,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,6,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,7,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,8,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,9,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,10,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,11,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,12,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,13,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,14,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,15,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,16,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,17,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,18,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,19,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,20,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,21,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,22,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,23,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,24,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,25,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,26,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,27,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,28,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,29,2026,19,,,,,FALSE
+Oats & Peas // Standard,X2,30,2026,19,,,,,FALSE
+Parsley // Giant of Italy,C3,8,2026,19,,,,,FALSE
+Potato Blue // Adirondack Blue,X3,1,2026,19,,,,,FALSE
+Potato Blue // Adirondack Blue,X3,2,2026,19,,,,,FALSE
+Potato Blue // Adirondack Blue,X3,3,2026,19,,,,,FALSE
+Potato Blue // Adirondack Blue,X3,4,2026,19,,,,,FALSE
+Potato White // Dark Red Norland,Y3,1,2026,19,,,,,FALSE
+Potato White // Dark Red Norland,Y3,2,2026,19,,,,,FALSE
+Potato White // Dark Red Norland,Y3,3,2026,19,,,,,FALSE
+Potato White // Dark Red Norland,Y3,4,2026,19,,,,,FALSE
+Potato White // Dark Red Norland,Y3,5,2026,19,,,,,FALSE
+Potato White // Dark Red Norland,Y3,6,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,7,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,8,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,9,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,10,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,11,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,12,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,13,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,14,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,15,2026,19,,,,,FALSE
+Potato White // Kennebec,Y3,16,2026,19,,,,,FALSE
+Potato White // Purple Viking,X3,5,2026,19,,,,,FALSE
+Potato White // Purple Viking,X3,6,2026,19,,,,,FALSE
+Potato White // Purple Viking,Y3,17,2026,19,,,,,FALSE
+Potato White // Purple Viking,Y3,18,2026,19,,,,,FALSE
+Potato White // Purple Viking,Y3,19,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,20,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,21,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,22,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,23,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,24,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,25,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,26,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,27,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,28,2026,19,,,,,FALSE
+Potato Yellow // Satina,Y3,29,2026,19,,,,,FALSE
+Radicchio Round // Indigo,B2,14,2026,19,,,,,FALSE
+Radicchio Variegated // Giorgine,B2,15,2026,19,,,,,FALSE
+Radish French Breakfast // French Breakfast,D1,5,2026,19,,,,,FALSE
+Radish Purple // Bacchus,D1,6,2026,19,,,,,FALSE
+Radish Red // Sora,D1,6,2026,19,,,,,FALSE
+Scallion // Parade,C3,5,2026,19,,,,,FALSE
+Tomato Cherry Mix // Artemis,HT3,7,2026,19,,,,,FALSE
+Tomato Cherry Mix // Attracta,HT3,7,2026,19,,,,,FALSE
+Tomato Cherry Mix // Chocolate Sprinkles,HT3,8,2026,19,,,,,FALSE
+Tomato Cherry Mix // Honey Bee,HT3,8,2026,19,,,,,FALSE
+Tomato Cherry Mix // Mimi,HT3,7,2026,19,,,,,FALSE
+Tomato Cherry Mix // SunGreen,HT3,6,2026,19,,,,,FALSE
+Tomato Cherry Mix // Sunpeach,HT3,6,2026,19,,,,,FALSE
+Tomato Cherry Sungold // SunOrange,HT3,3,2026,19,,,,,FALSE
+Tomato Cherry Sungold // SunOrange,HT3,4,2026,19,,,,,FALSE
+Tomato Cherry Sungold // SunOrange,HT3,5,2026,19,,,,,FALSE
+Tomato Heirloom // MarMango,HT3,1,2026,19,,,,,FALSE
+Tomato Heirloom // Marnouar,HT3,2,2026,19,,,,,FALSE
+Zucchini Green // Noche,C1,11,2026,19,,,,,FALSE
+Zucchini Green // Noche,C1,12,2026,19,,,,,FALSE
+Zucchini Green // Noche,C1,13,2026,19,,,,,FALSE
+Zucchini Green // Noche,C1,14,2026,19,,,,,FALSE
+Zucchini Striped // Pantheon,C1,15,2026,19,,,,,FALSE
+Zucchini Yellow // Golden Glory,C1,16,2026,19,,,,,FALSE
+Zucchini Yellow // Golden Glory,C1,17,2026,19,,,,,FALSE
+Zucchini Yellow // Golden Glory,C1,18,2026,19,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE
+,,,,,,,,,FALSE

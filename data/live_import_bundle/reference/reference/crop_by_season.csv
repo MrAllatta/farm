@@ -1,0 +1,151 @@
+Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation
+Artichoke,Field,17,30,0.5,6,80,1,,2,,,straw,,drip tape
+Arugula,Field,14,37,0.7,3,28,4,120,,XY-24 down (5-6/cell),,,Light,overhead
+Arugula,High Tunnel,1,52,1,14,42,4,120,,XY-24 down (5-6/cell),,,Light,overhead
+Arugula Wild,High Tunnel,1,52,1,6,48,4,,0.5,,,,,overhead & drip tape
+Asparagus,Field,1,52,0.25,4,112,1,,1,,,,,
+Basil,Field,20,31,6,6,35,2,,0.66,,,,,drip tape
+Bean Snap,High Tunnel,18,25,0.5,5,55,1,12,,,twine,landscape fabric,,drip tape
+Bean Snap TP,High Tunnel,18,25,0.5,5,55,1,,0.15,,twine,landscape fabric,,drip tape
+Beets Bulk Golden,Field,18,35,1.5,1,89,2,18,,C-12 down,,,,overhead & drip tape
+Beets Bulk Red,Field,18,35,1.5,1,89,2,18,,"C-12 down, X-24 up (check germ rate)",,,,overhead & drip tape
+Beets Golden,Field,18,35,1.3,4,60,2,18,,MJ-24 up,,,,overhead & drip tape
+Beets Red,Field,18,35,1.3,4,60,2,18,,MJ-24 up or X-24 up,,,,overhead & drip tape
+Bitter Melon,High Tunnel,20,25,0.5,6,42,1,,1,,twine,landscape fabric,,drip tape
+Bok Choy,Field,14,36,4,2,28,2,,0.5,,hoop,,Light,overhead & drip tape
+Bok Choy,High Tunnel,1,52,7,4,70,4,,0.33,,,,,overhead & drip tape
+Broccoli Raab,High Tunnel,4,20,1,2,42,3,,0.5,,,,,drip tape
+Broccoli Raab,Field,10,36,1,2,42,2,,0.25,,,,Light,overhead & drip tape
+Broccolini,Field,14,52,0.7,4,56,1,,1,,,,,drip tape
+Broccolini,High Tunnel,4,20,0.7,4,77,1,,1,,,,,drip tape
+Brussels Sprouts,Field,14,28,0.5,3,110,1,,2,,,,,drip tape
+Cabbage Chinese,Field,14,34,1,3,63,1,,1,,,,,drip tape
+Cabbage Chinese Red,Field,14,31,1,3,63,1,,1,,,,,drip tape
+Cabbage Cone,Field,14,31,1,4,77,1,,1,,,,,drip tape
+Cabbage Cone Storage,Field,14,31,1,6,77,1,,1,,,,,drip tape
+Cabbage Flat,Field,14,31,1,4,77,1,,1,,,,,drip tape
+Cabbage Green Storage,Field,14,31,1,10,140,1,,1,,,,,drip tape
+Cabbage Red,Field,14,31,1,4,77,1,,1,,,,,drip tape
+Cabbage Savoy,Field,14,31,1,4,77,1,,1,,,,,drip tape
+Carrot,Field,18,31,0.66,3,70,2,50,,XY-24 Down ,,,,overhead & drip tape
+Carrot Bulk,Field,18,31,2,3,85,2,42,,XY-24 Down ,,,,overhead & drip tape
+Cauliflower,Field,14,31,1,6,98,1,,1,,,,,drip tape
+Cauliflower Purple,Field,14,30,1,6,98,1,,1,,,,,drip tape
+Cauliflower Romanesco,Field,14,30,1,6,98,1,,1,,,,,drip tape
+Cauliflower Sprouting,Field,14,31,1,5,70,1,,1,,,,,drip tape
+Celery,Field,14,36,1.5,4,70,2,,0.5,,,,,drip tape
+Chard,Field,14,35,1.5,4,49,1,,0.5,,,,,drip tape
+Chard,High Tunnel,1,52,1.5,16,84,3,,1,,,,,drip tape
+Cilantro,Field,13,36,3,2,56,2,100,,C-12 down,,,,overhead & drip tape
+Cilantro,High Tunnel,1,52,3,4,72,3,100,,C-12 down,,,,overhead & drip tape
+Collards,Field,14,35,1.5,7,42,1,,1,,,,Light,drip tape
+Cucumber,High Tunnel,1,52,2.5,6,42,1,,1,,twine,landscape fabric,,drip tape
+Cucumber Katrina,High Tunnel,1,52,1.2,4,38,1,,1,,twine,landscape fabric,,drip tape
+Cucumber Pickling,High Tunnel,1,52,1.2,4,49,1,,1,,twine,landscape fabric,,drip tape
+Dandelion,Field,14,45,2,8,49,2,,0.5,,,,,drip tape
+Dandelion,High Tunnel,1,52,2,10,80,3,,0.5,,,,,drip tape
+Dill,Field,15,32,3,2,50,2,40,,XY-24 down,,,,overhead & drip tape
+Dry Beans,Field,18,20,0.5,1,95,2,8,,,4' oak stakes + twine,,,
+Eggplant Asian,Field,20,24,1,6,56,1,,1,,4' oak stakes + twine,landscape fabric,Light,drip tape
+Eggplant Italian Black,Field,20,24,1,6,56,1,,1,,4' oak stakes + twine,landscape fabric,Light,drip tape
+Eggplant Italian Striped,Field,20,24,1.1,10,56,1,,1,,4' oak stakes + twine,landscape fabric,Light,drip tape
+Eggplant Mini,Field,20,24,0.7,8,63,1,,1,,hoop,landscape fabric,Light,drip tape
+Escarole,Field,14,45,2,3,49,2,,1,,,,,drip tape
+Escarole,High Tunnel,1,52,3,4,80,3,,1,,,,,drip tape
+Fennel,Field,14,35,2,4,70,2,,1,,,,,drip tape
+Frisee,Field,14,36,1,3,48,2,,0.5,,,,,overhead & drip tape
+Garlic,Field,1,52,6,1,255,2,,0.5,,,,,drip tape
+Garlic Green,High Tunnel,1,52,2,3,180,3,,0.24,,,,,drip tape
+Garlic Scape,Field,1,52,0.4,3,210,2,,0.5,,,,,
+Greens Mix Amaranth,Field,21,31,0.7,3,21,4,100,,,,,,overhead
+Greens Mix Baby Kale,Field,14,36,0.7,3,21,4,65,,XY-24(standard rate) or XY-36,,,Light,overhead
+Greens Mix Baby Kale,High Tunnel,1,52,1.2,8,60,4,65,,XY-24(standard rate) or XY-36,,,,overhead & drip tape
+Greens Mix Cheap Frills,Field,14,36,0.7,3,21,4,100,,XY-24(standard rate) or XY-36,,,Light,overhead
+Greens Mix Cheap Frills,High Tunnel,1,52,1.2,8,60,4,100,,XY-24(standard rate) or XY-36,,,,overhead & drip tape
+Greens Mix Mizuna,Field,14,36,0.7,3,21,4,65,,XY-24(standard rate) or XY-36,,,Light,overhead
+Greens Mix Mizuna,High Tunnel,1,52,1.2,8,60,4,65,,XY-24(standard rate) or XY-36,,,,overhead & drip tape
+Greens Mix Purslane,Field,14,25,0.5,3,48,4,30,,,,,Light,overhead & drip tape
+Greens Mix Rosie,Field,14,36,0.7,3,21,4,65,,XY-24(standard rate) or XY-36,,,Light,overhead & drip tape
+Greens Mix Tokyo Bekana,Field,14,36,0.7,3,14,4,65,,XY-24(standard rate) or XY-36,,,Light,overhead
+Greens Mix Tokyo Bekana,High Tunnel,1,52,1.2,8,60,4,65,,XY-24(standard rate) or XY-36,,,,overhead & drip tape
+Kale Curly,Field,14,35,1.25,8,42,1,,1,,,,Light,drip tape
+Kale Curly,High Tunnel,1,52,1.6,16,84,3,,1,,,,Light,drip tape
+Kale Lacinato,Field,14,35,1.25,8,42,1,,1,,,,Light,drip tape
+Kale Lacinato,High Tunnel,1,52,1.6,16,84,3,,1,,,,Light,drip tape
+Kale Russian,Field,14,35,1.25,8,60,1,,1,,,,Light,drip tape
+Kale Russian,High Tunnel,1,52,1.6,16,84,3,,1,,,,Light,drip tape
+Kohlrabi,Field,14,35,1,3,35,2,,0.5,,,,Light,drip tape
+Kohlrabi Storage,Field,14,35,4,4,42,2,,0.5,,,,,drip tape
+Komatsuna,Field,14,36,1.5,2,28,2,,0.5,,,,Light,drip tape
+Komatsuna,High Tunnel,1,52,2,2,70,4,,0.5,,hoop,,Light,drip tape
+Lettuce Head,Field,14,36,3,2,42,2,,0.5,,,,,drip tape
+Lettuce Mini Gem,Field,14,36,3,2,42,2,,0.5,,,,,drip tape
+Lettuce Mini Gem,High Tunnel,1,52,7,3,70,4,,0.5,,,,,drip tape
+Lettuce Mix SN,Field,14,36,0.5,1,55,2,,0.5,,,,,drip tape
+Lettuce Mix SN,High Tunnel,1,52,1.5,8,77,4,,0.5,,,,,drip tape
+Mustard,Field,14,36,1.5,2,28,2,,0.5,,hoop,,Light,drip tape
+Mustard,High Tunnel,1,52,2,16,70,3,,0.5,,,,,drip tape
+Okra,High Tunnel,18,22,1,9,49,1,,1,,,,,drip tape
+Onion Spring,Field,14,20,1,3,77,2,,0.5,,,,Light,drip tape
+Parsley,Field,14,30,5,8,63,2,,0.33,,,,,drip tape
+Parsley,High Tunnel,1,52,2,8,98,4,,0.25,,,,,drip tape
+Pea Shelling,High Tunnel,12,17,1,2,60,2,36,0.15,PP,4' oak stakes + twine,landscape fabric,,drip tape
+Pea Snap,High Tunnel,8,17,1,4,60,2,36,,,t-post & conduit + twine,landscape fabric,,drip tape
+Peas Snap PP,High Tunnel,8,17,1,4,60,2,,0.15,,t-post & conduit + twine,landscape fabric,,drip tape
+Pepper Carmen,Field,21,24,3,8,70,1,,1,,4' oak stakes + twine,landscape fabric,,drip tape
+Pepper Hot,Field,21,24,10,8,58,1,,1,,4' oak stakes + twine,landscape fabric,,drip tape
+Pepper Lunchbox,Field,21,24,2,8,80,1,,1,,4' oak stakes + twine,landscape fabric,,drip tape
+Pepper Shishito,Field,21,24,2,8,53,1,,1,,4' oak stakes + twine,landscape fabric,,drip tape
+Potato Blue,Field,15,20,2,1,90,1,0.125,,,,,,overhead
+Potato Fingerling,Field,15,20,2,1,90,1,0.125,,,,,,overhead
+Potato Red,Field,15,20,2,1,90,1,0.125,,,,,,overhead
+Potato White,Field,15,20,2,1,90,1,0.125,,,,,,overhead
+Potato Yellow,Field,15,20,2,1,90,1,0.125,,,,,,overhead
+Puntarelle,Field,15,35,2,3,120,2,,1,,,,,drip tape
+Radicchio Forced,Field,15,34,0.75,3,90,2,,1,,,,,drip tape
+Radicchio Pink,Field,15,34,2,5,90,2,,1,,,,,drip tape
+Radicchio Round,Field,14,35,2,3,75,2,,1,,,,,drip tape
+Radicchio Treviso,Field,14,34,2,3,80,2,,1,,,,,drip tape
+Radicchio Variegated,Field,14,35,2,3,55,2,,1,,,,,drip tape
+Radish Daikon Bulk,Field,15,35,3.5,4,55,2,30,,F-24,,,Light,overhead
+Radish Daikon Mix,Field,14,37,2,4,55,2,25,,F-24,,,Light,overhead
+Radish French Breakfast,Field,14,37,2,2,25,4,35,,X-30 sly up,,,Light,overhead
+Radish French Breakfast,High Tunnel,1,52,3,3,42,4,35,,F24 up,,,,overhead & drip tape
+Radish Purple,Field,14,37,2,2,25,4,30,,X-30,,,Light,overhead
+Radish Purple,High Tunnel,1,52,3,3,42,4,35,,X-30,,,Light,overhead & drip tape
+Radish Red,Field,14,37,2,2,25,4,30,,X-30 sly down,,,Light,overhead
+Radish Red,High Tunnel,1,52,3,3,42,4,35,,X-30 sly down,,,,overhead & drip tape
+Scallion,Field,14,33,3,2,63,2,,0.17,,hoop,,Proteknet,drip tape
+Scallion,High Tunnel,1,52,3,6,98,4,,0.25,,hoop,,Proteknet,drip tape
+Spinach,Field,13,34,0.5,3,49,2,,0.25,,,,,overhead & drip tape
+Spinach,High Tunnel,1,52,1.75,16,84,4,,0.25,,,,,overhead & drip tape
+Sweet Potato Covington,Field,22,25,1,1,90,1,,1,,,landscape fabric,,drip tape
+Sweet Potato Murasaki,Field,22,25,1,1,90,1,,1,,,landscape fabric,,drip tape
+Tokyo Bekana,Field,14,36,1.5,2,28,2,,0.5,,hoop,,Light,
+Tomato Cherry Mix,High Tunnel,1,52,6,8,65,1,,1,,lower & lean,landscape fabric,,drip tape
+Tomato Cherry Mix,Field,21,24,2.3,8,57,1,,1.5,,t-post & conduit + twine,landscape fabric,,drip tape
+Tomato Cherry Sungold,High Tunnel,1,52,6,8,65,1,,1,,lower & lean,landscape fabric,,drip tape
+Tomato Cherry Sungold,Field,21,24,2.3,8,57,1,,1.5,,t-post & conduit + twine,landscape fabric,,drip tape
+Tomato Heirloom,High Tunnel,1,52,4,8,75,1,,1,,lower & lean,landscape fabric,,drip tape
+Tomato Heirloom,Field,21,24,3,8,65,1,,1.5,,t-post & conduit + twine,landscape fabric,,drip tape
+Tomato Red,Field,21,24,6.5,8,65,1,,1.5,,t-post & conduit + twine,landscape fabric,,drip tape
+Tomato Sauce,Field,21,24,4.5,8,75,1,,1.5,,t-post & conduit + twine,landscape fabric,,drip tape
+Turnip,Field,14,36,2,3,50,2,30,,Y-24 up (50/rotation),,,Light,overhead & drip tape
+Turnip Bulk,Field,15,36,2,1,55,2,35,,YYJ-24,,,,overhead & drip tape
+Winter Squash Acorn,Field,21,26,1,4,85,1,,1.5,,,,,drip tape
+Winter Squash Butternut,Field,21,26,0.75,4,105,0.5,,1.5,,,,,drip tape
+Winter Squash Delicata,Field,21,26,2.5,4,100,1,,1.5,,,,,drip tape
+Winter Squash Futsu,Field,21,26,0.5,4,88,0.5,,1.5,,,,,drip tape
+Winter Squash Honeynut,Field,21,26,1,4,105,0.5,,1.5,,,,,drip tape
+Winter Squash Kabocha,Field,21,26,1,4,100,1,,1.5,,,,,drip tape
+Winter Squash Koginut,Field,21,26,0.5,4,105,0.5,,1.5,,,,,drip tape
+Yu Choy,Field,14,36,1.5,2,28,2,,0.5,,hoop,,Light,
+Zucchini Green,Field,15,25,0.5,3,48,0.5,,2,,hoop,landscape fabric,Light,drip tape
+Zucchini Striped,Field,15,25,0.5,3,48,0.5,,2,,hoop,landscape fabric,Light,drip tape
+Zucchini Yellow,Field,15,25,0.5,3,48,0.5,,2,,hoop,landscape fabric,Light,drip tape
+Oats & Peas,Field,12,37,,,45,6.5,12,,"Drill, Plate F, Gear 3-5",,,,
+Buckwheat,Field,19,37,,,35,6.5,12,,"Drill, Plate E, Gear 7",,,,
+Sudan Grass & Sunn Hemp,Field,25,30,,,110,6.5,12,,"Drill, Plate E, Gear 2",,,,
+Triticale & Winter Peas,Field,36,46,,,210,6.5,12,,"Drill, Plate F, Lowest Gear",,,,
+Oats & Peas,High Tunnel,1,52,,,45,6.5,12,,Use PJ Seeder,,,,
+Sweet Corn,Field,20,26,1.5,2,74,2,1.5,,Corn Planter!,,,,drip tape

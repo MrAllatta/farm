@@ -1,0 +1,39 @@
+{
+  "connector_version": "google-sheets-stage-a2-1",
+  "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+  "provider": "google_sheets",
+  "schema_version": "a2-draft-1",
+  "source_id": "live-import-crop-plan",
+  "tabs": [
+    {
+      "header_row_index": 2,
+      "modified_time": null,
+      "output_path": "year_2026/plantings.csv",
+      "rows_written": 1472,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "header_row_index",
+      "worksheet_title": "Crop Planner"
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2026/nursery_events.csv",
+      "rows_written": 454,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Nursery Plan 502"
+    },
+    {
+      "header_row_index": 5,
+      "modified_time": null,
+      "output_path": "year_2026/planting_field_records.csv",
+      "rows_written": 2985,
+      "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "spreadsheet_name": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "strategy": "header_row_index",
+      "worksheet_title": "Field Records Online"
+    }
+  ]
+}

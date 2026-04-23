@@ -199,6 +199,9 @@ class FieldWalkNoteView(TemplateView):
             planting.status = "failed"
             planting.notes += f"\nFailed: {today} — {notes_text}"
             planting.save()
+        elif planting.status == PlantingStatus.PLANTED:
+            planting.status = PlantingStatus.GROWING
+            planting.save(update_fields=["status"])
 
         messages.success(request, "Field walk note saved.")
         return redirect("operations:field_walk", pk=planting.pk)
@@ -664,6 +667,9 @@ class FieldWalkView(OperationsPlanningYearMixin, TemplateView):
                         yield_adjust_pct=100,
                         notes="",
                     )
+                    if planting.status == PlantingStatus.PLANTED:
+                        planting.status = PlantingStatus.GROWING
+                        planting.save(update_fields=["status"])
                     n += 1
                 messages.success(
                     request,
@@ -718,6 +724,9 @@ class FieldWalkView(OperationsPlanningYearMixin, TemplateView):
                     planting.status = "failed"
                     planting.notes += f"\nFailed: {today} — {notes_text}"
                     planting.save()
+                elif planting.status == PlantingStatus.PLANTED:
+                    planting.status = PlantingStatus.GROWING
+                    planting.save(update_fields=["status"])
 
                 notes_created += 1
 

@@ -1,13 +1,13 @@
-Crop,Type,Botanical Family,Propagation Type,Is Perennial,Fresh or Storage,Storage Weeks,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce
-Tomato Beefsteak,Tomatoes,Solanaceae,seed,false,Fresh,0,pounds,0.5,na,Tote,Serrated knife,20,6,2,72,128,1,1,200
-Tomato Cherry,Tomatoes,Solanaceae,seed,false,Fresh,0,bunches,0.1,20,Flat,Serrated knife,30,6,2,72,128,1,1,200
-Lettuce Mix,Greens,Asteraceae,seed,false,Fresh,0,heads,0.3,20,Clamshell,Serrated knife,50,4,na,72,128,2,1,10000
-Spinach,Greens,Amaranthaceae,seed,false,Fresh,0,pounds,0.15,na,Crate,Scissors,40,3,na,na,128,3,2,1250
-Bell Pepper,Peppers,Solanaceae,seed,false,Fresh,0,each,0.25,10,Tote,Pruner,15,8,3,72,128,1,1,150
-Carrot,Roots,Apiaceae,seed,false,Storage,12,pounds,0.15,na,Bin,Shovel,na,0,na,na,na,na,na,500
-Beet,Roots,Amaranthaceae,seed,false,Storage,16,pounds,0.4,na,Crate,Shovel,na,0,na,na,na,na,na,200
-Cucumber,Fruiting Vines,Cucurbitaceae,seed,false,Fresh,0,each,0.5,12,Flat,Pruner,25,4,na,72,128,2,1,20
-Basil,Herbs,Lamiaceae,seed,false,Fresh,0,bunches,0.05,50,Flat,Scissors,30,4,na,72,128,1,1,5000
-Garlic,Roots,Amarophyllaceae,vegetative_clove,false,Storage,24,pounds,0.15,na,Crate,Shovel,na,0,na,na,na,na,na,na
-Potato,Roots,Solanaceae,vegetative_tuber,false,Storage,20,pounds,0.35,na,Bin,Shovel,na,0,na,na,na,na,na,na
-Asparagus,Roots,Amarophyllaceae,seed,true,Fresh,0,pounds,0.1,na,Crate,Serrated knife,na,0,na,na,na,na,na,50
+Crop,Type,Botanical Family,Propagation Type,Is Perennial,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce
+Tomato Beefsteak,Tomatoes,Solanaceae,seed,false,Fresh,0,FALSE,pounds,0.5,na,Tote,Serrated knife,20,6,2,72,128,1,1,200
+Tomato Cherry,Tomatoes,Solanaceae,seed,false,Fresh,0,FALSE,bunches,0.1,20,Flat,Serrated knife,30,6,2,72,128,1,1,200
+Lettuce Mix,Greens,Asteraceae,seed,false,Fresh,0,FALSE,heads,0.3,20,Clamshell,Serrated knife,50,4,na,72,128,2,1,10000
+Spinach,Greens,Amaranthaceae,seed,false,Fresh,0,FALSE,pounds,0.15,na,Crate,Scissors,40,3,na,na,128,3,2,1250
+Bell Pepper,Peppers,Solanaceae,seed,false,Fresh,0,FALSE,each,0.25,10,Tote,Pruner,15,8,3,72,128,1,1,150
+Carrot,Roots,Apiaceae,seed,false,Storage,12,TRUE,pounds,0.15,na,Bin,Shovel,na,0,na,na,na,na,na,500
+Beet,Roots,Amaranthaceae,seed,false,Storage,16,TRUE,pounds,0.4,na,Crate,Shovel,na,0,na,na,na,na,na,200
+Cucumber,Fruiting Vines,Cucurbitaceae,seed,false,Fresh,0,FALSE,each,0.5,12,Flat,Pruner,25,4,na,72,128,2,1,20
+Basil,Herbs,Lamiaceae,seed,false,Fresh,0,FALSE,bunches,0.05,50,Flat,Scissors,30,4,na,72,128,1,1,5000
+Garlic,Roots,Amarophyllaceae,vegetative_clove,false,Storage,24,TRUE,pounds,0.15,na,Crate,Shovel,na,0,na,na,na,na,na,na
+Potato,Roots,Solanaceae,vegetative_tuber,false,Storage,20,TRUE,pounds,0.35,na,Bin,Shovel,na,0,na,na,na,na,na,na
+Asparagus,Roots,Amarophyllaceae,seed,true,Fresh,0,FALSE,pounds,0.1,na,Crate,Serrated knife,na,0,na,na,na,na,na,50

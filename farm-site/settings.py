@@ -14,9 +14,21 @@ from pathlib import Path
 import importlib.util
 import os
 import sys
+
+
+def _farm_require_login() -> bool:
+    if "FARM_REQUIRE_LOGIN" in os.environ:
+        return os.environ["FARM_REQUIRE_LOGIN"].lower() in {"1", "true", "yes", "on"}
+    if len(sys.argv) > 1 and sys.argv[1] == "test":
+        return False
+    return True
 from django.conf.locale.en import formats as en_formats
 
 AUTH_USER_MODEL = "core.FarmUser"
+
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,9 +149,15 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if _farm_require_login():
+    MIDDLEWARE.append("core.middleware.FarmLoginRequiredMiddleware")
+MIDDLEWARE.extend(
+    [
+        "django.contrib.messages.middleware.MessageMiddleware",
+        "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    ]
+)
 if WHITENOISE_AVAILABLE:
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 

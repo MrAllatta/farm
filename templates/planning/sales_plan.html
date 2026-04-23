@@ -41,8 +41,10 @@
         <span style="margin-left:1rem;"><strong>Planned Revenue:</strong> ${{ summary_revenue|floatformat:2 }}</span>
     </div>
 
-    {% if not channel %}
-    <p>{% if plan_mode == "rollup" %}High-level planning channels are not set up yet. Import <code>product_week_plan</code> data (see <code>reference/sales_rollups.py</code>) or create the Markets/Orders/CSA annual-plan channels.{% else %}Select a sales channel to begin.{% endif %}</p>
+    {% if plan_mode == "rollup" and not rollup_category %}
+    <p>High-level sales categories (Markets, Orders, CSA) are not set up yet. Import reference data so <code>SalesCategory</code> rows exist, or import <code>year_*/sales_plan_302.csv</code> / legacy <code>product_week_plan.csv</code>.</p>
+    {% elif plan_mode == "by_channel" and not channel %}
+    <p>Select a sales channel to begin.</p>
     {% else %}
     <div class="sales-plan-matrix-wrap fp-table-scroll" data-testid="fp-table-scroll">
         <table class="sales-plan-matrix">

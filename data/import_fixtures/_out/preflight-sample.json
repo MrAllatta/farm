@@ -64,6 +64,18 @@
         "skipped": 22,
         "updated": 0
       },
+      "ProductRecipe": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "ProductRecipeComponent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
       "QuickSalesEntry": {
         "created": 0,
         "error": 0,
@@ -73,7 +85,7 @@
       "RotationHistory": {
         "created": 0,
         "error": 0,
-        "skipped": 34,
+        "skipped": 31,
         "updated": 0
       },
       "SalesChannel": {
@@ -93,7 +105,7 @@
     "totals": {
       "created": 0,
       "error": 0,
-      "skipped": 455,
+      "skipped": 452,
       "updated": 0
     }
   },
@@ -102,13 +114,13 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-22T18:49:00.120246Z",
-    "run_id": "20260422T184859581144",
+    "finished_at": "2026-04-23T16:49:05.381315Z",
+    "run_id": "20260423T164904771294",
     "start_year": 2021,
-    "started_at": "2026-04-22T18:48:59.581144Z",
+    "started_at": "2026-04-23T16:49:04.771294Z",
     "validate_only": true,
     "verbose": false
   },
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "status": "ok"
 }

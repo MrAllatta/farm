@@ -14,6 +14,25 @@ from reference.models import CropInfo, Variety
 class Command(BaseCommand):
     help = "Import Variety rows and SeedOrder stubs from a directory of CSV files."
 
+    @staticmethod
+    def _variety_defaults_from_seed_sources_row(row: dict) -> dict:
+        return {
+            "supplier": (row.get("Supplier") or "").strip(),
+            "catalog_number": (row.get("Catalog Number") or row.get("Catalog") or "").strip(),
+            "source_url": (row.get("Source URL") or row.get("URL") or "").strip()[:500],
+            "notes": (row.get("Notes") or "").strip(),
+        }
+
+    @staticmethod
+    def _variety_defaults_from_seed_order_row(row: dict) -> dict:
+        """Optional Variety fields on a seed-order row; row Notes are for SeedOrder, not Variety."""
+        return {
+            "supplier": (row.get("Supplier") or "").strip(),
+            "catalog_number": (row.get("Catalog Number") or row.get("Catalog") or "").strip(),
+            "source_url": (row.get("Source URL") or row.get("URL") or "").strip()[:500],
+            "notes": (row.get("Variety Notes") or "").strip(),
+        }
+
     def add_arguments(self, parser):
         parser.add_argument("data_dir", type=str, help="Directory containing sheet402_*.csv files")
         parser.add_argument(
@@ -27,6 +46,10 @@ class Command(BaseCommand):
         dry_run = options["dry_run"]
         sources = os.path.join(data_dir, "sheet402_seed_sources.csv")
         orders = os.path.join(data_dir, "sheet402_seed_order.csv")
+        if not os.path.isfile(orders):
+            alt_orders = os.path.join(data_dir, "sheet402_seed_orders.csv")
+            if os.path.isfile(alt_orders):
+                orders = alt_orders
         if not os.path.isfile(sources):
             raise CommandError(f"Missing {sources}")
         if dry_run:
@@ -60,12 +83,7 @@ class Command(BaseCommand):
                 Variety.objects.update_or_create(
                     crop=crop,
                     name=variety_name,
-                    defaults={
-                        "supplier": (row.get("Supplier") or "").strip(),
-                        "catalog_number": (row.get("Catalog Number") or row.get("Catalog") or "").strip(),
-                        "source_url": (row.get("Source URL") or row.get("URL") or "").strip()[:500],
-                        "notes": (row.get("Notes") or "").strip(),
-                    },
+                    defaults=self._variety_defaults_from_seed_sources_row(row),
                 )
 
     def _import_orders(self, path: str, dry_run: bool) -> None:
@@ -90,10 +108,18 @@ class Command(BaseCommand):
                     continue
                 variety = Variety.objects.filter(crop=crop, name=variety_name).first()
                 if not variety:
-                    self.stdout.write(
-                        self.style.WARNING(f"Skip order — create variety first: {crop_name} / {variety_name}")
-                    )
-                    continue
+                    if dry_run:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Would create variety from seed order: {crop_name} / {variety_name}"
+                            )
+                        )
+                    else:
+                        variety, _ = Variety.objects.update_or_create(
+                            crop=crop,
+                            name=variety_name,
+                            defaults=self._variety_defaults_from_seed_order_row(row),
+                        )
                 try:
                     qty = Decimal(str(row.get("Planned Quantity") or "0").strip())
                 except (InvalidOperation, TypeError):
@@ -101,7 +127,8 @@ class Command(BaseCommand):
                 unit = (row.get("Unit") or "ounces").strip()[:20]
                 notes = (row.get("Notes") or "").strip()
                 if dry_run:
-                    self.stdout.write(f"Would upsert seed order {variety} {year} {qty} {unit}")
+                    vlabel = f"{crop_name} / {variety_name}" if variety is None else str(variety)
+                    self.stdout.write(f"Would upsert seed order {vlabel} {year} {qty} {unit}")
                     continue
                 SeedOrder.objects.update_or_create(
                     variety=variety,

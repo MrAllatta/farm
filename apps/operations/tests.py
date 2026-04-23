@@ -385,6 +385,43 @@ class WeekOpsViewTests(TestCase):
         self.assertEqual(n.condition, "good")
         self.assertEqual(n.yield_adjust_pct, 100)
 
+    def test_field_walk_no_change_from_planted_advances_to_growing(self):
+        self.planting.status = "planted"
+        self.planting.save(update_fields=["status"])
+        r = self.client.post(
+            reverse("operations:weekops_walk", kwargs={"week": 18}),
+            {"no_change_block": str(self.planting.block_id)},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.planting.refresh_from_db()
+        self.assertEqual(self.planting.status, "growing")
+
+    def test_field_walk_post_from_planted_advances_to_growing(self):
+        self.planting.status = "planted"
+        self.planting.save(update_fields=["status"])
+        r = self.client.post(
+            reverse("operations:weekops_walk", kwargs={"week": 18}),
+            {
+                f"condition_{self.planting.id}": "good",
+                f"notes_{self.planting.id}": "",
+                f"yield_{self.planting.id}": "100",
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        self.planting.refresh_from_db()
+        self.assertEqual(self.planting.status, "growing")
+
+    def test_field_walk_note_post_from_planted_advances_to_growing(self):
+        self.planting.status = "planted"
+        self.planting.save(update_fields=["status"])
+        r = self.client.post(
+            reverse("operations:field_walk", kwargs={"pk": self.planting.pk}),
+            {"condition": "good", "notes": "", "yield_adjust": "100"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.planting.refresh_from_db()
+        self.assertEqual(self.planting.status, "growing")
+
     def test_harvest_entry_appends_notes(self):
         self.he.notes = "existing"
         self.he.save()
