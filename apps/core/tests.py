@@ -1937,11 +1937,16 @@ class ImportHistoricalDataCommandTests(TestCase):
                 sku="CAR-BAG",
                 is_active=True,
             )
+            py2021, _ = PlanningYear.objects.get_or_create(
+                year=2021,
+                defaults={"status": "planning", "overplant_factor": Decimal("1.10")},
+            )
             ProductRecipe.objects.create(
                 product=product,
                 name=recipe_name,
                 output_unit="bag",
                 is_active=True,
+                planning_year=py2021,
             )
             summary = self._run_import(data_dir, Path(output_dir) / "summary-mix-recipe-missing-packed-qty.json")
 
@@ -1989,11 +1994,16 @@ class ImportHistoricalDataCommandTests(TestCase):
                 sku="CAR-BAG",
                 is_active=True,
             )
+            py2021, _ = PlanningYear.objects.get_or_create(
+                year=2021,
+                defaults={"status": "planning", "overplant_factor": Decimal("1.10")},
+            )
             ProductRecipe.objects.create(
                 product=product,
                 name=recipe_name,
                 output_unit="bag",
                 is_active=True,
+                planning_year=py2021,
             )
             summary = self._run_import(data_dir, Path(output_dir) / "summary-mix-recipe-pack-batch-link.json")
 
@@ -2347,6 +2357,36 @@ class StageA2OfflineConnectorTests(TestCase):
             ["Block", "Block Type", "# of Beds", "Bed Width (feet)", "Bedfeet per Bed"],
         )
         self.assertEqual(normalized["rows"][1], ["Field 1", "Field", "10", "3", "100"])
+
+    def test_normalizer_fold_into_notes_and_constant_columns(self):
+        rows = [
+            ["Distribution Date", "Mix", "Ingredients", "Variety Request", "Notes"],
+            ["2025-06-01", "Spring Mix", "Lettuce", "Red", "base"],
+        ]
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Distribution Date", "Mix", "Ingredients"],
+            header_row_index=0,
+            output_headers=[
+                "Pack Date",
+                "Mix Product Name",
+                "Component Crop Name",
+                "Notes",
+                "Component Source Type",
+            ],
+            column_map={
+                "Pack Date": "Distribution Date",
+                "Mix Product Name": "Mix",
+                "Component Crop Name": "Ingredients",
+                "Notes": "Notes",
+            },
+            fold_into_notes=[{"into": "Notes", "from": "Variety Request", "prefix": "Variety"}],
+            constant_columns={"Component Source Type": "crop"},
+        )
+        self.assertEqual(
+            normalized["rows"][1],
+            ["2025-06-01", "Spring Mix", "Lettuce", "base\nVariety: Red", "crop"],
+        )
 
     def test_normalizer_nursery_plan_502_row_zero_wide_shape(self):
         """Workbook 402 ``Nursery Plan 502``: header on row 0, passthrough wide columns."""
@@ -3366,6 +3406,12 @@ class PrimaryRouteSmokeTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        cls.smoke_user = get_user_model().objects.create_user(
+            username="primary-route-smoke",
+            email="primary-route-smoke@example.com",
+            password="test-pass-primary-smoke",
+            is_staff=True,
+        )
         year = PlanningYear.objects.create(year=2026, status="active")
         SalesChannel.objects.create(
             name="Farm Stand",
@@ -3427,6 +3473,10 @@ class PrimaryRouteSmokeTests(TestCase):
             planned_quantity=Decimal("25.00"),
             planned_units="pounds",
         )
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.smoke_user)
 
     def test_primary_navigation_routes_do_not_raise_server_errors(self):
         for route_name, kwargs in self.PRIMARY_ROUTES:
@@ -3499,11 +3549,13 @@ class PrimaryRouteSmokeTests(TestCase):
                 self.assertNotEqual(response.status_code, 404)
 
     def test_admin_route_redirects_to_login_boundary(self):
+        self.client.logout()
         response = self.client.get("/admin/")
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response["Location"])
 
     def test_admin_login_boundary_is_reachable(self):
+        self.client.logout()
         response = self.client.get("/admin/login/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<form", status_code=200)
@@ -3561,6 +3613,67 @@ class PrimaryRouteSmokeTests(TestCase):
 
     def test_inventory_add_get_renders_form_without_server_errors(self):
         response = self.client.get(reverse("operations:inventory_add"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response.headers.get("Content-Type", ""))
+
+
+class PlantingTraceSmokeTest(TestCase):
+    """Minimal staff-auth smoke for reports:planting_trace (Makefile beta-critical-gate)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.smoke_user = get_user_model().objects.create_user(
+            username="planting-trace-smoke",
+            email="planting-trace-smoke@example.com",
+            password="test-pass-trace-smoke",
+            is_staff=True,
+        )
+        year = PlanningYear.objects.create(year=2026, status="active")
+        block = Block.objects.create(
+            name="Trace Block",
+            block_type="field",
+            num_beds=10,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        crop = CropInfo.objects.create(
+            name="Trace Greens",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("0.50"),
+            nursery_weeks=0,
+        )
+        crop_season = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("2.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        plant_date = date(2026, 6, 1)
+        Planting.objects.create(
+            pk=1,
+            planning_year=year,
+            crop=crop,
+            crop_season=crop_season,
+            block=block,
+            bed_start=1,
+            bed_end=2,
+            planned_bedfeet=200,
+            planned_plant_date=plant_date,
+        )
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.smoke_user)
+
+    def test_planting_trace_get_renders_without_server_error(self):
+        response = self.client.get(reverse("reports:planting_trace", kwargs={"planting_id": 1}))
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/html", response.headers.get("Content-Type", ""))
 
@@ -3911,6 +4024,13 @@ class BetaGateEvidenceTests(TestCase):
         else:
             call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
         return json.loads(summary_path.read_text(encoding="utf-8"))
+
+    def _assert_redirects_to_staff_login(self, location):
+        self.assertIsNotNone(location)
+        self.assertTrue(
+            "/accounts/login/" in location or "/admin/login/" in location,
+            msg=f"unexpected redirect location: {location!r}",
+        )
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
         self.assertIn(summary["schema_version"], {"1.1", "1.2", "1.3", "1.4"})
@@ -4305,40 +4425,10 @@ class BetaGateEvidenceTests(TestCase):
         self.assertEqual(summary["status"], "ok")
 
         seeded_block = Block.objects.get(name="Field 1")
-        seeded_crop = CropInfo.objects.create(
-            name="Carrot",
-            crop_type="Vegetables",
-            botanical_family="Apiaceae",
-            propagation_type="seed",
-            is_perennial=False,
-            fresh_or_storage="storage",
-            storage_weeks=12,
-            harvest_unit="pounds",
-            avg_unit_weight="1.00",
-            nursery_weeks=0,
-            weeks_until_pot_up=0,
-            seeds_per_cell=1,
-            thinned_plants=0,
-        )
-        seeded_crop_season = CropBySeason.objects.create(
-            crop=seeded_crop,
-            block_type="field",
-            field_week_start=10,
-            field_week_end=40,
-            total_yield_per_bedfoot=Decimal("1.20"),
-            harvest_weeks=6,
-            dtm_days=65,
-            rows_per_bed=3,
-        )
-        seeded_channel = SalesChannel.objects.create(
-            name="Farm Stand",
-            days_of_week=["Saturday"],
-            start_week=1,
-            end_week=52,
-            weekly_target="500.00",
-            is_csa=False,
-            allocation_priority=1,
-        )
+        seeded_crop = CropInfo.objects.get(name="Carrot")
+        seeded_crop_season = CropBySeason.objects.filter(crop=seeded_crop).order_by("id").first()
+        self.assertIsNotNone(seeded_crop_season)
+        seeded_channel = SalesChannel.objects.get(name="Farm Stand")
         planning_year = PlanningYear.objects.create(year=2027, status="active")
         planting = Planting.objects.create(
             planning_year=planning_year,
@@ -4395,7 +4485,7 @@ class BetaGateEvidenceTests(TestCase):
             {"status": "planted"},
         )
         self.assertEqual(status_response.status_code, 302)
-        self.assertIn("/admin/login/", status_response["Location"])
+        self._assert_redirects_to_staff_login(status_response["Location"])
 
         inventory_response = self.client.post(
             reverse("operations:inventory_add"),
@@ -4407,7 +4497,7 @@ class BetaGateEvidenceTests(TestCase):
             },
         )
         self.assertEqual(inventory_response.status_code, 302)
-        self.assertIn("/admin/login/", inventory_response["Location"])
+        self._assert_redirects_to_staff_login(inventory_response["Location"])
 
         sales_response = self.client.post(
             reverse("sales:market_entry"),
@@ -4421,7 +4511,7 @@ class BetaGateEvidenceTests(TestCase):
             },
         )
         self.assertEqual(sales_response.status_code, 302)
-        self.assertIn("/admin/login/", sales_response["Location"])
+        self._assert_redirects_to_staff_login(sales_response["Location"])
 
     def test_authenticated_non_staff_mutations_are_forbidden_for_critical_write_routes(self):
         planting, channel = self._bootstrap_core_workflow_records()
@@ -4981,14 +5071,17 @@ class BetaGateEvidenceTests(TestCase):
             first_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-mismatch-escalation-apply-first.json",
+                expect_apply_command_error=True,
             )
             second_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-mismatch-escalation-apply-second.json",
+                expect_apply_command_error=True,
             )
             third_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-mismatch-escalation-apply-third.json",
+                expect_apply_command_error=True,
             )
 
         self.assertGreater(first_summary["results"]["totals"]["created"], 0)
