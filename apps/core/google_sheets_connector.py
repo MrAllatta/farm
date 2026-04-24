@@ -1,10 +1,12 @@
 import os
+from collections import deque
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
 SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
 SPREADSHEET_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
+FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 
 
 def _extract_id_from_url(url, marker):
@@ -99,7 +101,62 @@ def list_spreadsheets_in_folder(folder_id, drive_service):
     return files
 
 
-def resolve_spreadsheet(tab, drive_service=None, folder_id=None):
+def list_child_folder_ids(folder_id, drive_service):
+    ids = []
+    page_token = None
+    query = f"'{folder_id}' in parents and mimeType='{FOLDER_MIME_TYPE}' and trashed=false"
+
+    while True:
+        response = (
+            drive_service.files()
+            .list(
+                q=query,
+                fields="nextPageToken, files(id)",
+                orderBy="name",
+                pageToken=page_token,
+            )
+            .execute()
+        )
+        for item in response.get("files", []):
+            ids.append(item["id"])
+        page_token = response.get("nextPageToken")
+        if not page_token:
+            break
+
+    return ids
+
+
+def find_spreadsheet_by_name_in_folder_tree(drive_service, root_folder_id, spreadsheet_name):
+    """Breadth-first search for a spreadsheet with exact *spreadsheet_name* under *root_folder_id*."""
+    queue = deque([root_folder_id])
+    seen_folders = set()
+    matches = []
+
+    while queue:
+        fid = queue.popleft()
+        if fid in seen_folders:
+            continue
+        seen_folders.add(fid)
+
+        for item in list_spreadsheets_in_folder(fid, drive_service):
+            if item.get("name") == spreadsheet_name:
+                if not any(m.get("id") == item.get("id") for m in matches):
+                    matches.append(item)
+
+        for child_id in list_child_folder_ids(fid, drive_service):
+            if child_id not in seen_folders:
+                queue.append(child_id)
+
+    if len(matches) > 1:
+        ids_preview = ", ".join(m["id"] for m in matches[:5])
+        raise ValueError(
+            f"multiple spreadsheets named {spreadsheet_name!r} under folder {root_folder_id} "
+            f"(recursive search); ids: {ids_preview}"
+        )
+    return matches[0] if matches else None
+
+
+def resolve_spreadsheet(tab, drive_service=None, folder_id=None, search_descendants=False):
     spreadsheet_id = extract_spreadsheet_id(tab.get("spreadsheet_id") or tab.get("spreadsheet_url"))
     if spreadsheet_id:
         return {
@@ -114,15 +171,24 @@ def resolve_spreadsheet(tab, drive_service=None, folder_id=None):
             "tab entry must provide spreadsheet_id/spreadsheet_url or spreadsheet_name with drive folder access"
         )
 
-    matches = [
-        item for item in list_spreadsheets_in_folder(folder_id, drive_service) if item.get("name") == spreadsheet_name
-    ]
-    if not matches:
-        raise ValueError(f"spreadsheet named '{spreadsheet_name}' not found in folder {folder_id}")
-    if len(matches) > 1:
-        raise ValueError(f"multiple spreadsheets named '{spreadsheet_name}' found in folder {folder_id}")
+    if search_descendants:
+        match = find_spreadsheet_by_name_in_folder_tree(drive_service, folder_id, spreadsheet_name)
+        if match is None:
+            raise ValueError(
+                f"spreadsheet named '{spreadsheet_name}' not found under folder {folder_id} (recursive search)"
+            )
+    else:
+        matches = [
+            item
+            for item in list_spreadsheets_in_folder(folder_id, drive_service)
+            if item.get("name") == spreadsheet_name
+        ]
+        if not matches:
+            raise ValueError(f"spreadsheet named '{spreadsheet_name}' not found in folder {folder_id}")
+        if len(matches) > 1:
+            raise ValueError(f"multiple spreadsheets named '{spreadsheet_name}' found in folder {folder_id}")
 
-    match = matches[0]
+        match = matches[0]
     return {
         "spreadsheet_id": match["id"],
         "spreadsheet_name": match["name"],
