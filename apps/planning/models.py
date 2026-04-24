@@ -163,6 +163,19 @@ class Planting(models.Model):
 
     class Meta:
         ordering = ["planned_plant_date", "block__name"]
+        indexes = [
+            models.Index(
+                fields=[
+                    "planning_year",
+                    "crop",
+                    "block",
+                    "bed_start",
+                    "bed_end",
+                    "planned_plant_date",
+                ],
+                name="planting_import_lookup_idx",
+            ),
+        ]
 
 
 class SeedOrder(models.Model):
