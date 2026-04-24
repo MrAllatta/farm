@@ -1,13 +1,16 @@
 """sales/views.py"""
 
-from django.views.generic import TemplateView, FormView
-from django.shortcuts import redirect
+from itertools import groupby
+
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib import messages
-from django.db.models import Sum
 from django.http import HttpResponse
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
+
+from reports.mixins import ReportContextMixin
 
 from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
@@ -128,6 +131,7 @@ class MarketSalesEntryView(TemplateView):
                 "channels": channels,
                 "channel": channel,
                 "sale_date": sale_date,
+                "sale_iso_week": sale_date.isocalendar().week,
                 "quick_entry": quick_entry,
                 "detailed_entries": detailed_entries,
                 "entry_items": entry_items,
@@ -293,3 +297,76 @@ class MarketSalesEntryView(TemplateView):
         return redirect(
             f"{reverse('sales:market_entry')}" f"?channel={channel.id}&date={sale_date.isoformat()}"
         )
+
+
+class MarketListPrintView(ReportContextMixin, TemplateView):
+    """Printable carry sheet for one market channel and ISO week (pack list or product template)."""
+
+    template_name = "sales/market_list_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
+        week_num = self.resolve_week(kwargs["week"])
+        week_monday, week_sunday = self.week_window(year_obj.year, week_num)
+        channel = get_object_or_404(SalesChannel, pk=kwargs["channel_id"])
+
+        is_active_week = channel.start_week <= week_num <= channel.end_week
+        weekly_target = channel.weekly_target if is_active_week else Decimal("0")
+
+        allocations = list(
+            PackAllocation.objects.filter(
+                channel=channel,
+                pack_date__gte=week_monday,
+                pack_date__lte=week_sunday,
+            )
+            .select_related("product", "product__crop")
+            .order_by(
+                "pack_date",
+                "product__crop__crop_type",
+                "product__crop__name",
+                "product__product_name",
+            )
+        )
+
+        sections = []
+        if allocations:
+            for pack_date, group in groupby(allocations, key=lambda pa: pa.pack_date):
+                sections.append(
+                    {
+                        "pack_date": pack_date,
+                        "rows": [
+                            {
+                                "product": pa.product,
+                                "brought": pa.quantity,
+                            }
+                            for pa in group
+                        ],
+                    }
+                )
+        else:
+            products = (
+                CropSalesFormat.objects.filter(is_active=True)
+                .select_related("crop")
+                .order_by("crop__crop_type", "crop__name", "product_name")
+            )
+            sections.append(
+                {
+                    "pack_date": None,
+                    "rows": [{"product": p, "brought": None} for p in products],
+                }
+            )
+
+        ctx.update(
+            {
+                "year": year_obj,
+                "channel": channel,
+                "week_num": week_num,
+                "week_monday": week_monday,
+                "week_sunday": week_sunday,
+                "weekly_target": weekly_target,
+                "sections": sections,
+            }
+        )
+        ctx.update(self.week_navigation(week_num))
+        return ctx

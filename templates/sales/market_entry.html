@@ -21,6 +21,9 @@
         ·
         <a href="?channel={{ channel.id }}&date={{ next_date|date:'Y-m-d' }}">next week →</a>
     </p>
+    <p class="no-print" style="margin-top: 0.75rem;">
+        <a href="{% url 'sales:market_list_print' channel.id sale_iso_week %}" class="btn btn-secondary">Print market list (week {{ sale_iso_week }})</a>
+    </p>
 </section>
 
 <section class="panel">

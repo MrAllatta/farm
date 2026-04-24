@@ -17,4 +17,9 @@ urlpatterns = [
         views.MarketSalesEntryView.as_view(),
         name="market_entry_date",
     ),
+    path(
+        "channel/<int:channel_id>/week/<int:week>/print/",
+        views.MarketListPrintView.as_view(),
+        name="market_list_print",
+    ),
 ]

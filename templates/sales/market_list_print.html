@@ -1,0 +1,74 @@
+{# sales/market_list_print.html #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Market list — {{ channel.name }} · week {{ week_num }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
+{% endblock %}
+
+{% block content %}
+<div class="market-list-print" style="max-width: 900px; margin: 0 auto; padding: 1rem;">
+
+    <div class="no-print" style="margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+        <button type="button" onclick="window.print()" class="btn btn-primary">Print</button>
+        <a href="{% url 'sales:market_list_print' channel.id prev_week_num %}" class="btn">← Week {{ prev_week_num }}</a>
+        <a href="{% url 'sales:market_list_print' channel.id next_week_num %}" class="btn">Week {{ next_week_num }} →</a>
+        <a href="{% url 'sales:market_entry' %}?channel={{ channel.id }}&date={{ week_monday|date:'Y-m-d' }}" class="btn">Sales entry</a>
+    </div>
+
+    <h1 style="font-size: 14pt; margin-bottom: 2px;">
+        MARKET LIST — {{ channel.name }}
+    </h1>
+    <div style="font-size: 10pt; margin-bottom: 0.75rem;">
+        {{ year.year }} · ISO week {{ week_num }} · {{ week_monday|date:"M j" }}–{{ week_sunday|date:"M j" }}
+        {% if weekly_target %}
+        · target ${{ weekly_target|floatformat:0 }}
+        {% endif %}
+    </div>
+
+    {% for section in sections %}
+    {% if section.pack_date %}
+    <h2 style="font-size: 11pt; margin: 0.75rem 0 0.35rem;">{{ section.pack_date|date:"l, F j" }}</h2>
+    {% else %}
+    <p class="muted" style="font-size: 9pt; margin: 0.35rem 0;">No pack allocations this week — blank lines from active products.</p>
+    {% endif %}
+
+    <div class="fp-table-scroll">
+    <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+        <thead>
+            <tr style="background: #ddd;">
+                <th style="text-align: left; padding: 4px 6px; border: 1px solid #333;">Product</th>
+                <th style="text-align: right; padding: 4px 6px; border: 1px solid #333; width: 9%;">Price</th>
+                <th style="text-align: right; padding: 4px 6px; border: 1px solid #333; width: 10%;">Bring</th>
+                <th style="text-align: right; padding: 4px 6px; border: 1px solid #333; width: 10%;">Sold</th>
+                <th style="text-align: left; padding: 4px 6px; border: 1px solid #333; width: 28%;">Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in section.rows %}
+            <tr>
+                <td style="padding: 4px 6px; border: 1px solid #ccc;">
+                    {{ row.product.product_name }}
+                    <small class="muted">{{ row.product.crop.name }}</small>
+                </td>
+                <td style="padding: 4px 6px; border: 1px solid #ccc; text-align: right;">
+                    ${{ row.product.sale_price|floatformat:2 }}
+                </td>
+                <td style="padding: 4px 6px; border: 1px solid #ccc; text-align: right;">
+                    {% if row.brought is not None %}{{ row.brought|floatformat:1 }} {{ row.product.sale_unit }}{% else %}<span class="muted">—</span>{% endif %}
+                </td>
+                <td style="padding: 4px 6px; border: 1px solid #ccc; text-align: right;">&nbsp;</td>
+                <td style="padding: 4px 6px; border: 1px solid #ccc;">&nbsp;</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="padding: 6px; border: 1px solid #ccc;">No rows.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
