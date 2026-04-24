@@ -170,6 +170,21 @@ class Command(BaseCommand):
             action="store_true",
             help="Detailed per-row output",
         )
+        ref = parser.add_mutually_exclusive_group(required=False)
+        ref.add_argument(
+            "--require-reference",
+            dest="require_reference",
+            action="store_true",
+            default=None,
+            help="Require Tier-1 reference CSVs when their target tables are empty (default: on in apply mode)",
+        )
+        ref.add_argument(
+            "--no-require-reference",
+            dest="require_reference",
+            action="store_false",
+            default=None,
+            help="Allow apply without Tier-1 reference CSVs when target tables are empty (unsafe for fresh DBs)",
+        )
 
     def handle(self, *args, **options):
         self.data_dir = options["data_dir"]
@@ -192,6 +207,12 @@ class Command(BaseCommand):
         self.verbose = options["verbose"]
         self.start_year = options["start_year"]
         self.end_year = options["end_year"]
+        # Single strict-apply switch: revert importer strictness by restoring the pre-strict assignment below.
+        self.strict_apply = not self.validate_only and not self.dry_run
+        if options.get("require_reference") is None:
+            self.require_reference = self.strict_apply
+        else:
+            self.require_reference = bool(options["require_reference"])
         requested_summary_path = options.get("summary_json")
         self.run_started_at = datetime.utcnow()
         # Use microsecond precision to avoid artifact path collisions on rapid retries.
@@ -248,9 +269,18 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
             self._print_summary()
-            self._write_summary_json(status="ok")
+            totals = self._aggregate_import_totals()
+            apply_row_errors_failed = self.strict_apply and totals["error"] > 0
+            summary_status = "failed" if apply_row_errors_failed else "ok"
+            self._write_summary_json(status=summary_status)
             self.stdout.write("=" * 70 + "\n")
+            if apply_row_errors_failed:
+                raise CommandError(
+                    f"apply mode finished with totals.error={totals['error']} (see '{self.summary_json_path}')"
+                )
 
+        except CommandError:
+            raise
         except Exception as e:
             fatal_error = self._format_fatal_error(e)
             self.stderr.write(self.style.ERROR(f"\n❌ FATAL ERROR: {fatal_error}"))
@@ -272,6 +302,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
     def _run_import_pipeline(self):
+        self._enforce_reference_tier_csv_presence()
         self._load_channel_name_aliases()
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
         self.stdout.write("TIER 1: Reference Data (Independent)\n")
@@ -3749,7 +3780,14 @@ class Command(BaseCommand):
         elif self.dry_run:
             self.stdout.write(self.style.WARNING("\n⚠️  DRY-RUN — no data saved"))
         else:
-            self.stdout.write(self.style.SUCCESS("\n✓ All data saved successfully"))
+            if self.strict_apply and total_error > 0:
+                self.stdout.write(
+                    self.style.ERROR(
+                        "\n✗ Apply saved data but finished with row errors; command exits non-zero"
+                    )
+                )
+            else:
+                self.stdout.write(self.style.SUCCESS("\n✓ All data saved successfully"))
 
     def _print_escalation_handoff(self, escalation_summary):
         """Emit operator-facing escalation buckets for rapid incident routing."""
@@ -3873,15 +3911,51 @@ class Command(BaseCommand):
             row["recovery_steps"] = sorted(set(row["recovery_steps"]))
         return escalation_summary
 
-    def _write_summary_json(self, status="ok", fatal_error=None):
-        """Write structured summary artifact when requested."""
-        per_model = {}
+    def _aggregate_import_totals(self):
+        """Roll up per-model counters into aggregate totals (canonical summary.totals)."""
         totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
         for model_name in sorted(self.stats.keys()):
             normalized = self._normalized_outcomes(self.stats[model_name])
-            per_model[model_name] = normalized
             for key in totals:
                 totals[key] += normalized[key]
+        return totals
+
+    def _enforce_reference_tier_csv_presence(self):
+        """Fail apply when a Tier-1 reference CSV is absent while its target table is empty."""
+        if not self.require_reference:
+            return
+        checks = (
+            ("blocks.csv", Block.objects.exists),
+            ("crop_info.csv", CropInfo.objects.exists),
+            ("crop_by_season.csv", CropBySeason.objects.exists),
+            ("sales_channels.csv", SalesChannel.objects.exists),
+            ("crop_sales_formats.csv", CropSalesFormat.objects.exists),
+            (
+                "product_recipe_components.csv",
+                lambda: ProductRecipe.objects.exists() or ProductRecipeComponent.objects.exists(),
+            ),
+            ("seed_sources.csv", Variety.objects.exists),
+        )
+        missing = []
+        for filename, table_nonempty in checks:
+            path = self._resolve_reference_path(filename)
+            if os.path.exists(path) or table_nonempty():
+                continue
+            missing.append(filename)
+        if missing:
+            raise CommandError(
+                "Tier-1 reference CSV(s) missing for empty database tables: "
+                f"{', '.join(missing)} (under '{self.data_dir}'). "
+                "Add the files or pass --no-require-reference for exceptional runs."
+            )
+
+    def _write_summary_json(self, status="ok", fatal_error=None):
+        """Write structured summary artifact when requested."""
+        per_model = {}
+        for model_name in sorted(self.stats.keys()):
+            normalized = self._normalized_outcomes(self.stats[model_name])
+            per_model[model_name] = normalized
+        totals = self._aggregate_import_totals()
 
         failure_signatures = self._build_failure_signatures(status, fatal_error)
         payload = {

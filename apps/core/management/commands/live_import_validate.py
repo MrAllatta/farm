@@ -8,7 +8,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 ALLOWED_ROW_TRANSFORMS = {"split", "copy", "week_monday", "grid_unpivot"}
-OUTPUT_PATH_PATTERN = re.compile(r"^(reference|year_\d{4})/[^/]+\.csv$")
+OUTPUT_PATH_PATTERN = re.compile(r"^(reference|year_\d{4}|year_\$\{YEAR\})/[^/]+\.csv$")
+YEAR_TOKEN = "${YEAR}"
 
 
 class Command(BaseCommand):
@@ -58,6 +59,8 @@ class Command(BaseCommand):
         if not isinstance(tabs, list) or not tabs:
             return [f"{config_path.name}: 'tabs' must be a non-empty list"]
 
+        errors.extend(self._validate_year_schedule(config_path.name, payload, tabs))
+
         for index, tab in enumerate(tabs, 1):
             errors.extend(
                 self._validate_tab(
@@ -67,6 +70,54 @@ class Command(BaseCommand):
                     inherited_required_headers=None,
                     inherited_aliases=None,
                 )
+            )
+        return errors
+
+    def _tab_or_region_mentions_year_token(self, tab):
+        for key in ("output_path", "worksheet_title", "spreadsheet_name"):
+            val = tab.get(key)
+            if isinstance(val, str) and YEAR_TOKEN in val:
+                return True
+        regions = tab.get("source_regions")
+        if isinstance(regions, list):
+            for region in regions:
+                if isinstance(region, dict) and self._tab_or_region_mentions_year_token(region):
+                    return True
+        return False
+
+    def _validate_year_schedule(self, config_name, payload, tabs):
+        errors = []
+        needs_years = any(self._tab_or_region_mentions_year_token(tab) for tab in tabs)
+        if not needs_years:
+            return errors
+
+        has_list = "years" in payload and payload["years"] is not None
+        has_range = payload.get("start_year") is not None or payload.get("end_year") is not None
+        if has_list and has_range:
+            errors.append(
+                f"{config_name}: set either 'years' or start_year/end_year when tabs use {YEAR_TOKEN}, not both"
+            )
+            return errors
+
+        if has_list:
+            ys = payload["years"]
+            if not isinstance(ys, list) or not ys:
+                errors.append(f"{config_name}: 'years' must be a non-empty list when tabs use {YEAR_TOKEN}")
+            else:
+                for item in ys:
+                    if not isinstance(item, int):
+                        errors.append(f"{config_name}: each entry in 'years' must be an integer")
+                        break
+        elif has_range:
+            start = payload.get("start_year")
+            end = payload.get("end_year")
+            if not isinstance(start, int) or not isinstance(end, int):
+                errors.append(f"{config_name}: start_year and end_year must be integers when set")
+            elif start > end:
+                errors.append(f"{config_name}: start_year must be <= end_year")
+        else:
+            errors.append(
+                f"{config_name}: tabs use {YEAR_TOKEN}; set top-level 'years' or 'start_year'/'end_year'"
             )
         return errors
 

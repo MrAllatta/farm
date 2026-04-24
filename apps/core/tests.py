@@ -8,7 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import CommandError, SystemCheckError
@@ -17,6 +17,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 from django.urls import get_resolver, reverse
+from googleapiclient.errors import HttpError
 
 from operations.models import FieldWalkNote, InventoryLedger, PackBatch
 from core.models import RotationHistory
@@ -129,6 +130,20 @@ class ImportHistoricalDataCommandTests(TestCase):
                 "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
                 "Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true",
             ],
+        )
+        # Header-only Tier-1 files satisfy apply-mode --require-reference when tables are empty.
+        self._write_csv(
+            data_dir,
+            "product_recipe_components.csv",
+            [
+                "Mix Product Name,Mix Crop Name,Component Source Type,"
+                "Component Crop Name,Component Percent,Recipe Name",
+            ],
+        )
+        self._write_csv(
+            data_dir,
+            "seed_sources.csv",
+            ["Crop,Variety,Supplier,Catalog Number,Source URL,Notes"],
         )
 
     def _write_known_mismatch_fixture(self, data_dir):
@@ -340,22 +355,38 @@ class ImportHistoricalDataCommandTests(TestCase):
             ],
         )
 
-    def _run_import(self, data_dir, summary_path, *extra_args):
-        call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
+    def _run_import(self, data_dir, summary_path, *extra_args, expect_apply_command_error=False):
+        if expect_apply_command_error:
+            with self.assertRaises(CommandError):
+                call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
+        else:
+            call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
         return json.loads(summary_path.read_text(encoding="utf-8"))
 
-    def _run_import_with_output(self, data_dir, summary_path, *extra_args):
+    def _run_import_with_output(self, data_dir, summary_path, *extra_args, expect_apply_command_error=False):
         stdout = StringIO()
         stderr = StringIO()
-        call_command(
-            "import_historical_data",
-            data_dir,
-            "--summary-json",
-            str(summary_path),
-            *extra_args,
-            stdout=stdout,
-            stderr=stderr,
-        )
+        if expect_apply_command_error:
+            with self.assertRaises(CommandError):
+                call_command(
+                    "import_historical_data",
+                    data_dir,
+                    "--summary-json",
+                    str(summary_path),
+                    *extra_args,
+                    stdout=stdout,
+                    stderr=stderr,
+                )
+        else:
+            call_command(
+                "import_historical_data",
+                data_dir,
+                "--summary-json",
+                str(summary_path),
+                *extra_args,
+                stdout=stdout,
+                stderr=stderr,
+            )
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
         return summary, stdout.getvalue(), stderr.getvalue()
 
@@ -624,9 +655,14 @@ class ImportHistoricalDataCommandTests(TestCase):
     def test_known_mismatch_fixture_apply_reports_expected_skips_and_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_known_mismatch_fixture(data_dir)
-            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-apply.json")
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mismatch-apply.json",
+                expect_apply_command_error=True,
+            )
 
             self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["status"], "failed")
             crop_by_season = summary["results"]["models"]["CropBySeason"]
             self.assertEqual(crop_by_season["error"], 2)
             self.assertEqual(crop_by_season["skipped"], 1)
@@ -642,9 +678,14 @@ class ImportHistoricalDataCommandTests(TestCase):
     def test_known_mismatch_fixture_reports_structured_row_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_known_mismatch_fixture(data_dir)
-            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-row-errors.json")
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mismatch-row-errors.json",
+                expect_apply_command_error=True,
+            )
 
             self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["status"], "failed")
             row_errors = summary["results"]["row_errors"]
             self._assert_deterministic_row_errors(
                 row_errors,
@@ -676,9 +717,14 @@ class ImportHistoricalDataCommandTests(TestCase):
     def test_known_mismatch_fixture_emits_failure_signature_ownership_mapping(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_known_mismatch_fixture(data_dir)
-            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-signatures.json")
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mismatch-signatures.json",
+                expect_apply_command_error=True,
+            )
 
             self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["status"], "failed")
             signatures = {item["signature"]: item for item in summary["results"]["failure_signatures"]}
             self.assertEqual(set(signatures.keys()), {"namespace_mismatch", "stale_fk"})
             self.assertEqual(signatures["namespace_mismatch"]["count"], 1)
@@ -701,9 +747,14 @@ class ImportHistoricalDataCommandTests(TestCase):
     def test_known_mismatch_fixture_emits_grouped_escalation_summary(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_known_mismatch_fixture(data_dir)
-            summary = self._run_import(data_dir, Path(output_dir) / "summary-mismatch-escalation-summary.json")
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-mismatch-escalation-summary.json",
+                expect_apply_command_error=True,
+            )
 
             self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(summary["status"], "failed")
             escalation_summary = summary["results"]["escalation_summary"]
             self._assert_escalation_summary_payload_contract(escalation_summary)
             self.assertEqual(
@@ -912,6 +963,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             apply_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-repo-mismatch-fixture-apply-payload.json",
+                expect_apply_command_error=True,
             )
 
         validate_errors = validate_summary["results"]["row_errors"]
@@ -954,9 +1006,11 @@ class ImportHistoricalDataCommandTests(TestCase):
             summary, _stdout, stderr = self._run_import_with_output(
                 str(fixture_dir),
                 Path(output_dir) / "summary-repo-mismatch-fixture-apply-signals.json",
+                expect_apply_command_error=True,
             )
 
         self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+        self.assertEqual(summary["status"], "failed")
         for message in manifest["expected"]["apply"]["error_signals"]:
             with self.subTest(signal=message):
                 self.assertIn(message, stderr)
@@ -1153,6 +1207,7 @@ class ImportHistoricalDataCommandTests(TestCase):
             summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-repo-mismatch-fixture-apply.json",
+                expect_apply_command_error=True,
             )
 
         self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
@@ -1226,10 +1281,11 @@ class ImportHistoricalDataCommandTests(TestCase):
             apply_summary = self._run_import(
                 data_dir,
                 Path(output_dir) / "summary-mismatch-apply-deterministic.json",
+                expect_apply_command_error=True,
             )
 
             self.assertEqual(preflight_summary["status"], "ok")
-            self.assertEqual(apply_summary["status"], "ok")
+            self.assertEqual(apply_summary["status"], "failed")
             self.assertEqual(preflight_summary["fatal_error"], None)
             self.assertEqual(apply_summary["fatal_error"], None)
             self.assertEqual(preflight_summary["run"]["validate_only"], True)
@@ -1299,9 +1355,11 @@ class ImportHistoricalDataCommandTests(TestCase):
             apply_summary = self._run_import(
                 data_dir,
                 Path(output_dir) / "summary-edge-case-apply.json",
+                expect_apply_command_error=True,
             )
 
             self._assert_summary_contract(apply_summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(apply_summary["status"], "failed")
             self.assertEqual(apply_summary["results"]["models"]["CropBySeason"]["error"], 1)
             self.assertEqual(apply_summary["results"]["models"]["CropBySeason"]["skipped"], 1)
             self.assertEqual(apply_summary["results"]["models"]["CropSalesFormat"]["error"], 1)
@@ -2016,9 +2074,13 @@ class ImportHistoricalDataCommandTests(TestCase):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_clean_fixture(data_dir)
             self._append_product_recipe_components_csv(data_dir, lines)
-            summary = self._run_import(data_dir, Path(output_dir) / "summary-prc-bad-pct.json")
+            summary = self._run_import(
+                data_dir,
+                Path(output_dir) / "summary-prc-bad-pct.json",
+                expect_apply_command_error=True,
+            )
 
-        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(summary["status"], "failed")
         self.assertEqual(ProductRecipe.objects.count(), 0)
 
     def test_pack_allocation_with_recipe_csv_materializes_pack_batch_components(self):
@@ -2033,8 +2095,6 @@ class ImportHistoricalDataCommandTests(TestCase):
             f"Carrot Bunch,Carrot,crop,Carrot,1,bunch,{recipe_name}",
         ]
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
-            self._write_clean_fixture(data_dir)
-            self._append_product_recipe_components_csv(data_dir, prc_lines)
             self._write_mix_recipe_pack_fixture(
                 data_dir,
                 year=2021,
@@ -2043,6 +2103,7 @@ class ImportHistoricalDataCommandTests(TestCase):
                 packed_unit="bunch",
                 pack_date="2021-06-01",
             )
+            self._append_product_recipe_components_csv(data_dir, prc_lines)
             summary = self._run_import(
                 data_dir, Path(output_dir) / "summary-prc-materialize.json"
             )
@@ -2218,6 +2279,44 @@ class LiveImportValidateCommandTests(TestCase):
         message = str(exc.exception)
         self.assertIn("output_path", message)
         self.assertIn("Unknown Header", message)
+
+    def test_live_import_validate_accepts_year_template_with_range(self):
+        with TemporaryDirectory() as config_dir:
+            self._write_json(
+                config_dir,
+                "crop-plan.json",
+                {
+                    "start_year": 2024,
+                    "end_year": 2026,
+                    "tabs": [
+                        {
+                            "worksheet_title": "Crop Planner",
+                            "output_path": "year_${YEAR}/plantings.csv",
+                            "required_headers": ["Crop", "Week"],
+                        }
+                    ],
+                },
+            )
+            call_command("live_import_validate", config_dir)
+
+    def test_live_import_validate_rejects_year_template_without_schedule(self):
+        with TemporaryDirectory() as config_dir:
+            self._write_json(
+                config_dir,
+                "crop-plan.json",
+                {
+                    "tabs": [
+                        {
+                            "worksheet_title": "Crop Planner",
+                            "output_path": "year_${YEAR}/plantings.csv",
+                            "required_headers": ["Crop", "Week"],
+                        }
+                    ],
+                },
+            )
+            with self.assertRaises(CommandError) as exc:
+                call_command("live_import_validate", config_dir)
+        self.assertIn("${YEAR}", str(exc.exception))
 
 
 class StageA2OfflineConnectorTests(TestCase):
@@ -3805,8 +3904,12 @@ class BetaGateEvidenceTests(TestCase):
         )
         return planting, channel
 
-    def _run_import(self, data_dir, summary_path, *extra_args):
-        call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
+    def _run_import(self, data_dir, summary_path, *extra_args, expect_apply_command_error=False):
+        if expect_apply_command_error:
+            with self.assertRaises(CommandError):
+                call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
+        else:
+            call_command("import_historical_data", data_dir, "--summary-json", str(summary_path), *extra_args)
         return json.loads(summary_path.read_text(encoding="utf-8"))
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
@@ -3897,9 +4000,21 @@ class BetaGateEvidenceTests(TestCase):
     def test_importer_apply_repeated_runs_remain_idempotent_after_initial_write(self):
         fixture_dir = self.fixture_root / "mismatch"
         with TemporaryDirectory() as output_dir:
-            first_summary = self._run_import(str(fixture_dir), Path(output_dir) / "summary-repeat-first.json")
-            second_summary = self._run_import(str(fixture_dir), Path(output_dir) / "summary-repeat-second.json")
-            third_summary = self._run_import(str(fixture_dir), Path(output_dir) / "summary-repeat-third.json")
+            first_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repeat-first.json",
+                expect_apply_command_error=True,
+            )
+            second_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repeat-second.json",
+                expect_apply_command_error=True,
+            )
+            third_summary = self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-repeat-third.json",
+                expect_apply_command_error=True,
+            )
 
         self.assertGreater(first_summary["results"]["totals"]["created"], 0)
         self.assertEqual(second_summary["results"]["totals"]["created"], 0)
@@ -3943,6 +4058,7 @@ class BetaGateEvidenceTests(TestCase):
             apply_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-mismatch-signatures-apply.json",
+                expect_apply_command_error=True,
             )
 
         validate_pairs = sorted(
@@ -4104,7 +4220,11 @@ class BetaGateEvidenceTests(TestCase):
     def test_mismatch_apply_repeats_preserve_reference_and_planning_model_counts(self):
         fixture_dir = self.fixture_root / "mismatch"
         with TemporaryDirectory() as output_dir:
-            self._run_import(str(fixture_dir), Path(output_dir) / "summary-mismatch-apply-first-counts.json")
+            self._run_import(
+                str(fixture_dir),
+                Path(output_dir) / "summary-mismatch-apply-first-counts.json",
+                expect_apply_command_error=True,
+            )
             counts_after_first = {
                 "blocks": Block.objects.count(),
                 "crops": CropInfo.objects.count(),
@@ -4117,10 +4237,12 @@ class BetaGateEvidenceTests(TestCase):
             second_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-mismatch-apply-second-counts.json",
+                expect_apply_command_error=True,
             )
             third_summary = self._run_import(
                 str(fixture_dir),
                 Path(output_dir) / "summary-mismatch-apply-third-counts.json",
+                expect_apply_command_error=True,
             )
 
         self.assertEqual(second_summary["results"]["totals"]["created"], 0)
@@ -5458,6 +5580,211 @@ class GoogleSheetsStageA2ConnectorTests(TestCase):
                 ],
             )
 
+
+class PullStageA2BundleYearRangeTest(TestCase):
+    """Year expansion for live-import lane configs (output_path / tab names with ${YEAR})."""
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_expands_year_range_into_per_year_outputs(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-cp",
+            "spreadsheet_name": "Crop Plan Workbook",
+            "modified_time": None,
+        }
+        sample_rows = [
+            ["Yellow Columns - Enter Your Information"],
+            ["Crop // Variety", "Block", "Bed #", "Plan Field Year", "Plan Field Week", "Plan Bedft"],
+            ["Kale // Winter", "B2", "3", "2025", "10", "50"],
+        ]
+        fetch_tab_rows_mock.return_value = sample_rows
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "lane.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "year-range-test",
+                        "drive_folder_url": "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Crop Plan Workbook",
+                                "worksheet_title": "Crop Planner ${YEAR}",
+                                "output_path": "year_${YEAR}/plantings.csv",
+                                "required_headers": [
+                                    "Crop // Variety",
+                                    "Block",
+                                    "Bed #",
+                                    "Plan Field Year",
+                                    "Plan Field Week",
+                                    "Plan Bedft",
+                                ],
+                                "header_row_index": 1,
+                                "output_headers": [
+                                    "Crop",
+                                    "Variety",
+                                    "Block",
+                                    "Bed Start",
+                                    "Bed End",
+                                    "Planned Plant Date",
+                                    "Planned Bedfeet",
+                                    "Status",
+                                ],
+                                "column_map": {
+                                    "Crop": "Crop // Variety",
+                                    "Variety": "Crop // Variety",
+                                    "Block": "Block",
+                                    "Bed Start": "Bed #",
+                                    "Bed End": "Bed #",
+                                    "Planned Bedfeet": "Plan Bedft",
+                                },
+                                "default_values": {"Status": "Planned"},
+                                "row_transforms": [
+                                    {
+                                        "type": "split",
+                                        "source": "Crop",
+                                        "delimiter": "//",
+                                        "left_target": "Crop",
+                                        "right_target": "Variety",
+                                    },
+                                    {
+                                        "type": "copy",
+                                        "source": "Bed Start",
+                                        "targets": ["Bed End"],
+                                    },
+                                    {
+                                        "type": "week_monday",
+                                        "year_source": "Plan Field Year",
+                                        "week_source": "Plan Field Week",
+                                        "target": "Planned Plant Date",
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+                "--years",
+                "2024,2026",
+            )
+
+            for year in (2024, 2026):
+                csv_path = output_dir / f"year_{year}" / "plantings.csv"
+                self.assertTrue(csv_path.exists(), msg=f"missing {csv_path}")
+
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest.get("years"), [2024, 2026])
+            self.assertEqual(len(manifest["tabs"]), 2)
+            titles = {entry["worksheet_title"] for entry in manifest["tabs"]}
+            self.assertEqual(titles, {"Crop Planner 2024", "Crop Planner 2026"})
+            fetch_tab_rows_mock.assert_called()
+            for call in fetch_tab_rows_mock.call_args_list:
+                kwargs = call.kwargs
+                pos = call[0]
+                title = kwargs.get("worksheet_title") or pos[1]
+                self.assertIn("Crop Planner", title)
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_skips_missing_year_tab_with_http_error(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-cp",
+            "spreadsheet_name": "Crop Plan Workbook",
+            "modified_time": None,
+        }
+        sample_rows = [
+            ["preamble"],
+            ["Crop // Variety", "Block", "Bed #", "Plan Field Year", "Plan Field Week", "Plan Bedft"],
+            ["Chard // Bright", "B1", "1", "2025", "5", "20"],
+        ]
+
+        def fetch_side_effect(spreadsheet_id, worksheet_title, sheets_service):
+            if worksheet_title == "Data 2025":
+                raise HttpError(Mock(status=400), b"{}")
+            return sample_rows
+
+        fetch_tab_rows_mock.side_effect = fetch_side_effect
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "lane.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "skip-test",
+                        "drive_folder_url": "https://drive.google.com/drive/folders/1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ?usp=drive_link",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Crop Plan Workbook",
+                                "worksheet_title": "Data ${YEAR}",
+                                "output_path": "year_${YEAR}/plantings.csv",
+                                "required_headers": [
+                                    "Crop // Variety",
+                                    "Block",
+                                    "Bed #",
+                                    "Plan Field Year",
+                                    "Plan Field Week",
+                                    "Plan Bedft",
+                                ],
+                                "header_row_index": 1,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            stdout = StringIO()
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+                "--start-year",
+                "2024",
+                "--end-year",
+                "2026",
+                stdout=stdout,
+            )
+
+            out = stdout.getvalue()
+            self.assertIn("skip tab", out)
+            self.assertIn("2025", out)
+
+            self.assertTrue((output_dir / "year_2024" / "plantings.csv").exists())
+            self.assertTrue((output_dir / "year_2026" / "plantings.csv").exists())
+            self.assertFalse((output_dir / "year_2025" / "plantings.csv").exists())
+
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(manifest["tabs"]), 2)
+
+
 class StageA2BaselineBundleTests(TestCase):
     def _write_csv(self, parent, name, lines):
         Path(parent, name).write_text("\n".join(lines), encoding="utf-8")
@@ -6471,6 +6798,75 @@ class EnsureAdminsCommandTests(TestCase):
                 call_command("ensure_admins")
 
 
+class ImportHistoricalApplyNonZeroExitTest(TestCase):
+    def test_apply_repo_mismatch_fixture_writes_failed_summary_and_raises_command_error(self):
+        fixture_dir = Path(__file__).resolve().parents[2] / "data" / "import_fixtures" / "mismatch"
+        with TemporaryDirectory() as output_dir:
+            summary_path = Path(output_dir) / "apply-nonzero.json"
+            with self.assertRaises(CommandError) as ctx:
+                call_command(
+                    "import_historical_data",
+                    str(fixture_dir),
+                    "--summary-json",
+                    str(summary_path),
+                )
+            self.assertIn("totals.error=", str(ctx.exception))
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertEqual(summary["status"], "failed")
+            self.assertGreater(summary["results"]["totals"]["error"], 0)
+
+
+class ReferenceTierRequiredTest(TestCase):
+    def test_apply_requires_tier1_reference_csv_when_target_tables_empty(self):
+        """Contract: enforcement treats missing Tier-1 CSVs as fatal when tables are empty (mocked)."""
+        from contextlib import ExitStack
+        from unittest.mock import patch
+
+        from core.management.commands.import_historical_data import Command
+
+        with TemporaryDirectory() as data_dir:
+            cmd = Command()
+            cmd.data_dir = str(data_dir)
+            cmd.require_reference = True
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch("core.management.commands.import_historical_data.os.path.exists", return_value=False)
+                )
+                for target in (
+                    "core.management.commands.import_historical_data.Block.objects.exists",
+                    "core.management.commands.import_historical_data.CropInfo.objects.exists",
+                    "core.management.commands.import_historical_data.CropBySeason.objects.exists",
+                    "core.management.commands.import_historical_data.SalesChannel.objects.exists",
+                    "core.management.commands.import_historical_data.CropSalesFormat.objects.exists",
+                    "core.management.commands.import_historical_data.ProductRecipe.objects.exists",
+                    "core.management.commands.import_historical_data.ProductRecipeComponent.objects.exists",
+                    "core.management.commands.import_historical_data.Variety.objects.exists",
+                ):
+                    stack.enter_context(patch(target, return_value=False))
+                with self.assertRaises(CommandError) as ctx:
+                    cmd._enforce_reference_tier_csv_presence()
+        self.assertIn("Tier-1 reference CSV", str(ctx.exception))
+
+    def test_apply_no_require_reference_allows_planning_year_only_bundle(self):
+        with TemporaryDirectory() as data_dir:
+            data_path = Path(data_dir)
+            (data_path / "year_2026").mkdir(parents=True)
+            (data_path / "year_2026" / "planning_year.csv").write_text(
+                "Year,Status,Overplant Factor\n2026,planning,1.10\n", encoding="utf-8"
+            )
+            call_command(
+                "import_historical_data",
+                str(data_path),
+                "--start-year",
+                "2026",
+                "--end-year",
+                "2026",
+                require_reference=False,
+            )
+        py = PlanningYear.objects.get(year=2026)
+        self.assertEqual(py.status, "planning")
+
+
 class LiveImportPlanningYearSeedTests(TestCase):
     """Crop-plan bundle carries planning_year.csv for fresh-database historical import."""
 
@@ -6487,7 +6883,13 @@ class LiveImportPlanningYearSeedTests(TestCase):
             (t / "year_2026").mkdir(parents=True)
             (t / "year_2024" / "planning_year.csv").write_text(y2024.read_text(encoding="utf-8"), encoding="utf-8")
             (t / "year_2026" / "planning_year.csv").write_text(y2026.read_text(encoding="utf-8"), encoding="utf-8")
-            call_command("import_historical_data", str(t), start_year=2024, end_year=2026)
+            call_command(
+                "import_historical_data",
+                str(t),
+                start_year=2024,
+                end_year=2026,
+                require_reference=False,
+            )
 
         py2026 = PlanningYear.objects.get(year=2026)
         self.assertEqual(py2026.status, "active")

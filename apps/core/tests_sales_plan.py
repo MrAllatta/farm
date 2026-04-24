@@ -60,6 +60,19 @@ class ProductWeekPlanImportTests(TestCase):
                 ],
             )
             self._write_csv(
+                data_dir,
+                "product_recipe_components.csv",
+                [
+                    "Mix Product Name,Mix Crop Name,Component Source Type,"
+                    "Component Crop Name,Component Percent,Recipe Name",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "seed_sources.csv",
+                ["Crop,Variety,Supplier,Catalog Number,Source URL,Notes"],
+            )
+            self._write_csv(
                 year_dir,
                 "planning_year.csv",
                 [
@@ -231,6 +244,19 @@ class SalesPlan302ImportTests(TestCase):
                     "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
                     "Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true",
                 ],
+            )
+            self._write_csv(
+                data_dir,
+                "product_recipe_components.csv",
+                [
+                    "Mix Product Name,Mix Crop Name,Component Source Type,"
+                    "Component Crop Name,Component Percent,Recipe Name",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "seed_sources.csv",
+                ["Crop,Variety,Supplier,Catalog Number,Source URL,Notes"],
             )
             self._write_csv(
                 year_dir,

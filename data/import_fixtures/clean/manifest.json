@@ -1,7 +1,7 @@
 {
   "fixture_pack": "clean",
-  "version": "1.1",
-  "scenario_intent": "Minimum valid reference-tier smoke pack for deterministic validate/apply evidence.",
+  "version": "1.2",
+  "scenario_intent": "Minimum valid Tier-1 reference CSV pack for deterministic validate/apply evidence.",
   "owner": "engineering",
   "expected": {
     "validate_only": {
@@ -9,7 +9,7 @@
       "totals": {
         "created": 0,
         "updated": 0,
-        "skipped": 1,
+        "skipped": 5,
         "error": 0
       },
       "models": {
@@ -24,14 +24,62 @@
     "apply": {
       "status": "ok",
       "totals": {
-        "created": 1,
-        "updated": 0,
+        "created": 31,
+        "updated": 5,
         "skipped": 0,
         "error": 0
       },
       "models": {
         "Block": {
-          "created": 1,
+          "created": 0,
+          "updated": 1,
+          "skipped": 0,
+          "error": 0
+        },
+        "CropBySeason": {
+          "created": 0,
+          "updated": 1,
+          "skipped": 0,
+          "error": 0
+        },
+        "CropInfo": {
+          "created": 0,
+          "updated": 1,
+          "skipped": 0,
+          "error": 0
+        },
+        "CropSalesFormat": {
+          "created": 0,
+          "updated": 1,
+          "skipped": 0,
+          "error": 0
+        },
+        "ProductRecipe": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 0,
+          "error": 0
+        },
+        "ProductRecipeComponent": {
+          "created": 0,
+          "updated": 0,
+          "skipped": 0,
+          "error": 0
+        },
+        "RotationHistory": {
+          "created": 31,
+          "updated": 0,
+          "skipped": 0,
+          "error": 0
+        },
+        "SalesChannel": {
+          "created": 0,
+          "updated": 1,
+          "skipped": 0,
+          "error": 0
+        },
+        "Variety": {
+          "created": 0,
           "updated": 0,
           "skipped": 0,
           "error": 0

@@ -10,6 +10,7 @@ docstring-to-markdown==0.17
 flake8==7.1.2
 google-api-python-client==2.194.0
 google-auth==2.49.2
+google-cloud-storage==3.10.1
 gunicorn==23.0.0
 importlib_metadata==8.7.1
 isort==8.0.0

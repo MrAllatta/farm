@@ -1,11 +1,13 @@
 {
   "source_id": "live-import-crop-plan",
   "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+  "start_year": 2022,
+  "end_year": 2026,
   "tabs": [
     {
       "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
       "worksheet_title": "Crop Planner",
-      "output_path": "year_2026/plantings.csv",
+      "output_path": "year_${YEAR}/plantings.csv",
       "required_headers": [
         "Crop // Variety",
         "Block",
@@ -62,7 +64,7 @@
     {
       "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
       "worksheet_title": "Nursery Plan 502",
-      "output_path": "year_2026/nursery_events.csv",
+      "output_path": "year_${YEAR}/nursery_events.csv",
       "header_row_index": 0,
       "required_headers": [
         "CROP & VARIETY",
@@ -80,7 +82,7 @@
     {
       "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
       "worksheet_title": "Field Records Online",
-      "output_path": "year_2026/planting_field_records.csv",
+      "output_path": "year_${YEAR}/planting_field_records.csv",
       "header_row_index": 5,
       "max_scan_rows": 5,
       "required_headers": [

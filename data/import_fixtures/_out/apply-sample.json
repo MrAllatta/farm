@@ -5,64 +5,64 @@
     "failure_signatures": [],
     "models": {
       "Block": {
-        "created": 4,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 4
       },
       "CropBySeason": {
-        "created": 14,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 7
+        "updated": 21
       },
       "CropInfo": {
-        "created": 6,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 6
+        "updated": 12
       },
       "CropSalesFormat": {
-        "created": 19,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 1
+        "updated": 20
       },
       "FieldWalkNote": {
-        "created": 30,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 30
       },
       "HarvestEvent": {
-        "created": 106,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 106
       },
       "InventoryLedger": {
-        "created": 138,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 138
       },
       "NurseryEvent": {
-        "created": 18,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 18
       },
       "PlanningYear": {
-        "created": 1,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 1
+        "updated": 2
       },
       "Planting": {
-        "created": 22,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 22
       },
       "ProductRecipe": {
         "created": 0,
@@ -77,10 +77,10 @@
         "updated": 0
       },
       "QuickSalesEntry": {
-        "created": 9,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 9
       },
       "RotationHistory": {
         "created": 31,
@@ -89,13 +89,19 @@
         "updated": 0
       },
       "SalesChannel": {
-        "created": 6,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 0
+        "updated": 6
       },
       "SalesEvent": {
-        "created": 33,
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 33
+      },
+      "Variety": {
+        "created": 0,
         "error": 0,
         "skipped": 0,
         "updated": 0
@@ -103,10 +109,10 @@
     },
     "row_errors": [],
     "totals": {
-      "created": 437,
+      "created": 31,
       "error": 0,
       "skipped": 0,
-      "updated": 15
+      "updated": 421
     }
   },
   "run": {
@@ -114,10 +120,10 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-23T16:49:06.376751Z",
-    "run_id": "20260423T164905750753",
+    "finished_at": "2026-04-23T23:27:07.710974Z",
+    "run_id": "20260423T232707136803",
     "start_year": 2021,
-    "started_at": "2026-04-23T16:49:05.750753Z",
+    "started_at": "2026-04-23T23:27:07.136803Z",
     "validate_only": false,
     "verbose": false
   },
