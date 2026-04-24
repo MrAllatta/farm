@@ -19,7 +19,7 @@ from django.utils import timezone
 from django.urls import get_resolver, reverse
 from googleapiclient.errors import HttpError
 
-from operations.models import FieldWalkNote, InventoryLedger, PackBatch
+from operations.models import FieldWalkNote, InventoryLedger, PackBatch, PackBatchComponent
 from core.models import RotationHistory
 from django.contrib.sessions.middleware import SessionMiddleware
 
@@ -2222,6 +2222,287 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(summary["results"]["models"]["SeedOrder"]["created"], 2)
         self.assertEqual(summary["results"]["models"]["SeedOrder"]["skipped"], 1)
         self.assertEqual(summary["results"]["models"]["SeedOrder"]["error"], 0)
+
+    # ── Thread-06 H1a: 601 SalesEvent(entry_kind='actual') invariants ────────
+
+    def _write_601_year_dir(self, data_dir, year, csv_name, csv_lines):
+        """Write a minimal year_<year>/ dir containing exactly one CSV file (after clean fixture)."""
+        year_dir = Path(data_dir) / f"year_{year}"
+        year_dir.mkdir(parents=True, exist_ok=True)
+        self._write_csv(year_dir, csv_name, csv_lines)
+        return year_dir
+
+    def test_601_h1a_harvest_date_round_trip(self):
+        """Harvest Date CSV column round-trips into SalesEvent.harvest_date (H1a §4.1)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity,Harvest Date",
+                    "Farm Stand,2021-06-01,Carrot Bunch,9,2021-05-28",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1), entry_kind=SalesEvent.EntryKind.ACTUAL)
+        self.assertEqual(ev.harvest_date, date(2021, 5, 28))
+
+    def test_601_h1a_harvest_date_blank_is_none(self):
+        """Blank Harvest Date column produces SalesEvent.harvest_date=None without error (H1a §4.1 soft-skip)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity,Harvest Date",
+                    "Farm Stand,2021-06-01,Carrot Bunch,9,",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1))
+        self.assertIsNone(ev.harvest_date)
+
+    def test_601_h1a_entry_kind_defaults_to_actual_when_absent(self):
+        """No Entry Kind column → entry_kind=actual (H1a §4.3)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity",
+                    "Farm Stand,2021-06-01,Carrot Bunch,5",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1))
+        self.assertEqual(ev.entry_kind, SalesEvent.EntryKind.ACTUAL)
+
+    def test_601_h1a_explicit_entry_kind_plan(self):
+        """Entry Kind=plan CSV column → entry_kind=plan; plan row created (H1a §4.3)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Planned Quantity,Entry Kind",
+                    "Farm Stand,2021-06-01,Carrot Bunch,10,plan",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1))
+        self.assertEqual(ev.entry_kind, SalesEvent.EntryKind.PLAN)
+
+    def test_601_h1a_planning_year_from_csv_overrides_sale_date_year(self):
+        """Planning Year CSV column sets PlanningYear FK overriding sale_date.year (H1a §5.6 / §6.1)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2023,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity,Planning Year",
+                    "Farm Stand,2023-01-05,Carrot Bunch,3,2022",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2023, 1, 5))
+        self.assertEqual(ev.planning_year.year, 2022)
+
+    def test_601_h1a_variety_request_folds_into_notes_prefix(self):
+        """Variety Request CSV column → Notes prefixed with 'Variety: <value>' (H1a §5.4)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity,Variety Request,Notes",
+                    "Farm Stand,2021-06-01,Carrot Bunch,9,Nantes,",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1))
+        self.assertEqual(ev.notes, "Variety: Nantes")
+
+    def test_601_h1a_variety_request_appends_after_existing_notes(self):
+        """Variety Request appended after existing Notes value (H1a §5.4)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity,Variety Request,Notes",
+                    "Farm Stand,2021-06-01,Carrot Bunch,9,Nantes,checked stock",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1))
+        self.assertIn("checked stock", ev.notes)
+        self.assertIn("Variety: Nantes", ev.notes)
+
+    def test_601_h1a_zero_actual_quantity_with_brought_quantity_imports(self):
+        """Sold=0 with positive Start Qty is a first-class import — actual_quantity=0 preserved (H1a §9.5)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Quantity,Brought Quantity,Returned Quantity",
+                    "Farm Stand,2021-06-01,Carrot Bunch,0,10,10",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        ev = SalesEvent.objects.get(sale_date=date(2021, 6, 1))
+        self.assertEqual(ev.actual_quantity, Decimal("0"))
+        self.assertEqual(ev.brought_quantity, Decimal("10"))
+        self.assertEqual(ev.returned_quantity, Decimal("10"))
+
+    def test_601_h1a_idempotent_upsert_second_import_does_not_duplicate(self):
+        """Importing the same sales_events.csv twice results in one SalesEvent row (H1a §6 idempotency)."""
+        csv_lines = [
+            "Channel Name,Sale Date,Product Name,Actual Quantity",
+            "Farm Stand,2021-06-01,Carrot Bunch,9",
+        ]
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(data_dir, 2021, "sales_events.csv", csv_lines)
+            self._run_import(data_dir, Path(out_dir) / "s1.json")
+            self._run_import(data_dir, Path(out_dir) / "s2.json")
+        self.assertEqual(
+            SalesEvent.objects.filter(
+                sale_date=date(2021, 6, 1), entry_kind=SalesEvent.EntryKind.ACTUAL
+            ).count(),
+            1,
+        )
+
+    # ── Thread-06 H1b: 601 PackBatch / PackBatchComponent invariants ─────────
+
+    def test_601_h1b_basic_grouping_creates_one_batch_two_components(self):
+        """Two rows with same (planning_year, iso_week, mix_product) → 1 PackBatch, 2 components (H1b §4)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            # 2021-06-07 (Mon) and 2021-06-08 (Tue) both fall in ISO week 23 of 2021.
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Planned Pack Quantity,Planned Pack Unit,"
+                    "Component Source Type,Component Crop Name,Component Quantity,Component Unit",
+                    "Carrot Bunch,2021-06-07,10,bunch,crop,Carrot,5,bunch",
+                    "Carrot Bunch,2021-06-08,10,bunch,crop,Carrot,3,bunch",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(PackBatch.objects.count(), 1)
+        pb = PackBatch.objects.get()
+        self.assertEqual(pb.components.count(), 2)
+
+    def test_601_h1b_pack_batch_recipe_is_none(self):
+        """PackBatch imported from pack_batch_components.csv has recipe=None (H1b §4.1)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Planned Pack Quantity,Planned Pack Unit,"
+                    "Component Source Type,Component Crop Name,Component Quantity,Component Unit",
+                    "Carrot Bunch,2021-06-07,10,bunch,crop,Carrot,5,bunch",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        pb = PackBatch.objects.get()
+        self.assertIsNone(pb.recipe)
+
+    def test_601_h1b_delete_then_insert_idempotency(self):
+        """Importing pack_batch_components.csv twice yields the same PackBatch + component counts."""
+        csv_lines = [
+            "Mix Product Name,Pack Date,Planned Pack Quantity,Planned Pack Unit,"
+            "Component Source Type,Component Crop Name,Component Quantity,Component Unit",
+            "Carrot Bunch,2021-06-07,10,bunch,crop,Carrot,5,bunch",
+        ]
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(data_dir, 2021, "pack_batch_components.csv", csv_lines)
+            self._run_import(data_dir, Path(out_dir) / "s1.json")
+            self._run_import(data_dir, Path(out_dir) / "s2.json")
+        self.assertEqual(PackBatch.objects.count(), 1)
+        self.assertEqual(PackBatchComponent.objects.count(), 1)
+
+    def test_601_h1b_sentinel_packed_quantity_when_ppq_absent(self):
+        """Missing Planned Pack Quantity → packed_quantity=1 sentinel + namespace_mismatch (H1b10.1)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Component Source Type,Component Crop Name,"
+                    "Component Quantity,Component Unit",
+                    "Carrot Bunch,2021-06-07,crop,Carrot,5,bunch",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        pb = PackBatch.objects.get()
+        self.assertEqual(pb.packed_quantity, Decimal("1"))
+        ns_errors = [
+            e
+            for e in summary["results"]["row_errors"]
+            if e["code"] == "namespace_mismatch" and "packed_quantity" in e["field_path"]
+        ]
+        self.assertGreaterEqual(len(ns_errors), 1)
+
+    def test_601_h1b_stale_fk_when_component_crop_not_found(self):
+        """Unknown Component Crop → stale_fk error; component not created (H1b §4.2 crop-only)."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Component Source Type,Component Crop Name,"
+                    "Component Quantity,Component Unit",
+                    "Carrot Bunch,2021-06-07,crop,Ghost Crop,5,bunch",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(PackBatch.objects.count(), 1)
+        self.assertEqual(PackBatchComponent.objects.count(), 0)
+        stale_errors = [
+            e
+            for e in summary["results"]["row_errors"]
+            if e["code"] == "stale_fk" and "component_crop" in e["field_path"]
+        ]
+        self.assertGreaterEqual(len(stale_errors), 1)
 
 
 class LiveImportValidateCommandTests(TestCase):
@@ -5379,6 +5660,36 @@ class ImportReferenceDataCommandTests(TestCase):
             self.assertEqual(season.block_type, "high_tunnel")
             self.assertEqual(SalesChannel.objects.get().days_of_week, ["Saturday", "Sunday"])
 
+    def test_import_crop_info_derives_fresh_holds_from_weeks_and_field_hold(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "WinterSquash,Vegetables,Cucurbitaceae,Fresh,8,TRUE,pounds,1,,,,,0,0,,,1,0,",
+                ],
+            )
+            call_command("import_reference_data", data_dir)
+            crop = CropInfo.objects.get(name="WinterSquash")
+            self.assertEqual(crop.storage_weeks, 8)
+            self.assertTrue(crop.can_hold_in_field)
+            self.assertEqual(crop.fresh_or_storage, "fresh_holds")
+
+    def test_import_crop_info_derives_storage_when_no_field_hold(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Potato,Vegetables,Solanaceae,Fresh,12,FALSE,pounds,1,,,,,0,0,,,1,0,",
+                ],
+            )
+            call_command("import_reference_data", data_dir)
+            crop = CropInfo.objects.get(name="Potato")
+            self.assertEqual(crop.fresh_or_storage, "storage")
+
 
 class GoogleSheetsStageA2ConnectorTests(TestCase):
     def test_extract_google_ids_from_urls(self):
@@ -5906,6 +6217,287 @@ class PullStageA2SalesPlanFilterTest(TestCase):
             first = p.read_text(encoding="utf-8")
             _ensure_planning_year_csv(root, 2025)
             self.assertEqual(p.read_text(encoding="utf-8"), first)
+
+
+class PullStageA2BundleRowYearRoutingTest(TestCase):
+    """Per-row year routing for 601 sales_events.csv (H1a §5.6 / §6)."""
+
+    def test_split_rows_by_year_column_groups_by_integer_year(self):
+        from core.management.commands.pull_stage_a2_bundle import _split_rows_by_year_column
+
+        rows = [
+            ["Sale Date", "Planning Year", "Channel Name", "Product Name", "Actual Quantity"],
+            ["2023-03-10", "2023", "Markets", "Kale - lb", "5"],
+            ["2023-11-15", "2024", "Orders", "Arugula - lb", "3"],
+            ["2023-12-22", "2024", "Markets", "Chard - lb", "8"],
+        ]
+        groups = _split_rows_by_year_column(rows, "Planning Year")
+        self.assertEqual(set(groups.keys()), {"2023", "2024"})
+        self.assertEqual(len(groups["2023"]), 2)
+        self.assertEqual(len(groups["2024"]), 3)
+        self.assertEqual(groups["2023"][0], rows[0])
+        self.assertEqual(groups["2024"][0], rows[0])
+
+    def test_split_rows_by_year_column_blank_year_in_fallback_bucket(self):
+        from core.management.commands.pull_stage_a2_bundle import _split_rows_by_year_column
+
+        rows = [
+            ["Sale Date", "Planning Year", "Channel Name"],
+            ["2023-03-10", "2023", "Markets"],
+            ["2023-06-01", "", "Orders"],
+        ]
+        groups = _split_rows_by_year_column(rows, "Planning Year")
+        self.assertIn("2023", groups)
+        self.assertIn("", groups)
+
+    def test_split_rows_by_year_column_normalises_float_year(self):
+        from core.management.commands.pull_stage_a2_bundle import _split_rows_by_year_column
+
+        rows = [
+            ["Planning Year", "Product"],
+            ["2024.0", "Kale - lb"],
+        ]
+        groups = _split_rows_by_year_column(rows, "Planning Year")
+        self.assertIn("2024", groups)
+        self.assertNotIn("2024.0", groups)
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_row_year_routing_splits_rows_into_per_year_files(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        """Market rows with different Planning Year values land in different year_YYYY/ dirs."""
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-601",
+            "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF 2023",
+            "modified_time": None,
+        }
+        fetch_tab_rows_mock.return_value = [
+            [
+                "Distribution Date",
+                "Distribution Year",
+                "Sales Channel",
+                "Product",
+                "Price",
+                "Start Qty",
+                "End Qty",
+                "Sold",
+                "Total Value",
+                "Notes",
+                "Entry Kind",
+                "Harvest Date",
+                "Variety Request",
+            ],
+            # 2023 rows (date year = planning year = 2023, no H1a9.4 warning)
+            ["2023-03-10", "2023", "Markets", "Kale - lb", "3.00", "10", "2", "8", "24.00", "", "actual", "2023-03-08", ""],
+            # Spill rows: Distribution Date is in 2024, Distribution Year = 2024 (agree, no warning)
+            ["2024-01-15", "2024", "Markets", "Arugula - lb", "4.00", "5", "0", "5", "20.00", "", "actual", "2024-01-13", ""],
+            ["2024-02-10", "2024", "Orders", "Chard - lb", "3.50", "6", "", "6", "21.00", "", "actual", "", "Bright Lights"],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "lane.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "601-routing-test",
+                        "drive_folder_id": "fake-folder-id",
+                        "start_year": 2023,
+                        "end_year": 2023,
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+                                "worksheet_title": "Market",
+                                "output_path": "year_${YEAR}/sales_events.csv",
+                                "header_row_index": 0,
+                                "required_headers": [
+                                    "Distribution Date",
+                                    "Sales Channel",
+                                    "Product",
+                                    "Sold",
+                                ],
+                                "output_headers": [
+                                    "Sale Date",
+                                    "Planning Year",
+                                    "Channel Name",
+                                    "Product Name",
+                                    "Actual Quantity",
+                                    "Notes",
+                                    "Entry Kind",
+                                ],
+                                "column_map": {
+                                    "Sale Date": "Distribution Date",
+                                    "Planning Year": "Distribution Year",
+                                    "Channel Name": "Sales Channel",
+                                    "Product Name": "Product",
+                                    "Actual Quantity": "Sold",
+                                    "Notes": "Notes",
+                                    "Entry Kind": "Entry Kind",
+                                },
+                                "default_values": {"Entry Kind": "actual"},
+                                "row_year_routing": {
+                                    "year_column": "Planning Year",
+                                    "date_column": "Sale Date",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            csv_2023 = output_dir / "year_2023" / "sales_events.csv"
+            csv_2024 = output_dir / "year_2024" / "sales_events.csv"
+            self.assertTrue(csv_2023.exists(), "year_2023/sales_events.csv missing")
+            self.assertTrue(csv_2024.exists(), "year_2024/sales_events.csv missing")
+
+            with csv_2023.open(encoding="utf-8") as fh:
+                rows_2023 = list(csv.reader(fh))
+            with csv_2024.open(encoding="utf-8") as fh:
+                rows_2024 = list(csv.reader(fh))
+
+            self.assertEqual(len(rows_2023), 2)
+            self.assertEqual(rows_2023[1][3], "Kale - lb")
+
+            self.assertEqual(len(rows_2024), 3)
+            products_2024 = {r[3] for r in rows_2024[1:]}
+            self.assertEqual(products_2024, {"Arugula - lb", "Chard - lb"})
+
+            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            output_paths = {t["output_path"] for t in manifest["tabs"]}
+            self.assertIn("year_2023/sales_events.csv", output_paths)
+            self.assertIn("year_2024/sales_events.csv", output_paths)
+            row_years = {t["row_year"] for t in manifest["tabs"]}
+            self.assertEqual(row_years, {2023, 2024})
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_row_year_routing_orders_append_across_year_buckets(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        """Orders tab (append_without_header) appends rows to files created by Market routing."""
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-601",
+            "spreadsheet_name": "601 LSF 2023",
+            "modified_time": None,
+        }
+        market_rows = [
+            ["Distribution Date", "Distribution Year", "Sales Channel", "Product", "Sold", "Notes", "Entry Kind"],
+            # 2023 row (date and year agree)
+            ["2023-04-01", "2023", "Markets", "Kale - lb", "5", "", "actual"],
+            # Spill row: Distribution Date is 2024-01-10, Planning Year = 2024 (agree)
+            ["2024-01-10", "2024", "Markets", "Beets - lb", "3", "", "actual"],
+        ]
+        orders_rows = [
+            ["Distribution Date", "Distribution Year", "Sales Outlet", "Product", "Actual Order", "Notes", "Entry Kind"],
+            # 2023 row
+            ["2023-05-01", "2023", "CSA", "Chard - lb", "7", "", "actual"],
+            # Spill row
+            ["2024-02-05", "2024", "Wholesale", "Arugula - lb", "4", "", "actual"],
+        ]
+        fetch_tab_rows_mock.side_effect = [market_rows, orders_rows]
+
+        shared_routing = {"year_column": "Planning Year", "date_column": "Sale Date"}
+        shared_output_headers = ["Sale Date", "Planning Year", "Channel Name", "Product Name", "Actual Quantity", "Notes", "Entry Kind"]
+        shared_col_map = {
+            "Sale Date": "Distribution Date",
+            "Planning Year": "Distribution Year",
+            "Channel Name": "Sales Channel",
+            "Product Name": "Product",
+            "Actual Quantity": "Sold",
+            "Notes": "Notes",
+            "Entry Kind": "Entry Kind",
+        }
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "lane.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "601-append-test",
+                        "drive_folder_id": "fake-id",
+                        "start_year": 2023,
+                        "end_year": 2023,
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "601 LSF ${YEAR}",
+                                "worksheet_title": "Market",
+                                "output_path": "year_${YEAR}/sales_events.csv",
+                                "header_row_index": 0,
+                                "required_headers": ["Distribution Date", "Sales Channel", "Product", "Sold"],
+                                "output_headers": shared_output_headers,
+                                "column_map": shared_col_map,
+                                "default_values": {"Entry Kind": "actual"},
+                                "row_year_routing": shared_routing,
+                            },
+                            {
+                                "spreadsheet_name": "601 LSF ${YEAR}",
+                                "worksheet_title": "Orders",
+                                "output_path": "year_${YEAR}/sales_events.csv",
+                                "header_row_index": 0,
+                                "required_headers": ["Distribution Date", "Sales Outlet", "Product", "Actual Order"],
+                                "output_headers": shared_output_headers,
+                                "column_map": {
+                                    "Sale Date": "Distribution Date",
+                                    "Planning Year": "Distribution Year",
+                                    "Channel Name": "Sales Outlet",
+                                    "Product Name": "Product",
+                                    "Actual Quantity": "Actual Order",
+                                    "Notes": "Notes",
+                                    "Entry Kind": "Entry Kind",
+                                },
+                                "default_values": {"Entry Kind": "actual"},
+                                "append_without_header": True,
+                                "row_year_routing": shared_routing,
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            for yr in (2023, 2024):
+                csv_path = output_dir / f"year_{yr}" / "sales_events.csv"
+                self.assertTrue(csv_path.exists(), f"year_{yr}/sales_events.csv missing")
+
+            with (output_dir / "year_2023" / "sales_events.csv").open(encoding="utf-8") as fh:
+                rows_2023 = list(csv.reader(fh))
+            with (output_dir / "year_2024" / "sales_events.csv").open(encoding="utf-8") as fh:
+                rows_2024 = list(csv.reader(fh))
+
+            self.assertEqual(rows_2023[0], shared_output_headers, "header present once in 2023 file")
+            self.assertEqual(len(rows_2023), 3, "2023: 1 header + 2 data rows (Market+Orders)")
+            self.assertEqual(len(rows_2024), 3, "2024: 1 header + 2 data rows (Market+Orders)")
 
 
 class ComposeCropSalesFormatProductNameTest(TestCase):
@@ -7038,3 +7630,98 @@ class LiveImportPlanningYearSeedTests(TestCase):
         py2024 = PlanningYear.objects.get(year=2024)
         self.assertEqual(py2024.status, "archived")
         self.assertEqual(py2024.overplant_factor, Decimal("1.10"))
+
+
+class BuildReferenceSupersetMergeTests(TestCase):
+    def test_merge_crop_info_prefers_higher_bucket_year(self):
+        from core.management.commands.build_reference_superset import _merge_crop_info
+
+        sources = [
+            (2023, [{"Crop": "Kale", "Type": "older"}]),
+            (2025, [{"Crop": "Kale", "Type": "newer"}]),
+        ]
+        out = _merge_crop_info(sources)
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0]["Crop"], "Kale")
+        self.assertEqual(out[0]["Type"], "newer")
+
+    def test_merge_crop_sales_formats_blank_planning_year_uses_bucket_year(self):
+        from core.management.commands.build_reference_superset import _merge_crop_sales_formats
+
+        sources = [
+            (
+                2024,
+                [
+                    {
+                        "Crop Name": "Carrot",
+                        "Product Name": "bunch",
+                        "Planning Year": "",
+                        "Sale Price": "3",
+                        "Sale Unit": "ea",
+                        "Harvest Qty Per Sale Unit": "1",
+                        "SKU": "",
+                        "Is Active": "true",
+                    }
+                ],
+            ),
+        ]
+        out = _merge_crop_sales_formats(sources)
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0]["Planning Year"], "2024")
+
+    def test_merge_crop_sales_formats_keeps_explicit_planning_year(self):
+        from core.management.commands.build_reference_superset import _merge_crop_sales_formats
+
+        sources = [
+            (
+                2024,
+                [
+                    {
+                        "Crop Name": "Carrot",
+                        "Product Name": "bunch",
+                        "Planning Year": "2023",
+                        "Sale Price": "3",
+                        "Sale Unit": "ea",
+                        "Harvest Qty Per Sale Unit": "1",
+                        "SKU": "",
+                        "Is Active": "true",
+                    }
+                ],
+            ),
+        ]
+        out = _merge_crop_sales_formats(sources)
+        self.assertEqual(out[0]["Planning Year"], "2023")
+
+    def test_build_reference_superset_writes_merged_csvs(self):
+        from core.management.commands.build_reference_superset import CROP_INFO_FIELDNAMES
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ref_ref = root / "reference" / "reference"
+            ref_ref.mkdir(parents=True)
+            hist_ref = root / "historical-601" / "year_2023" / "reference"
+            hist_ref.mkdir(parents=True)
+            (ref_ref / "crop_info.csv").write_text(
+                "Crop,Type\nTomato,base\n",
+                encoding="utf-8",
+            )
+            (hist_ref / "crop_info.csv").write_text(
+                "Crop,Type\nTomato,hist\n",
+                encoding="utf-8",
+            )
+            call_command(
+                "build_reference_superset",
+                str(root),
+                "--historical-lane",
+                "historical-601",
+                "--base-planning-year",
+                "2026",
+            )
+            merged = (ref_ref / "crop_info.csv").read_text(encoding="utf-8")
+            self.assertIn("Tomato", merged)
+            reader = csv.reader(StringIO(merged))
+            header = next(reader)
+            self.assertEqual(list(header), CROP_INFO_FIELDNAMES)
+            row = next(reader)
+            self.assertEqual(row[0], "Tomato")
+            self.assertEqual(row[1], "base")

@@ -144,6 +144,68 @@ def _filter_csv_rows_by_harvest_year(rows_matrix, year):
     return out
 
 
+def _split_rows_by_year_column(rows, year_column):
+    """Group data rows by a year-column value for per-row year routing (H1a §5.6 / §6).
+
+    Returns ``{year_str: [header, *matching_rows]}`` for each distinct non-empty integer
+    year value found in *year_column*.  Rows whose cell is blank or un-parseable are
+    collected under the ``""`` key so the caller can apply a loop-year fallback.
+    """
+    if not rows or len(rows) < 2:
+        return {}
+    header = rows[0]
+    norm_target = str(year_column).strip().casefold()
+    col_idx = None
+    for i, h in enumerate(header):
+        if str(h).strip().casefold() == norm_target:
+            col_idx = i
+            break
+    groups: dict = {}
+    for row in rows[1:]:
+        raw = str(row[col_idx]).strip() if (col_idx is not None and col_idx < len(row)) else ""
+        if raw:
+            try:
+                raw = str(int(float(raw)))
+            except ValueError:
+                raw = ""
+        groups.setdefault(raw, []).append(row)
+    return {k: [header] + v for k, v in groups.items()}
+
+
+def _warn_date_year_mismatch(stdout, warning_fn, group_rows, year_col, date_col, expected_year, label):
+    """Log H1a9.4 warning once per group when the date-column year disagrees with the
+    routing year.  Returns the date-derived year when a mismatch is found so the caller
+    can re-route to the correct directory; returns *expected_year* when they agree.
+    """
+    header = group_rows[0]
+    date_idx = None
+    norm_dc = str(date_col).strip().casefold()
+    for i, h in enumerate(header):
+        if str(h).strip().casefold() == norm_dc:
+            date_idx = i
+            break
+    if date_idx is None:
+        return expected_year
+    for data_row in group_rows[1:]:
+        date_val = str(data_row[date_idx]).strip() if date_idx < len(data_row) else ""
+        if not date_val or len(date_val) < 4:
+            continue
+        try:
+            date_year = int(date_val[:4])
+        except ValueError:
+            continue
+        if date_year != expected_year:
+            stdout.write(
+                warning_fn(
+                    f"H1a9.4: {label} — {year_col!r} ({expected_year}) disagrees with "
+                    f"{date_col!r} year ({date_year}); routing by {date_col!r} year"
+                )
+            )
+            return date_year
+        return expected_year
+    return expected_year
+
+
 def _ensure_planning_year_csv(output_dir: Path, year: int) -> None:
     """Create ``year_<Y>/planning_year.csv`` when missing so ``import_historical_data`` can upsert.
 
@@ -331,42 +393,137 @@ class Command(BaseCommand):
                     rows_matrix = _filter_csv_rows_by_harvest_year(rows_matrix, year)
                     normalized["rows"] = rows_matrix
 
-                output_path = output_dir / rel_output
-                output_path.parent.mkdir(parents=True, exist_ok=True)
                 append_without_header = tab_run.get("append_without_header", False)
-                data_rows = normalized["rows"][1:]
-                appended_data_only = append_without_header and output_path.exists()
-                if appended_data_only:
-                    with output_path.open("a", encoding="utf-8", newline="") as handle:
-                        writer = csv.writer(handle)
-                        writer.writerows(data_rows)
-                    rows_written = len(data_rows)
-                else:
-                    with output_path.open("w", encoding="utf-8", newline="") as handle:
-                        writer = csv.writer(handle)
-                        writer.writerows(normalized["rows"])
-                    rows_written = max(len(normalized["rows"]) - 1, 0)
+                row_year_routing = tab.get("row_year_routing")
 
-                tab_manifest = {
-                    "spreadsheet_id": resolved["spreadsheet_id"],
-                    "spreadsheet_name": resolved["spreadsheet_name"],
-                    "worksheet_title": worksheet_title_run,
-                    "output_path": rel_output,
-                    "header_row_index": normalized["header_row_index"],
-                    "strategy": normalized["strategy"],
-                    "rows_written": rows_written,
-                    "modified_time": resolved.get("modified_time"),
-                }
-                if year is not None:
-                    tab_manifest["year"] = year
-                if append_without_header:
-                    tab_manifest["append_without_header"] = True
-                if tab_run.get("grid_unpivot"):
-                    tab_manifest["grid_unpivot"] = True
-                manifest["tabs"].append(tab_manifest)
-                self.stdout.write(
-                    f"pulled {resolved['spreadsheet_name']}:{worksheet_title_run} -> {rel_output}"
-                )
+                if row_year_routing and len(rows_matrix) > 1:
+                    # Per-row year routing (H1a §5.6 / §6): split by year column and write
+                    # each year-group to its own year_YYYY/ directory.
+                    year_col = row_year_routing.get("year_column", "Planning Year")
+                    date_col = row_year_routing.get("date_column")
+                    original_path_template = tab.get("output_path", rel_output)
+
+                    year_groups = _split_rows_by_year_column(rows_matrix, year_col)
+
+                    # Rows with blank year fall back to the loop year
+                    fallback_rows = year_groups.pop("", None)
+                    if fallback_rows and year is not None:
+                        fallback_key = str(year)
+                        if fallback_key in year_groups:
+                            year_groups[fallback_key] = (
+                                [year_groups[fallback_key][0]]
+                                + year_groups[fallback_key][1:]
+                                + fallback_rows[1:]
+                            )
+                        else:
+                            year_groups[fallback_key] = fallback_rows
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"row_year_routing: {len(fallback_rows) - 1} rows in "
+                                f"{resolved['spreadsheet_name']}:{worksheet_title_run} "
+                                f"have blank {year_col!r} — routing to loop year {year!r}"
+                            )
+                        )
+
+                    sheet_label = f"{resolved['spreadsheet_name']}:{worksheet_title_run}"
+                    for row_year_str, group_rows in sorted(year_groups.items()):
+                        try:
+                            row_year_int = int(row_year_str)
+                        except (ValueError, TypeError):
+                            row_year_int = year
+
+                        # H1a9.4: warn (and re-route) when date-column year disagrees
+                        if date_col and row_year_int is not None:
+                            row_year_int = _warn_date_year_mismatch(
+                                self.stdout,
+                                self.style.WARNING,
+                                group_rows,
+                                year_col,
+                                date_col,
+                                row_year_int,
+                                sheet_label,
+                            )
+
+                        group_rel_path = _substitute_year(original_path_template, row_year_int)
+                        group_abs_path = output_dir / group_rel_path
+                        group_abs_path.parent.mkdir(parents=True, exist_ok=True)
+
+                        data_rows_group = group_rows[1:]
+                        appended_group = append_without_header and group_abs_path.exists()
+                        if appended_group:
+                            with group_abs_path.open("a", encoding="utf-8", newline="") as fh:
+                                writer = csv.writer(fh)
+                                writer.writerows(data_rows_group)
+                        else:
+                            with group_abs_path.open("w", encoding="utf-8", newline="") as fh:
+                                writer = csv.writer(fh)
+                                writer.writerows(group_rows)
+                        group_rows_written = len(data_rows_group)
+
+                        group_manifest = {
+                            "spreadsheet_id": resolved["spreadsheet_id"],
+                            "spreadsheet_name": resolved["spreadsheet_name"],
+                            "worksheet_title": worksheet_title_run,
+                            "output_path": group_rel_path,
+                            "header_row_index": normalized["header_row_index"],
+                            "strategy": normalized["strategy"],
+                            "rows_written": group_rows_written,
+                            "modified_time": resolved.get("modified_time"),
+                            "row_year": row_year_int,
+                        }
+                        if year is not None:
+                            group_manifest["year"] = year
+                        if append_without_header:
+                            group_manifest["append_without_header"] = True
+                        if tab_run.get("grid_unpivot"):
+                            group_manifest["grid_unpivot"] = True
+                        manifest["tabs"].append(group_manifest)
+
+                        if multi_year_pass and row_year_int is not None:
+                            _ensure_planning_year_csv(output_dir, row_year_int)
+
+                    self.stdout.write(
+                        f"pulled {resolved['spreadsheet_name']}:{worksheet_title_run} "
+                        f"-> {len(year_groups)} year bucket(s) via row_year_routing "
+                        f"({year_col!r})"
+                    )
+
+                else:
+                    output_path = output_dir / rel_output
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    data_rows = normalized["rows"][1:]
+                    appended_data_only = append_without_header and output_path.exists()
+                    if appended_data_only:
+                        with output_path.open("a", encoding="utf-8", newline="") as fh:
+                            writer = csv.writer(fh)
+                            writer.writerows(data_rows)
+                        rows_written = len(data_rows)
+                    else:
+                        with output_path.open("w", encoding="utf-8", newline="") as fh:
+                            writer = csv.writer(fh)
+                            writer.writerows(normalized["rows"])
+                        rows_written = max(len(normalized["rows"]) - 1, 0)
+
+                    tab_manifest = {
+                        "spreadsheet_id": resolved["spreadsheet_id"],
+                        "spreadsheet_name": resolved["spreadsheet_name"],
+                        "worksheet_title": worksheet_title_run,
+                        "output_path": rel_output,
+                        "header_row_index": normalized["header_row_index"],
+                        "strategy": normalized["strategy"],
+                        "rows_written": rows_written,
+                        "modified_time": resolved.get("modified_time"),
+                    }
+                    if year is not None:
+                        tab_manifest["year"] = year
+                    if append_without_header:
+                        tab_manifest["append_without_header"] = True
+                    if tab_run.get("grid_unpivot"):
+                        tab_manifest["grid_unpivot"] = True
+                    manifest["tabs"].append(tab_manifest)
+                    self.stdout.write(
+                        f"pulled {resolved['spreadsheet_name']}:{worksheet_title_run} -> {rel_output}"
+                    )
 
             if multi_year_pass and year is not None:
                 _ensure_planning_year_csv(output_dir, year)

@@ -65,7 +65,11 @@
           "from": "Variety Request",
           "prefix": "Variety"
         }
-      ]
+      ],
+      "row_year_routing": {
+        "year_column": "Planning Year",
+        "date_column": "Sale Date"
+      }
     },
     {
       "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
@@ -125,7 +129,11 @@
           "from": "Variety Request",
           "prefix": "Variety"
         }
-      ]
+      ],
+      "row_year_routing": {
+        "year_column": "Planning Year",
+        "date_column": "Sale Date"
+      }
     },
     {
       "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
@@ -178,6 +186,92 @@
       },
       "constant_columns": {
         "Component Source Type": "crop"
+      }
+    },
+    {
+      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+      "worksheet_title": "Crop Info",
+      "output_path": "year_${YEAR}/reference/crop_info.csv",
+      "required_headers": [
+        "Crop",
+        "PRODUCT Type",
+        "Botanical Family",
+        "Fresh or Storage",
+        "Storage Weeks",
+        "Can Hold In Field",
+        "Harvest Unit",
+        "Average Unit Weight",
+        "Units Per Bin",
+        "Harvest Bin",
+        "Harvest Tools",
+        "Harvest Rate (units per hour)",
+        "Nursery Weeks",
+        "Weeks Until Pot Up",
+        "Pot Up Tray Name",
+        "Seeded Tray Name",
+        "Seeds Per Cell",
+        "Thinned Plants",
+        "Seeds Per Ounce"
+      ],
+      "output_headers": [
+        "Crop",
+        "Type",
+        "Botanical Family",
+        "Fresh or Storage",
+        "Storage Weeks",
+        "Can Hold In Field",
+        "Harvest Units",
+        "Average Unit Weight",
+        "Units Per Bin",
+        "Harvest Bin",
+        "Harvest Tools",
+        "Harvest Rate (units per hour)",
+        "Nursery Weeks",
+        "Weeks Until Pot Up",
+        "Pot Up Tray Size",
+        "Seeded Tray Size",
+        "Seeds Per Cell",
+        "Thinned Plants",
+        "Seeds Per Ounce"
+      ],
+      "column_map": {
+        "Type": "PRODUCT Type",
+        "Harvest Units": "Harvest Unit",
+        "Pot Up Tray Size": "Pot Up Tray Name",
+        "Seeded Tray Size": "Seeded Tray Name"
+      }
+    },
+    {
+      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+      "worksheet_title": "Farm Crop Formats",
+      "output_path": "year_${YEAR}/reference/crop_sales_formats.csv",
+      "required_headers": [
+        "Format",
+        "Product",
+        "Sale price",
+        "Sale Units",
+        "Harvest Qty",
+        "Product SKU"
+      ],
+      "output_headers": [
+        "Crop Name",
+        "Product Name",
+        "Sale Price",
+        "Sale Unit",
+        "Harvest Qty Per Sale Unit",
+        "SKU",
+        "Is Active"
+      ],
+      "column_map": {
+        "Crop Name": "Product",
+        "Product Name": "Format",
+        "Sale Price": "Sale price",
+        "Sale Unit": "Sale Units",
+        "Harvest Qty Per Sale Unit": "Harvest Qty",
+        "SKU": "Product SKU"
+      },
+      "default_values": {
+        "Is Active": "true"
       }
     }
   ]
