@@ -1,0 +1,2 @@
+{# expects: planting #}
+<strong>{{ planting.crop.name }}</strong>{% if planting.variety_obj %} — {{ planting.variety_obj.name }}{% elif planting.variety %} — {{ planting.variety }}{% endif %}

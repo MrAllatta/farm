@@ -21,17 +21,20 @@
 
 {% for week in weeks %}
 <section style="margin-bottom:1.5rem;">
-    <h2>Week {{ week.week_num }} · {{ week.monday|date:"M j" }}-{{ week.monday|date:"j" }}</h2>
+    <h2>Week {{ week.week_num }} · {{ week.monday|date:"M j" }}–{{ week.sunday|date:"M j" }}</h2>
     <p class="muted">
         {{ week.total_events }} events · {{ week.bench_trays }} trays on benches
     </p>
 
-    <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
+    <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));">
         <div>
             <h3>Seed</h3>
-            <ul>
+            <ul style="list-style:none; padding:0; margin:0;">
                 {% for event in week.seed_events %}
-                <li>{{ event.planting.crop.name }} · {{ event.planting.block.name }}</li>
+                <li style="border:1px solid #e5e7eb; border-radius:6px; padding:0.5rem 0.65rem; margin-bottom:0.5rem;">
+                    <div>{% include "planning/partials/nursery_crop_variety.html" with planting=event.planting only %} · {{ event.planting.block.name }} b{{ event.planting.bed_start }}-{{ event.planting.bed_end }}</div>
+                    {% include "planning/partials/nursery_event_tray_meta.html" with event=event only %}
+                </li>
                 {% empty %}
                 <li class="muted">No seedings</li>
                 {% endfor %}
@@ -40,9 +43,12 @@
 
         <div>
             <h3>Pot Up</h3>
-            <ul>
+            <ul style="list-style:none; padding:0; margin:0;">
                 {% for event in week.potup_events %}
-                <li>{{ event.planting.crop.name }} · {{ event.planting.block.name }}</li>
+                <li style="border:1px solid #e5e7eb; border-radius:6px; padding:0.5rem 0.65rem; margin-bottom:0.5rem;">
+                    <div>{% include "planning/partials/nursery_crop_variety.html" with planting=event.planting only %} · {{ event.planting.block.name }} b{{ event.planting.bed_start }}-{{ event.planting.bed_end }}</div>
+                    {% include "planning/partials/nursery_event_tray_meta.html" with event=event only %}
+                </li>
                 {% empty %}
                 <li class="muted">No pot-up work</li>
                 {% endfor %}
@@ -51,9 +57,12 @@
 
         <div>
             <h3>Transplant</h3>
-            <ul>
+            <ul style="list-style:none; padding:0; margin:0;">
                 {% for event in week.transplant_events %}
-                <li>{{ event.planting.crop.name }} · {{ event.planting.block.name }}</li>
+                <li style="border:1px solid #e5e7eb; border-radius:6px; padding:0.5rem 0.65rem; margin-bottom:0.5rem;">
+                    <div>{% include "planning/partials/nursery_crop_variety.html" with planting=event.planting only %} · {{ event.planting.block.name }} b{{ event.planting.bed_start }}-{{ event.planting.bed_end }}</div>
+                    {% include "planning/partials/nursery_event_tray_meta.html" with event=event only %}
+                </li>
                 {% empty %}
                 <li class="muted">No transplants</li>
                 {% endfor %}

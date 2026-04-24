@@ -5,8 +5,13 @@
 <p class="muted">Incomplete events with planned date on or before {{ today }} + 14 days.</p>
 {% for ev in events %}
 <div style="border:1px solid #ddd; padding:0.75rem; margin-bottom:0.75rem; border-radius:6px;">
-    <strong>{{ ev.get_event_type_display }}</strong> · {{ ev.planned_date }} ·
-    {{ ev.planting.crop.name }} · {{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }}
+    <div>
+        <strong>{{ ev.get_event_type_display }}</strong> · {{ ev.planned_date }} ·
+        {% include "planning/partials/nursery_crop_variety.html" with planting=ev.planting only %}
+        · {{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }}
+        <span class="muted">· Field wk {{ ev.planting.planned_plant_date|date:"W" }} · Planting #{{ ev.planting.pk }}</span>
+    </div>
+    {% include "planning/partials/nursery_event_tray_meta.html" with event=ev only %}
     <form method="post" style="margin-top:0.5rem;">
         {% csrf_token %}
         <input type="hidden" name="event_id" value="{{ ev.id }}">

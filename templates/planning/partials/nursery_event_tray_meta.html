@@ -1,0 +1,17 @@
+{# expects: event (NurseryEvent with planting, planting.crop loaded) #}
+{% with c=event.planting.crop %}
+<dl class="nursery-tray-meta" style="margin:0.35rem 0 0; font-size:0.82rem; display:grid; grid-template-columns:auto 1fr; gap:0.12rem 0.65rem; align-items:baseline;">
+    <dt class="muted">Tray size (plan)</dt>
+    <dd style="margin:0;">{% if event.planned_tray_size %}{{ event.planned_tray_size }}{% else %}—{% endif %}</dd>
+    <dt class="muted">Seeded tray (cells)</dt>
+    <dd style="margin:0;">{% if c.seeded_tray_size %}{{ c.seeded_tray_size }}{% else %}—{% endif %}</dd>
+    <dt class="muted">Pot-up tray (cells)</dt>
+    <dd style="margin:0;">{% if c.pot_up_tray_size %}{{ c.pot_up_tray_size }}{% else %}—{% endif %}</dd>
+    <dt class="muted">Seeds / cell</dt>
+    <dd style="margin:0;">{{ c.seeds_per_cell }}</dd>
+    <dt class="muted">Trays (plan)</dt>
+    <dd style="margin:0;">{% if event.planned_tray_count %}{{ event.planned_tray_count }}{% else %}—{% endif %}</dd>
+    <dt class="muted">{% if event.event_type == "seed" %}Seeding week{% else %}Event week{% endif %}</dt>
+    <dd style="margin:0;">{{ event.planned_week }}</dd>
+</dl>
+{% endwith %}

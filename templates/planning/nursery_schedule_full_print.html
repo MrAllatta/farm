@@ -7,14 +7,20 @@
     <button type="button" onclick="window.print()">Print</button>
 </div>
 <h1>Full nursery schedule — {{ plan_year }}</h1>
-<table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+<table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
     <thead>
         <tr style="background:#eee;">
             <th style="text-align:left; padding:0.25rem;">Date</th>
             <th style="text-align:left; padding:0.25rem;">Type</th>
-            <th style="text-align:left; padding:0.25rem;">Crop</th>
-            <th style="text-align:left; padding:0.25rem;">Block</th>
-            <th style="text-align:right; padding:0.25rem;">Planned trays</th>
+            <th style="text-align:left; padding:0.25rem;">Crop · variety</th>
+            <th style="text-align:left; padding:0.25rem;">Target</th>
+            <th style="text-align:center; padding:0.25rem;">Field wk</th>
+            <th style="text-align:right; padding:0.25rem;">Trays</th>
+            <th style="text-align:right; padding:0.25rem;">Tray sz</th>
+            <th style="text-align:right; padding:0.25rem;">Seed tray</th>
+            <th style="text-align:right; padding:0.25rem;">Pot tray</th>
+            <th style="text-align:right; padding:0.25rem;">S/cell</th>
+            <th style="text-align:center; padding:0.25rem;">Seed wk</th>
             <th style="text-align:left; padding:0.25rem;">Done</th>
         </tr>
     </thead>
@@ -23,21 +29,33 @@
         <tr style="border-bottom:1px solid #ccc;">
             <td style="padding:0.2rem;">{{ ev.planned_date }}</td>
             <td style="padding:0.2rem;">{{ ev.get_event_type_display }}</td>
-            <td style="padding:0.2rem;">{{ ev.planting.crop.name }}</td>
-            <td style="padding:0.2rem;">{{ ev.planting.block.name }}</td>
+            <td style="padding:0.2rem;">{% include "planning/partials/nursery_crop_variety.html" with planting=ev.planting only %}</td>
+            <td style="padding:0.2rem;">{{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }} <span class="muted">#{{ ev.planting.pk }}</span></td>
+            <td style="padding:0.2rem; text-align:center;">{{ ev.planting.planned_plant_date|date:"W" }}</td>
             <td style="padding:0.2rem; text-align:right;">{{ ev.planned_tray_count|default:"—" }}</td>
+            <td style="padding:0.2rem; text-align:right;">{{ ev.planned_tray_size|default:"—" }}</td>
+            <td style="padding:0.2rem; text-align:right;">{{ ev.planting.crop.seeded_tray_size|default:"—" }}</td>
+            <td style="padding:0.2rem; text-align:right;">{{ ev.planting.crop.pot_up_tray_size|default:"—" }}</td>
+            <td style="padding:0.2rem; text-align:right;">{{ ev.planting.crop.seeds_per_cell }}</td>
+            <td style="padding:0.2rem; text-align:center;">{% if ev.event_type == "seed" %}{{ ev.planned_week }}{% else %}—{% endif %}</td>
             <td style="padding:0.2rem;">{% if ev.actual_date %}✓ {{ ev.actual_date }}{% else %}—{% endif %}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="6">No nursery events.</td></tr>
+        <tr><td colspan="12">No nursery events.</td></tr>
         {% endfor %}
         {% for p in direct_seed_plantings %}
         <tr style="border-bottom:1px solid #ccc;">
             <td style="padding:0.2rem;">{{ p.planned_plant_date }}</td>
             <td style="padding:0.2rem;">Direct seed (field)</td>
-            <td style="padding:0.2rem;">{{ p.crop.name }}</td>
-            <td style="padding:0.2rem;">{{ p.block.name }}</td>
-            <td style="padding:0.2rem; text-align:right;">—</td>
+            <td style="padding:0.2rem;">{% include "planning/partials/nursery_crop_variety.html" with planting=p only %}</td>
+            <td style="padding:0.2rem;">{{ p.block.name }} b{{ p.bed_start }}-{{ p.bed_end }} <span class="muted">#{{ p.pk }}</span></td>
+            <td style="padding:0.2rem; text-align:center;">{{ p.planned_plant_date|date:"W" }}</td>
+            <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
+            <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
+            <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
+            <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
+            <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
+            <td style="padding:0.2rem; text-align:center;" class="muted">—</td>
             <td style="padding:0.2rem;">{% if p.status == 'planted' %}✓ planted{% else %}—{% endif %}</td>
         </tr>
         {% endfor %}

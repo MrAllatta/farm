@@ -3,23 +3,31 @@
 {% block content %}
 <h1>Nursery todo (next 7 days)</h1>
 <ul>
-    {% for ev in events %}
+    {% for row in nursery_event_rows %}
+    {% with ev=row.event %}
     <li>
+        <span class="planting-id-badge planting-id-badge--table">{{ row.planting_display_id }}</span>
+        {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.schedule_chip_class %}
         <strong>{{ ev.planned_date }}</strong> — {{ ev.get_event_type_display }} —
         {{ ev.planting.crop.name }} ({{ ev.planting.block.name }})
         <a href="{% url 'planning:nursery_records' %}">Record</a>
     </li>
+    {% endwith %}
     {% empty %}
     <li class="muted">Nothing due in greenhouse.</li>
     {% endfor %}
 </ul>
 <h2>Direct seed (field)</h2>
 <ul>
-    {% for p in direct_seed_plantings %}
+    {% for row in direct_seed_rows %}
+    {% with p=row.planting %}
     <li>
+        <span class="planting-id-badge planting-id-badge--table">{{ row.planting_display_id }}</span>
+        {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.schedule_chip_class %}
         <strong>{{ p.planned_plant_date }}</strong> — Direct seed —
         {{ p.crop.name }} ({{ p.block.name }} b{{ p.bed_start }}-{{ p.bed_end }})
     </li>
+    {% endwith %}
     {% empty %}
     <li class="muted">No direct-seed plantings in this window.</li>
     {% endfor %}

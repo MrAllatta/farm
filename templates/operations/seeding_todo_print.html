@@ -3,22 +3,24 @@
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
 {% block title %}Seeding todo print{% endblock %}
 {% block content %}
-<div class="no-print" style="margin-bottom:1rem;">
-    <form method="get" style="display:flex; gap:0.5rem; align-items:end;">
-        <label>From week <input type="number" name="from_week" min="1" max="52" value="{{ wk_from }}"></label>
-        <label>To week <input type="number" name="to_week" min="1" max="52" value="{{ wk_to }}"></label>
-        <button type="submit">Apply</button>
-        <button type="button" onclick="window.print()">Print</button>
-    </form>
-</div>
+{% include "operations/_weekops/_field_week_range_filter.html" with show_print_button=True %}
 <h1>Seeding todo — {{ year.year }}</h1>
 <h2>Greenhouse seed</h2>
-<table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+<table class="seeding-todo-table" style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; font-size:0.88rem;">
     <thead>
         <tr style="background:#eee;">
             <th style="text-align:left; padding:0.25rem;">Date</th>
-            <th style="text-align:left; padding:0.25rem;">Crop</th>
-            <th style="text-align:left; padding:0.25rem;">Block</th>
+            <th style="text-align:left; padding:0.25rem;">ID</th>
+            <th style="text-align:left; padding:0.25rem;">Schedule</th>
+            <th style="text-align:left; padding:0.25rem;">Crop · variety</th>
+            <th style="text-align:left; padding:0.25rem;">Block / beds</th>
+            <th style="text-align:right; padding:0.25rem;">Trays</th>
+            <th style="text-align:right; padding:0.25rem;">Tray sz</th>
+            <th style="text-align:right; padding:0.25rem;">Seed tray</th>
+            <th style="text-align:right; padding:0.25rem;">Pot tray</th>
+            <th style="text-align:right; padding:0.25rem;">S/cell</th>
+            <th style="text-align:center; padding:0.25rem;">Seed wk</th>
+            <th style="text-align:center; padding:0.25rem;">Field wk</th>
             <th style="text-align:left; padding:0.25rem;">Seeder</th>
             <th style="text-align:left; padding:0.25rem;">DS rate</th>
         </tr>
@@ -27,13 +29,22 @@
         {% for r in nursery_rows %}
         <tr style="border-bottom:1px solid #ccc;">
             <td style="padding:0.25rem;">{{ r.date }}</td>
-            <td style="padding:0.25rem;">{{ r.crop }}</td>
+            <td style="padding:0.25rem;">{{ r.planting_display_id }}</td>
+            <td style="padding:0.25rem;">{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=r.schedule_chip_class %}</td>
+            <td style="padding:0.25rem;">{{ r.crop }}{% if r.variety_display %} — {{ r.variety_display }}{% endif %}</td>
             <td style="padding:0.25rem;">{{ r.block }} {{ r.beds }}</td>
+            <td style="padding:0.25rem; text-align:right;">{{ r.event.planned_tray_count|default:"—" }}</td>
+            <td style="padding:0.25rem; text-align:right;">{{ r.event.planned_tray_size|default:"—" }}</td>
+            <td style="padding:0.25rem; text-align:right;">{{ r.planting.crop.seeded_tray_size|default:"—" }}</td>
+            <td style="padding:0.25rem; text-align:right;">{{ r.planting.crop.pot_up_tray_size|default:"—" }}</td>
+            <td style="padding:0.25rem; text-align:right;">{{ r.planting.crop.seeds_per_cell }}</td>
+            <td style="padding:0.25rem; text-align:center;">{{ r.event.planned_week }}</td>
+            <td style="padding:0.25rem; text-align:center;">{{ r.field_week }}</td>
             <td style="padding:0.25rem;">{{ r.seeder }}</td>
             <td style="padding:0.25rem;">{{ r.ds_rate|default:"—" }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="muted">No greenhouse seed events in range.</td></tr>
+        <tr><td colspan="14" class="muted">No greenhouse seed events in range.</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -42,6 +53,8 @@
     <thead>
         <tr style="background:#eee;">
             <th style="text-align:left; padding:0.25rem;">Date</th>
+            <th style="text-align:left; padding:0.25rem;">ID</th>
+            <th style="text-align:left; padding:0.25rem;">Schedule</th>
             <th style="text-align:left; padding:0.25rem;">Crop</th>
             <th style="text-align:left; padding:0.25rem;">Block</th>
             <th style="text-align:left; padding:0.25rem;">Seeder</th>
@@ -52,14 +65,40 @@
         {% for r in field_direct %}
         <tr style="border-bottom:1px solid #ccc;">
             <td style="padding:0.25rem;">{{ r.date }}</td>
+            <td style="padding:0.25rem;">{{ r.planting_display_id }}</td>
+            <td style="padding:0.25rem;">{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=r.schedule_chip_class %}</td>
             <td style="padding:0.25rem;">{{ r.crop }}</td>
             <td style="padding:0.25rem;">{{ r.block }} {{ r.beds }}</td>
             <td style="padding:0.25rem;">{{ r.seeder }}</td>
             <td style="padding:0.25rem;">{{ r.ds_rate|default:"—" }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="muted">No direct-seed plantings in range.</td></tr>
+        <tr><td colspan="7" class="muted">No direct-seed plantings in range.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+
+<section id="tray-labels" class="tray-labels-section" aria-label="Printable tray labels">
+    <h2 class="no-print" style="margin-top:2rem;">Tray labels (greenhouse seed)</h2>
+    <p class="no-print muted" style="font-size:0.9rem;">One card per seeding row — crop print preview or “Print” above.</p>
+    <div class="tray-label-grid">
+        {% for r in nursery_rows %}
+        <article class="tray-label-card">
+            <div class="tray-label-planting-id">{{ r.planting_display_id }}</div>
+            <div class="tray-label-title">{{ r.crop }}{% if r.variety_display %} — {{ r.variety_display }}{% endif %}</div>
+            <div class="tray-label-sub">Field wk {{ r.field_week }} · {{ r.block }} {{ r.beds }}</div>
+            <div class="tray-label-dates">Seed {{ r.date }} · ISO seed wk {{ r.event.planned_week }}</div>
+            <ul class="tray-label-meta">
+                <li><span class="muted">Trays (plan)</span> {{ r.event.planned_tray_count|default:"—" }}</li>
+                <li><span class="muted">Tray size (plan)</span> {{ r.event.planned_tray_size|default:"—" }}</li>
+                <li><span class="muted">Seeded tray</span> {{ r.planting.crop.seeded_tray_size|default:"—" }}</li>
+                <li><span class="muted">Pot-up tray</span> {{ r.planting.crop.pot_up_tray_size|default:"—" }}</li>
+                <li><span class="muted">Seeds/cell</span> {{ r.planting.crop.seeds_per_cell }}</li>
+            </ul>
+        </article>
+        {% empty %}
+        <p class="muted">No tray labels in this week range.</p>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}

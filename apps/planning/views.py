@@ -28,6 +28,7 @@ from reference.sales_rollups import (
     plan_events_without_shadowed_rollups,
 )
 from planning.services.sales_plan_allocation import even_split_sale_units
+from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
 from core.planning_year import get_effective_planning_year, set_session_planning_year
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
@@ -1230,7 +1231,11 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
                     planned_date__gte=monday,
                     planned_date__lte=sunday,
                 )
-                .select_related("planting__crop", "planting__block")
+                .select_related(
+                    "planting__crop",
+                    "planting__block",
+                    "planting__variety_obj",
+                )
                 .order_by("event_type", "planting__crop__name")
             )
 
@@ -1275,6 +1280,7 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
                 {
                     "week_num": wk,
                     "monday": monday,
+                    "sunday": sunday,
                     "seed_events": seed_events,
                     "potup_events": potup_events,
                     "transplant_events": transplant_events,
@@ -2450,7 +2456,12 @@ class NurseryRecordsView(ActivePlanningYearMixin, View):
                 actual_date__isnull=True,
             )
             .exclude(planting__status__in=["skipped", "failed", "revised"])
-            .select_related("planting", "planting__crop", "planting__block")
+            .select_related(
+                "planting",
+                "planting__crop",
+                "planting__block",
+                "planting__variety_obj",
+            )
             .order_by("planned_date", "event_type", "planting__crop__name")
         )
         ctx = {
@@ -2537,12 +2548,35 @@ class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
             .select_related("crop", "block")
             .order_by("planned_plant_date", "block__name", "bed_start")
         )
+        nursery_event_rows = []
+        for ev in events:
+            p = ev.planting
+            nursery_event_rows.append(
+                {
+                    "event": ev,
+                    "planting_display_id": format_planting_display_id(p.pk),
+                    "schedule_chip_class": planting_schedule_chip_css_class(
+                        p.planned_plant_date, p.actual_plant_date, today
+                    ),
+                }
+            )
+        direct_seed_rows = []
+        for p in direct_seed_plantings:
+            direct_seed_rows.append(
+                {
+                    "planting": p,
+                    "planting_display_id": format_planting_display_id(p.pk),
+                    "schedule_chip_class": planting_schedule_chip_css_class(
+                        p.planned_plant_date, p.actual_plant_date, today
+                    ),
+                }
+            )
         ctx.update(
             {
                 "year": self.year_obj,
-                "events": events,
+                "nursery_event_rows": nursery_event_rows,
                 "today": today,
-                "direct_seed_plantings": direct_seed_plantings,
+                "direct_seed_rows": direct_seed_rows,
             }
         )
         return ctx
@@ -2559,13 +2593,18 @@ class NurseryScheduleFullPrintView(ActivePlanningYearMixin, TemplateView):
         events = (
             NurseryEvent.objects.filter(planting__planning_year=self.year_obj)
             .exclude(planting__status__in=["skipped", "failed", "revised"])
-            .select_related("planting", "planting__crop", "planting__block")
+            .select_related(
+                "planting",
+                "planting__crop",
+                "planting__block",
+                "planting__variety_obj",
+            )
             .order_by("planned_date", "planting__crop__name", "event_type")
         )
         direct_seed_plantings = list(
             Planting.objects.filter(planning_year=self.year_obj, crop__nursery_weeks=0)
             .exclude(status__in=["skipped", "failed", "revised"])
-            .select_related("crop", "block")
+            .select_related("crop", "block", "variety_obj")
             .order_by("planned_plant_date", "crop__name", "block__name", "bed_start")
         )
         ctx.update(

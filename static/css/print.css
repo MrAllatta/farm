@@ -20,4 +20,71 @@
     table {
         page-break-inside: avoid;
     }
+
+    .tray-label-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem 0.45rem;
+    }
+
+    .tray-label-card {
+        border: 2px solid #111;
+        padding: 0.35rem 0.45rem 0.45rem;
+        min-height: 2.1in;
+        page-break-inside: avoid;
+        font-size: 10pt;
+        line-height: 1.25;
+    }
+
+    .tray-label-planting-id {
+        font-size: 9pt;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .tray-label-title {
+        font-size: 12pt;
+        font-weight: 700;
+        margin-top: 0.12rem;
+    }
+
+    .tray-label-sub {
+        font-size: 10pt;
+        margin-top: 0.15rem;
+    }
+
+    .tray-label-dates {
+        font-size: 9pt;
+        margin-top: 0.12rem;
+        color: #333;
+    }
+
+    .tray-label-meta {
+        margin: 0.25rem 0 0;
+        padding-left: 1rem;
+        font-size: 9pt;
+    }
+
+    .tray-label-meta li {
+        margin-bottom: 0.06rem;
+    }
+}
+
+.tray-labels-section {
+    margin-top: 2rem;
+}
+
+@media screen {
+    .tray-label-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem 0.45rem;
+        max-width: 920px;
+        margin-top: 1rem;
+    }
+
+    .tray-label-card {
+        border-radius: 6px;
+        background: #fafafa;
+    }
 }
