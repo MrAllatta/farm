@@ -267,6 +267,13 @@ class SalesPlanBucket(models.Model):
 
 
 class ProductRecipe(models.Model):
+    planning_year = models.ForeignKey(
+        "planning.PlanningYear",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="product_recipes",
+    )
     product = models.ForeignKey(
         CropSalesFormat,
         on_delete=models.CASCADE,
@@ -282,12 +289,12 @@ class ProductRecipe(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["product__product_name", "-effective_start", "name"]
+        ordering = ["planning_year", "product__product_name", "-effective_start", "name"]
         constraints = [
             models.UniqueConstraint(
-                fields=["product"],
+                fields=["planning_year", "product"],
                 condition=Q(is_active=True),
-                name="product_recipe_single_active_per_product",
+                name="product_recipe_single_active_per_year_per_product",
             )
         ]
 

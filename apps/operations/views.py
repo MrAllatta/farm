@@ -1236,7 +1236,11 @@ class PackBatchRecordView(OperationsPlanningYearMixin, FormView):
             notes=f"Recorded via pack batch form ({channel.name})",
         )
 
-        recipe = ProductRecipe.objects.filter(product=product, is_active=True).first()
+        recipe = (
+            ProductRecipe.objects.filter(product=product, is_active=True)
+            .order_by("-planning_year__year", "-id")
+            .first()
+        )
         if recipe:
             out_u = (recipe.output_unit or product.sale_unit or "").strip().casefold()
             if out_u != pu.strip().casefold():

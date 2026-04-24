@@ -119,6 +119,13 @@ class PackAllocation(models.Model):
 
 
 class PackBatch(models.Model):
+    planning_year = models.ForeignKey(
+        "planning.PlanningYear",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="pack_batches",
+    )
     product = models.ForeignKey(CropSalesFormat, on_delete=models.PROTECT, related_name="pack_batches")
     recipe = models.ForeignKey(
         ProductRecipe,

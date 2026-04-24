@@ -31,6 +31,11 @@ class SalesEvent(models.Model):
         related_name="sales_events",
     )
     sale_date = models.DateField()
+    harvest_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Optional harvest anchor for this sale (e.g. 601 Market/Orders).",
+    )
     planning_year = models.ForeignKey(
         PlanningYear,
         on_delete=models.PROTECT,

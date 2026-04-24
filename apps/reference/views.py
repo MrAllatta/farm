@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import date
+from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import redirect_to_login
@@ -13,6 +16,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
+from planning.models import PlanningYear
 from reference.forms import ProductRecipeForm, make_product_recipe_component_formset
 from reference.models import CropSalesFormat, ProductRecipe
 
@@ -55,7 +59,7 @@ class RecipeProductListView(StaffReferenceMixin, ListView):
         active_output_sq = ProductRecipe.objects.filter(
             product_id=OuterRef("pk"),
             is_active=True,
-        ).values("output_unit")[:1]
+        ).order_by("-planning_year__year", "-id").values("output_unit")[:1]
         return (
             CropSalesFormat.objects.filter(is_active=True)
             .select_related("crop")
@@ -82,7 +86,11 @@ class ProductRecipeEditView(StaffReferenceMixin, View):
 
     def get(self, request, *args, **kwargs):
         product = self.get_product()
-        recipe = ProductRecipe.objects.filter(product=product, is_active=True).first()
+        recipe = (
+            ProductRecipe.objects.filter(product=product, is_active=True)
+            .order_by("-planning_year__year", "-id")
+            .first()
+        )
         if recipe is None:
             recipe = ProductRecipe(
                 product=product,
@@ -96,7 +104,11 @@ class ProductRecipeEditView(StaffReferenceMixin, View):
 
     def post(self, request, *args, **kwargs):
         product = self.get_product()
-        recipe = ProductRecipe.objects.filter(product=product, is_active=True).first()
+        recipe = (
+            ProductRecipe.objects.filter(product=product, is_active=True)
+            .order_by("-planning_year__year", "-id")
+            .first()
+        )
         if recipe is None:
             recipe = ProductRecipe(
                 product=product,
@@ -111,6 +123,15 @@ class ProductRecipeEditView(StaffReferenceMixin, View):
                 with transaction.atomic():
                     recipe_obj = form.save(commit=False)
                     recipe_obj.product = product
+                    if recipe_obj.planning_year_id is None:
+                        py, _ = PlanningYear.objects.get_or_create(
+                            year=date.today().year,
+                            defaults={
+                                "status": "planning",
+                                "overplant_factor": Decimal("1.10"),
+                            },
+                        )
+                        recipe_obj.planning_year = py
                     recipe_obj.save()
                     formset.instance = recipe_obj
                     formset.save()
@@ -152,7 +173,11 @@ class ProductRecipeDeactivateView(StaffReferenceMixin, View):
 
     def post(self, request, *args, **kwargs):
         product = get_object_or_404(CropSalesFormat, pk=kwargs["product_id"], is_active=True)
-        recipe = ProductRecipe.objects.filter(product=product, is_active=True).first()
+        recipe = (
+            ProductRecipe.objects.filter(product=product, is_active=True)
+            .order_by("-planning_year__year", "-id")
+            .first()
+        )
         if recipe:
             recipe.is_active = False
             recipe.save(update_fields=["is_active", "updated_at"])
