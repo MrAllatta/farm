@@ -17,18 +17,18 @@
         "updated": 0
       },
       "SalesEvent": {
-        "created": 2086,
+        "created": 0,
         "error": 0,
         "skipped": 0,
-        "updated": 574
+        "updated": 2660
       }
     },
     "row_errors": [],
     "totals": {
-      "created": 2155,
+      "created": 69,
       "error": 0,
       "skipped": 0,
-      "updated": 577
+      "updated": 2663
     }
   },
   "run": {
@@ -36,10 +36,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/sales-plan",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T16:46:21.863531Z",
-    "run_id": "20260424T164616870404",
+    "finished_at": "2026-04-24T16:58:00.798424Z",
+    "run_id": "20260424T165754783585",
     "start_year": 2024,
-    "started_at": "2026-04-24T16:46:16.870404Z",
+    "started_at": "2026-04-24T16:57:54.783585Z",
     "validate_only": false,
     "verbose": false
   },
