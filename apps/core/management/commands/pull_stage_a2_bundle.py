@@ -244,6 +244,8 @@ class Command(BaseCommand):
                     stop_on_blank_in=tab_run.get("stop_on_blank_in"),
                     prefer_anchor_token=tab_run.get("prefer_anchor_token", False),
                     grid_unpivot=tab_run.get("grid_unpivot"),
+                    fold_into_notes=tab_run.get("fold_into_notes"),
+                    constant_columns=tab_run.get("constant_columns"),
                 )
 
                 rel_output = tab_run["output_path"]

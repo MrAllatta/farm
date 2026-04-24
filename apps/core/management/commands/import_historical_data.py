@@ -55,6 +55,9 @@ from operations.models import (
 from sales.models import SalesEvent, QuickSalesEntry
 from core.models import RotationHistory
 
+# Reference-tier ``product_recipe_components.csv`` rows without ``Planning Year`` bucket here.
+DEFAULT_PRODUCT_RECIPE_PLANNING_YEAR = 2026
+
 
 class Command(BaseCommand):
     help = """Import 5 years of historical farm data from CSV files.
@@ -1201,10 +1204,12 @@ class Command(BaseCommand):
             if not csf:
                 self.stats["ProductRecipeComponent"]["skipped"] += 1
                 continue
-            buckets[csf.id].append((i, row))
+            py_raw = (row.get("Planning Year") or "").strip()
+            bucket_year = self._int(py_raw) if py_raw else DEFAULT_PRODUCT_RECIPE_PLANNING_YEAR
+            buckets[(bucket_year, csf.id)].append((i, row))
             csf_by_id[csf.id] = csf
 
-        for pk, rows_group in buckets.items():
+        for (_bucket_year, pk), rows_group in buckets.items():
             csf = csf_by_id[pk]
             recipe_names = set()
             for _i, r in rows_group:
@@ -1226,7 +1231,10 @@ class Command(BaseCommand):
             ordered = sorted(
                 rows_group, key=lambda t: self._prc_sort_key(t[1], t[0])
             )
-            self._prc_process_recipe_group(ordered, csf, recipe_final)
+            planning_year_obj = (
+                self._ensure_planning_year(bucket_year) if not self.write_disabled else None
+            )
+            self._prc_process_recipe_group(ordered, csf, recipe_final, planning_year_obj)
 
         rp = self.stats["ProductRecipe"]
         rc = self.stats["ProductRecipeComponent"]
@@ -1461,7 +1469,7 @@ class Command(BaseCommand):
                 pass
         return (1, row_num)
 
-    def _prc_process_recipe_group(self, ordered_pairs, csf, recipe_final):
+    def _prc_process_recipe_group(self, ordered_pairs, csf, recipe_final, planning_year):
         """Create or replace one ProductRecipe and its ProductRecipeComponents."""
         model_rc = "ProductRecipeComponent"
         if self.write_disabled:
@@ -1469,10 +1477,13 @@ class Command(BaseCommand):
             self.stats["ProductRecipeComponent"]["processed"] += len(ordered_pairs)
             return
         recipe_final = recipe_final or "Default"
-        ProductRecipe.objects.filter(product=csf).update(is_active=False)
+        ProductRecipe.objects.filter(product=csf, planning_year=planning_year).update(
+            is_active=False
+        )
         recipe, created = ProductRecipe.objects.update_or_create(
             product=csf,
             name=recipe_final,
+            planning_year=planning_year,
             defaults={
                 "is_active": True,
                 "output_unit": "",
@@ -1703,8 +1714,10 @@ class Command(BaseCommand):
         """Populate recipe lookup cache for tier 4/5 mix resolution."""
         if self.write_disabled:
             return
-        for rec in ProductRecipe.objects.select_related("product").iterator():
-            self.recipe_cache[(rec.product_id, rec.name)] = rec
+        for rec in ProductRecipe.objects.select_related("product", "planning_year").iterator():
+            py_year = rec.planning_year.year if rec.planning_year_id else 0
+            cache_key = (rec.product_id, py_year, rec.name)
+            self.recipe_cache[cache_key] = rec
 
     def _materialize_pack_batch_components(self, pack_batch, recipe, row_num):
         """
@@ -2647,6 +2660,7 @@ class Command(BaseCommand):
             self._import_field_walk_notes(year, year_dir)
             self._import_planting_field_records(year, year_dir)
             self._import_inventory_ledger(year, year_dir)
+            self._import_pack_batch_components(year, year_dir)
             self._import_pack_allocations(year, year_dir)
 
     def _import_field_walk_notes(self, year, year_dir):
@@ -3001,6 +3015,307 @@ class Command(BaseCommand):
             f"{self.stats['InventoryLedger']['errors']} errors\n"
         )
 
+    def _import_pack_batch_components(self, year, year_dir):
+        """Import executed mix lines from ``year_YYYY/pack_batch_components.csv`` (601 H1b)."""
+        path = os.path.join(year_dir, "pack_batch_components.csv")
+        if not os.path.exists(path):
+            return
+
+        self.stdout.write(f"Importing pack batch components {year}...")
+
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            rows = list(enumerate(reader, 1))
+
+        groups = defaultdict(list)
+        for line_no, row in rows:
+            mix_name = (row.get("Mix Product Name") or row.get("Mix Product") or "").strip()
+            pack_date_raw = (row.get("Pack Date") or "").strip()
+            if not mix_name or not pack_date_raw:
+                self.stats["PackBatch"]["skipped"] += 1
+                continue
+            try:
+                pack_d = self._parse_date_loose(pack_date_raw)
+            except ValueError:
+                self._record_row_error(
+                    "PackBatch",
+                    line_no,
+                    code="missing_required",
+                    field_path="pack_batch_components.pack_date",
+                    message=f"unparseable Pack Date {pack_date_raw!r}",
+                )
+                self.stats["PackBatch"]["skipped"] += 1
+                continue
+            py_raw = (row.get("Planning Year") or "").strip()
+            plan_y_int = self._int(py_raw) if py_raw else pack_d.year
+            iso_y, iso_w, _ = pack_d.isocalendar()
+            groups[(plan_y_int, mix_name, iso_y, iso_w)].append((line_no, row, pack_d))
+
+        for (plan_y_int, mix_name, iso_y, iso_w), group_rows in groups.items():
+            try:
+                week_monday = date.fromisocalendar(iso_y, iso_w, 1)
+            except ValueError:
+                for line_no, _, _ in group_rows:
+                    self._record_row_error(
+                        "PackBatch",
+                        line_no,
+                        code="namespace_mismatch",
+                        field_path="pack_batch_components.pack_date",
+                        message="invalid ISO week for pack batch grouping",
+                    )
+                self.stats["PackBatch"]["skipped"] += len(group_rows)
+                continue
+
+            product = self._get_product_by_name(mix_name)
+            if not product:
+                for line_no, _, _ in group_rows:
+                    self._record_stale_fk(
+                        "PackBatch",
+                        line_no,
+                        "pack_batch_components.mix_product",
+                        "product",
+                        mix_name,
+                    )
+                self.stats["PackBatch"]["skipped"] += len(group_rows)
+                continue
+
+            ppq_vals = []
+            for _ln, r, _ in group_rows:
+                cell = (r.get("Planned Pack Quantity") or "").strip()
+                if cell:
+                    try:
+                        ppq_vals.append(self._dec(cell))
+                    except (InvalidOperation, ValueError):
+                        pass
+            packed_qty = None
+            if ppq_vals and len({str(x) for x in ppq_vals}) == 1:
+                packed_qty = ppq_vals[0]
+            sentinel_packed = packed_qty is None or packed_qty <= 0
+            if sentinel_packed:
+                packed_qty = Decimal("1")
+                self._record_row_error(
+                    "PackBatch",
+                    group_rows[0][0],
+                    code="namespace_mismatch",
+                    field_path="pack_batch_components.packed_quantity",
+                    message="using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+                )
+            packed_unit = (product.sale_unit or "unit").strip()[:20] or "unit"
+            pu_cell = (group_rows[0][1].get("Planned Pack Unit") or "").strip()
+            if pu_cell:
+                packed_unit = pu_cell[:20]
+
+            if self.write_disabled:
+                self.stats["PackBatch"]["processed"] += 1
+                self.stats["PackBatchComponent"]["processed"] += len(group_rows)
+                continue
+
+            py_obj = self._ensure_planning_year(plan_y_int)
+            batch, created = PackBatch.objects.update_or_create(
+                planning_year=py_obj,
+                product=product,
+                pack_date=week_monday,
+                recipe=None,
+                defaults={
+                    "packed_quantity": packed_qty,
+                    "packed_unit": packed_unit,
+                    "notes": "Imported from pack_batch_components.csv",
+                },
+            )
+            self.stats["PackBatch"]["created" if created else "processed"] += 1
+
+            batch.components.all().delete()
+            for line_no, row, _pack_d in group_rows:
+                st_raw = (
+                    row.get("Component Source Type") or row.get("Source Type") or "crop"
+                ).strip().casefold()
+                if st_raw in ("crop", "c"):
+                    source_kind = "crop"
+                elif st_raw in ("product", "p"):
+                    source_kind = "product"
+                else:
+                    self._record_row_error(
+                        "PackBatchComponent",
+                        line_no,
+                        code="namespace_mismatch",
+                        field_path="pack_batch_components.component_source_type",
+                        message=f"expected crop or product, got {st_raw!r}",
+                    )
+                    self.stats["PackBatchComponent"]["errors"] += 1
+                    continue
+
+                comp_crop_name = (
+                    row.get("Component Crop Name") or row.get("Component Crop") or ""
+                ).strip()
+                comp_product_name = (
+                    row.get("Component Product Name") or row.get("Component Product") or ""
+                ).strip()
+                pct_raw = (row.get("Component Percent") or row.get("Percent") or "").strip()
+                qty_raw = (row.get("Component Quantity") or row.get("Quantity") or "").strip()
+                unit_raw = (row.get("Component Unit") or row.get("Unit") or "").strip()
+
+                pct = None
+                if pct_raw:
+                    try:
+                        pct = self._dec(pct_raw)
+                        if pct <= 0 or pct > Decimal("100"):
+                            raise ValueError("percent range")
+                    except (InvalidOperation, ValueError):
+                        self._record_row_error(
+                            "PackBatchComponent",
+                            line_no,
+                            code="namespace_mismatch",
+                            field_path="pack_batch_components.component_percent",
+                            message=f"invalid percent {pct_raw!r}",
+                        )
+                        self.stats["PackBatchComponent"]["errors"] += 1
+                        continue
+
+                qty = None
+                if qty_raw:
+                    try:
+                        qty = self._dec(qty_raw)
+                        if qty <= 0:
+                            self.stats["PackBatchComponent"]["skipped"] += 1
+                            continue
+                        qty = qty.quantize(Decimal("0.01"))
+                    except (InvalidOperation, ValueError):
+                        self._record_row_error(
+                            "PackBatchComponent",
+                            line_no,
+                            code="namespace_mismatch",
+                            field_path="pack_batch_components.component_quantity",
+                            message=f"invalid quantity {qty_raw!r}",
+                        )
+                        self.stats["PackBatchComponent"]["errors"] += 1
+                        continue
+
+                if pct is None and qty is None:
+                    self.stats["PackBatchComponent"]["skipped"] += 1
+                    continue
+
+                if qty is not None and not unit_raw:
+                    unit_raw = product.sale_unit or "unit"
+                if pct is not None and qty is None:
+                    qty = Decimal("1")
+                    unit_raw = unit_raw or product.sale_unit or "unit"
+
+                src_crop = None
+                src_product = None
+                if source_kind == "crop":
+                    if comp_product_name:
+                        self._record_row_error(
+                            "PackBatchComponent",
+                            line_no,
+                            code="namespace_mismatch",
+                            field_path="pack_batch_components.component_product",
+                            message="Component Product must be empty when source type is crop",
+                        )
+                        self.stats["PackBatchComponent"]["errors"] += 1
+                        continue
+                    if not comp_crop_name:
+                        self._record_missing_required(
+                            "PackBatchComponent",
+                            line_no,
+                            "pack_batch_components.component_crop",
+                            "Component Crop Name",
+                        )
+                        self.stats["PackBatchComponent"]["skipped"] += 1
+                        continue
+                    crop_obj = self._get_crop(comp_crop_name)
+                    if not crop_obj:
+                        self._record_stale_fk(
+                            "PackBatchComponent",
+                            line_no,
+                            "pack_batch_components.component_crop",
+                            "crop",
+                            comp_crop_name,
+                        )
+                        self.stats["PackBatchComponent"]["skipped"] += 1
+                        continue
+                    src_crop = crop_obj
+                else:
+                    if not comp_crop_name or not comp_product_name:
+                        self._record_missing_required(
+                            "PackBatchComponent",
+                            line_no,
+                            "pack_batch_components.component_product",
+                            "Component Crop Name and Component Product Name",
+                        )
+                        self.stats["PackBatchComponent"]["skipped"] += 1
+                        continue
+                    c_crop = self._get_crop(comp_crop_name)
+                    if not c_crop:
+                        self._record_stale_fk(
+                            "PackBatchComponent",
+                            line_no,
+                            "pack_batch_components.component_crop",
+                            "crop",
+                            comp_crop_name,
+                        )
+                        self.stats["PackBatchComponent"]["skipped"] += 1
+                        continue
+                    csf_comp = CropSalesFormat.objects.filter(
+                        crop=c_crop, product_name=comp_product_name
+                    ).first()
+                    if not csf_comp:
+                        self._record_stale_fk(
+                            "PackBatchComponent",
+                            line_no,
+                            "pack_batch_components.component_product",
+                            "product",
+                            f"{comp_crop_name} / {comp_product_name}",
+                        )
+                        self.stats["PackBatchComponent"]["skipped"] += 1
+                        continue
+                    src_product = csf_comp
+
+                note_parts = []
+                vr = (row.get("Variety Request") or "").strip()
+                if vr:
+                    note_parts.append(f"Variety: {vr}")
+                sf = (row.get("Safety Factor") or "").strip()
+                if sf and sf not in ("1", "1.0", "1.00"):
+                    note_parts.append(f"Safety factor: {sf}")
+                hd = self._parse_date_optional(row.get("Harvest Date"))
+                if hd and hd != week_monday:
+                    note_parts.append(f"Harvest date: {hd.isoformat()}")
+                base_notes = (row.get("Notes") or "").strip()
+                if base_notes:
+                    note_parts.append(base_notes)
+                comp_notes = "\n".join(note_parts)
+
+                comp = PackBatchComponent(
+                    pack_batch=batch,
+                    source_crop=src_crop,
+                    source_product=src_product,
+                    consumed_quantity=qty,
+                    consumed_unit=(unit_raw or product.sale_unit or "unit")[:20],
+                    component_percent=pct,
+                    notes=comp_notes,
+                )
+                try:
+                    comp.full_clean()
+                    comp.save()
+                    self.stats["PackBatchComponent"]["created"] += 1
+                except (ValidationError, IntegrityError, DatabaseError) as e:
+                    self._record_row_error(
+                        "PackBatchComponent",
+                        line_no,
+                        code="namespace_mismatch",
+                        field_path="pack_batch_components.row",
+                        message=str(e),
+                    )
+                    self.stats["PackBatchComponent"]["errors"] += 1
+
+        self.stdout.write(
+            f" {self.stats['PackBatch'].get('processed', 0) + self.stats['PackBatch'].get('created', 0)} pack batches, "
+            f"{self.stats['PackBatchComponent'].get('created', 0)} components, "
+            f"{self.stats['PackBatch'].get('skipped', 0)} skipped batches, "
+            f"{self.stats['PackBatchComponent'].get('skipped', 0)} skipped components, "
+            f"{self.stats['PackBatchComponent'].get('errors', 0)} component errors\n"
+        )
+
     def _import_pack_allocations(self, year, year_dir):
         """Import pack allocations."""
         path = os.path.join(year_dir, "pack_allocations.csv")
@@ -3097,7 +3412,9 @@ class Command(BaseCommand):
 
                     pack_batch = None
                     if recipe_name:
-                        recipe = self._get_recipe_for_product(product, recipe_name)
+                        recipe = self._get_recipe_for_product(
+                            product, recipe_name, pack_date_year=data["pack_date"].year
+                        )
                         if not recipe:
                             self._record_stale_fk(
                                 "PackAllocation",
@@ -3146,11 +3463,15 @@ class Command(BaseCommand):
                             packed_unit = recipe.output_unit or product.sale_unit
 
                         if not self.write_disabled:
+                            pack_py = recipe.planning_year or self._ensure_planning_year(
+                                data["pack_date"].year
+                            )
                             pack_batch, _ = PackBatch.objects.update_or_create(
                                 product=product,
                                 recipe=recipe,
                                 pack_date=data["pack_date"],
                                 defaults={
+                                    "planning_year": pack_py,
                                     "packed_quantity": packed_quantity,
                                     "packed_unit": packed_unit,
                                     "notes": f"Imported from pack_allocations row {i}",
@@ -3273,10 +3594,25 @@ class Command(BaseCommand):
                         self.stats["SalesEvent"]["skipped"] += 1
                         continue
 
+                    try:
+                        sale_date_parsed = self._parse_date_loose(sale_date_str)
+                    except ValueError:
+                        sale_date_parsed = self._parse_date(sale_date_str)
+
                     data = {
                         "channel": channel,
-                        "sale_date": self._parse_date(sale_date_str),
+                        "sale_date": sale_date_parsed,
                     }
+
+                    plan_y_raw = (
+                        row.get("Planning Year") or row.get("Distribution Year") or ""
+                    ).strip()
+                    plan_year_int = self._int(plan_y_raw) if plan_y_raw else sale_date_parsed.year
+                    data["planning_year"] = self._ensure_planning_year(plan_year_int)
+
+                    hd = self._parse_date_optional(row.get("Harvest Date"))
+                    if hd:
+                        data["harvest_date"] = hd
 
                     # CSV has "Product Name" not "Product"
                     product_name = (
@@ -3296,44 +3632,74 @@ class Command(BaseCommand):
                             continue
                         data["product"] = product
 
-                    # Planned fields
+                    # Planned fields (allow zero quantities)
                     planned_qty = row.get("Planned Quantity", "").strip()
-                    if planned_qty:
-                        data["planned_quantity"] = self._dec_or_none(planned_qty)
+                    if planned_qty != "":
+                        pq = self._csv_decimal_allow_zero(planned_qty)
+                        if pq is not None:
+                            data["planned_quantity"] = pq
 
                     planned_rev = row.get("Planned Revenue", "").strip()
-                    if planned_rev:
-                        data["planned_revenue"] = self._dec_or_none(planned_rev)
+                    if planned_rev != "":
+                        pr = self._csv_decimal_allow_zero(planned_rev)
+                        if pr is not None:
+                            data["planned_revenue"] = pr
 
                     # Actual fields
                     actual_qty = row.get("Actual Quantity", "").strip()
-                    if actual_qty:
-                        data["actual_quantity"] = self._dec_or_none(actual_qty)
+                    if actual_qty != "":
+                        aq = self._csv_decimal_allow_zero(actual_qty)
+                        if aq is not None:
+                            data["actual_quantity"] = aq
 
                     actual_rev = row.get("Actual Revenue", "").strip()
-                    if actual_rev:
-                        data["actual_revenue"] = self._dec_or_none(actual_rev)
+                    if actual_rev != "":
+                        ar = self._csv_decimal_allow_zero(actual_rev)
+                        if ar is not None:
+                            data["actual_revenue"] = ar
 
                     actual_price = row.get("Actual Price", "").strip()
-                    if actual_price:
-                        data["actual_price"] = self._dec_or_none(actual_price)
+                    if actual_price != "":
+                        ap = self._csv_decimal_allow_zero(actual_price)
+                        if ap is not None:
+                            data["actual_price"] = ap
 
                     # Brought/returned
-                    data["brought_quantity"] = self._dec_or_none(row.get("Brought Quantity"))
-                    data["returned_quantity"] = self._dec_or_none(row.get("Returned Quantity"))
+                    bq = row.get("Brought Quantity")
+                    if bq is not None and str(bq).strip() != "":
+                        data["brought_quantity"] = self._csv_decimal_allow_zero(bq)
+                    rq = row.get("Returned Quantity")
+                    if rq is not None and str(rq).strip() != "":
+                        data["returned_quantity"] = self._csv_decimal_allow_zero(rq)
 
-                    data["notes"] = row.get("Notes", "").strip()
-                    data["entry_kind"] = SalesEvent.EntryKind.ACTUAL
+                    ek_raw = (row.get("Entry Kind") or row.get("entry_kind") or "actual").strip().casefold()
+                    if ek_raw == "plan":
+                        data["entry_kind"] = SalesEvent.EntryKind.PLAN
+                    else:
+                        data["entry_kind"] = SalesEvent.EntryKind.ACTUAL
+
+                    notes_val = (row.get("Notes") or "").strip()
+                    variety_val = (row.get("Variety Request") or "").strip()
+                    if variety_val:
+                        if notes_val:
+                            notes_val = f"{notes_val}\nVariety: {variety_val}"
+                        else:
+                            notes_val = f"Variety: {variety_val}"
+                    data["notes"] = notes_val
 
                     product_obj = data.get("product")
-                    if product_obj and not self.write_disabled:
+                    if (
+                        product_obj
+                        and data.get("entry_kind") == SalesEvent.EntryKind.ACTUAL
+                        and not self.write_disabled
+                    ):
                         batch = self._get_pack_batch(channel.id, product_obj.id, data["sale_date"])
                         if batch:
                             data["pack_batch"] = batch
 
                     if not self.write_disabled:
                         obj = SalesEvent.objects.filter(
-                            entry_kind=SalesEvent.EntryKind.ACTUAL,
+                            entry_kind=data["entry_kind"],
                             channel=channel,
                             sale_date=data["sale_date"],
                             product=product_obj,
@@ -3341,7 +3707,7 @@ class Command(BaseCommand):
                         created = obj is None
                         if created:
                             obj = SalesEvent(
-                                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                                entry_kind=data["entry_kind"],
                                 channel=channel,
                                 sale_date=data["sale_date"],
                                 product=product_obj,
@@ -3550,20 +3916,26 @@ class Command(BaseCommand):
         self.product_cache[product_name] = resolved
         return resolved
 
-    def _get_recipe_for_product(self, product, recipe_name):
-        """Resolve ProductRecipe for this product and recipe name (scoped, not global)."""
+    def _get_recipe_for_product(self, product, recipe_name, pack_date_year=None):
+        """Resolve ProductRecipe for product + recipe name + planning calendar year."""
         if not recipe_name:
             return None
         product_pk = getattr(product, "pk", None)
-        if product_pk:
-            cache_key = (product_pk, recipe_name)
-            if cache_key in self.recipe_cache:
-                return self.recipe_cache[cache_key]
-            resolved = (
-                ProductRecipe.objects.filter(product=product, name=recipe_name)
-                .order_by("id")
-                .first()
+        year_bucket = int(pack_date_year) if pack_date_year is not None else 0
+        cache_key = (product_pk or 0, year_bucket, recipe_name)
+        if cache_key in self.recipe_cache:
+            return self.recipe_cache[cache_key]
+        if product_pk and not self.write_disabled:
+            qs = ProductRecipe.objects.filter(
+                product=product, name=recipe_name, is_active=True
             )
+            resolved = None
+            if pack_date_year is not None:
+                py = PlanningYear.objects.filter(year=pack_date_year).first()
+                if py is not None:
+                    resolved = qs.filter(planning_year=py).order_by("id").first()
+            if resolved is None:
+                resolved = qs.order_by("-planning_year__year", "-id").first()
             self.recipe_cache[cache_key] = resolved
             return resolved
         if recipe_name in self.recipe_cache:
@@ -3674,6 +4046,61 @@ class Command(BaseCommand):
             return crop_variety.strip(), ""
         left, right = crop_variety.split("//", 1)
         return left.strip(), right.strip()
+
+    def _ensure_planning_year(self, year_int):
+        """Return PlanningYear, creating it when missing (apply mode). Dry-run returns int year."""
+        if year_int is None:
+            return None
+        cached = self.planning_year_cache.get(year_int)
+        if cached is not None:
+            return cached
+        if self.write_disabled:
+            self.planning_year_cache[year_int] = year_int
+            return year_int
+        obj, _ = PlanningYear.objects.get_or_create(
+            year=year_int,
+            defaults={
+                "status": (
+                    "archived" if year_int < date.today().year else "planning"
+                ),
+                "overplant_factor": Decimal("1.10"),
+            },
+        )
+        self.planning_year_cache[year_int] = obj
+        return obj
+
+    def _parse_date_loose(self, date_str):
+        """Parse common sheet/CSV date shapes; raises ValueError if unparseable."""
+        if date_str is None:
+            raise ValueError("empty date")
+        s = str(date_str).strip()
+        if not s:
+            raise ValueError("empty date")
+        for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y", "%Y/%m/%d", "%d/%m/%Y"):
+            try:
+                return datetime.strptime(s, fmt).date()
+            except ValueError:
+                continue
+        raise ValueError(f"Invalid date format: {date_str!r}")
+
+    def _parse_date_optional(self, date_str):
+        """Like `_parse_date_loose` but returns None for blanks / parse failures."""
+        if date_str is None or not str(date_str).strip():
+            return None
+        try:
+            return self._parse_date_loose(date_str)
+        except ValueError:
+            return None
+
+    def _csv_decimal_allow_zero(self, raw):
+        """Parse decimal; empty -> None; allows zero (unlike `_dec_or_none`)."""
+        if raw is None or str(raw).strip() in ("", "na", "NA"):
+            return None
+        try:
+            cleaned = str(raw).strip().replace("$", "").replace(",", "")
+            return Decimal(cleaned)
+        except (InvalidOperation, TypeError):
+            return None
 
     def _parse_date(self, date_str):
         """Parse ISO date string YYYY-MM-DD."""

@@ -259,6 +259,63 @@ def _grid_unpivot_for_product_week_plan(source_rows, grid_unpivot):
     return out
 
 
+def _apply_constant_columns(rows, constant_columns):
+    """Set output cells to fixed literals (e.g. Component Source Type = crop)."""
+    if not constant_columns:
+        return rows
+    header = rows[0] if rows else []
+    idx = {_normalize_text(h): i for i, h in enumerate(header)}
+    for row in rows[1:]:
+        for out_name, value in constant_columns.items():
+            j = idx.get(_normalize_text(out_name))
+            if j is None:
+                continue
+            while len(row) <= j:
+                row.append("")
+            row[j] = value
+    return rows
+
+
+def _apply_fold_into_notes(projected_rows, folds, source_rows):
+    """Append labeled snippets from source columns into a target column (e.g. Notes).
+
+    folds: list of dicts with keys ``into`` (output header), ``from`` (source header),
+    optional ``prefix`` (e.g. ``Variety`` -> ``Variety: value``).
+    """
+    if not folds or len(projected_rows) < 2:
+        return projected_rows
+    projected_header = projected_rows[0]
+    p_idx = {_normalize_text(h): i for i, h in enumerate(projected_header)}
+    source_header = source_rows[0] if source_rows else []
+    s_idx = {_normalize_text(h): i for i, h in enumerate(source_header)}
+
+    for row_i in range(1, len(projected_rows)):
+        prow = projected_rows[row_i]
+        srow = source_rows[row_i] if row_i < len(source_rows) else []
+        for fold in folds:
+            into = fold.get("into", "Notes")
+            frm = fold.get("from")
+            prefix = (fold.get("prefix") or "").strip()
+            if not frm:
+                continue
+            si = s_idx.get(_normalize_text(frm))
+            ti = p_idx.get(_normalize_text(into))
+            if ti is None:
+                continue
+            raw = ""
+            if si is not None and si < len(srow):
+                raw = srow[si]
+            chunk = str(raw).strip() if raw is not None else ""
+            if not chunk:
+                continue
+            label = f"{prefix}: {chunk}" if prefix else chunk
+            prev = str(prow[ti]).strip() if ti < len(prow) else ""
+            while len(prow) <= ti:
+                prow.append("")
+            prow[ti] = f"{prev}\n{label}".strip() if prev else label
+    return projected_rows
+
+
 def _truncate_source_rows(source_rows, stop_on_blank_in=None):
     if not stop_on_blank_in or not source_rows:
         return source_rows
@@ -303,6 +360,8 @@ def _normalize_single_region(
     stop_on_blank_in=None,
     prefer_anchor_token=False,
     grid_unpivot=None,
+    fold_into_notes=None,
+    constant_columns=None,
 ):
     header_index, canonical_header, strategy = detect_header_row(
         rows,
@@ -321,11 +380,19 @@ def _normalize_single_region(
         column_map = None
         default_values = None
         row_transforms = None
+        fold_into_notes = None
+        constant_columns = None
     normalized_rows = _project_rows(
         source_rows,
         output_headers=output_headers,
         column_map=column_map,
         default_values=default_values,
+    )
+    normalized_rows = _apply_fold_into_notes(
+        normalized_rows, fold_into_notes or [], source_rows
+    )
+    normalized_rows = _apply_constant_columns(
+        normalized_rows, constant_columns or {}
     )
     normalized_rows = _apply_row_transforms(
         normalized_rows,
@@ -402,6 +469,8 @@ def normalize_rows(
     stop_on_blank_in=None,
     prefer_anchor_token=False,
     grid_unpivot=None,
+    fold_into_notes=None,
+    constant_columns=None,
 ):
     if grid_unpivot and source_regions:
         raise ValueError("grid_unpivot cannot be combined with source_regions in one tab")
@@ -421,6 +490,8 @@ def normalize_rows(
             stop_on_blank_in=stop_on_blank_in,
             prefer_anchor_token=prefer_anchor_token,
             grid_unpivot=grid_unpivot,
+            fold_into_notes=fold_into_notes,
+            constant_columns=constant_columns,
         )
 
     region_results = []
@@ -440,6 +511,8 @@ def normalize_rows(
                 stop_on_blank_in=region.get("stop_on_blank_in", stop_on_blank_in),
                 prefer_anchor_token=region.get("prefer_anchor_token", prefer_anchor_token),
                 grid_unpivot=region.get("grid_unpivot"),
+                fold_into_notes=region.get("fold_into_notes", fold_into_notes),
+                constant_columns=region.get("constant_columns", constant_columns),
             )
         )
 
@@ -474,6 +547,8 @@ def normalize_csv_file(
     prefer_anchor_token=False,
     grid_unpivot=None,
     append_without_header=False,
+    fold_into_notes=None,
+    constant_columns=None,
 ):
     with Path(source_path).open("r", encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.reader(handle))
@@ -493,6 +568,8 @@ def normalize_csv_file(
         stop_on_blank_in=stop_on_blank_in,
         prefer_anchor_token=prefer_anchor_token,
         grid_unpivot=grid_unpivot,
+        fold_into_notes=fold_into_notes,
+        constant_columns=constant_columns,
     )
 
     output_path = Path(output_path)
