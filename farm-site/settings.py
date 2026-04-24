@@ -87,16 +87,20 @@ INSTALLED_APPS = [
 DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").lower()
 
 if DB_ENGINE == "postgres":
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("DB_NAME", "farm_db"),
-            "USER": os.environ.get("DB_USER", "farm_dev"),
-            "PASSWORD": os.environ.get("DB_PASSWORD", "farm_dev"),
-            "HOST": os.environ.get("DB_HOST", "localhost"),
-            "PORT": os.environ.get("DB_PORT", "5432"),
-        }
+    _pg_default = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "farm_db"),
+        "USER": os.environ.get("DB_USER", "farm_dev"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "farm_dev"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
+    # When set, `manage.py test` uses this database name instead of creating `test_<DB_NAME>`.
+    # Provision an empty database and grant the app user access; see docs/testing-strategy.md.
+    _test_db_name = os.environ.get("DJANGO_TEST_DATABASE_NAME", "").strip()
+    if _test_db_name:
+        _pg_default["TEST"] = {"NAME": _test_db_name}
+    DATABASES = {"default": _pg_default}
 else:
     DATABASES = {
         "default": {
