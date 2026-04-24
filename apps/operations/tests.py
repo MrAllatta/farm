@@ -454,6 +454,26 @@ class WeekOpsViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, format_planting_display_id(self.planting.pk))
 
+    def test_harvest_needs_shows_missing_harvest_events_diagnostic(self):
+        mon = Week(2026, 18).monday()
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=self.planting.crop,
+            crop_season=self.planting.crop_season,
+            block=self.planting.block,
+            bed_start=3,
+            bed_end=3,
+            planned_bedfeet=30,
+            planned_plant_date=mon - timedelta(weeks=2),
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon + timedelta(weeks=2),
+            planned_total_yield=Decimal("30"),
+            status="growing",
+        )
+        r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"data-empty-reason=\"missing_generated_harvests\"", r.content)
+
 
 class PlantingScheduleChipCssClassTests(TestCase):
     def test_format_planting_display_id_zero_pads(self):

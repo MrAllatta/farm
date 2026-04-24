@@ -152,6 +152,8 @@ class Command(BaseCommand):
         SalesCategory.CategoryName.ORDERS: 20,
         SalesCategory.CategoryName.CSA: 30,
     }
+    PLANTING_PROGRESS_EVERY = 100
+
     def add_arguments(self, parser):
         parser.add_argument(
             "data_dir",
@@ -273,6 +275,7 @@ class Command(BaseCommand):
         self.recipe_cache = {}
         self.planning_year_cache = {}
         self.planting_cache = {}
+        self.crop_season_cache = {}
         self.harvest_event_cache = {}
         self.pack_batch_cache = {}
         self.normalized_lookup_indexes = {}
@@ -358,6 +361,22 @@ class Command(BaseCommand):
         self.stdout.write("TIER 5: Sales & Rotation History\n")
         self.stdout.write("=" * 70)
         self._import_sales_and_rotation()
+
+        # After all tiers: ensure plantings have generated harvest/nursery rows when still missing
+        # (import CSVs may omit harvest_events.csv / nursery_events.csv for some years).
+        if not self.write_disabled and not self.validate_only:
+            from planning.services.planting_events_repair import repair_planting_events
+
+            rep = repair_planting_events(min_year=self.start_year, max_year=self.end_year)
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "\nRepair generated planting events: "
+                    f"scanned={rep.plantings_scanned} "
+                    f"harvest_backfill_plantings={rep.harvest_events_created_plantings} "
+                    f"nursery_backfill_plantings={rep.nursery_events_created_plantings} "
+                    f"invalid_harvest_window={rep.harvest_skipped_invalid_window}\n"
+                )
+            )
 
     def _resolve_summary_json_path(self, requested_path):
         if requested_path:
@@ -2008,6 +2027,16 @@ class Command(BaseCommand):
                             self.planting_cache[planting_id] = obj
                     else:
                         self.stats["Planting"]["processed"] += 1
+
+                    if i % self.PLANTING_PROGRESS_EVERY == 0:
+                        created_count = self.stats["Planting"].get("created", 0)
+                        updated_count = self.stats["Planting"].get("processed", 0)
+                        self.stdout.write(
+                            f"  ... plantings {year}: row {i}, "
+                            f"created={created_count}, updated={updated_count}, "
+                            f"skipped={self.stats['Planting']['skipped']}, "
+                            f"errors={self.stats['Planting']['errors']}"
+                        )
 
                 except (
                     ValueError,
@@ -4112,15 +4141,20 @@ class Command(BaseCommand):
         """Resolve crop season with deterministic duplicate handling."""
         if self.write_disabled:
             return {"crop": getattr(crop, "id", crop), "block_type": block_type}
-        queryset = CropBySeason.objects.filter(crop=crop, block_type=block_type).order_by("id")
-        crop_season = queryset.first()
-        if crop_season and queryset.count() > 1:
-            self.stdout.write(
-                self.style.WARNING(
-                    f"   ⚠  Multiple crop_season matches for {crop}/{block_type}; using id={crop_season.id}"
-                )
+        cache_key = (getattr(crop, "id", crop), block_type)
+        if cache_key not in self.crop_season_cache:
+            matches = list(
+                CropBySeason.objects.filter(crop=crop, block_type=block_type).order_by("id")[:2]
             )
-        return crop_season
+            crop_season = matches[0] if matches else None
+            if crop_season and len(matches) > 1:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"   ⚠  Multiple crop_season matches for {crop}/{block_type}; using id={crop_season.id}"
+                    )
+                )
+            self.crop_season_cache[cache_key] = crop_season
+        return self.crop_season_cache[cache_key]
 
     def _normalize_lookup_value(self, raw_value):
         """Normalize lookup text by trimming, collapsing spaces, and casefolding."""

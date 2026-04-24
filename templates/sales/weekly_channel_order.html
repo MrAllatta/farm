@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Weekly order — {{ channel.name }} · W{{ week_num }}{% endblock %}
+{% block content %}
+<section class="page-header">
+    <h1>Weekly sales order</h1>
+    <p class="muted">
+        {{ channel.name }} · ISO week {{ week_num }} · {{ week_monday|date:"M j" }}–{{ week_sunday|date:"M j, Y" }}
+        · Planning year {{ year.year }}
+    </p>
+    <nav class="muted no-print" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+        <a href="{% url 'sales:weekly_channel_order' channel.id prev_week_num %}">← Week {{ prev_week_num }}</a>
+        <a href="{% url 'sales:weekly_channel_order' channel.id next_week_num %}">Week {{ next_week_num }} →</a>
+        <span>·</span>
+        <label>Channel
+            <select aria-label="Sales channel" onchange="if (this.value) window.location=this.value;">
+                {% for ch in channels %}
+                <option value="{% url 'sales:weekly_channel_order' ch.id week_num %}" {% if ch.id == channel.id %}selected{% endif %}>{{ ch.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </nav>
+</section>
+
+<section class="panel no-print">
+    <h2>Downstream</h2>
+    <ul class="muted" style="margin:0;">
+        <li><a href="{% url 'operations:weekops_needs' week=week_num %}">Harvest needs (week {{ week_num }})</a></li>
+        <li><a href="{% url 'operations:pack_prep' %}?channel={{ channel.id }}&amp;pack_date={{ week_monday|date:'Y-m-d' }}">Pack prep ({{ week_monday|date:"M j" }})</a></li>
+        <li><a href="{% url 'sales:market_list_print' channel.id week_num %}">Print market list</a></li>
+        <li><a href="{% url 'sales:market_entry' %}?channel={{ channel.id }}&amp;date={{ week_monday|date:'Y-m-d' }}">Market sales entry</a></li>
+        <li><a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}">Channel sales plan (full year)</a></li>
+    </ul>
+</section>
+
+<section class="panel">
+    <h2>Same ISO week — prior years (actual)</h2>
+    {% if not has_any_historical %}
+    <p class="muted" data-historical-empty="1">No historical <code>ACTUAL</code> sales for this channel in this ISO week (prior calendar years in the database).</p>
+    {% endif %}
+    <form method="post" class="no-print">
+        {% csrf_token %}
+        {% with hc=historical_year_columns|length %}
+        <div class="fp-table-scroll">
+        <table class="fp-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    {% for col in historical_year_columns %}
+                    <th class="num">{{ col.calendar_year }}{% if col.empty %} <span class="muted">· —</span>{% endif %}</th>
+                    {% endfor %}
+                    <th class="num">All-channel demand</th>
+                    <th class="num">Harvest supply (~sale units)</th>
+                    <th class="num">This week plan (channel)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in order_rows %}
+                <tr{% if row.shortage %} style="background:#fff7ed;"{% endif %}>
+                    <td>
+                        <strong>{{ row.product.product_name }}</strong>
+                        <div class="muted"><small>{{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
+                    </td>
+                    {% for cell in row.historical_cells %}
+                    <td class="num">
+                        {% if cell.actual_qty is not None %}
+                            {{ cell.actual_qty|floatformat:1 }}
+                            {% if cell.actual_revenue %}<div class="muted"><small>${{ cell.actual_revenue|floatformat:0 }}</small></div>{% endif %}
+                        {% else %}—{% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="num">{{ row.demand_all_channels|floatformat:1 }}</td>
+                    <td class="num">{{ row.supply_sale_units|floatformat:1 }}</td>
+                    <td class="num">
+                        <input type="number" step="0.01" name="qty_{{ row.product.id }}" title="Planned quantity {{ row.product.product_name }}" value="{{ row.channel_planned_qty|floatformat:2 }}" style="max-width:7rem;">
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ hc|add:4 }}" class="muted">No active products — import reference <code>CropSalesFormat</code>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endwith %}
+        <p style="margin-top:0.75rem;"><button type="submit" class="btn btn-primary">Save this week for {{ channel.name }}</button></p>
+    </form>
+</section>
+{% endblock %}

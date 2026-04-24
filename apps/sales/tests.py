@@ -2,6 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase
+from django.urls import reverse
+from isoweek import Week
 
 from operations.models import InventoryLedger, PackBatch
 from reference.models import CropInfo, CropSalesFormat, SalesChannel
@@ -160,3 +162,97 @@ class SalesModelTests(TestCase):
             drawn_from_return=prior,
         )
         self.assertEqual(resale.drawn_from_return_id, prior.pk)
+
+
+class WeeklyChannelOrderViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.contrib.auth import get_user_model
+        from reference.models import Block
+
+        User = get_user_model()
+        cls.staff = User.objects.create_user("weekly_order_staff", password="pw", is_staff=True)
+        cls.channel = SalesChannel.objects.create(
+            name="Farmers Market",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("400.00"),
+            is_csa=False,
+            allocation_priority=1,
+        )
+        cls.py_2024 = PlanningYear.objects.create(year=2024, status="complete")
+        cls.py_2026 = PlanningYear.objects.create(year=2026, status="active")
+        crop = CropInfo.objects.create(
+            name="Kale",
+            crop_type="Greens",
+            botanical_family="Brassicaceae",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("0.40"),
+        )
+        cls.product = CropSalesFormat.objects.create(
+            crop=crop,
+            product_name="Kale Bunch",
+            sale_price=Decimal("4.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            sku="KAL-BUN",
+            is_active=True,
+        )
+        cls.block = Block.objects.create(
+            name="B1",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+
+    def setUp(self):
+        self.client.login(username="weekly_order_staff", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.py_2026.id
+        session.save()
+
+    def test_weekly_order_shows_historical_same_iso_week(self):
+        wk = 20
+        mon_2024 = Week(2024, wk).monday()
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_2024,
+            product=self.product,
+            actual_quantity=Decimal("12"),
+            actual_revenue=Decimal("48.00"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn(b"data-historical-empty=", r.content)
+        self.assertIn(b"12.0", r.content)
+
+    def test_weekly_order_save_persists_plan_row(self):
+        wk = 22
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.post(
+            url,
+            {f"qty_{self.product.id}": "5"},
+        )
+        self.assertEqual(r.status_code, 302)
+        mon = Week(2026, wk).monday()
+        ev = SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.py_2026,
+            channel=self.channel,
+            product=self.product,
+            sale_date=mon,
+        ).first()
+        self.assertIsNotNone(ev)
+        self.assertEqual(ev.planned_quantity, Decimal("5"))

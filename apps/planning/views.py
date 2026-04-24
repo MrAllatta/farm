@@ -31,6 +31,8 @@ from planning.services.sales_plan_allocation import even_split_sale_units
 from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
 from core.planning_year import get_effective_planning_year, set_session_planning_year
+from core.ui_diagnostics import nursery_surface_hints, sales_plan_surface_hints
+from .services.planting_events_repair import count_plantings_missing_harvest_events
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 from sales.models import SalesEvent
 
@@ -1326,6 +1328,21 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
         peak_week = max(bench_by_week, key=lambda x: x["trays"])
         tray_highlight_window = max((w["bench_trays"] for w in weeks_data), default=0)
 
+        planting_count_excl_dead = (
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=["skipped", "failed"])
+            .count()
+        )
+        nursery_event_year_total = NurseryEvent.objects.filter(
+            planting__planning_year=self.year_obj
+        ).count()
+        window_total_events = sum(w["total_events"] for w in weeks_data)
+        nursery_diagnostic_hints = nursery_surface_hints(
+            planting_count_excl_dead=planting_count_excl_dead,
+            nursery_event_year_total=nursery_event_year_total,
+            window_total_events=window_total_events,
+        )
+
         ctx.update(
             {
                 "year": self.year_obj,
@@ -1335,6 +1352,7 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
                 "bench_by_week": bench_by_week,
                 "peak_week": peak_week,
                 "tray_highlight_window": tray_highlight_window,
+                "nursery_diagnostic_hints": nursery_diagnostic_hints,
             }
         )
         return ctx
@@ -1834,6 +1852,19 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 }
             )
 
+        harvest_event_year_total = HarvestEvent.objects.filter(
+            planting__planning_year=self.year_obj
+        ).exclude(planting__status__in=["skipped", "failed", "revised"]).count()
+        missing_harvest_ct = count_plantings_missing_harvest_events(self.year_obj.id)
+        product_count = products.count()
+        rollup_category_ok = (self.sales_plan_mode != "rollup") or bool(rollup_category)
+        sales_plan_diagnostic_hints = sales_plan_surface_hints(
+            product_count=product_count,
+            rollup_category_ok=rollup_category_ok,
+            harvest_event_year_total=harvest_event_year_total,
+            plantings_missing_harvest_events=missing_harvest_ct,
+        )
+
         ctx.update(
             {
                 "year": self.year_obj,
@@ -1848,6 +1879,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "plan_mode": self.sales_plan_mode,
                 "rollup_slug": rollup_slug,
                 "rollup_tabs": rollup_tabs,
+                "sales_plan_diagnostic_hints": sales_plan_diagnostic_hints,
             }
         )
         return ctx

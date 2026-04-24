@@ -20,6 +20,8 @@ from decimal import Decimal
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from operations.services import week_ops as week_ops_service
 from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
+from planning.services.planting_events_repair import count_plantings_missing_harvest_events
+from core.ui_diagnostics import harvest_surface_hints
 
 
 def _weekops_header_context(phase: str, iso_week: int, year_obj, wctx: dict) -> dict:
@@ -300,6 +302,12 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
             wctx["week_rollup_by_crop"].values(),
             key=lambda r: r["crop"].name.lower(),
         )
+        planting_count_excl_dead = (
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=["skipped", "failed"])
+            .count()
+        )
+        missing_harvest = count_plantings_missing_harvest_events(self.year_obj.id)
         ctx.update(
             {
                 "weekops": wctx,
@@ -312,6 +320,13 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
                 "total_items": total_items,
                 "recorded": recorded,
                 "total_bins": float(total_bins),
+                "harvest_needs_week_event_count": total_items,
+                "plantings_missing_harvest_events": missing_harvest,
+                "diagnostic_hints": harvest_surface_hints(
+                    week_harvest_event_count=total_items,
+                    planting_count_excl_dead=planting_count_excl_dead,
+                    plantings_missing_harvest_events=missing_harvest,
+                ),
             }
         )
         return ctx
@@ -876,6 +891,13 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
             wctx["week_rollup_by_crop"].values(),
             key=lambda r: r["crop"].name.lower(),
         )
+        planting_count_excl_dead = (
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=["skipped", "failed"])
+            .count()
+        )
+        missing_harvest = count_plantings_missing_harvest_events(self.year_obj.id)
+        week_ev = wctx["progress"]["total_events"]
         ctx.update(
             {
                 "weekops": wctx,
@@ -885,6 +907,13 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
                 "week_rollup_by_sales_category": wctx["week_rollup_by_sales_category"],
                 "sales_demand_by_crop": wctx["sales_demand_by_crop"],
                 "harvest_blocks": harvest_blocks,
+                "harvest_needs_week_event_count": week_ev,
+                "plantings_missing_harvest_events": missing_harvest,
+                "diagnostic_hints": harvest_surface_hints(
+                    week_harvest_event_count=week_ev,
+                    planting_count_excl_dead=planting_count_excl_dead,
+                    plantings_missing_harvest_events=missing_harvest,
+                ),
             }
         )
         return ctx
@@ -1180,12 +1209,14 @@ class PackPrepView(OperationsPlanningYearMixin, TemplateView):
                     }
                 )
 
+        pack_iso_week = max(1, min(52, pack_date.isocalendar()[1]))
         ctx.update(
             {
                 "year": self.year_obj,
                 "channel": channel,
                 "channels": SalesChannel.objects.order_by("allocation_priority", "name"),
                 "pack_date": pack_date,
+                "pack_iso_week": pack_iso_week,
                 "rows": rows,
             }
         )

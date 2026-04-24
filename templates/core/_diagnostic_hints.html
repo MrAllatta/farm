@@ -1,0 +1,14 @@
+{# Reusable staff diagnostics (empty-state explanations). Expects: hints = list of {id,title,detail} #}
+{% if hints %}
+<div class="fp-diagnostics no-print" role="region" aria-label="Data diagnostics" style="margin:0 0 1rem 0; padding:0.75rem 1rem; border:1px solid #fcd34d; background:#fffbeb; border-radius:6px;">
+    <strong style="display:block; margin-bottom:0.35rem;">Why this screen might look empty</strong>
+    <ul style="margin:0; padding-left:1.15rem;">
+        {% for h in hints %}
+        <li style="margin-bottom:0.35rem;" data-empty-reason="{{ h.id }}">
+            <strong>{{ h.title }}</strong>
+            <div class="muted" style="font-size:0.92rem;">{{ h.detail }}</div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

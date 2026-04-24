@@ -26,6 +26,8 @@ from core.planning_year import (
     set_session_planning_year,
     resolve_current_planning_year,
 )
+from core.ui_diagnostics import dashboard_surface_hints
+from planning.services.planting_events_repair import count_plantings_missing_harvest_events
 
 from django.views.generic import FormView
 from django import forms
@@ -302,6 +304,7 @@ class DashboardView(TemplateView):
             .select_related("crop", "block")
         )
 
+        missing_harvest = count_plantings_missing_harvest_events(year_obj.id)
         ctx.update(
             {
                 "year": year_obj,
@@ -323,6 +326,13 @@ class DashboardView(TemplateView):
                 "total_plantings": total_plantings,
                 "active_plantings": active_plantings,
                 "status_map": status_map,
+                "plantings_missing_harvest_events": missing_harvest,
+                "dashboard_diagnostic_hints": dashboard_surface_hints(
+                    harvest_events_this_week=harvest_count,
+                    active_planting_count=active_plantings,
+                    plantings_missing_harvest_events=missing_harvest,
+                    week_sales_plan_target=week_target or 0,
+                ),
                 # Storage
                 "inventory_summary": inventory_summary[:8],
                 "inventory_warnings": [

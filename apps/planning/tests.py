@@ -14,6 +14,7 @@ from isoweek import Week
 from planning.models import HarvestEvent, PlanningYear, Planting
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from sales.models import SalesEvent
+from planning.services.planting_events_repair import repair_planting_events
 
 
 class SalesPlanShortageTests(TestCase):
@@ -464,3 +465,145 @@ class SuccessionCreatePrefillTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "succession-form")
         self.assertNotContains(r, "main-nav")
+
+
+class PlantingEventsRepairTests(TestCase):
+    """OP-7 / LC-5 — backfill missing generated harvest and nursery events."""
+
+    def setUp(self):
+        self.year = PlanningYear.objects.create(year=2101, status="active")
+        self.block = Block.objects.create(
+            name="RepairBlock",
+            block_type="field",
+            num_beds=10,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        self.crop_field = CropInfo.objects.create(
+            name="Repair Crop Field",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        CropBySeason.objects.create(
+            crop=self.crop_field,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        self.crop_season_field = CropBySeason.objects.get(crop=self.crop_field, block_type="field")
+
+        self.crop_nursery = CropInfo.objects.create(
+            name="Repair Crop Nursery",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=4,
+            weeks_until_pot_up=2,
+        )
+        CropBySeason.objects.create(
+            crop=self.crop_nursery,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        self.crop_season_nursery = CropBySeason.objects.get(crop=self.crop_nursery, block_type="field")
+
+    def test_creates_harvest_events_when_missing(self):
+        p = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_field,
+            crop_season=self.crop_season_field,
+            block=self.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=100,
+            planned_plant_date=date(2101, 5, 1),
+            planned_first_harvest_date=date(2101, 6, 1),
+            planned_last_harvest_date=date(2101, 6, 22),
+            planned_total_yield=Decimal("100.00"),
+        )
+        self.assertEqual(p.harvest_events.count(), 0)
+        stats = repair_planting_events(planning_year_ids=[self.year.id])
+        self.assertEqual(stats.harvest_events_created_plantings, 1)
+        self.assertGreater(p.harvest_events.count(), 0)
+
+    def test_creates_nursery_events_when_crop_needs_nursery_and_none_exist(self):
+        p = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_nursery,
+            crop_season=self.crop_season_nursery,
+            block=self.block,
+            bed_start=2,
+            bed_end=2,
+            planned_bedfeet=50,
+            planned_plant_date=date(2101, 7, 1),
+            planned_first_harvest_date=date(2101, 8, 1),
+            planned_last_harvest_date=date(2101, 8, 22),
+            planned_total_yield=Decimal("50.00"),
+        )
+        self.assertEqual(p.nursery_events.count(), 0)
+        stats = repair_planting_events(planning_year_ids=[self.year.id])
+        self.assertGreaterEqual(stats.nursery_events_created_plantings, 1)
+        self.assertGreater(p.nursery_events.count(), 0)
+        types = {e.event_type for e in p.nursery_events.all()}
+        self.assertIn("seed", types)
+        self.assertIn("transplant", types)
+
+    def test_idempotent_second_run_does_not_duplicate(self):
+        p = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_field,
+            crop_season=self.crop_season_field,
+            block=self.block,
+            bed_start=3,
+            bed_end=3,
+            planned_bedfeet=100,
+            planned_plant_date=date(2101, 5, 10),
+            planned_first_harvest_date=date(2101, 6, 10),
+            planned_last_harvest_date=date(2101, 7, 1),
+            planned_total_yield=Decimal("100.00"),
+        )
+        repair_planting_events(planning_year_ids=[self.year.id])
+        n1 = p.harvest_events.count()
+        repair_planting_events(planning_year_ids=[self.year.id])
+        n2 = p.harvest_events.count()
+        self.assertEqual(n1, n2)
+        self.assertGreater(n1, 0)
+
+    def test_skips_planting_with_existing_harvest_events(self):
+        p = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_field,
+            crop_season=self.crop_season_field,
+            block=self.block,
+            bed_start=4,
+            bed_end=4,
+            planned_bedfeet=100,
+            planned_plant_date=date(2101, 5, 1),
+            planned_first_harvest_date=date(2101, 6, 1),
+            planned_last_harvest_date=date(2101, 6, 22),
+            planned_total_yield=Decimal("100.00"),
+        )
+        HarvestEvent.objects.create(
+            planting=p,
+            planned_date=date(2101, 6, 1),
+            planned_quantity=Decimal("10"),
+            planned_units="pounds",
+        )
+        before = p.harvest_events.count()
+        stats = repair_planting_events(planning_year_ids=[self.year.id])
+        self.assertEqual(stats.harvest_events_created_plantings, 0)
+        self.assertEqual(p.harvest_events.count(), before)

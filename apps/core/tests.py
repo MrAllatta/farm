@@ -1152,12 +1152,18 @@ class ImportHistoricalDataCommandTests(TestCase):
             "QuickSalesEntry": QuickSalesEntry.objects.count(),
             "RotationHistory": RotationHistory.objects.count(),
         }
+        repair_adjusted = ("NurseryEvent", "HarvestEvent")
         for model_name, persisted_count in expected_counts.items():
             with self.subTest(model=model_name):
-                self.assertEqual(summary["results"]["models"][model_name]["created"], persisted_count)
-                self.assertEqual(summary["results"]["models"][model_name]["updated"], 0)
-                self.assertEqual(summary["results"]["models"][model_name]["skipped"], 0)
-                self.assertEqual(summary["results"]["models"][model_name]["error"], 0)
+                sm = summary["results"]["models"][model_name]
+                if model_name in repair_adjusted:
+                    # Tiered import summary is emitted before OP-7/LC-5 repair; repair may add rows.
+                    self.assertGreaterEqual(persisted_count, sm["created"])
+                else:
+                    self.assertEqual(sm["created"], persisted_count)
+                self.assertEqual(sm["updated"], 0)
+                self.assertEqual(sm["skipped"], 0)
+                self.assertEqual(sm["error"], 0)
 
     def test_repo_sample_import_apply_supports_curated_post_import_sanity_queries(self):
         fixture_dir = Path(__file__).resolve().parents[2] / "data" / "sample_import"
@@ -3644,7 +3650,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "reference": 1,
         "planning": 26,
         "operations": 16,
-        "sales": 3,
+        "sales": 4,
         "reports": 14,
     }
     CRITICAL_ROUTES = [
@@ -3691,6 +3697,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("sales:market_entry", {}),
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
+        ("sales:weekly_channel_order", {"channel_id": 1, "week": 12}),
         ("reports:crop_map", {}),
         ("reports:crop_performance", {}),
         ("reports:seed_order", {}),
@@ -3737,6 +3744,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("sales:market_entry", {}),
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
+        ("sales:weekly_channel_order", {"channel_id": 1, "week": 12}),
         ("reports:crop_map", {}),
         ("reports:crop_map_week", {"week": 12}),
         ("reports:harvest_list_print", {"week": 12}),
@@ -3759,7 +3767,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "reference": 1,
         "planning": 14,
         "operations": 11,
-        "sales": 3,
+        "sales": 4,
         "reports": 16,
     }
     EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
@@ -3767,7 +3775,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "reference": 1,
         "planning": 15,
         "operations": 11,
-        "sales": 3,
+        "sales": 4,
         "reports": 16,
     }
 

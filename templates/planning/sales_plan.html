@@ -10,6 +10,8 @@
 <p class="muted">Weekly plan for a single sales channel (outlet-level). Use <a href="{% url 'planning:sales_plan' %}">rollup sales plan</a> for the high-level 301 grid.</p>
 {% endif %}
 
+{% include "core/_diagnostic_hints.html" with hints=sales_plan_diagnostic_hints only %}
+
 <form method="post">
     {% csrf_token %}
     <div style="display:flex; gap:1rem; align-items:end; margin-bottom:1rem; flex-wrap:wrap;">

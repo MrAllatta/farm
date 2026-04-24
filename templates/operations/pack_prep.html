@@ -45,7 +45,18 @@
                 <td>{{ row.crop_balance|floatformat:2 }} {{ row.product.crop.harvest_unit }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="5">No plan rows for this channel and date. Use Sales Plan to add <code>PLAN</code> sales events.</td></tr>
+            <tr>
+                <td colspan="5" data-empty-reason="no_plan_rows">
+                    No <code>PLAN</code> sales events for this channel and pack date — the weekly order builder and rollup sales plan write these rows.
+                    {% if channel %}
+                    <div class="no-print" style="margin-top:0.35rem;">
+                        <a href="{% url 'sales:weekly_channel_order' channel.id pack_iso_week %}">Open weekly order (week {{ pack_iso_week }})</a>
+                        ·
+                        <a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}">Channel sales plan</a>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>

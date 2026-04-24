@@ -15,6 +15,8 @@
     <div class="muted">Trays on benches (max in this 4-week window) · greenhouse capacity {{ greenhouse_capacity }} trays</div>
 </div>
 
+{% include "core/_diagnostic_hints.html" with hints=nursery_diagnostic_hints only %}
+
 <div style="margin-bottom:1rem;">
     <strong>Capacity:</strong> {{ greenhouse_capacity }} trays
 </div>

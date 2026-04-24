@@ -12,9 +12,14 @@ from decimal import Decimal, InvalidOperation
 
 from reports.mixins import ReportContextMixin
 
+from core.planning_year import get_effective_planning_year
+from core.ui_diagnostics import market_entry_surface_hints
+
 from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
 from operations.models import PackAllocation
+
+from .views_weekly_order import WeeklyChannelOrderView
 
 
 def _carryover_return_events(channel, product, sale_date, days=14):
@@ -126,6 +131,14 @@ class MarketSalesEntryView(TemplateView):
         current_week = sale_date.isocalendar()[1]
         is_active_week = channel.start_week <= current_week <= channel.end_week
 
+        year_obj = get_effective_planning_year(self.request)
+        planning_year_label = str(year_obj.year) if year_obj else "the active planning year"
+        has_pack = pack_list.exists()
+        market_entry_diagnostic_hints = market_entry_surface_hints(
+            has_pack_list=has_pack,
+            planning_year_label=planning_year_label,
+        )
+
         ctx.update(
             {
                 "channels": channels,
@@ -135,8 +148,9 @@ class MarketSalesEntryView(TemplateView):
                 "quick_entry": quick_entry,
                 "detailed_entries": detailed_entries,
                 "entry_items": entry_items,
-                "has_pack_list": pack_list.exists(),
+                "has_pack_list": has_pack,
                 "weekly_target": channel.weekly_target if is_active_week else 0,
+                "market_entry_diagnostic_hints": market_entry_diagnostic_hints,
                 # For date navigation
                 "prev_date": sale_date - timedelta(days=7),
                 "next_date": sale_date + timedelta(days=7),

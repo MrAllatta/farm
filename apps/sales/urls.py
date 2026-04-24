@@ -6,6 +6,11 @@ from . import views
 app_name = "sales"
 
 urlpatterns = [
+    path(
+        "weekly-order/channel/<int:channel_id>/week/<int:week>/",
+        views.WeeklyChannelOrderView.as_view(),
+        name="weekly_channel_order",
+    ),
     path("", views.MarketSalesEntryView.as_view(), name="market_entry"),
     path(
         "channel/<int:channel_id>/",

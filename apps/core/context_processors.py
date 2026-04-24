@@ -2,11 +2,14 @@
 
 from datetime import date
 
+from django.urls import reverse
+
 from core.planning_year import (
     get_effective_planning_year,
     operational_anchor_year,
     planning_years_in_clock_scope,
 )
+from reference.models import SalesChannel
 
 CROP_TYPE_COLORS = {
     "Tomatoes": "#fee2e2",
@@ -38,6 +41,14 @@ def planning_context(request):
     # ISO week can be 53; week-ops URLs clamp to 1–52 to match HarvestEvent week helpers.
     operations_nav_week = max(1, min(52, current_week))
 
+    first_channel = SalesChannel.objects.order_by("allocation_priority", "id").first()
+    weekly_order_url = None
+    if first_channel is not None:
+        weekly_order_url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": first_channel.id, "week": operations_nav_week},
+        )
+
     return {
         "current_planning_year": year_obj,
         "planning_year_scope_choices": planning_years_in_clock_scope(anchor),
@@ -46,4 +57,5 @@ def planning_context(request):
         "operations_nav_week": operations_nav_week,
         "today": today,
         "crop_colors": CROP_TYPE_COLORS,
+        "weekly_order_url": weekly_order_url,
     }

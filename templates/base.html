@@ -38,38 +38,63 @@
         
         <div class="nav-links">
             <details class="nav-group nav-group-menu">
-                <summary class="nav-group-label">Plan</summary>
+                <summary class="nav-group-label">This week</summary>
                 <div class="nav-menu">
-                    <a href="{% url 'planning:matrix' %}">Crop Planner</a>
-                    <a href="{% url 'planning:sales_plan' %}">Sales Plan</a>
-                    <a href="{% url 'planning:harvest_calendar' %}">Harvest Calendar</a>
-                    <a href="{% url 'planning:successions_by_block' %}">Successions by block</a>
-                    <h4 class="nav-menu-heading">Nursery</h4>
+                    <a href="{% url 'core:dashboard' %}">Dashboard</a>
+                    <a href="{% url 'operations:weekops_walk' week=operations_nav_week %}">Field walk</a>
+                    <a href="{% url 'operations:weekops_needs' week=operations_nav_week %}">Harvest needs</a>
+                    <a href="{% url 'operations:weekops_record' week=operations_nav_week %}">Record harvest</a>
+                    <a href="{% url 'operations:missing_plantings' %}">Missing plantings</a>
+                </div>
+            </details>
+
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Sales &amp; orders</summary>
+                <div class="nav-menu">
+                    {% if weekly_order_url %}
+                    <a href="{{ weekly_order_url }}">Weekly order (this week)</a>
+                    {% endif %}
+                    <a href="{% url 'sales:market_entry' %}">Market sales entry</a>
+                    <a href="{% url 'planning:sales_plan' %}">Sales plan (rollup)</a>
+                    <a href="{% url 'planning:sales_plan_by_channel' %}">Sales plan by channel</a>
+                </div>
+            </details>
+
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Field &amp; pack</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'operations:pack_prep' %}">Pack prep</a>
+                    <a href="{% url 'operations:pack_batch_record' %}">Record pack batch</a>
+                    <a href="{% url 'operations:inventory' %}">Inventory</a>
+                    <a href="{% url 'operations:planting_list_print' %}">Print planting list</a>
+                </div>
+            </details>
+
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Nursery</summary>
+                <div class="nav-menu">
                     <a href="{% url 'planning:nursery_schedule' %}">Nursery schedule</a>
                     <a href="{% url 'planning:nursery_records' %}">Nursery records</a>
                     <a href="{% url 'planning:nursery_todo' %}">Nursery todo</a>
                     <a href="{% url 'planning:nursery_schedule_full_print' %}">Nursery print (full)</a>
-                    <a href="{% url 'operations:seeding_todo_print' %}#tray-labels">Tray labels (print)</a>
-                    <a href="{% url 'planning:succession_create' %}">+ Succession</a>
-                </div>
-            </details>
-            
-            <details class="nav-group nav-group-menu">
-                <summary class="nav-group-label">Operate</summary>
-                <div class="nav-menu">
-                    <a href="{% url 'operations:weekops_walk' week=operations_nav_week %}">Field walk and harvest</a>
-                    <a href="{% url 'operations:missing_plantings' %}">Missing plantings</a>
-                    <a href="{% url 'operations:planting_list_print' %}">Print planting list</a>
                     <a href="{% url 'operations:seeding_todo_print' %}">Print seeding todo</a>
-                    <a href="{% url 'sales:market_entry' %}">Market Sales</a>
-                    <a href="{% url 'operations:pack_prep' %}">Pack prep</a>
-                    <a href="{% url 'operations:pack_batch_record' %}">Record pack batch</a>
-                    <a href="{% url 'operations:inventory' %}">Inventory</a>
+                    <a href="{% url 'operations:seeding_todo_print' %}#tray-labels">Tray labels (print)</a>
+                </div>
+            </details>
+
+            <details class="nav-group nav-group-menu">
+                <summary class="nav-group-label">Crop plan</summary>
+                <div class="nav-menu">
+                    <a href="{% url 'planning:matrix' %}">Crop planner (matrix)</a>
+                    <a href="{% url 'planning:harvest_calendar' %}">Harvest calendar</a>
+                    <a href="{% url 'planning:successions_by_block' %}">Successions by block</a>
+                    <a href="{% url 'planning:succession_create' %}">+ Succession</a>
+                    <a href="{% url 'planning:field_schedule' %}">Field schedule</a>
                 </div>
             </details>
             
             <details class="nav-group nav-group-menu">
-                <summary class="nav-group-label">Reports</summary>
+                <summary class="nav-group-label">503 map</summary>
                 <div class="nav-menu">
                     <a href="{% url 'reports:crop_map' %}">Crop Map</a>
                     <a href="{% url 'reports:crop_map_week_by_bed' %}">503 Week by Bed</a>

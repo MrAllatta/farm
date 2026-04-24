@@ -67,6 +67,8 @@
             </div>
         </div>
     </div>
+
+    {% include "core/_diagnostic_hints.html" with hints=dashboard_diagnostic_hints only %}
     
     {# ── Row 2: This Week Tasks + Next Week ── #}
     <div class="dashboard-columns">

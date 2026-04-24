@@ -11,6 +11,8 @@
     </div>
 </div>
 
+{% include "core/_diagnostic_hints.html" with hints=diagnostic_hints only %}
+
 {% if crop_variance %}
 <details class="weekops-rollup no-print" open style="margin-bottom:1rem;">
     <summary>Variance vs target (bins, this week)</summary>
