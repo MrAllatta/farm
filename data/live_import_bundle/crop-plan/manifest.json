@@ -8,12 +8,145 @@
     {
       "header_row_index": 2,
       "modified_time": null,
+      "output_path": "year_2022/plantings.csv",
+      "rows_written": 1472,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "header_row_index",
+      "worksheet_title": "Crop Planner",
+      "year": 2022
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2022/nursery_events.csv",
+      "rows_written": 454,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Nursery Plan 502",
+      "year": 2022
+    },
+    {
+      "header_row_index": 5,
+      "modified_time": null,
+      "output_path": "year_2022/planting_field_records.csv",
+      "rows_written": 2985,
+      "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "spreadsheet_name": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "strategy": "header_row_index",
+      "worksheet_title": "Field Records Online",
+      "year": 2022
+    },
+    {
+      "header_row_index": 2,
+      "modified_time": null,
+      "output_path": "year_2023/plantings.csv",
+      "rows_written": 1472,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "header_row_index",
+      "worksheet_title": "Crop Planner",
+      "year": 2023
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2023/nursery_events.csv",
+      "rows_written": 454,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Nursery Plan 502",
+      "year": 2023
+    },
+    {
+      "header_row_index": 5,
+      "modified_time": null,
+      "output_path": "year_2023/planting_field_records.csv",
+      "rows_written": 2985,
+      "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "spreadsheet_name": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "strategy": "header_row_index",
+      "worksheet_title": "Field Records Online",
+      "year": 2023
+    },
+    {
+      "header_row_index": 2,
+      "modified_time": null,
+      "output_path": "year_2024/plantings.csv",
+      "rows_written": 1472,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "header_row_index",
+      "worksheet_title": "Crop Planner",
+      "year": 2024
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2024/nursery_events.csv",
+      "rows_written": 454,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Nursery Plan 502",
+      "year": 2024
+    },
+    {
+      "header_row_index": 5,
+      "modified_time": null,
+      "output_path": "year_2024/planting_field_records.csv",
+      "rows_written": 2985,
+      "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "spreadsheet_name": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "strategy": "header_row_index",
+      "worksheet_title": "Field Records Online",
+      "year": 2024
+    },
+    {
+      "header_row_index": 2,
+      "modified_time": null,
+      "output_path": "year_2025/plantings.csv",
+      "rows_written": 1472,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "header_row_index",
+      "worksheet_title": "Crop Planner",
+      "year": 2025
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2025/nursery_events.csv",
+      "rows_written": 454,
+      "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Nursery Plan 502",
+      "year": 2025
+    },
+    {
+      "header_row_index": 5,
+      "modified_time": null,
+      "output_path": "year_2025/planting_field_records.csv",
+      "rows_written": 2985,
+      "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "spreadsheet_name": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
+      "strategy": "header_row_index",
+      "worksheet_title": "Field Records Online",
+      "year": 2025
+    },
+    {
+      "header_row_index": 2,
+      "modified_time": null,
       "output_path": "year_2026/plantings.csv",
       "rows_written": 1472,
       "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
       "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
       "strategy": "header_row_index",
-      "worksheet_title": "Crop Planner"
+      "worksheet_title": "Crop Planner",
+      "year": 2026
     },
     {
       "header_row_index": 0,
@@ -23,7 +156,8 @@
       "spreadsheet_id": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
       "spreadsheet_name": "1jFhWod0k8s8fpTKK3x-kP_nxOiD6bW47Lh3LYAARXFY",
       "strategy": "required_header_set_scan",
-      "worksheet_title": "Nursery Plan 502"
+      "worksheet_title": "Nursery Plan 502",
+      "year": 2026
     },
     {
       "header_row_index": 5,
@@ -33,7 +167,15 @@
       "spreadsheet_id": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
       "spreadsheet_name": "10FjgXQj_JDWSF8DTqlLx0GohJViCRDq8fTD93bnVUBs",
       "strategy": "header_row_index",
-      "worksheet_title": "Field Records Online"
+      "worksheet_title": "Field Records Online",
+      "year": 2026
     }
+  ],
+  "years": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
   ]
 }

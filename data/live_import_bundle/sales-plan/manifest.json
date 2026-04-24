@@ -8,12 +8,64 @@
     {
       "header_row_index": 0,
       "modified_time": null,
+      "output_path": "year_2022/sales_plan_302.csv",
+      "rows_written": 2660,
+      "spreadsheet_id": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "spreadsheet_name": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Sales Plan 302",
+      "year": 2022
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2023/sales_plan_302.csv",
+      "rows_written": 2660,
+      "spreadsheet_id": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "spreadsheet_name": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Sales Plan 302",
+      "year": 2023
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2024/sales_plan_302.csv",
+      "rows_written": 2660,
+      "spreadsheet_id": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "spreadsheet_name": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Sales Plan 302",
+      "year": 2024
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
+      "output_path": "year_2025/sales_plan_302.csv",
+      "rows_written": 2660,
+      "spreadsheet_id": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "spreadsheet_name": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
+      "strategy": "required_header_set_scan",
+      "worksheet_title": "Sales Plan 302",
+      "year": 2025
+    },
+    {
+      "header_row_index": 0,
+      "modified_time": null,
       "output_path": "year_2026/sales_plan_302.csv",
       "rows_written": 2660,
       "spreadsheet_id": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
       "spreadsheet_name": "1RVDv2jY02HpCwnkWyctXGP68XDXBd8vqeibG0pgPp88",
       "strategy": "required_header_set_scan",
-      "worksheet_title": "Sales Plan 302"
+      "worksheet_title": "Sales Plan 302",
+      "year": 2026
     }
+  ],
+  "years": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
   ]
 }

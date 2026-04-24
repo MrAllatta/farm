@@ -1,0 +1,2661 @@
+Channel,Product,Harvest Year,Harvest Week,Qty,Value
+Markets,Arugula - 1/3 lb,2026,1,14,$98.00
+Markets,Beets Bulk Golden - lb,2026,1,25,$87.50
+Markets,Beets Bulk Red - lb,2026,1,25,$87.50
+Markets,Bok Choy - ea,2026,1,29,$72.50
+Markets,Bok Choy - ea,2026,1,20,$50.00
+Markets,Braising Mix - 1 lb,2026,1,36,$324.00
+Markets,Cabbage Chinese - lb,2026,1,22.5,$90.00
+Markets,Cabbage Cone Storage - lb,2026,1,45.1,$112.75
+Markets,Cabbage Green Storage - lb,2026,1,40,$100.00
+Markets,Cabbage Green Storage - lb,2026,1,19.3,$48.25
+Markets,Cabbage Red - lb,2026,1,27.8,$69.50
+Markets,Cabbage Savoy - lb,2026,1,11.4,$28.50
+Markets,Carrot Bulk - lb,2026,1,148,$518.00
+Markets,Chard - bu,2026,1,12,$60.00
+Markets,Collards - bu,2026,1,20,$100.00
+Markets,Kale Curly - bu,2026,1,15,$75.00
+Markets,Kale Lacinato - bu,2026,1,90,$450.00
+Markets,Kale Russian - bu,2026,1,20,$100.00
+Markets,Kohlrabi Storage - ea,2026,1,21,$84.00
+Markets,Mustard - bu,2026,1,5,$25.00
+Markets,Potato Red - lb,2026,1,33,$115.50
+Markets,Potato White - lb,2026,1,70,$245.00
+Markets,Potato White - lb,2026,1,39,$136.50
+Markets,Potato Yellow - lb,2026,1,62,$217.00
+Markets,Radicchio Round - lb,2026,1,27,$243.00
+Markets,Radish Daikon Bulk - lb,2026,1,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,1,23,$161.00
+Markets,Salad Mix - 2/3 lb ,2026,1,35,$490.00
+Markets,Spinach - 1 lb,2026,1,14,$196.00
+Markets,Spinach - 1/2 lb,2026,1,8,$56.00
+Markets,Sweet Potato Covington - lb,2026,1,25,$87.50
+Markets,Sweet Potato Covington - lb,2026,1,35,$122.50
+Markets,Sweet Potato Murasaki - lb,2026,1,42,$147.00
+Markets,Winter Squash Butternut - lb,2026,1,53,$159.00
+Markets,Winter Squash Futsu - lb,2026,1,13.9,$41.70
+Markets,Winter Squash Koginut - lb,2026,1,33.3,$99.90
+Markets,Beets Bulk Golden - lb,2026,2,25,$87.50
+Markets,Beets Bulk Red - lb,2026,2,25,$87.50
+Markets,Bok Choy - ea,2026,2,97,$242.50
+Markets,Bok Choy - ea,2026,2,18,$45.00
+Markets,Braising Mix - 1 lb,2026,2,20,$180.00
+Markets,Cabbage Chinese - lb,2026,2,20,$80.00
+Markets,Cabbage Cone Storage - lb,2026,2,32.1,$80.25
+Orders,Cabbage Cone Storage - lb,2026,2,1,$1.75
+Markets,Cabbage Green Storage - lb,2026,2,25,$62.50
+Markets,Cabbage Green Storage - lb,2026,2,15.6,$39.00
+Markets,Cabbage Red - lb,2026,2,20,$50.00
+Orders,Cabbage Red - lb,2026,2,1,$1.75
+Markets,Cabbage Savoy - lb,2026,2,19.3,$48.25
+Orders,Cabbage Savoy - lb,2026,2,1,$1.75
+Markets,Carrot Bulk - lb,2026,2,130,$455.00
+Markets,Chard - bu,2026,2,16,$80.00
+Markets,Kale Curly - bu,2026,2,40,$200.00
+Orders,Kale Curly - bu,2026,2,1,$3.50
+Markets,Kale Lacinato - bu,2026,2,55,$275.00
+Orders,Kale Lacinato - bu,2026,2,5,$17.50
+Markets,Kale Russian - bu,2026,2,20,$100.00
+Markets,Kohlrabi Storage - ea,2026,2,25,$100.00
+Markets,Potato Blue - lb,2026,2,18,$63.00
+Markets,Potato Red - lb,2026,2,15.3,$53.55
+Markets,Potato White - lb,2026,2,50,$175.00
+Markets,Potato White - lb,2026,2,19.2,$67.20
+Markets,Potato Yellow - lb,2026,2,36,$126.00
+Markets,Radicchio Round - lb,2026,2,11.3,$101.70
+Markets,Radish Daikon Bulk - lb,2026,2,30.5,$106.75
+Markets,Salad Mix - 1/3 lb,2026,2,26,$182.00
+Markets,Salad Mix - 2/3 lb ,2026,2,25,$350.00
+Markets,Spinach - 1 lb,2026,2,8,$112.00
+Markets,Spinach - 1/2 lb,2026,2,15,$105.00
+Markets,Sweet Potato Covington - lb,2026,2,25,$87.50
+Markets,Sweet Potato Covington - lb,2026,2,26.6,$93.10
+Markets,Sweet Potato Murasaki - lb,2026,2,17.9,$62.65
+Markets,Winter Squash Butternut - lb,2026,2,58.8,$176.40
+Markets,Winter Squash Futsu - lb,2026,2,4.2,$12.60
+Markets,Winter Squash Koginut - lb,2026,2,47.2,$141.60
+Markets,Arugula - 1/3 lb,2026,3,13,$91.00
+Markets,Beets Bulk Golden - lb,2026,3,25,$87.50
+Markets,Beets Bulk Red - lb,2026,3,25,$87.50
+Markets,Bok Choy - ea,2026,3,75,$187.50
+Markets,Braising Mix - 1 lb,2026,3,30,$270.00
+Markets,Cabbage Chinese - lb,2026,3,17.3,$69.20
+Markets,Cabbage Cone Storage - lb,2026,3,35.5,$88.75
+Markets,Cabbage Green Storage - lb,2026,3,40,$100.00
+Markets,Cabbage Green Storage - lb,2026,3,13.7,$34.25
+Markets,Cabbage Red - lb,2026,3,17,$42.50
+Markets,Cabbage Savoy - lb,2026,3,18.8,$47.00
+Orders,Cabbage Savoy - lb,2026,3,2,$3.50
+Markets,Carrot Bulk - lb,2026,3,109,$381.50
+Orders,Carrot Bulk - lb,2026,3,50,$122.50
+Markets,Chard - bu,2026,3,11,$55.00
+Markets,Kale Curly - bu,2026,3,6,$30.00
+Markets,Kale Lacinato - bu,2026,3,66,$330.00
+Orders,Kale Lacinato - bu,2026,3,3,$10.50
+Markets,Kale Russian - bu,2026,3,10,$50.00
+Markets,Kohlrabi Storage - ea,2026,3,22,$88.00
+Markets,Potato Blue - lb,2026,3,40.7,$142.45
+Markets,Potato White - lb,2026,3,70,$245.00
+Markets,Potato White - lb,2026,3,22,$77.00
+Markets,Potato Yellow - lb,2026,3,58,$203.00
+Markets,Radicchio Round - lb,2026,3,25,$225.00
+Markets,Radish Daikon Bulk - lb,2026,3,16.5,$57.75
+Markets,Salad Mix - 1/3 lb,2026,3,13,$91.00
+Markets,Salad Mix - 2/3 lb ,2026,3,35,$490.00
+Markets,Spinach - 1 lb,2026,3,10,$140.00
+Markets,Spinach - 1/2 lb,2026,3,14,$98.00
+Markets,Sweet Potato Covington - lb,2026,3,25,$87.50
+Markets,Sweet Potato Covington - lb,2026,3,31.5,$110.25
+Markets,Sweet Potato Murasaki - lb,2026,3,27.9,$97.65
+Markets,Winter Squash Butternut - lb,2026,3,64.2,$192.60
+Markets,Winter Squash Koginut - lb,2026,3,50.3,$150.90
+Markets,Beets Bulk Golden - lb,2026,4,25,$87.50
+Markets,Beets Bulk Red - lb,2026,4,25,$87.50
+Markets,Bok Choy - ea,2026,4,122,$305.00
+Markets,Cabbage Green Storage - lb,2026,4,25,$62.50
+Markets,Potato White - lb,2026,4,25,$87.50
+Markets,Sweet Potato Covington - lb,2026,4,25,$87.50
+Markets,Arugula - 1/3 lb,2026,5,8,$56.00
+Markets,Beets Bulk Golden - lb,2026,5,25,$87.50
+Markets,Beets Bulk Red - lb,2026,5,25,$87.50
+Markets,Bok Choy - ea,2026,5,74,$185.00
+Markets,Bok Choy - ea,2026,5,18,$45.00
+Markets,Braising Mix - 1 lb,2026,5,35,$315.00
+Markets,Cabbage Chinese - lb,2026,5,13,$52.00
+Markets,Cabbage Cone Storage - lb,2026,5,48,$120.00
+Orders,Cabbage Cone Storage - lb,2026,5,2,$3.50
+Markets,Cabbage Green Storage - lb,2026,5,40,$100.00
+Markets,Cabbage Green Storage - lb,2026,5,23,$57.50
+Markets,Cabbage Red - lb,2026,5,32,$80.00
+Orders,Cabbage Red - lb,2026,5,1,$1.75
+Markets,Cabbage Savoy - lb,2026,5,19,$47.50
+Orders,Cabbage Savoy - lb,2026,5,2,$3.50
+Markets,Carrot Bulk - lb,2026,5,159,$556.50
+Orders,Chard - bu,2026,5,1,$3.50
+Markets,Kale Lacinato - bu,2026,5,82,$410.00
+Orders,Kale Lacinato - bu,2026,5,3,$10.50
+Markets,Kale Russian - bu,2026,5,13,$65.00
+Markets,Kohlrabi Storage - ea,2026,5,35,$140.00
+Markets,Potato Blue - lb,2026,5,60,$210.00
+Markets,Potato White - lb,2026,5,70,$245.00
+Markets,Potato White - lb,2026,5,69,$241.50
+Markets,Potato Yellow - lb,2026,5,51,$178.50
+Markets,Radish Daikon Bulk - lb,2026,5,66,$231.00
+Markets,Salad Mix - 1/3 lb,2026,5,20,$140.00
+Markets,Salad Mix - 2/3 lb ,2026,5,38,$532.00
+Markets,Spinach - 1 lb,2026,5,25,$350.00
+Markets,Spinach - 1/2 lb,2026,5,20,$140.00
+Markets,Sweet Potato Covington - lb,2026,5,25,$87.50
+Markets,Sweet Potato Covington - lb,2026,5,12,$42.00
+Markets,Sweet Potato Murasaki - lb,2026,5,25,$87.50
+Markets,Winter Squash Butternut - lb,2026,5,68,$204.00
+Markets,Winter Squash Kabocha - lb,2026,5,25,$75.00
+Markets,Winter Squash Koginut - lb,2026,5,56,$168.00
+Markets,Beets Bulk Golden - lb,2026,6,25,$87.50
+Markets,Beets Bulk Red - lb,2026,6,25,$87.50
+Markets,Bok Choy - ea,2026,6,113,$282.50
+Markets,Cabbage Green Storage - lb,2026,6,25,$62.50
+Markets,Potato White - lb,2026,6,25,$87.50
+Markets,Sweet Potato Covington - lb,2026,6,25,$87.50
+Markets,Winter Squash Kabocha - lb,2026,6,25,$75.00
+Markets,Beets Bulk Golden - lb,2026,7,25,$87.50
+Markets,Beets Bulk Red - lb,2026,7,25,$87.50
+Markets,Bok Choy - lb,2026,7,39,$390.00
+Orders,Cabbage Cone Storage - lb,2026,7,2,$3.50
+Markets,Cabbage Green Storage - lb,2026,7,40,$100.00
+Markets,Cabbage Green Storage - lb,2026,7,50.5,$126.25
+Markets,Cabbage Red - lb,2026,7,60.2,$150.50
+Orders,Cabbage Red - lb,2026,7,1,$1.75
+Markets,Cabbage Savoy - lb,2026,7,43.3,$108.25
+Orders,Cabbage Savoy - lb,2026,7,3,$5.25
+Markets,Carrot Bulk - lb,2026,7,122.25,$427.88
+Orders,Carrot Bulk - lb,2026,7,3,$7.35
+Markets,Chard - bu,2026,7,12,$60.00
+Markets,Kale Curly - bu,2026,7,29,$145.00
+Orders,Kale Curly - bu,2026,7,4,$14.00
+Markets,Kale Lacinato - bu,2026,7,39,$195.00
+Orders,Kale Lacinato - bu,2026,7,4,$14.00
+Markets,Kale Russian - bu,2026,7,11,$55.00
+Markets,Kohlrabi Storage - ea,2026,7,35,$140.00
+Markets,Potato White - lb,2026,7,70,$245.00
+Markets,Potato White - lb,2026,7,46,$161.00
+Markets,Potato Yellow - lb,2026,7,70,$245.00
+Markets,Radish Daikon Bulk - lb,2026,7,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,7,32,$224.00
+Markets,Salad Mix - 2/3 lb ,2026,7,40,$560.00
+Markets,Spinach - 1/2 lb,2026,7,16,$112.00
+Markets,Sweet Potato Covington - lb,2026,7,25,$87.50
+Markets,Winter Squash Kabocha - lb,2026,7,25,$75.00
+Markets,Winter Squash Kabocha - lb,2026,7,29.4,$88.20
+Markets,Winter Squash Koginut - lb,2026,7,63.2,$189.60
+Markets,Bok Choy - lb,2026,8,41,$410.00
+Markets,Cabbage Green Storage - lb,2026,8,25,$62.50
+Markets,Cabbage Green Storage - lb,2026,8,52.8,$132.00
+Markets,Cabbage Red - lb,2026,8,35.8,$89.50
+Orders,Cabbage Red - lb,2026,8,1,$1.75
+Markets,Cabbage Savoy - lb,2026,8,46.9,$117.25
+Orders,Cabbage Savoy - lb,2026,8,3,$5.25
+Markets,Carrot Bulk - lb,2026,8,134.5,$470.75
+Orders,Carrot Bulk - lb,2026,8,3,$7.35
+Markets,Chard - bu,2026,8,12,$60.00
+Orders,Chard - bu,2026,8,1,$3.50
+Markets,Kale Curly - bu,2026,8,8,$40.00
+Orders,Kale Curly - bu,2026,8,1,$3.50
+Markets,Kale Lacinato - bu,2026,8,12,$60.00
+Orders,Kale Lacinato - bu,2026,8,2,$7.00
+Markets,Kale Russian - bu,2026,8,17,$85.00
+Markets,Kohlrabi Storage - ea,2026,8,20,$80.00
+Markets,Potato White - lb,2026,8,25,$87.50
+Markets,Potato White - lb,2026,8,43,$150.50
+Markets,Potato Yellow - lb,2026,8,52.8,$184.80
+Markets,Radish Daikon Bulk - lb,2026,8,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,8,20,$140.00
+Markets,Salad Mix - 2/3 lb ,2026,8,30,$420.00
+Markets,Spinach - 1/2 lb,2026,8,17,$119.00
+Markets,Sweet Potato Covington - lb,2026,8,25,$87.50
+Markets,Winter Squash Kabocha - lb,2026,8,25,$75.00
+Markets,Winter Squash Kabocha - lb,2026,8,51.6,$154.80
+Markets,Winter Squash Koginut - lb,2026,8,40.6,$121.80
+Markets,Bok Choy - lb,2026,9,49,$490.00
+Orders,Cabbage Cone Storage - lb,2026,9,1,$1.75
+Markets,Cabbage Green Storage - lb,2026,9,40,$100.00
+Markets,Cabbage Green Storage - lb,2026,9,53.3,$133.25
+Markets,Cabbage Red - lb,2026,9,50,$125.00
+Orders,Cabbage Red - lb,2026,9,4,$7.00
+Markets,Cabbage Savoy - lb,2026,9,29.2,$73.00
+Markets,Carrot Bulk - lb,2026,9,121.3,$424.55
+Markets,Chard - bu,2026,9,12,$60.00
+Orders,Chard - bu,2026,9,1,$3.50
+Markets,Kale Russian - bu,2026,9,29,$145.00
+Markets,Kohlrabi Storage - ea,2026,9,35,$140.00
+Markets,Mustard - bu,2026,9,19,$95.00
+Markets,Potato White - lb,2026,9,70,$245.00
+Markets,Potato White - lb,2026,9,39.5,$138.25
+Markets,Potato Yellow - lb,2026,9,61,$213.50
+Markets,Radish Daikon Bulk - lb,2026,9,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,9,26,$182.00
+Markets,Salad Mix - 2/3 lb ,2026,9,33,$462.00
+Markets,Spinach - 1/2 lb,2026,9,17,$119.00
+Markets,Sweet Potato Covington - lb,2026,9,25,$87.50
+Markets,Winter Squash Kabocha - lb,2026,9,25,$75.00
+Markets,Winter Squash Kabocha - lb,2026,9,43.2,$129.60
+Markets,Bok Choy - lb,2026,10,44,$440.00
+Markets,Cabbage Green Storage - lb,2026,10,48,$120.00
+Markets,Cabbage Red - lb,2026,10,31,$77.50
+Markets,Cabbage Savoy - lb,2026,10,9.5,$23.75
+Orders,Cabbage Savoy - lb,2026,10,3,$5.25
+Markets,Carrot Bulk - lb,2026,10,89,$311.50
+Markets,Chard - bu,2026,10,12,$60.00
+Orders,Chard - bu,2026,10,1,$3.50
+Markets,Kale Russian - bu,2026,10,25,$125.00
+Markets,Kohlrabi Storage - ea,2026,10,20,$80.00
+Markets,Lettuce Mini Gem - ea,2026,10,94,$282.00
+Markets,Mustard - bu,2026,10,12,$60.00
+Markets,Potato White - lb,2026,10,25,$87.50
+Markets,Potato White - lb,2026,10,20,$70.00
+Markets,Potato Yellow - lb,2026,10,51,$178.50
+Markets,Radish Daikon Bulk - lb,2026,10,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,10,16,$112.00
+Markets,Salad Mix - 2/3 lb ,2026,10,21,$294.00
+Markets,Spinach - 1/2 lb,2026,10,20,$140.00
+Markets,Sweet Potato Covington - lb,2026,10,25,$87.50
+Markets,Winter Squash Kabocha - lb,2026,10,25,$75.00
+Markets,Winter Squash Kabocha - lb,2026,10,35,$105.00
+Markets,Bok Choy - ea,2026,11,22,$55.00
+Markets,Bok Choy - lb,2026,11,37,$370.00
+Markets,Cabbage Green Storage - lb,2026,11,49.6,$124.00
+Markets,Cabbage Savoy - lb,2026,11,36.8,$92.00
+Markets,Carrot Bulk - lb,2026,11,102,$357.00
+Markets,Chard - bu,2026,11,12,$60.00
+Orders,Cilantro - bu,2026,11,5,$14.00
+Markets,Kale Lacinato - bu,2026,11,22,$110.00
+Markets,Kale Russian - bu,2026,11,25,$125.00
+Markets,Lettuce Mini Gem - ea,2026,11,40,$120.00
+Markets,Mustard - bu,2026,11,10,$50.00
+Orders,Parsley - bu,2026,11,5,$14.00
+Markets,Potato White - lb,2026,11,70,$245.00
+Markets,Potato White - lb,2026,11,41,$143.50
+Markets,Potato Yellow - lb,2026,11,80,$280.00
+Markets,Radish Daikon Bulk - lb,2026,11,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,11,21,$147.00
+Markets,Salad Mix - 2/3 lb ,2026,11,23,$322.00
+Markets,Scallion - bu,2026,11,49,$196.00
+Orders,Scallion - bu,2026,11,7,$19.60
+Markets,Spinach - 1/2 lb,2026,11,31,$217.00
+Markets,Winter Squash Kabocha - lb,2026,11,25,$75.00
+Markets,Winter Squash Kabocha - lb,2026,11,36.2,$108.60
+Markets,Bok Choy - lb,2026,12,37,$370.00
+Orders,Cabbage Cone Storage - lb,2026,12,1,$1.75
+Markets,Cabbage Green Storage - lb,2026,12,37.8,$94.50
+Markets,Cabbage Savoy - lb,2026,12,32,$80.00
+Markets,Carrot Bulk - lb,2026,12,129,$451.50
+Markets,Chard - bu,2026,12,15,$75.00
+Orders,Chard - bu,2026,12,2,$7.00
+Markets,Cilantro - bu,2026,12,16,$64.00
+Markets,Kale Curly - bu,2026,12,18,$90.00
+Orders,Kale Curly - bu,2026,12,2,$7.00
+Markets,Kale Lacinato - bu,2026,12,11.4,$57.00
+Orders,Kale Lacinato - bu,2026,12,4,$14.00
+Markets,Kale Russian - bu,2026,12,27,$135.00
+Markets,Lettuce Mini Gem - ea,2026,12,101,$303.00
+Markets,Mustard - bu,2026,12,15,$75.00
+Markets,Potato White - lb,2026,12,25,$87.50
+Markets,Potato White - lb,2026,12,18,$63.00
+Markets,Potato Yellow - lb,2026,12,50,$175.00
+Markets,Radish Daikon Bulk - lb,2026,12,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,12,24,$168.00
+Markets,Salad Mix - 2/3 lb ,2026,12,26,$364.00
+Markets,Scallion - bu,2026,12,34,$136.00
+Orders,Scallion - bu,2026,12,6,$16.80
+Markets,Spinach - 1/2 lb,2026,12,30,$210.00
+Markets,Winter Squash Kabocha - lb,2026,12,32.2,$96.60
+Markets,Cabbage Green Storage - lb,2026,13,74.6,$186.50
+Markets,Cabbage Savoy - lb,2026,13,41.4,$103.50
+Orders,Cabbage Savoy - lb,2026,13,1,$1.75
+Markets,Carrot Bulk - lb,2026,13,102,$357.00
+Orders,Carrot Bulk - lb,2026,13,3,$7.35
+Markets,Chard - bu,2026,13,12,$60.00
+Markets,Cilantro - bu,2026,13,15,$60.00
+Markets,Collards - bu,2026,13,26,$130.00
+Orders,Collards - bu,2026,13,3,$10.50
+Markets,Kale Curly - bu,2026,13,6,$30.00
+Orders,Kale Curly - bu,2026,13,3,$10.50
+Markets,Kale Lacinato - bu,2026,13,21.2,$106.00
+Markets,Kale Russian - bu,2026,13,44,$220.00
+Markets,Lettuce Mini Gem - ea,2026,13,52,$156.00
+Markets,Mustard - bu,2026,13,30,$150.00
+Markets,Potato Yellow - lb,2026,13,83.5,$292.25
+Markets,Radish Daikon Bulk - lb,2026,13,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,13,24,$168.00
+Markets,Salad Mix - 2/3 lb ,2026,13,22,$308.00
+Markets,Scallion - bu,2026,13,60,$240.00
+Orders,Scallion - bu,2026,13,5,$14.00
+Markets,Spinach - 1/2 lb,2026,13,31,$217.00
+Markets,Winter Squash Kabocha - lb,2026,13,45.5,$136.50
+Markets,Bok Choy - ea,2026,14,150,$375.00
+Orders,Cabbage Cone Storage - lb,2026,14,2,$3.50
+Markets,Cabbage Green Storage - lb,2026,14,67.1,$167.75
+Markets,Cabbage Savoy - lb,2026,14,30.3,$75.75
+Orders,Cabbage Savoy - lb,2026,14,2,$3.50
+Markets,Carrot Bulk - lb,2026,14,117,$409.50
+Markets,Chard - bu,2026,14,12,$60.00
+Markets,Cilantro - bu,2026,14,15,$60.00
+Orders,Cilantro - bu,2026,14,4,$11.20
+Markets,Collards - bu,2026,14,21,$105.00
+Orders,Collards - bu,2026,14,4,$14.00
+Markets,Dandelion - bu,2026,14,4,$20.00
+Markets,Kale Curly - bu,2026,14,17,$85.00
+Markets,Kale Lacinato - bu,2026,14,3.75,$18.75
+Markets,Kale Russian - bu,2026,14,40,$200.00
+Markets,Mustard - bu,2026,14,26,$130.00
+Orders,Parsley - bu,2026,14,3,$8.40
+Markets,Potato Yellow - lb,2026,14,28,$98.00
+Markets,Radish Daikon Bulk - lb,2026,14,30,$105.00
+Markets,Salad Mix - 1/3 lb,2026,14,24,$168.00
+Markets,Salad Mix - 2/3 lb ,2026,14,24,$336.00
+Markets,Scallion - bu,2026,14,49,$196.00
+Orders,Scallion - bu,2026,14,2,$5.60
+Markets,Spinach - 1/2 lb,2026,14,15,$105.00
+Markets,Winter Squash Kabocha - lb,2026,14,40.8,$122.40
+Markets,Bok Choy - ea,2026,15,150,$375.00
+Orders,Cabbage Cone Storage - lb,2026,15,3,$5.25
+Markets,Cabbage Green Storage - lb,2026,15,77.8,$194.50
+Markets,Carrot Bulk - lb,2026,15,115.5,$404.25
+Orders,Carrot Bulk - lb,2026,15,4,$9.80
+Markets,Chard - bu,2026,15,20,$100.00
+Orders,Cilantro - bu,2026,15,2,$5.60
+Markets,Dandelion - bu,2026,15,8,$40.00
+Markets,Kale Curly - bu,2026,15,31.75,$158.75
+Orders,Kale Curly - bu,2026,15,4,$14.00
+Markets,Kale Russian - bu,2026,15,38,$190.00
+Markets,Mustard - bu,2026,15,25,$125.00
+Orders,Parsley - bu,2026,15,2,$5.60
+Markets,Salad Mix - 1/3 lb,2026,15,15,$105.00
+Markets,Salad Mix - 2/3 lb ,2026,15,28,$392.00
+Markets,Scallion - bu,2026,15,66,$264.00
+Orders,Scallion - bu,2026,15,3,$8.40
+Markets,Spinach - 1/2 lb,2026,15,21,$147.00
+Markets,Winter Squash Kabocha - lb,2026,15,21.7,$65.10
+Markets,Bok Choy - ea,2026,16,150,$375.00
+Orders,Cabbage Cone Storage - lb,2026,16,10,$17.50
+Markets,Cabbage Green Storage - lb,2026,16,48.5,$121.25
+Markets,Carrot Bulk - lb,2026,16,90,$315.00
+Orders,Carrot Bulk - lb,2026,16,42,$102.90
+Markets,Chard - bu,2026,16,15,$75.00
+Markets,Dandelion - bu,2026,16,30,$150.00
+Markets,Garlic Green - bu,2026,16,54,$189.00
+Markets,Kale Curly - bu,2026,16,31,$155.00
+Orders,Kale Curly - bu,2026,16,4,$14.00
+Markets,Kale Russian - bu,2026,16,50,$250.00
+Markets,Mustard - bu,2026,16,25,$125.00
+Markets,Salad Mix - 1/3 lb,2026,16,25,$175.00
+Markets,Salad Mix - 2/3 lb ,2026,16,30,$420.00
+Markets,Scallion - bu,2026,16,59,$236.00
+Orders,Scallion - bu,2026,16,7,$19.60
+Markets,Spinach - 1/2 lb,2026,16,15,$105.00
+Markets,Winter Squash Kabocha - lb,2026,16,18.1,$54.30
+Markets,Bok Choy - ea,2026,17,150,$375.00
+Markets,Bok Choy - ea,2026,17,26,$65.00
+Markets,Bok Choy - lb,2026,17,5.5,$55.00
+Markets,Cabbage Green Storage - lb,2026,17,60,$150.00
+Markets,Carrot Bulk - lb,2026,17,108,$378.00
+Orders,Carrot Bulk - lb,2026,17,8,$19.60
+Markets,Chard - bu,2026,17,25,$125.00
+Markets,Dandelion - bu,2026,17,14,$70.00
+Markets,Garlic Green - bu,2026,17,21,$73.50
+Markets,Kale Curly - bu,2026,17,61,$305.00
+Markets,Kale Russian - bu,2026,17,30,$150.00
+Markets,Mustard - bu,2026,17,30,$150.00
+Markets,Salad Mix - 1/3 lb,2026,17,20,$140.00
+Markets,Salad Mix - 2/3 lb ,2026,17,37,$518.00
+Markets,Scallion - bu,2026,17,66,$264.00
+Orders,Scallion - bu,2026,17,9,$25.20
+Markets,Spinach - 1/2 lb,2026,17,19,$133.00
+Markets,Arugula - 1/3 lb,2026,18,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,18,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,18,20,$280.00
+Markets,Asparagus - bu,2026,18,30,$180.00
+Markets,Asparagus - bu,2026,18,41,$246.00
+Markets,Bok Choy - ea,2026,18,300,$750.00
+Markets,Bok Choy - ea,2026,18,35,$87.50
+Markets,Bok Choy - lb,2026,18,11,$110.00
+Orders,Cabbage Cone Storage - lb,2026,18,1,$1.75
+Markets,Carrot Bulk - lb,2026,18,197.75,$692.13
+Orders,Carrot Bulk - lb,2026,18,3,$7.35
+Markets,Chard - bu,2026,18,63,$315.00
+Orders,Chard - bu,2026,18,3,$10.50
+Markets,Dandelion - bu,2026,18,47,$235.00
+Markets,Dandelion - bu,2026,18,25,$125.00
+Orders,Dandelion - bu,2026,18,3,$10.50
+Markets,Garlic Green - bu,2026,18,57,$199.50
+Markets,Kale Curly - bu,2026,18,84,$420.00
+Orders,Kale Curly - bu,2026,18,10,$35.00
+Markets,Kale Russian - bu,2026,18,34,$170.00
+Markets,Lettuce Mini Gem - ea,2026,18,75,$225.00
+Markets,Radish French Breakfast - bu,2026,18,25,$100.00
+Markets,Radish Purple - bu,2026,18,50,$200.00
+Markets,Radish Red - bu,2026,18,50,$200.00
+Markets,Salad Mix - 1/3 lb,2026,18,44,$308.00
+Markets,Salad Mix - 2/3 lb ,2026,18,20,$280.00
+Markets,Scallion - bu,2026,18,59,$236.00
+Orders,Scallion - bu,2026,18,1,$2.80
+Markets,Spinach - 1/2 lb,2026,18,52,$364.00
+Markets,Arugula - 1/3 lb,2026,19,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,19,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,19,20,$280.00
+Markets,Asparagus - bu,2026,19,35,$210.00
+Markets,Asparagus - bu,2026,19,57,$342.00
+Markets,Bok Choy - ea,2026,19,300,$750.00
+Markets,Carrot - bu,2026,19,98,$588.00
+Markets,Carrot Bulk - lb,2026,19,120.5,$421.75
+Orders,Carrot Bulk - lb,2026,19,104,$254.80
+Markets,Dandelion - bu,2026,19,56,$280.00
+Markets,Dandelion - bu,2026,19,36,$180.00
+Markets,Garlic Green - bu,2026,19,86,$301.00
+Markets,Lettuce Mini Gem - ea,2026,19,75,$225.00
+Markets,Radish French Breakfast - bu,2026,19,75,$300.00
+Markets,Radish Purple - bu,2026,19,50,$200.00
+Markets,Radish Purple - bu,2026,19,19,$76.00
+Markets,Radish Red - bu,2026,19,50,$200.00
+Markets,Salad Mix - 1/3 lb,2026,19,28,$196.00
+Markets,Salad Mix - 2/3 lb ,2026,19,39,$546.00
+Markets,Spinach - 1/2 lb,2026,19,18,$126.00
+Markets,Arugula - 1/3 lb,2026,20,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,20,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,20,20,$280.00
+Markets,Asparagus - bu,2026,20,35,$210.00
+Markets,Asparagus - bu,2026,20,38,$228.00
+Markets,Bok Choy - ea,2026,20,300,$750.00
+Markets,Braising Mix - 1 lb,2026,20,13,$117.00
+Markets,Carrot - bu,2026,20,67,$402.00
+Markets,Carrot Bulk - lb,2026,20,57,$199.50
+Orders,Carrot Bulk - lb,2026,20,4,$9.80
+Markets,Dandelion - bu,2026,20,47,$235.00
+Markets,Dandelion - bu,2026,20,38,$190.00
+Orders,Dandelion - bu,2026,20,5,$17.50
+Markets,Lettuce Mini Gem - ea,2026,20,150,$450.00
+Markets,Radish French Breakfast - bu,2026,20,75,$300.00
+Markets,Radish Purple - bu,2026,20,100,$400.00
+Markets,Radish Purple - bu,2026,20,25,$100.00
+Markets,Radish Red - bu,2026,20,50,$200.00
+Markets,Salad Mix - 1/3 lb,2026,20,48,$336.00
+Markets,Arugula - 1/3 lb,2026,21,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,21,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,21,20,$280.00
+Markets,Asparagus - bu,2026,21,45,$270.00
+Markets,Asparagus - bu,2026,21,37,$222.00
+Markets,Bok Choy - ea,2026,21,300,$750.00
+Markets,Bok Choy - lb,2026,21,20,$200.00
+Markets,Carrot Bulk - lb,2026,21,215,$752.50
+Orders,Carrot Bulk - lb,2026,21,3,$7.35
+Markets,Cilantro - bu,2026,21,35,$140.00
+Markets,Dandelion - bu,2026,21,38,$190.00
+Orders,Dandelion - bu,2026,21,4,$14.00
+Markets,Kale Lacinato - bu,2026,21,24,$120.00
+Markets,Lettuce Mini Gem - ea,2026,21,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,21,36,$108.00
+Markets,Parsley - bu,2026,21,40,$160.00
+Markets,Pea Snap - Qt,2026,21,75,$825.00
+Markets,Radish French Breakfast - bu,2026,21,125,$500.00
+Markets,Radish French Breakfast - bu,2026,21,5,$20.00
+Markets,Radish Purple - bu,2026,21,100,$400.00
+Markets,Radish Purple - bu,2026,21,27,$108.00
+Markets,Radish Red - bu,2026,21,50,$200.00
+Markets,Radish Red - bu,2026,21,4,$16.00
+Markets,Salad Mix - 1/3 lb,2026,21,35,$245.00
+Markets,Salad Mix - 2/3 lb ,2026,21,31,$434.00
+Markets,Arugula - 1/3 lb,2026,22,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,22,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,22,20,$280.00
+Markets,Asparagus - bu,2026,22,35,$210.00
+Markets,Asparagus - bu,2026,22,36,$216.00
+Markets,Bok Choy - ea,2026,22,300,$750.00
+Markets,Bok Choy - ea,2026,22,90,$225.00
+Markets,Bok Choy - lb,2026,22,19,$190.00
+Markets,Carrot Bulk - lb,2026,22,151.9,$531.65
+Orders,Carrot Bulk - lb,2026,22,6,$14.70
+Markets,Cilantro - bu,2026,22,75,$300.00
+Markets,Collards - bu,2026,22,50,$250.00
+Orders,Collards - bu,2026,22,5,$17.50
+Markets,Dandelion - bu,2026,22,40,$200.00
+Markets,Dandelion - bu,2026,22,33,$165.00
+Orders,Dandelion - bu,2026,22,1,$3.50
+Markets,Garlic Scape - bu,2026,22,120,$420.00
+Markets,Kale Curly - bu,2026,22,37,$185.00
+Orders,Kale Curly - bu,2026,22,6,$21.00
+Markets,Kale Lacinato - bu,2026,22,33,$165.00
+Markets,Lettuce Mini Gem - ea,2026,22,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,22,81,$243.00
+Markets,Parsley - bu,2026,22,80,$320.00
+Markets,Pea Snap - Qt,2026,22,130,"$1,430.00"
+Markets,Pea Snap - Qt,2026,22,8.2,$90.20
+Markets,Radish French Breakfast - bu,2026,22,125,$500.00
+Markets,Radish French Breakfast - bu,2026,22,15,$60.00
+Markets,Radish Purple - bu,2026,22,75,$300.00
+Markets,Radish Purple - bu,2026,22,31,$124.00
+Markets,Radish Red - bu,2026,22,50,$200.00
+Markets,Radish Red - bu,2026,22,18,$72.00
+Markets,Salad Mix - 1/3 lb,2026,22,33,$231.00
+Markets,Salad Mix - 2/3 lb ,2026,22,49,$686.00
+Markets,Arugula - 1/3 lb,2026,23,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,23,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,23,20,$280.00
+Markets,Asparagus - bu,2026,23,35,$210.00
+Markets,Asparagus - bu,2026,23,31,$186.00
+Markets,Bok Choy - ea,2026,23,300,$750.00
+Markets,Bok Choy - lb,2026,23,49,$490.00
+Markets,Broccolini - bu,2026,23,50,$300.00
+Markets,Cabbage Chinese - lb,2026,23,25,$100.00
+Markets,Carrot Bulk - lb,2026,23,185.7,$649.95
+Orders,Carrot Bulk - lb,2026,23,103,$252.35
+Markets,Chard - bu,2026,23,24,$120.00
+Markets,Cilantro - bu,2026,23,100,$400.00
+Markets,Cilantro - bu,2026,23,60,$240.00
+Orders,Cilantro - bu,2026,23,8,$22.40
+Markets,Collards - bu,2026,23,50,$250.00
+Orders,Collards - bu,2026,23,2,$7.00
+Markets,Dandelion - bu,2026,23,40,$200.00
+Markets,Dandelion - bu,2026,23,27,$135.00
+Markets,Escarole - ea,2026,23,7,$35.00
+Markets,Garlic Scape - bu,2026,23,125,$437.50
+Markets,Garlic Scape - bu,2026,23,55,$192.50
+Markets,Kale Curly - bu,2026,23,61,$305.00
+Orders,Kale Curly - bu,2026,23,5,$17.50
+Markets,Kale Lacinato - bu,2026,23,87,$435.00
+Orders,Kale Lacinato - bu,2026,23,7,$24.50
+Markets,Lettuce Mini Gem - ea,2026,23,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,23,244,$732.00
+Orders,Lettuce Mini Gem - ea,2026,23,15,$31.50
+Markets,Parsley - bu,2026,23,80,$320.00
+Markets,Pea Snap - Qt,2026,23,85,$935.00
+Markets,Pea Snap - Qt,2026,23,106.1,"$1,167.10"
+Markets,Radish French Breakfast - bu,2026,23,125,$500.00
+Markets,Radish French Breakfast - bu,2026,23,7,$28.00
+Markets,Radish Purple - bu,2026,23,75,$300.00
+Markets,Radish Purple - bu,2026,23,42,$168.00
+Orders,Radish Purple - bu,2026,23,4,$11.20
+Markets,Radish Red - bu,2026,23,50,$200.00
+Markets,Radish Red - bu,2026,23,40,$160.00
+Markets,Salad Mix - 1/3 lb,2026,23,62,$434.00
+Markets,Salad Mix - 2/3 lb ,2026,23,72,"$1,008.00"
+Markets,Scallion - bu,2026,23,89,$356.00
+Orders,Scallion - bu,2026,23,2,$5.60
+Markets,Zucchini Green - lb,2026,23,150,$525.00
+Markets,Zucchini Green - lb,2026,23,34.25,$119.88
+Markets,Zucchini Striped - lb,2026,23,50,$175.00
+Markets,Zucchini Striped - lb,2026,23,6.75,$23.63
+Markets,Zucchini Yellow - lb,2026,23,100,$350.00
+Markets,Zucchini Yellow - lb,2026,23,5,$17.50
+Markets,Arugula - 1/3 lb,2026,24,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,24,25,$350.00
+Markets,Arugula - 2/3 lb ,2026,24,20,$280.00
+Markets,Asparagus - bu,2026,24,35,$210.00
+Markets,Asparagus - bu,2026,24,57,$342.00
+Markets,Bok Choy - ea,2026,24,300,$750.00
+Markets,Bok Choy - ea,2026,24,58,$145.00
+Markets,Bok Choy - lb,2026,24,27,$270.00
+Markets,Broccolini - bu,2026,24,50,$300.00
+Markets,Broccolini - bu,2026,24,100,$600.00
+Markets,Cabbage Chinese - lb,2026,24,45,$180.00
+Markets,Carrot Bulk - lb,2026,24,142.25,$497.88
+Orders,Carrot Bulk - lb,2026,24,12,$29.40
+Markets,Chard - bu,2026,24,29,$145.00
+Orders,Chard - bu,2026,24,3,$10.50
+Markets,Cilantro - bu,2026,24,110,$440.00
+Markets,Cilantro - bu,2026,24,66,$264.00
+Orders,Cilantro - bu,2026,24,93,$260.40
+Markets,Collards - bu,2026,24,50,$250.00
+Orders,Collards - bu,2026,24,44,$154.00
+Markets,Cucumber - lb,2026,24,129.75,$454.13
+Markets,Cucumber - lb,2026,24,13,$45.50
+Markets,Cucumber Katrina - lb,2026,24,84.4,$379.80
+Markets,Dandelion - bu,2026,24,40,$200.00
+Markets,Dandelion - bu,2026,24,26,$130.00
+Orders,Dandelion - bu,2026,24,1,$3.50
+Markets,Escarole - ea,2026,24,19,$95.00
+Markets,Garlic Scape - bu,2026,24,65,$227.50
+Markets,Garlic Scape - bu,2026,24,145,$507.50
+Markets,Kale Curly - bu,2026,24,34,$170.00
+Orders,Kale Curly - bu,2026,24,104,$364.00
+Markets,Kale Lacinato - bu,2026,24,104,$520.00
+Orders,Kale Lacinato - bu,2026,24,117,$409.50
+Markets,Lettuce Mini Gem - ea,2026,24,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,24,155,$465.00
+Orders,Lettuce Mini Gem - ea,2026,24,16,$33.60
+Markets,Parsley - bu,2026,24,80,$320.00
+Markets,Parsley - bu,2026,24,66,$264.00
+Orders,Parsley - bu,2026,24,8,$22.40
+Markets,Pea Shelling - Qt,2026,24,20,$220.00
+Markets,Pea Snap - Qt,2026,24,85,$935.00
+Markets,Pea Snap - Qt,2026,24,175.5,"$1,930.50"
+Markets,Radish French Breakfast - bu,2026,24,100,$400.00
+Markets,Radish Purple - bu,2026,24,75,$300.00
+Markets,Radish Purple - bu,2026,24,20,$80.00
+Orders,Radish Purple - bu,2026,24,4,$11.20
+Markets,Radish Red - bu,2026,24,50,$200.00
+Markets,Radish Red - bu,2026,24,24,$96.00
+Markets,Salad Mix - 1 1/3 lb,2026,24,9,$225.00
+Markets,Salad Mix - 1/3 lb,2026,24,51,$357.00
+Markets,Salad Mix - 2/3 lb ,2026,24,62,$868.00
+Markets,Scallion - bu,2026,24,101,$404.00
+Orders,Scallion - bu,2026,24,13,$36.40
+Markets,Zucchini Green - lb,2026,24,150,$525.00
+Markets,Zucchini Green - lb,2026,24,178.25,$623.88
+Orders,Zucchini Green - lb,2026,24,22,$53.90
+Markets,Zucchini Striped - lb,2026,24,50,$175.00
+Markets,Zucchini Striped - lb,2026,24,75.7,$264.95
+Orders,Zucchini Striped - lb,2026,24,5,$12.25
+Markets,Zucchini Yellow - lb,2026,24,100,$350.00
+Markets,Zucchini Yellow - lb,2026,24,35.4,$123.90
+Orders,Zucchini Yellow - lb,2026,24,5,$12.25
+Markets,Arugula - 1/3 lb,2026,25,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,25,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,25,20,$280.00
+Markets,Basil - bu,2026,25,120,$480.00
+Markets,Basil - bu,2026,25,100,$400.00
+Markets,Bok Choy - ea,2026,25,300,$750.00
+Markets,Bok Choy - ea,2026,25,37,$92.50
+Markets,Bok Choy - lb,2026,25,25,$250.00
+Markets,Broccolini - bu,2026,25,175,"$1,050.00"
+Markets,Broccolini - bu,2026,25,150,$900.00
+Markets,Cabbage Chinese - lb,2026,25,45,$180.00
+Markets,Cabbage Chinese - lb,2026,25,70,$280.00
+Markets,Carrot Bulk - lb,2026,25,130,$455.00
+Orders,Carrot Bulk - lb,2026,25,19,$46.55
+Markets,Cauliflower Sprouting - lb,2026,25,3,$18.00
+Markets,Chard - bu,2026,25,32,$160.00
+Orders,Chard - bu,2026,25,7,$24.50
+Markets,Cilantro - bu,2026,25,110,$440.00
+Markets,Cilantro - bu,2026,25,79,$316.00
+Orders,Cilantro - bu,2026,25,14,$39.20
+Markets,Collards - bu,2026,25,50,$250.00
+Orders,Collards - bu,2026,25,74,$259.00
+Markets,Cucumber - lb,2026,25,67.3,$235.55
+Markets,Cucumber - lb,2026,25,43.4,$151.90
+Markets,Cucumber Katrina - lb,2026,25,53.5,$240.75
+Markets,Cucumber Persian - lb,2026,25,118.8,$0.00
+Markets,Cucumber Pickling - lb,2026,25,85.1,$297.85
+Markets,Cucumber Pickling - lb,2026,25,6.4,$22.40
+Markets,Dandelion - bu,2026,25,40,$200.00
+Markets,Dandelion - bu,2026,25,29,$145.00
+Markets,Escarole - ea,2026,25,22,$110.00
+Orders,Escarole - ea,2026,25,28,$98.00
+Markets,Fennel - ea,2026,25,50,$200.00
+Markets,Garlic Scape - bu,2026,25,126,$441.00
+Markets,Kale Curly - bu,2026,25,32,$160.00
+Orders,Kale Curly - bu,2026,25,72,$252.00
+Markets,Kale Lacinato - bu,2026,25,105,$525.00
+Orders,Kale Lacinato - bu,2026,25,105,$367.50
+Markets,Lettuce Mini Gem - ea,2026,25,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,25,223,$669.00
+Orders,Lettuce Mini Gem - ea,2026,25,81,$170.10
+Markets,Onion Spring - bu,2026,25,25,$125.00
+Markets,Parsley - bu,2026,25,80,$320.00
+Markets,Parsley - bu,2026,25,73,$292.00
+Orders,Parsley - bu,2026,25,19,$53.20
+Markets,Pea Shelling - Qt,2026,25,59,$649.00
+Markets,Pea Snap - Qt,2026,25,55.7,$612.70
+Markets,Radish French Breakfast - bu,2026,25,100,$400.00
+Markets,Radish French Breakfast - bu,2026,25,12,$48.00
+Markets,Radish Purple - bu,2026,25,75,$300.00
+Markets,Radish Purple - bu,2026,25,2,$8.00
+Markets,Radish Red - bu,2026,25,50,$200.00
+Markets,Radish Red - bu,2026,25,18,$72.00
+Markets,Salad Mix - 1 1/3 lb,2026,25,10,$250.00
+Markets,Salad Mix - 1/3 lb,2026,25,54,$378.00
+Markets,Salad Mix - 2/3 lb ,2026,25,84,"$1,176.00"
+Markets,Scallion - bu,2026,25,103,$412.00
+Orders,Scallion - bu,2026,25,29,$81.20
+Markets,Zucchini Green - lb,2026,25,150,$525.00
+Markets,Zucchini Green - lb,2026,25,136.7,$478.45
+Orders,Zucchini Green - lb,2026,25,28,$68.60
+Markets,Zucchini Striped - lb,2026,25,50,$175.00
+Markets,Zucchini Striped - lb,2026,25,98,$343.00
+Orders,Zucchini Striped - lb,2026,25,16,$39.20
+Markets,Zucchini Yellow - lb,2026,25,100,$350.00
+Markets,Zucchini Yellow - lb,2026,25,71.7,$250.95
+Orders,Zucchini Yellow - lb,2026,25,16,$39.20
+Markets,Arugula - 2/3 lb ,2026,26,15,$210.00
+Markets,Basil - bu,2026,26,120,$480.00
+Markets,Basil - bu,2026,26,100,$400.00
+Markets,Beets Golden - bu,2026,26,70,$350.00
+Markets,Beets Red - bu,2026,26,50,$250.00
+Markets,Bok Choy - ea,2026,26,300,$750.00
+Markets,Bok Choy - ea,2026,26,34,$85.00
+Markets,Broccolini - bu,2026,26,200,"$1,200.00"
+Markets,Broccolini - bu,2026,26,150,$900.00
+Orders,Broccolini - bu,2026,26,30,$126.00
+Markets,Cabbage Chinese - lb,2026,26,45,$180.00
+Markets,Cabbage Chinese - lb,2026,26,70,$280.00
+Markets,Cabbage Cone - lb,2026,26,36.9,$92.25
+Markets,Carrot Bulk - lb,2026,26,107,$374.50
+Orders,Carrot Bulk - lb,2026,26,1,$2.45
+Markets,Cauliflower Sprouting - lb,2026,26,50,$300.00
+Markets,Cauliflower Sprouting - lb,2026,26,32.2,$193.20
+Markets,Chard - bu,2026,26,38,$190.00
+Orders,Chard - bu,2026,26,30,$105.00
+Markets,Cilantro - bu,2026,26,110,$440.00
+Markets,Cilantro - bu,2026,26,80,$320.00
+Orders,Cilantro - bu,2026,26,94,$263.20
+Markets,Collards - bu,2026,26,50,$250.00
+Orders,Collards - bu,2026,26,3,$10.50
+Markets,Cucumber - lb,2026,26,84,$294.00
+Markets,Cucumber - lb,2026,26,207.45,$726.08
+Orders,Cucumber - lb,2026,26,35,$85.75
+Markets,Cucumber Katrina - lb,2026,26,171.22,$770.49
+Orders,Cucumber Katrina - lb,2026,26,6,$18.90
+Markets,Cucumber Persian - lb,2026,26,57.4,$0.00
+Markets,Cucumber Pickling - lb,2026,26,16.5,$57.75
+Markets,Cucumber Pickling - lb,2026,26,75.45,$264.08
+Orders,Cucumber Pickling - lb,2026,26,10,$24.50
+Markets,Dandelion - bu,2026,26,40,$200.00
+Markets,Dandelion - bu,2026,26,31,$155.00
+Orders,Dandelion - bu,2026,26,38,$133.00
+Markets,Dill - bu,2026,26,60,$240.00
+Markets,Dill - bu,2026,26,18,$72.00
+Markets,Escarole - ea,2026,26,30,$150.00
+Markets,Escarole - ea,2026,26,37,$185.00
+Orders,Escarole - ea,2026,26,14,$49.00
+Markets,Fennel - ea,2026,26,80,$320.00
+Markets,Fennel - ea,2026,26,30,$120.00
+Markets,Garlic Scape - bu,2026,26,57,$199.50
+Markets,Kale Curly - bu,2026,26,26,$130.00
+Orders,Kale Curly - bu,2026,26,47,$164.50
+Markets,Kale Lacinato - bu,2026,26,99,$495.00
+Orders,Kale Lacinato - bu,2026,26,68,$238.00
+Markets,Lettuce Mini Gem - ea,2026,26,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,26,248,$744.00
+Orders,Lettuce Mini Gem - ea,2026,26,50,$105.00
+Markets,Onion Spring - bu,2026,26,154,$770.00
+Markets,Parsley - bu,2026,26,80,$320.00
+Markets,Parsley - bu,2026,26,72,$288.00
+Orders,Parsley - bu,2026,26,83,$232.40
+Markets,Pea Snap - Qt,2026,26,10,$110.00
+Markets,Radish French Breakfast - bu,2026,26,75,$300.00
+Markets,Radish Purple - bu,2026,26,50,$200.00
+Markets,Radish Red - bu,2026,26,50,$200.00
+Markets,Salad Mix - 1 1/3 lb,2026,26,12,$300.00
+Markets,Salad Mix - 1/3 lb,2026,26,54,$378.00
+Markets,Salad Mix - 2/3 lb ,2026,26,67,$938.00
+Markets,Scallion - bu,2026,26,101,$404.00
+Orders,Scallion - bu,2026,26,17,$47.60
+Markets,Zucchini Green - lb,2026,26,150,$525.00
+Markets,Zucchini Green - lb,2026,26,176.87,$619.05
+Orders,Zucchini Green - lb,2026,26,120,$294.00
+Markets,Zucchini Striped - lb,2026,26,50,$175.00
+Markets,Zucchini Striped - lb,2026,26,80.2,$280.70
+Orders,Zucchini Striped - lb,2026,26,11,$26.95
+Markets,Zucchini Yellow - lb,2026,26,100,$350.00
+Markets,Zucchini Yellow - lb,2026,26,104.55,$365.93
+Orders,Zucchini Yellow - lb,2026,26,13,$31.85
+Markets,Basil - bu,2026,27,120,$480.00
+Markets,Basil - bu,2026,27,100,$400.00
+Orders,Basil - bu,2026,27,7,$19.60
+Markets,Beets Golden - bu,2026,27,35,$175.00
+Markets,Beets Golden - bu,2026,27,70,$350.00
+Markets,Beets Red - bu,2026,27,35,$175.00
+Markets,Beets Red - bu,2026,27,50,$250.00
+Markets,Broccolini - bu,2026,27,300,"$1,800.00"
+Markets,Broccolini - bu,2026,27,150,$900.00
+Orders,Broccolini - bu,2026,27,25,$105.00
+Markets,Cabbage Chinese - lb,2026,27,45,$180.00
+Markets,Cabbage Chinese - lb,2026,27,70,$280.00
+Markets,Cabbage Cone - lb,2026,27,38,$95.00
+Markets,Carrot Bulk - lb,2026,27,120.3,$421.05
+Orders,Carrot Bulk - lb,2026,27,101,$247.45
+Markets,Cauliflower Sprouting - lb,2026,27,75,$450.00
+Markets,Cauliflower Sprouting - lb,2026,27,129.5,$777.00
+Orders,Cauliflower Sprouting - lb,2026,27,30,$126.00
+Markets,Celery - bu,2026,27,46,$230.00
+Markets,Celery - bu,2026,27,50,$250.00
+Markets,Chard - bu,2026,27,45,$225.00
+Orders,Chard - bu,2026,27,24,$84.00
+Markets,Cilantro - bu,2026,27,110,$440.00
+Markets,Cilantro - bu,2026,27,98,$392.00
+Orders,Cilantro - bu,2026,27,5,$14.00
+Markets,Collards - bu,2026,27,50,$250.00
+Orders,Collards - bu,2026,27,2,$7.00
+Markets,Cucumber - lb,2026,27,131.9,$461.65
+Markets,Cucumber - lb,2026,27,198.4,$694.40
+Orders,Cucumber - lb,2026,27,210,$514.50
+Markets,Cucumber Katrina - lb,2026,27,143.1,$643.95
+Orders,Cucumber Katrina - lb,2026,27,52,$163.80
+Markets,Cucumber Persian - lb,2026,27,61.8,$0.00
+Markets,Cucumber Pickling - lb,2026,27,59.25,$207.38
+Markets,Cucumber Pickling - lb,2026,27,63.9,$223.65
+Orders,Cucumber Pickling - lb,2026,27,14,$34.30
+Markets,Dandelion - bu,2026,27,40,$200.00
+Markets,Dandelion - bu,2026,27,35,$175.00
+Orders,Dandelion - bu,2026,27,40,$140.00
+Markets,Dill - bu,2026,27,60,$240.00
+Markets,Dill - bu,2026,27,21,$84.00
+Markets,Escarole - ea,2026,27,45,$225.00
+Markets,Escarole - ea,2026,27,39,$195.00
+Orders,Escarole - ea,2026,27,34,$119.00
+Markets,Fennel - ea,2026,27,80,$320.00
+Markets,Fennel - ea,2026,27,54,$216.00
+Markets,Kale Curly - bu,2026,27,35,$175.00
+Orders,Kale Curly - bu,2026,27,20,$70.00
+Markets,Kale Lacinato - bu,2026,27,119,$595.00
+Orders,Kale Lacinato - bu,2026,27,126,$441.00
+Markets,Lettuce Mini Gem - ea,2026,27,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,27,256,$768.00
+Orders,Lettuce Mini Gem - ea,2026,27,37,$77.70
+Markets,Onion Spring - bu,2026,27,200,"$1,000.00"
+Markets,Parsley - bu,2026,27,80,$320.00
+Markets,Parsley - bu,2026,27,82,$328.00
+Orders,Parsley - bu,2026,27,60,$168.00
+Orders,Radicchio Round - lb,2026,27,8,$50.40
+Markets,Radish French Breakfast - bu,2026,27,50,$200.00
+Markets,Salad Mix - 1 1/3 lb,2026,27,17,$425.00
+Orders,Salad Mix - 1 1/3 lb,2026,27,2,$35.00
+Markets,Salad Mix - 1/3 lb,2026,27,59,$413.00
+Markets,Salad Mix - 2/3 lb ,2026,27,81,"$1,134.00"
+Markets,Scallion - bu,2026,27,113,$452.00
+Orders,Scallion - bu,2026,27,49,$137.20
+Markets,Tomato Cherry Sungold - pt,2026,27,14,$98.00
+Markets,Zucchini Green - lb,2026,27,150,$525.00
+Markets,Zucchini Green - lb,2026,27,124.9,$437.15
+Orders,Zucchini Green - lb,2026,27,200,$490.00
+Markets,Zucchini Striped - lb,2026,27,50,$175.00
+Markets,Zucchini Striped - lb,2026,27,114.5,$400.75
+Orders,Zucchini Striped - lb,2026,27,22,$53.90
+Markets,Zucchini Yellow - lb,2026,27,100,$350.00
+Markets,Zucchini Yellow - lb,2026,27,233.9,$818.65
+Orders,Zucchini Yellow - lb,2026,27,24,$58.80
+Markets,Basil - bu,2026,28,120,$480.00
+Markets,Basil - bu,2026,28,100,$400.00
+Markets,Beets Golden - bu,2026,28,35,$175.00
+Markets,Beets Golden - bu,2026,28,70,$350.00
+Markets,Beets Red - bu,2026,28,35,$175.00
+Markets,Beets Red - bu,2026,28,50,$250.00
+Markets,Broccolini - bu,2026,28,150,$900.00
+Markets,Broccolini - bu,2026,28,150,$900.00
+Markets,Cabbage Chinese - lb,2026,28,45,$180.00
+Markets,Cabbage Chinese - lb,2026,28,70,$280.00
+Markets,Cabbage Cone - lb,2026,28,51.65,$129.13
+Markets,Cabbage Cone - lb,2026,28,50,$125.00
+Markets,Cabbage Flat - lb,2026,28,30,$75.00
+Markets,Cabbage Red - lb,2026,28,45,$112.50
+Markets,Carrot Bulk - lb,2026,28,128,$448.00
+Orders,Carrot Bulk - lb,2026,28,3,$7.35
+Markets,Cauliflower Sprouting - lb,2026,28,100,$600.00
+Markets,Cauliflower Sprouting - lb,2026,28,8.7,$52.20
+Markets,Celery - bu,2026,28,46,$230.00
+Markets,Celery - bu,2026,28,50,$250.00
+Markets,Chard - bu,2026,28,45,$225.00
+Orders,Chard - bu,2026,28,35,$122.50
+Markets,Cilantro - bu,2026,28,110,$440.00
+Markets,Cilantro - bu,2026,28,62,$248.00
+Orders,Cilantro - bu,2026,28,154,$431.20
+Markets,Collards - bu,2026,28,50,$250.00
+Orders,Collards - bu,2026,28,46,$161.00
+Markets,Cucumber - lb,2026,28,129.05,$451.68
+Markets,Cucumber - lb,2026,28,171.6,$600.60
+Orders,Cucumber - lb,2026,28,269,$659.05
+Markets,Cucumber Katrina - lb,2026,28,186.6,$839.70
+Orders,Cucumber Katrina - lb,2026,28,18,$56.70
+Markets,Cucumber Persian - lb,2026,28,60,$0.00
+Markets,Cucumber Pickling - lb,2026,28,148.11,$518.39
+Markets,Cucumber Pickling - lb,2026,28,130.35,$456.23
+Orders,Cucumber Pickling - lb,2026,28,3,$7.35
+Markets,Dandelion - bu,2026,28,40,$200.00
+Markets,Dandelion - bu,2026,28,30,$150.00
+Orders,Dandelion - bu,2026,28,39,$136.50
+Markets,Dill - bu,2026,28,60,$240.00
+Markets,Eggplant Italian Striped - lb,2026,28,41,$205.00
+Markets,Escarole - ea,2026,28,45,$225.00
+Markets,Escarole - ea,2026,28,39,$195.00
+Orders,Escarole - ea,2026,28,20,$70.00
+Markets,Fennel - ea,2026,28,80,$320.00
+Markets,Fennel - ea,2026,28,90,$360.00
+Markets,Kale Curly - bu,2026,28,41,$205.00
+Orders,Kale Curly - bu,2026,28,99,$346.50
+Markets,Kale Lacinato - bu,2026,28,106,$530.00
+Orders,Kale Lacinato - bu,2026,28,122,$427.00
+Markets,Lettuce Mini Gem - ea,2026,28,150,$450.00
+Markets,Lettuce Mini Gem - ea,2026,28,114,$342.00
+Orders,Lettuce Mini Gem - ea,2026,28,19,$39.90
+Markets,Okra - Pt,2026,28,15,$90.00
+Markets,Onion Spring - bu,2026,28,157,$785.00
+Markets,Onion Spring - bu,2026,28,81,$405.00
+Markets,Parsley - bu,2026,28,80,$320.00
+Markets,Parsley - bu,2026,28,88,$352.00
+Orders,Parsley - bu,2026,28,132,$369.60
+Orders,Radicchio Round - lb,2026,28,4,$25.20
+Markets,Salad Mix - 1 1/3 lb,2026,28,14,$350.00
+Markets,Salad Mix - 1/3 lb,2026,28,66,$462.00
+Markets,Salad Mix - 2/3 lb ,2026,28,87,"$1,218.00"
+Markets,Scallion - bu,2026,28,123,$492.00
+Orders,Scallion - bu,2026,28,96,$268.80
+Markets,Tomato Cherry Mix - Pt,2026,28,50,$350.00
+Markets,Tomato Cherry Mix - Pt,2026,28,25,$175.00
+Orders,Tomato Cherry Mix - Pt,2026,28,5,$24.50
+Markets,Tomato Cherry Sungold - pt,2026,28,75,$525.00
+Markets,Tomato Cherry Sungold - pt,2026,28,79,$553.00
+Orders,Tomato Cherry Sungold - pt,2026,28,6,$29.40
+Markets,Zucchini Green - lb,2026,28,100,$350.00
+Markets,Zucchini Green - lb,2026,28,133.2,$466.20
+Orders,Zucchini Green - lb,2026,28,265,$649.25
+Markets,Zucchini Striped - lb,2026,28,50,$175.00
+Markets,Zucchini Striped - lb,2026,28,104.75,$366.63
+Orders,Zucchini Striped - lb,2026,28,7,$17.15
+Markets,Zucchini Yellow - lb,2026,28,100,$350.00
+Markets,Zucchini Yellow - lb,2026,28,189,$661.50
+Orders,Zucchini Yellow - lb,2026,28,9,$22.05
+Markets,Basil - bu,2026,29,120,$480.00
+Markets,Basil - bu,2026,29,100,$400.00
+Orders,Basil - bu,2026,29,5,$14.00
+Markets,Beets Golden - bu,2026,29,35,$175.00
+Markets,Beets Golden - bu,2026,29,70,$350.00
+Markets,Beets Red - bu,2026,29,35,$175.00
+Markets,Beets Red - bu,2026,29,50,$250.00
+Markets,Broccolini - bu,2026,29,50,$300.00
+Markets,Broccolini - bu,2026,29,100,$600.00
+Markets,Cabbage Chinese - lb,2026,29,45,$180.00
+Markets,Cabbage Chinese - lb,2026,29,50,$200.00
+Markets,Cabbage Cone - lb,2026,29,43.42,$108.55
+Markets,Cabbage Cone - lb,2026,29,50,$125.00
+Markets,Cabbage Flat - lb,2026,29,60,$150.00
+Markets,Cabbage Flat - lb,2026,29,29,$72.50
+Orders,Cabbage Flat - lb,2026,29,2,$3.50
+Markets,Cabbage Red - lb,2026,29,45,$112.50
+Orders,Cabbage Red - lb,2026,29,4,$7.00
+Markets,Cabbage Savoy - lb,2026,29,25,$62.50
+Markets,Carrot Bulk - lb,2026,29,113.7,$397.95
+Orders,Carrot Bulk - lb,2026,29,12,$29.40
+Markets,Cauliflower Sprouting - lb,2026,29,75,$450.00
+Markets,Celery - bu,2026,29,50,$250.00
+Markets,Celery - bu,2026,29,50,$250.00
+Markets,Chard - bu,2026,29,45,$225.00
+Orders,Chard - bu,2026,29,35,$122.50
+Markets,Cilantro - bu,2026,29,110,$440.00
+Markets,Cilantro - bu,2026,29,29,$116.00
+Orders,Cilantro - bu,2026,29,6,$16.80
+Markets,Collards - bu,2026,29,50,$250.00
+Orders,Collards - bu,2026,29,21,$73.50
+Markets,Cucumber - lb,2026,29,152.4,$533.40
+Markets,Cucumber - lb,2026,29,104.5,$365.75
+Orders,Cucumber - lb,2026,29,207,$507.15
+Markets,Cucumber Katrina - lb,2026,29,145.1,$652.95
+Orders,Cucumber Katrina - lb,2026,29,20,$63.00
+Markets,Cucumber Persian - lb,2026,29,77.6,$0.00
+Markets,Cucumber Pickling - lb,2026,29,149.2,$522.20
+Markets,Cucumber Pickling - lb,2026,29,155.45,$544.08
+Orders,Cucumber Pickling - lb,2026,29,2,$4.90
+Markets,Dandelion - bu,2026,29,40,$200.00
+Markets,Dandelion - bu,2026,29,27,$135.00
+Orders,Dandelion - bu,2026,29,47,$164.50
+Markets,Dill - bu,2026,29,60,$240.00
+Markets,Dill - bu,2026,29,11,$44.00
+Markets,Eggplant Asian - lb,2026,29,25,$125.00
+Markets,Eggplant Asian - lb,2026,29,13.5,$67.50
+Markets,Eggplant Italian Black - lb,2026,29,17.4,$87.00
+Markets,Eggplant Italian Black - lb,2026,29,17.4,$87.00
+Markets,Eggplant Italian Striped - lb,2026,29,151.32,$756.60
+Markets,Eggplant Italian Striped - lb,2026,29,14.4,$72.00
+Markets,Eggplant Mini - Pt,2026,29,19,$114.00
+Markets,Eggplant Mini - Qt,2026,29,18.9,$207.90
+Markets,Escarole - ea,2026,29,30,$150.00
+Markets,Escarole - ea,2026,29,37,$185.00
+Orders,Escarole - ea,2026,29,2,$7.00
+Markets,Fennel - ea,2026,29,80,$320.00
+Markets,Fennel - ea,2026,29,84,$336.00
+Markets,Kale Curly - bu,2026,29,42,$210.00
+Orders,Kale Curly - bu,2026,29,1,$3.50
+Markets,Kale Lacinato - bu,2026,29,91,$455.00
+Orders,Kale Lacinato - bu,2026,29,29,$101.50
+Markets,Lettuce Mini Gem - ea,2026,29,42,$126.00
+Orders,Lettuce Mini Gem - ea,2026,29,4,$8.40
+Markets,Okra - Pt,2026,29,25,$150.00
+Markets,Onion Spring - bu,2026,29,94,$470.00
+Markets,Onion Spring - bu,2026,29,108,$540.00
+Markets,Parsley - bu,2026,29,80,$320.00
+Markets,Parsley - bu,2026,29,80,$320.00
+Orders,Parsley - bu,2026,29,9,$25.20
+Markets,Pepper Hot - ea,2026,29,11,$11.00
+Markets,Pepper Shishito - Pt,2026,29,9,$54.00
+Markets,Radicchio Round - lb,2026,29,16.5,$148.50
+Orders,Radicchio Round - lb,2026,29,5,$31.50
+Markets,Salad Mix - 1 1/3 lb,2026,29,14,$350.00
+Markets,Salad Mix - 1/3 lb,2026,29,68,$476.00
+Markets,Salad Mix - 2/3 lb ,2026,29,78,"$1,092.00"
+Markets,Scallion - bu,2026,29,99,$396.00
+Orders,Scallion - bu,2026,29,4,$11.20
+Markets,Tomato Cherry Mix - Pt,2026,29,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,29,183,"$1,281.00"
+Orders,Tomato Cherry Mix - Pt,2026,29,4,$19.60
+Markets,Tomato Cherry Sungold - pt,2026,29,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,29,188,"$1,316.00"
+Orders,Tomato Cherry Sungold - pt,2026,29,6,$29.40
+Markets,Tomato Heirloom - lb,2026,29,33,$165.00
+Markets,Zucchini Green - lb,2026,29,100,$350.00
+Markets,Zucchini Green - lb,2026,29,96.75,$338.63
+Orders,Zucchini Green - lb,2026,29,207,$507.15
+Markets,Zucchini Striped - lb,2026,29,50,$175.00
+Markets,Zucchini Striped - lb,2026,29,68,$238.00
+Orders,Zucchini Striped - lb,2026,29,3,$7.35
+Markets,Zucchini Yellow - lb,2026,29,100,$350.00
+Markets,Zucchini Yellow - lb,2026,29,206,$721.00
+Orders,Zucchini Yellow - lb,2026,29,10,$24.50
+Markets,Basil - bu,2026,30,120,$480.00
+Markets,Basil - bu,2026,30,100,$400.00
+Orders,Basil - bu,2026,30,10,$28.00
+Markets,Beets Golden - bu,2026,30,35,$175.00
+Markets,Beets Golden - bu,2026,30,70,$350.00
+Markets,Beets Red - bu,2026,30,35,$175.00
+Markets,Beets Red - bu,2026,30,50,$250.00
+Markets,Broccolini - bu,2026,30,50,$300.00
+Markets,Cabbage Chinese - lb,2026,30,45,$180.00
+Markets,Cabbage Chinese - lb,2026,30,25,$100.00
+Markets,Cabbage Cone - lb,2026,30,52.3,$130.75
+Markets,Cabbage Cone - lb,2026,30,50,$125.00
+Markets,Cabbage Flat - lb,2026,30,60,$150.00
+Markets,Cabbage Flat - lb,2026,30,29,$72.50
+Orders,Cabbage Flat - lb,2026,30,4,$7.00
+Markets,Cabbage Red - lb,2026,30,45,$112.50
+Markets,Cabbage Savoy - lb,2026,30,25,$62.50
+Markets,Carrot Bulk - lb,2026,30,114.3,$400.05
+Orders,Carrot Bulk - lb,2026,30,3,$7.35
+Markets,Cauliflower Sprouting - lb,2026,30,75,$450.00
+Markets,Celery - bu,2026,30,47,$235.00
+Markets,Celery - bu,2026,30,50,$250.00
+Markets,Chard - bu,2026,30,38,$190.00
+Orders,Chard - bu,2026,30,18,$63.00
+Markets,Cilantro - bu,2026,30,110,$440.00
+Markets,Cilantro - bu,2026,30,2,$8.00
+Markets,Collards - bu,2026,30,50,$250.00
+Orders,Collards - bu,2026,30,16,$56.00
+Markets,Cucumber - lb,2026,30,107.4,$375.90
+Markets,Cucumber - lb,2026,30,158.7,$555.45
+Orders,Cucumber - lb,2026,30,199,$487.55
+Markets,Cucumber Katrina - lb,2026,30,75.75,$340.88
+Orders,Cucumber Katrina - lb,2026,30,23,$72.45
+Markets,Cucumber Persian - lb,2026,30,49.7,$0.00
+Markets,Cucumber Pickling - lb,2026,30,128.9,$451.15
+Markets,Cucumber Pickling - lb,2026,30,120.3,$421.05
+Orders,Cucumber Pickling - lb,2026,30,16,$39.20
+Markets,Dandelion - bu,2026,30,40,$200.00
+Markets,Dandelion - bu,2026,30,22,$110.00
+Orders,Dandelion - bu,2026,30,42,$147.00
+Markets,Dill - bu,2026,30,60,$240.00
+Markets,Dill - bu,2026,30,3,$12.00
+Markets,Eggplant Asian - lb,2026,30,25,$125.00
+Markets,Eggplant Asian - lb,2026,30,5,$25.00
+Markets,Eggplant Italian Black - lb,2026,30,23,$115.00
+Markets,Eggplant Italian Black - lb,2026,30,20,$100.00
+Markets,Eggplant Italian Striped - lb,2026,30,72,$360.00
+Markets,Eggplant Italian Striped - lb,2026,30,20,$100.00
+Markets,Eggplant Mini - Pt,2026,30,70,$420.00
+Markets,Eggplant Mini - Qt,2026,30,13.9,$152.90
+Markets,Escarole - ea,2026,30,25,$125.00
+Markets,Escarole - ea,2026,30,33,$165.00
+Orders,Escarole - ea,2026,30,1,$3.50
+Markets,Fennel - ea,2026,30,80,$320.00
+Markets,Fennel - ea,2026,30,65,$260.00
+Markets,Kale Curly - bu,2026,30,37,$185.00
+Orders,Kale Curly - bu,2026,30,23,$80.50
+Markets,Kale Lacinato - bu,2026,30,91,$455.00
+Orders,Kale Lacinato - bu,2026,30,20,$70.00
+Markets,Lettuce Mini Gem - ea,2026,30,79,$237.00
+Markets,Okra - Pt,2026,30,25,$150.00
+Markets,Onion Spring - bu,2026,30,78,$390.00
+Markets,Onion Spring - bu,2026,30,130,$650.00
+Markets,Parsley - bu,2026,30,80,$320.00
+Markets,Parsley - bu,2026,30,87,$348.00
+Orders,Parsley - bu,2026,30,6,$16.80
+Markets,Pepper Hot - ea,2026,30,20,$20.00
+Markets,Pepper Shishito - Pt,2026,30,19,$114.00
+Markets,Pepper Shishito - Qt,2026,30,4,$44.00
+Markets,Radicchio Round - lb,2026,30,16.2,$145.80
+Orders,Radicchio Round - lb,2026,30,11,$69.30
+Markets,Salad Mix - 1 1/3 lb,2026,30,3,$75.00
+Orders,Salad Mix - 1 1/3 lb,2026,30,4,$70.00
+Markets,Salad Mix - 1/3 lb,2026,30,64,$448.00
+Markets,Salad Mix - 2/3 lb ,2026,30,71,$994.00
+Markets,Scallion - bu,2026,30,99,$396.00
+Orders,Scallion - bu,2026,30,15,$42.00
+Markets,Tomato Cherry Mix - Pt,2026,30,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,30,162,"$1,134.00"
+Orders,Tomato Cherry Mix - Pt,2026,30,121,$592.90
+Markets,Tomato Cherry Sungold - pt,2026,30,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,30,100,$700.00
+Orders,Tomato Cherry Sungold - pt,2026,30,81,$396.90
+Markets,Tomato Heirloom - lb,2026,30,120,$600.00
+Markets,Zucchini Green - lb,2026,30,100,$350.00
+Markets,Zucchini Green - lb,2026,30,92.7,$324.45
+Orders,Zucchini Green - lb,2026,30,61,$149.45
+Markets,Zucchini Striped - lb,2026,30,50,$175.00
+Markets,Zucchini Striped - lb,2026,30,56.75,$198.63
+Markets,Zucchini Yellow - lb,2026,30,100,$350.00
+Markets,Zucchini Yellow - lb,2026,30,129.5,$453.25
+Orders,Zucchini Yellow - lb,2026,30,7,$17.15
+Markets,Basil - bu,2026,31,120,$480.00
+Markets,Basil - bu,2026,31,100,$400.00
+Orders,Basil - bu,2026,31,6,$16.80
+Markets,Beets Golden - bu,2026,31,35,$175.00
+Markets,Beets Golden - bu,2026,31,70,$350.00
+Markets,Beets Red - bu,2026,31,35,$175.00
+Markets,Beets Red - bu,2026,31,50,$250.00
+Markets,Cabbage Chinese - lb,2026,31,45,$180.00
+Markets,Cabbage Chinese - lb,2026,31,25,$100.00
+Markets,Cabbage Cone - lb,2026,31,65.9,$164.75
+Markets,Cabbage Cone - lb,2026,31,50,$125.00
+Markets,Cabbage Flat - lb,2026,31,60,$150.00
+Markets,Cabbage Flat - lb,2026,31,29,$72.50
+Markets,Cabbage Red - lb,2026,31,45,$112.50
+Markets,Cabbage Savoy - lb,2026,31,25,$62.50
+Orders,Cabbage Savoy - lb,2026,31,2,$3.50
+Markets,Carrot Bulk - lb,2026,31,89,$311.50
+Orders,Carrot Bulk - lb,2026,31,3,$7.35
+Markets,Cauliflower Sprouting - lb,2026,31,50,$300.00
+Markets,Celery - bu,2026,31,46,$230.00
+Markets,Celery - bu,2026,31,50,$250.00
+Markets,Chard - bu,2026,31,38,$190.00
+Orders,Chard - bu,2026,31,28,$98.00
+Markets,Cilantro - bu,2026,31,110,$440.00
+Markets,Collards - bu,2026,31,50,$250.00
+Orders,Collards - bu,2026,31,15,$52.50
+Markets,Cucumber - lb,2026,31,89.35,$312.73
+Markets,Cucumber - lb,2026,31,92.6,$324.10
+Orders,Cucumber - lb,2026,31,94,$230.30
+Markets,Cucumber Katrina - lb,2026,31,139.95,$629.78
+Orders,Cucumber Katrina - lb,2026,31,25,$78.75
+Markets,Cucumber Persian - lb,2026,31,43.5,$0.00
+Markets,Cucumber Pickling - lb,2026,31,132.7,$464.45
+Markets,Cucumber Pickling - lb,2026,31,226.4,$792.40
+Orders,Cucumber Pickling - lb,2026,31,12,$29.40
+Markets,Dandelion - bu,2026,31,40,$200.00
+Markets,Dandelion - bu,2026,31,24,$120.00
+Orders,Dandelion - bu,2026,31,34,$119.00
+Markets,Dill - bu,2026,31,60,$240.00
+Markets,Eggplant Asian - lb,2026,31,25,$125.00
+Markets,Eggplant Asian - lb,2026,31,2.8,$14.00
+Markets,Eggplant Italian Black - lb,2026,31,1.6,$8.00
+Markets,Eggplant Italian Black - lb,2026,31,1.25,$6.25
+Markets,Eggplant Italian Striped - lb,2026,31,188.7,$943.50
+Markets,Eggplant Italian Striped - lb,2026,31,8.4,$42.00
+Markets,Eggplant Mini - Pt,2026,31,89,$534.00
+Markets,Eggplant Mini - Qt,2026,31,9.3,$102.30
+Markets,Fennel - ea,2026,31,50,$200.00
+Markets,Garlic - lb,2026,31,33.45,$535.20
+Markets,Kale Curly - bu,2026,31,41,$205.00
+Orders,Kale Curly - bu,2026,31,2,$7.00
+Markets,Kale Lacinato - bu,2026,31,91,$455.00
+Orders,Kale Lacinato - bu,2026,31,5,$17.50
+Markets,Lettuce Mini Gem - ea,2026,31,27,$81.00
+Orders,Lettuce Mini Gem - ea,2026,31,9,$18.90
+Markets,Okra - Pt,2026,31,25,$150.00
+Markets,Onion Spring - bu,2026,31,23.4,$117.00
+Markets,Onion Spring - bu,2026,31,145,$725.00
+Markets,Parsley - bu,2026,31,80,$320.00
+Markets,Parsley - bu,2026,31,90,$360.00
+Orders,Parsley - bu,2026,31,15,$42.00
+Markets,Pepper Hot - ea,2026,31,4,$4.00
+Markets,Pepper Shishito - Pt,2026,31,35,$210.00
+Markets,Pepper Shishito - Qt,2026,31,60,$660.00
+Markets,Radicchio Round - lb,2026,31,12.2,$109.80
+Orders,Radicchio Round - lb,2026,31,2,$12.60
+Orders,Salad Mix - 1 1/3 lb,2026,31,1,$17.50
+Markets,Salad Mix - 1/3 lb,2026,31,26,$182.00
+Markets,Salad Mix - 2/3 lb ,2026,31,43,$602.00
+Markets,Scallion - bu,2026,31,96,$384.00
+Orders,Scallion - bu,2026,31,12,$33.60
+Markets,Tomato Cherry Mix - Pt,2026,31,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,31,148,"$1,036.00"
+Orders,Tomato Cherry Mix - Pt,2026,31,68,$333.20
+Markets,Tomato Cherry Sungold - pt,2026,31,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,31,91,$637.00
+Orders,Tomato Cherry Sungold - pt,2026,31,54,$264.60
+Markets,Tomato Heirloom - lb,2026,31,25,$125.00
+Markets,Tomato Heirloom - lb,2026,31,182.39,$911.95
+Markets,Zucchini Green - lb,2026,31,100,$350.00
+Markets,Zucchini Green - lb,2026,31,129.3,$452.55
+Orders,Zucchini Green - lb,2026,31,3,$7.35
+Markets,Zucchini Striped - lb,2026,31,50,$175.00
+Markets,Zucchini Striped - lb,2026,31,64.7,$226.45
+Orders,Zucchini Striped - lb,2026,31,5,$12.25
+Markets,Zucchini Yellow - lb,2026,31,100,$350.00
+Markets,Zucchini Yellow - lb,2026,31,120,$420.00
+Orders,Zucchini Yellow - lb,2026,31,5,$12.25
+Markets,Basil - bu,2026,32,120,$480.00
+Markets,Basil - bu,2026,32,100,$400.00
+Orders,Basil - bu,2026,32,5,$14.00
+Markets,Beets Golden - bu,2026,32,35,$175.00
+Markets,Beets Golden - bu,2026,32,70,$350.00
+Markets,Beets Red - bu,2026,32,35,$175.00
+Markets,Beets Red - bu,2026,32,50,$250.00
+Markets,Cabbage Cone - lb,2026,32,85.3,$213.25
+Markets,Cabbage Cone - lb,2026,32,50,$125.00
+Markets,Cabbage Flat - lb,2026,32,60,$150.00
+Markets,Cabbage Flat - lb,2026,32,29,$72.50
+Orders,Cabbage Flat - lb,2026,32,1,$1.75
+Markets,Cabbage Red - lb,2026,32,45,$112.50
+Orders,Cabbage Red - lb,2026,32,2,$3.50
+Markets,Cabbage Savoy - lb,2026,32,25,$62.50
+Markets,Carrot Bulk - lb,2026,32,76.7,$268.45
+Orders,Carrot Bulk - lb,2026,32,2,$4.90
+Markets,Celery - bu,2026,32,39,$195.00
+Markets,Celery - bu,2026,32,50,$250.00
+Markets,Chard - bu,2026,32,42,$210.00
+Orders,Chard - bu,2026,32,18,$63.00
+Markets,Cilantro - bu,2026,32,110,$440.00
+Markets,Collards - bu,2026,32,50,$250.00
+Orders,Collards - bu,2026,32,31,$108.50
+Markets,Cucumber - lb,2026,32,21.25,$74.38
+Markets,Cucumber - lb,2026,32,95.7,$334.95
+Orders,Cucumber - lb,2026,32,150,$367.50
+Markets,Cucumber Katrina - lb,2026,32,64.65,$290.93
+Orders,Cucumber Katrina - lb,2026,32,20,$63.00
+Markets,Cucumber Persian - lb,2026,32,55.45,$0.00
+Markets,Cucumber Pickling - lb,2026,32,182.7,$639.45
+Markets,Cucumber Pickling - lb,2026,32,87.45,$306.08
+Orders,Cucumber Pickling - lb,2026,32,3,$7.35
+Markets,Dandelion - bu,2026,32,40,$200.00
+Markets,Dandelion - bu,2026,32,30,$150.00
+Orders,Dandelion - bu,2026,32,19,$66.50
+Markets,Dill - bu,2026,32,60,$240.00
+Markets,Eggplant Asian - lb,2026,32,25,$125.00
+Markets,Eggplant Asian - lb,2026,32,11.85,$59.25
+Markets,Eggplant Italian Black - lb,2026,32,24,$120.00
+Markets,Eggplant Italian Black - lb,2026,32,20.5,$102.50
+Markets,Eggplant Italian Striped - lb,2026,32,190.4,$952.00
+Markets,Eggplant Italian Striped - lb,2026,32,33.4,$167.00
+Markets,Eggplant Mini - Pt,2026,32,86,$516.00
+Markets,Eggplant Mini - Pt,2026,32,43,$258.00
+Markets,Eggplant Mini - Qt,2026,32,26,$286.00
+Markets,Garlic - lb,2026,32,17.6,$281.60
+Markets,Kale Curly - bu,2026,32,53,$265.00
+Orders,Kale Curly - bu,2026,32,1,$3.50
+Markets,Kale Lacinato - bu,2026,32,95,$475.00
+Orders,Kale Lacinato - bu,2026,32,14,$49.00
+Markets,Okra - Pt,2026,32,25,$150.00
+Markets,Onion Spring - bu,2026,32,130,$650.00
+Markets,Parsley - bu,2026,32,80,$320.00
+Markets,Parsley - bu,2026,32,23,$92.00
+Orders,Parsley - bu,2026,32,15,$42.00
+Markets,Pepper Hot - ea,2026,32,35,$35.00
+Markets,Pepper Shishito - Pt,2026,32,32,$192.00
+Markets,Pepper Shishito - Pt,2026,32,34,$204.00
+Markets,Pepper Shishito - Qt,2026,32,46,$506.00
+Markets,Pepper Shishito - Qt,2026,32,22,$242.00
+Markets,Radicchio Round - lb,2026,32,2,$18.00
+Orders,Radicchio Round - lb,2026,32,2,$12.60
+Markets,Salad Mix - 1/3 lb,2026,32,22,$154.00
+Markets,Salad Mix - 2/3 lb ,2026,32,40,$560.00
+Markets,Scallion - bu,2026,32,95,$380.00
+Orders,Scallion - bu,2026,32,3,$8.40
+Markets,Tomato Cherry Mix - Pt,2026,32,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,32,142,$994.00
+Orders,Tomato Cherry Mix - Pt,2026,32,66,$323.40
+Markets,Tomato Cherry Sungold - pt,2026,32,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,32,116,$812.00
+Orders,Tomato Cherry Sungold - pt,2026,32,67,$328.30
+Markets,Tomato Heirloom - lb,2026,32,100,$500.00
+Markets,Tomato Heirloom - lb,2026,32,168,$840.00
+Markets,Zucchini Green - lb,2026,32,100,$350.00
+Markets,Zucchini Green - lb,2026,32,165.8,$580.30
+Orders,Zucchini Green - lb,2026,32,11,$26.95
+Markets,Zucchini Striped - lb,2026,32,50,$175.00
+Markets,Zucchini Striped - lb,2026,32,11.05,$38.68
+Orders,Zucchini Striped - lb,2026,32,4,$9.80
+Markets,Zucchini Yellow - lb,2026,32,100,$350.00
+Markets,Zucchini Yellow - lb,2026,32,31.2,$109.20
+Markets,Basil - bu,2026,33,120,$480.00
+Markets,Basil - bu,2026,33,100,$400.00
+Orders,Basil - bu,2026,33,7,$19.60
+Markets,Beets Golden - bu,2026,33,35,$175.00
+Markets,Beets Golden - bu,2026,33,70,$350.00
+Markets,Beets Red - bu,2026,33,35,$175.00
+Markets,Beets Red - bu,2026,33,50,$250.00
+Markets,Cabbage Cone - lb,2026,33,92.4,$231.00
+Markets,Cabbage Cone - lb,2026,33,50,$125.00
+Markets,Cabbage Flat - lb,2026,33,60,$150.00
+Markets,Cabbage Flat - lb,2026,33,29,$72.50
+Orders,Cabbage Flat - lb,2026,33,2,$3.50
+Markets,Cabbage Red - lb,2026,33,45,$112.50
+Markets,Cabbage Savoy - lb,2026,33,25,$62.50
+Markets,Carrot Bulk - lb,2026,33,79.8,$279.30
+Orders,Carrot Bulk - lb,2026,33,4,$9.80
+Markets,Celery - bu,2026,33,39,$195.00
+Markets,Celery - bu,2026,33,50,$250.00
+Markets,Chard - bu,2026,33,39,$195.00
+Markets,Cilantro - bu,2026,33,110,$440.00
+Markets,Collards - bu,2026,33,50,$250.00
+Orders,Collards - bu,2026,33,42,$147.00
+Markets,Cucumber - lb,2026,33,24,$84.00
+Markets,Cucumber - lb,2026,33,131.4,$459.90
+Orders,Cucumber - lb,2026,33,13,$31.85
+Markets,Cucumber Katrina - lb,2026,33,100.5,$452.25
+Orders,Cucumber Katrina - lb,2026,33,6,$18.90
+Markets,Cucumber Persian - lb,2026,33,19.7,$0.00
+Markets,Cucumber Pickling - lb,2026,33,181.25,$634.38
+Markets,Cucumber Pickling - lb,2026,33,132.4,$463.40
+Orders,Cucumber Pickling - lb,2026,33,15,$36.75
+Markets,Dandelion - bu,2026,33,40,$200.00
+Markets,Dandelion - bu,2026,33,30,$150.00
+Orders,Dandelion - bu,2026,33,30,$105.00
+Markets,Dill - bu,2026,33,60,$240.00
+Markets,Eggplant Asian - lb,2026,33,25,$125.00
+Markets,Eggplant Asian - lb,2026,33,13.6,$68.00
+Markets,Eggplant Italian Black - lb,2026,33,18.2,$91.00
+Markets,Eggplant Italian Black - lb,2026,33,13.7,$68.50
+Markets,Eggplant Italian Striped - lb,2026,33,187.4,$937.00
+Markets,Eggplant Italian Striped - lb,2026,33,43,$215.00
+Markets,Eggplant Mini - Pt,2026,33,91,$546.00
+Markets,Eggplant Mini - Pt,2026,33,25,$150.00
+Markets,Eggplant Mini - Qt,2026,33,16,$176.00
+Markets,Garlic - lb,2026,33,15.7,$251.20
+Markets,Kale Curly - bu,2026,33,51,$255.00
+Orders,Kale Curly - bu,2026,33,11,$38.50
+Markets,Kale Lacinato - bu,2026,33,96,$480.00
+Orders,Kale Lacinato - bu,2026,33,4,$14.00
+Markets,Lettuce Mini Gem - ea,2026,33,96,$288.00
+Markets,Okra - Pt,2026,33,25,$150.00
+Markets,Onion Spring - bu,2026,33,85,$425.00
+Markets,Parsley - bu,2026,33,80,$320.00
+Markets,Parsley - bu,2026,33,83,$332.00
+Markets,Pepper Carmen - lb,2026,33,21.5,$107.50
+Markets,Pepper Hot - ea,2026,33,127,$127.00
+Markets,Pepper Hot - ea,2026,33,10,$10.00
+Markets,Pepper Shishito - Pt,2026,33,38,$228.00
+Markets,Pepper Shishito - Pt,2026,33,40,$240.00
+Markets,Pepper Shishito - Qt,2026,33,68,$748.00
+Markets,Pepper Shishito - Qt,2026,33,29,$319.00
+Markets,Salad Mix - 1/3 lb,2026,33,31,$217.00
+Markets,Salad Mix - 2/3 lb ,2026,33,51,$714.00
+Markets,Scallion - bu,2026,33,94,$376.00
+Orders,Scallion - bu,2026,33,2,$5.60
+Markets,Tomato Cherry Mix - Pt,2026,33,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,33,162,"$1,134.00"
+Orders,Tomato Cherry Mix - Pt,2026,33,131,$641.90
+Markets,Tomato Cherry Sungold - pt,2026,33,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,33,144,"$1,008.00"
+Orders,Tomato Cherry Sungold - pt,2026,33,69,$338.10
+Markets,Tomato Heirloom - lb,2026,33,100,$500.00
+Markets,Tomato Heirloom - lb,2026,33,140.5,$702.50
+Markets,Zucchini Green - lb,2026,33,100.4,$351.40
+Orders,Zucchini Green - lb,2026,33,2,$4.90
+Markets,Zucchini Striped - lb,2026,33,9.2,$32.20
+Markets,Zucchini Yellow - lb,2026,33,58.3,$204.05
+Markets,Arugula - 2/3 lb ,2026,34,15,$210.00
+Markets,Basil - bu,2026,34,120,$480.00
+Markets,Basil - bu,2026,34,100,$400.00
+Orders,Basil - bu,2026,34,12,$33.60
+Markets,Beets Golden - bu,2026,34,35,$175.00
+Markets,Beets Golden - bu,2026,34,70,$350.00
+Markets,Beets Red - bu,2026,34,35,$175.00
+Markets,Beets Red - bu,2026,34,50,$250.00
+Markets,Cabbage Cone - lb,2026,34,74.4,$186.00
+Markets,Cabbage Cone - lb,2026,34,50,$125.00
+Markets,Cabbage Flat - lb,2026,34,60,$150.00
+Markets,Cabbage Flat - lb,2026,34,29,$72.50
+Orders,Cabbage Flat - lb,2026,34,22,$38.50
+Markets,Cabbage Red - lb,2026,34,45,$112.50
+Markets,Cabbage Savoy - lb,2026,34,25,$62.50
+Orders,Cabbage Savoy - lb,2026,34,23,$40.25
+Markets,Carrot Bulk - lb,2026,34,31.5,$110.25
+Orders,Carrot Bulk - lb,2026,34,1,$2.45
+Markets,Celery - bu,2026,34,50,$250.00
+Markets,Chard - bu,2026,34,38,$190.00
+Orders,Chard - bu,2026,34,2,$7.00
+Markets,Cilantro - bu,2026,34,110,$440.00
+Markets,Collards - bu,2026,34,50,$250.00
+Orders,Collards - bu,2026,34,3,$10.50
+Markets,Cucumber - lb,2026,34,55.65,$194.78
+Markets,Cucumber - lb,2026,34,142.5,$498.75
+Orders,Cucumber - lb,2026,34,12,$29.40
+Markets,Cucumber Katrina - lb,2026,34,43.9,$197.55
+Orders,Cucumber Katrina - lb,2026,34,24,$75.60
+Markets,Cucumber Persian - lb,2026,34,38.15,$0.00
+Markets,Cucumber Pickling - lb,2026,34,153,$535.50
+Markets,Cucumber Pickling - lb,2026,34,103.9,$363.65
+Orders,Cucumber Pickling - lb,2026,34,19,$46.55
+Markets,Dandelion - bu,2026,34,40,$200.00
+Markets,Dandelion - bu,2026,34,28,$140.00
+Orders,Dandelion - bu,2026,34,16,$56.00
+Markets,Eggplant Asian - lb,2026,34,25,$125.00
+Markets,Eggplant Asian - lb,2026,34,10.8,$54.00
+Markets,Eggplant Italian Black - lb,2026,34,34.25,$171.25
+Markets,Eggplant Italian Black - lb,2026,34,28.05,$140.25
+Markets,Eggplant Italian Striped - lb,2026,34,190.24,$951.20
+Markets,Eggplant Italian Striped - lb,2026,34,77.8,$389.00
+Markets,Eggplant Mini - Pt,2026,34,38,$228.00
+Markets,Eggplant Mini - Pt,2026,34,47,$282.00
+Markets,Eggplant Mini - Qt,2026,34,20,$220.00
+Markets,Garlic - lb,2026,34,22.1,$353.60
+Markets,Kale Curly - bu,2026,34,55,$275.00
+Orders,Kale Curly - bu,2026,34,1,$3.50
+Markets,Kale Lacinato - bu,2026,34,90,$450.00
+Orders,Kale Lacinato - bu,2026,34,7,$24.50
+Markets,Lettuce Mini Gem - ea,2026,34,11,$33.00
+Markets,Okra - Pt,2026,34,25,$150.00
+Markets,Onion Spring - bu,2026,34,31,$155.00
+Markets,Parsley - bu,2026,34,80,$320.00
+Markets,Parsley - bu,2026,34,95,$380.00
+Orders,Parsley - bu,2026,34,16,$44.80
+Markets,Pepper Carmen - lb,2026,34,70.72,$353.60
+Markets,Pepper Carmen - lb,2026,34,58.9,$294.50
+Markets,Pepper Hot - ea,2026,34,153,$153.00
+Markets,Pepper Hot - ea,2026,34,107,$107.00
+Markets,Pepper Shishito - Pt,2026,34,38,$228.00
+Markets,Pepper Shishito - Pt,2026,34,55,$330.00
+Markets,Pepper Shishito - Qt,2026,34,35,$385.00
+Markets,Pepper Shishito - Qt,2026,34,31,$341.00
+Markets,Potato Red - lb,2026,34,121,$423.50
+Markets,Potato Red - lb,2026,34,165.9,$580.65
+Markets,Radish French Breakfast - bu,2026,34,51,$204.00
+Markets,Scallion - bu,2026,34,73,$292.00
+Orders,Scallion - bu,2026,34,4,$11.20
+Markets,Tomato Cherry Mix - Pt,2026,34,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,34,48,$336.00
+Orders,Tomato Cherry Mix - Pt,2026,34,71,$347.90
+Markets,Tomato Cherry Sungold - pt,2026,34,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,34,58,$406.00
+Orders,Tomato Cherry Sungold - pt,2026,34,72,$352.80
+Markets,Tomato Heirloom - lb,2026,34,100,$500.00
+Markets,Tomato Heirloom - lb,2026,34,97.7,$488.50
+Markets,Winter Squash Acorn - lb,2026,34,117,$468.00
+Markets,Arugula - 2/3 lb ,2026,35,15,$210.00
+Markets,Basil - bu,2026,35,120,$480.00
+Markets,Basil - bu,2026,35,100,$400.00
+Orders,Basil - bu,2026,35,1,$2.80
+Markets,Beets Golden - bu,2026,35,35,$175.00
+Markets,Beets Golden - bu,2026,35,70,$350.00
+Markets,Beets Red - bu,2026,35,35,$175.00
+Markets,Beets Red - bu,2026,35,50,$250.00
+Markets,Bitter Melon - lb,2026,35,17,$85.00
+Markets,Cabbage Cone - lb,2026,35,76.4,$191.00
+Markets,Cabbage Cone - lb,2026,35,50,$125.00
+Markets,Cabbage Flat - lb,2026,35,60,$150.00
+Markets,Cabbage Flat - lb,2026,35,29,$72.50
+Markets,Cabbage Red - lb,2026,35,45,$112.50
+Orders,Cabbage Red - lb,2026,35,5,$8.75
+Markets,Cabbage Savoy - lb,2026,35,25,$62.50
+Markets,Carrot - bu,2026,35,175,"$1,050.00"
+Markets,Celery - bu,2026,35,50,$250.00
+Markets,Chard - bu,2026,35,54,$270.00
+Orders,Chard - bu,2026,35,10,$35.00
+Markets,Cilantro - bu,2026,35,110,$440.00
+Markets,Collards - bu,2026,35,50,$250.00
+Markets,Cucumber - lb,2026,35,100,$350.00
+Markets,Cucumber - lb,2026,35,192,$672.00
+Orders,Cucumber - lb,2026,35,11,$26.95
+Markets,Cucumber Katrina - lb,2026,35,31.4,$141.30
+Markets,Cucumber Persian - lb,2026,35,20.25,$0.00
+Markets,Cucumber Pickling - lb,2026,35,119,$416.50
+Markets,Cucumber Pickling - lb,2026,35,105.25,$368.38
+Orders,Cucumber Pickling - lb,2026,35,6,$14.70
+Markets,Dandelion - bu,2026,35,40,$200.00
+Markets,Dandelion - bu,2026,35,35,$175.00
+Orders,Dandelion - bu,2026,35,2,$7.00
+Markets,Eggplant Asian - lb,2026,35,25,$125.00
+Markets,Eggplant Asian - lb,2026,35,12.6,$63.00
+Markets,Eggplant Italian Black - lb,2026,35,37,$185.00
+Markets,Eggplant Italian Black - lb,2026,35,36.25,$181.25
+Markets,Eggplant Italian Striped - lb,2026,35,153.1,$765.50
+Markets,Eggplant Italian Striped - lb,2026,35,80,$400.00
+Markets,Eggplant Mini - Pt,2026,35,21,$126.00
+Markets,Eggplant Mini - Pt,2026,35,49,$294.00
+Markets,Eggplant Mini - Qt,2026,35,18,$198.00
+Markets,Eggplant Mini - Qt,2026,35,32,$352.00
+Markets,Garlic - lb,2026,35,20.1,$321.60
+Markets,Kale Curly - bu,2026,35,64,$320.00
+Orders,Kale Curly - bu,2026,35,7,$24.50
+Markets,Kale Lacinato - bu,2026,35,94,$470.00
+Orders,Kale Lacinato - bu,2026,35,10,$35.00
+Markets,Okra - Pt,2026,35,25,$150.00
+Markets,Parsley - bu,2026,35,80,$320.00
+Markets,Parsley - bu,2026,35,111,$444.00
+Orders,Parsley - bu,2026,35,2,$5.60
+Markets,Pepper Carmen - lb,2026,35,99.7,$498.50
+Markets,Pepper Carmen - lb,2026,35,181,$905.00
+Markets,Pepper Hot - ea,2026,35,335,$335.00
+Markets,Pepper Hot - ea,2026,35,21,$21.00
+Markets,Pepper Shishito - Pt,2026,35,2,$12.00
+Markets,Pepper Shishito - Pt,2026,35,52,$312.00
+Markets,Pepper Shishito - Qt,2026,35,92,"$1,012.00"
+Markets,Pepper Shishito - Qt,2026,35,34,$374.00
+Markets,Potato Red - lb,2026,35,72.7,$254.45
+Markets,Potato Red - lb,2026,35,192,$672.00
+Markets,Radish French Breakfast - bu,2026,35,54,$216.00
+Markets,Radish Purple - bu,2026,35,55,$220.00
+Markets,Radish Red - bu,2026,35,27,$108.00
+Markets,Salad Mix - 1/3 lb,2026,35,33,$231.00
+Markets,Salad Mix - 2/3 lb ,2026,35,20,$280.00
+Markets,Tomato Cherry Mix - Pt,2026,35,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,35,158,"$1,106.00"
+Orders,Tomato Cherry Mix - Pt,2026,35,2,$9.80
+Markets,Tomato Cherry Sungold - pt,2026,35,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,35,129,$903.00
+Orders,Tomato Cherry Sungold - pt,2026,35,4,$19.60
+Markets,Tomato Heirloom - lb,2026,35,100,$500.00
+Markets,Tomato Heirloom - lb,2026,35,67.6,$338.00
+Markets,Winter Squash Acorn - lb,2026,35,124.45,$497.80
+Markets,Winter Squash Acorn - lb,2026,35,58.55,$234.20
+Markets,Winter Squash Delicata - lb,2026,35,39.9,$159.60
+Markets,Winter Squash Delicata - lb,2026,35,57.85,$231.40
+Markets,Arugula - 1/3 lb,2026,36,25,$175.00
+Markets,Arugula - 2/3 lb ,2026,36,15,$210.00
+Markets,Basil - bu,2026,36,120,$480.00
+Markets,Basil - bu,2026,36,100,$400.00
+Orders,Basil - bu,2026,36,4,$11.20
+Markets,Beets Golden - bu,2026,36,40,$200.00
+Markets,Beets Golden - bu,2026,36,70,$350.00
+Markets,Beets Red - bu,2026,36,40,$200.00
+Markets,Beets Red - bu,2026,36,50,$250.00
+Markets,Bitter Melon - lb,2026,36,9.65,$48.25
+Markets,Bok Choy - ea,2026,36,200,$500.00
+Markets,Bok Choy - lb,2026,36,50,$500.00
+Markets,Cabbage Cone - lb,2026,36,50,$125.00
+Markets,Cabbage Flat - lb,2026,36,29,$72.50
+Orders,Cabbage Flat - lb,2026,36,3,$5.25
+Markets,Cabbage Red - lb,2026,36,45,$112.50
+Orders,Cabbage Red - lb,2026,36,1,$1.75
+Markets,Cabbage Savoy - lb,2026,36,25,$62.50
+Markets,Carrot - bu,2026,36,75,$450.00
+Markets,Carrot - bu,2026,36,175,"$1,050.00"
+Markets,Celery - bu,2026,36,50,$250.00
+Markets,Chard - bu,2026,36,63,$315.00
+Orders,Chard - bu,2026,36,1,$3.50
+Markets,Cilantro - bu,2026,36,110,$440.00
+Markets,Cilantro - bu,2026,36,107,$428.00
+Markets,Collards - bu,2026,36,50,$250.00
+Markets,Cucumber - lb,2026,36,104.25,$364.88
+Markets,Cucumber - lb,2026,36,173.5,$607.25
+Orders,Cucumber - lb,2026,36,10,$24.50
+Markets,Cucumber Katrina - lb,2026,36,15.1,$67.95
+Markets,Cucumber Persian - lb,2026,36,6.65,$0.00
+Markets,Cucumber Pickling - lb,2026,36,56,$196.00
+Markets,Cucumber Pickling - lb,2026,36,81.5,$285.25
+Markets,Dandelion - bu,2026,36,40,$200.00
+Markets,Dandelion - bu,2026,36,38,$190.00
+Orders,Dandelion - bu,2026,36,2,$7.00
+Markets,Eggplant Asian - lb,2026,36,25,$125.00
+Markets,Eggplant Asian - lb,2026,36,6.3,$31.50
+Markets,Eggplant Italian Black - lb,2026,36,22.9,$114.50
+Markets,Eggplant Italian Black - lb,2026,36,21.15,$105.75
+Markets,Eggplant Italian Striped - lb,2026,36,138.3,$691.50
+Markets,Eggplant Italian Striped - lb,2026,36,50.3,$251.50
+Markets,Eggplant Mini - Pt,2026,36,26,$156.00
+Markets,Eggplant Mini - Pt,2026,36,38,$228.00
+Markets,Eggplant Mini - Qt,2026,36,27,$297.00
+Markets,Eggplant Mini - Qt,2026,36,22,$242.00
+Markets,Escarole - ea,2026,36,24,$120.00
+Markets,Garlic - lb,2026,36,9.9,$158.40
+Markets,Kale Curly - bu,2026,36,76,$380.00
+Orders,Kale Curly - bu,2026,36,8,$28.00
+Markets,Lettuce Mini Gem - ea,2026,36,150,$450.00
+Markets,Okra - Pt,2026,36,25,$150.00
+Markets,Parsley - bu,2026,36,80,$320.00
+Markets,Parsley - bu,2026,36,95,$380.00
+Orders,Parsley - bu,2026,36,2,$5.60
+Markets,Pepper Carmen - lb,2026,36,273.25,"$1,366.25"
+Markets,Pepper Carmen - lb,2026,36,142,$710.00
+Markets,Pepper Hot - ea,2026,36,170,$170.00
+Markets,Pepper Hot - ea,2026,36,68,$68.00
+Markets,Pepper Shishito - Pt,2026,36,40,$240.00
+Markets,Pepper Shishito - Qt,2026,36,88,$968.00
+Markets,Pepper Shishito - Qt,2026,36,28,$308.00
+Markets,Potato Red - lb,2026,36,65.5,$229.25
+Markets,Potato Red - lb,2026,36,128.25,$448.88
+Markets,Radish French Breakfast - bu,2026,36,96,$384.00
+Markets,Radish Purple - bu,2026,36,55,$220.00
+Markets,Radish Red - bu,2026,36,13,$52.00
+Markets,Salad Mix - 1/3 lb,2026,36,33,$231.00
+Markets,Tomato Cherry Mix - Pt,2026,36,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,36,119,$833.00
+Orders,Tomato Cherry Mix - Pt,2026,36,8,$39.20
+Markets,Tomato Cherry Sungold - pt,2026,36,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,36,131,$917.00
+Orders,Tomato Cherry Sungold - pt,2026,36,7,$34.30
+Markets,Tomato Heirloom - lb,2026,36,100,$500.00
+Markets,Tomato Heirloom - lb,2026,36,97.5,$487.50
+Markets,Tomato Sauce - Qt,2026,36,25,$175.00
+Markets,Winter Squash Acorn - lb,2026,36,68.55,$274.20
+Markets,Winter Squash Acorn - lb,2026,36,69.1,$276.40
+Markets,Winter Squash Delicata - lb,2026,36,77.2,$308.80
+Markets,Winter Squash Delicata - lb,2026,36,65.3,$261.20
+Markets,Arugula - 1/3 lb,2026,37,50,$350.00
+Markets,Arugula - 2/3 lb ,2026,37,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,37,20,$280.00
+Markets,Basil - bu,2026,37,120,$480.00
+Markets,Basil - bu,2026,37,100,$400.00
+Orders,Basil - bu,2026,37,4,$11.20
+Markets,Beets Golden - bu,2026,37,40,$200.00
+Markets,Beets Golden - bu,2026,37,70,$350.00
+Markets,Beets Red - bu,2026,37,40,$200.00
+Markets,Beets Red - bu,2026,37,50,$250.00
+Markets,Bitter Melon - lb,2026,37,11.05,$55.25
+Markets,Bok Choy - ea,2026,37,200,$500.00
+Markets,Bok Choy - lb,2026,37,66,$660.00
+Markets,Broccolini - bu,2026,37,150,$900.00
+Markets,Cabbage Cone - lb,2026,37,50,$125.00
+Markets,Cabbage Flat - lb,2026,37,29,$72.50
+Markets,Cabbage Red - lb,2026,37,45,$112.50
+Markets,Cabbage Savoy - lb,2026,37,25,$62.50
+Orders,Cabbage Savoy - lb,2026,37,1,$1.75
+Markets,Carrot - bu,2026,37,150,$900.00
+Markets,Carrot - bu,2026,37,175,"$1,050.00"
+Markets,Cauliflower Sprouting - lb,2026,37,11,$66.00
+Markets,Celery - bu,2026,37,50,$250.00
+Markets,Chard - bu,2026,37,40,$200.00
+Orders,Chard - bu,2026,37,2,$7.00
+Markets,Cilantro - bu,2026,37,110,$440.00
+Markets,Cilantro - bu,2026,37,86,$344.00
+Orders,Cilantro - bu,2026,37,6,$16.80
+Markets,Collards - bu,2026,37,50,$250.00
+Markets,Cucumber - lb,2026,37,91.25,$319.38
+Markets,Cucumber Persian - lb,2026,37,7.5,$0.00
+Markets,Cucumber Pickling - lb,2026,37,43,$150.50
+Markets,Dandelion - bu,2026,37,40,$200.00
+Markets,Dandelion - bu,2026,37,21,$105.00
+Markets,Eggplant Asian - lb,2026,37,25,$125.00
+Markets,Eggplant Asian - lb,2026,37,9.65,$48.25
+Markets,Eggplant Italian Black - lb,2026,37,26.5,$132.50
+Markets,Eggplant Italian Black - lb,2026,37,18.8,$94.00
+Markets,Eggplant Italian Striped - lb,2026,37,122,$610.00
+Markets,Eggplant Italian Striped - lb,2026,37,37.05,$185.25
+Markets,Eggplant Mini - Pt,2026,37,20,$120.00
+Markets,Eggplant Mini - Pt,2026,37,27,$162.00
+Markets,Eggplant Mini - Qt,2026,37,13,$143.00
+Markets,Eggplant Mini - Qt,2026,37,27,$297.00
+Markets,Escarole - ea,2026,37,24,$120.00
+Orders,Escarole - ea,2026,37,5,$17.50
+Markets,Garlic - lb,2026,37,9.3,$148.80
+Markets,Kale Curly - bu,2026,37,57,$285.00
+Orders,Kale Curly - bu,2026,37,4,$14.00
+Markets,Kale Lacinato - bu,2026,37,79,$395.00
+Markets,Kohlrabi - bu,2026,37,34,$170.00
+Markets,Lettuce Mini Gem - ea,2026,37,150,$450.00
+Markets,Okra - Pt,2026,37,25,$150.00
+Markets,Parsley - bu,2026,37,80,$320.00
+Markets,Parsley - bu,2026,37,66,$264.00
+Orders,Parsley - bu,2026,37,4,$11.20
+Markets,Pepper Carmen - lb,2026,37,268.2,"$1,341.00"
+Markets,Pepper Carmen - lb,2026,37,229.8,"$1,149.00"
+Markets,Pepper Hot - ea,2026,37,137,$137.00
+Markets,Pepper Hot - ea,2026,37,55,$55.00
+Markets,Pepper Shishito - Pt,2026,37,27,$162.00
+Markets,Pepper Shishito - Qt,2026,37,46,$506.00
+Markets,Pepper Shishito - Qt,2026,37,17,$187.00
+Markets,Potato Blue - lb,2026,37,93,$325.50
+Markets,Potato Red - lb,2026,37,75.1,$262.85
+Markets,Potato Red - lb,2026,37,8,$28.00
+Markets,Potato White - lb,2026,37,61,$213.50
+Markets,Puntarelle - lb,2026,37,31.1,$279.90
+Markets,Radish French Breakfast - bu,2026,37,80,$320.00
+Markets,Radish French Breakfast - bu,2026,37,25,$100.00
+Markets,Radish Purple - bu,2026,37,43,$172.00
+Markets,Radish Purple - bu,2026,37,6,$24.00
+Markets,Radish Red - bu,2026,37,33,$132.00
+Markets,Radish Red - bu,2026,37,17,$68.00
+Markets,Salad Mix - 1 1/3 lb,2026,37,6,$150.00
+Markets,Salad Mix - 1/3 lb,2026,37,54,$378.00
+Markets,Salad Mix - 2/3 lb ,2026,37,88,"$1,232.00"
+Markets,Tomato Cherry Mix - Pt,2026,37,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,37,85,$595.00
+Orders,Tomato Cherry Mix - Pt,2026,37,7,$34.30
+Markets,Tomato Cherry Sungold - pt,2026,37,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,37,99,$693.00
+Orders,Tomato Cherry Sungold - pt,2026,37,3,$14.70
+Markets,Tomato Heirloom - lb,2026,37,100,$500.00
+Markets,Tomato Heirloom - lb,2026,37,130.6,$653.00
+Markets,Tomato Sauce - Qt,2026,37,25,$175.00
+Markets,Tomato Sauce - Qt,2026,37,24,$168.00
+Markets,Winter Squash Acorn - lb,2026,37,43.6,$174.40
+Markets,Winter Squash Acorn - lb,2026,37,77.65,$310.60
+Markets,Winter Squash Delicata - lb,2026,37,69.5,$278.00
+Markets,Winter Squash Delicata - lb,2026,37,79.2,$316.80
+Markets,Arugula - 1/3 lb,2026,38,50,$350.00
+Markets,Arugula - 2/3 lb ,2026,38,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,38,20,$280.00
+Markets,Basil - bu,2026,38,120,$480.00
+Markets,Basil - bu,2026,38,100,$400.00
+Orders,Basil - bu,2026,38,2,$5.60
+Markets,Beets Golden - bu,2026,38,40,$200.00
+Markets,Beets Golden - bu,2026,38,70,$350.00
+Markets,Beets Red - bu,2026,38,40,$200.00
+Markets,Beets Red - bu,2026,38,50,$250.00
+Markets,Bitter Melon - lb,2026,38,7,$35.00
+Markets,Bok Choy - ea,2026,38,200,$500.00
+Markets,Bok Choy - ea,2026,38,139,$347.50
+Markets,Bok Choy - lb,2026,38,7,$70.00
+Markets,Broccolini - bu,2026,38,250,"$1,500.00"
+Orders,Broccolini - bu,2026,38,10,$42.00
+Markets,Cabbage Chinese - lb,2026,38,90,$360.00
+Markets,Cabbage Chinese - lb,2026,38,40,$160.00
+Markets,Cabbage Cone - lb,2026,38,50,$125.00
+Markets,Cabbage Flat - lb,2026,38,29,$72.50
+Orders,Cabbage Flat - lb,2026,38,2,$3.50
+Markets,Cabbage Red - lb,2026,38,45,$112.50
+Orders,Cabbage Red - lb,2026,38,1,$1.75
+Markets,Cabbage Savoy - lb,2026,38,25,$62.50
+Markets,Carrot - bu,2026,38,200,"$1,200.00"
+Markets,Carrot - bu,2026,38,175,"$1,050.00"
+Markets,Cauliflower Sprouting - lb,2026,38,111.6,$669.60
+Markets,Celery - bu,2026,38,50,$250.00
+Markets,Chard - bu,2026,38,42,$210.00
+Markets,Cilantro - bu,2026,38,110,$440.00
+Markets,Cilantro - bu,2026,38,81,$324.00
+Orders,Cilantro - bu,2026,38,3,$8.40
+Markets,Collards - bu,2026,38,50,$250.00
+Markets,Dandelion - bu,2026,38,40,$200.00
+Markets,Dandelion - bu,2026,38,23,$115.00
+Markets,Eggplant Asian - lb,2026,38,25,$125.00
+Markets,Eggplant Asian - lb,2026,38,7.9,$39.50
+Markets,Eggplant Italian Black - lb,2026,38,16.65,$83.25
+Markets,Eggplant Italian Black - lb,2026,38,13.45,$67.25
+Markets,Eggplant Italian Striped - lb,2026,38,117.3,$586.50
+Markets,Eggplant Italian Striped - lb,2026,38,52.55,$262.75
+Markets,Eggplant Mini - Pt,2026,38,25,$150.00
+Markets,Eggplant Mini - Pt,2026,38,28,$168.00
+Markets,Eggplant Mini - Qt,2026,38,10,$110.00
+Markets,Eggplant Mini - Qt,2026,38,19,$209.00
+Markets,Escarole - ea,2026,38,34,$170.00
+Markets,Escarole - ea,2026,38,15,$75.00
+Orders,Escarole - ea,2026,38,1,$3.50
+Markets,Garlic - lb,2026,38,9,$144.00
+Markets,Kale Curly - bu,2026,38,52,$260.00
+Orders,Kale Curly - bu,2026,38,2,$7.00
+Markets,Kale Lacinato - bu,2026,38,73,$365.00
+Orders,Kale Lacinato - bu,2026,38,4,$14.00
+Markets,Kohlrabi - bu,2026,38,26,$130.00
+Markets,Kohlrabi - bu,2026,38,26,$130.00
+Markets,Lettuce Mini Gem - ea,2026,38,150,$450.00
+Markets,Okra - Pt,2026,38,15,$90.00
+Markets,Parsley - bu,2026,38,80,$320.00
+Markets,Parsley - bu,2026,38,59,$236.00
+Orders,Parsley - bu,2026,38,3,$8.40
+Markets,Pepper Carmen - lb,2026,38,300.5,"$1,502.50"
+Markets,Pepper Carmen - lb,2026,38,191.25,$956.25
+Markets,Pepper Hot - ea,2026,38,103,$103.00
+Markets,Pepper Hot - ea,2026,38,57,$57.00
+Markets,Pepper Shishito - Pt,2026,38,32,$192.00
+Markets,Pepper Shishito - Qt,2026,38,42,$462.00
+Markets,Pepper Shishito - Qt,2026,38,17,$187.00
+Markets,Potato Blue - lb,2026,38,110,$385.00
+Markets,Potato Red - lb,2026,38,48.25,$168.88
+Markets,Potato Red - lb,2026,38,5,$17.50
+Markets,Potato White - lb,2026,38,32,$112.00
+Markets,Puntarelle - lb,2026,38,91.6,$824.40
+Markets,Radicchio Variegated - lb,2026,38,22,$198.00
+Markets,Radish French Breakfast - bu,2026,38,47,$188.00
+Markets,Radish French Breakfast - bu,2026,38,47,$188.00
+Markets,Radish Purple - bu,2026,38,48,$192.00
+Markets,Radish Purple - bu,2026,38,41,$164.00
+Orders,Radish Purple - bu,2026,38,4,$11.20
+Markets,Radish Red - bu,2026,38,42,$168.00
+Markets,Radish Red - bu,2026,38,30,$120.00
+Markets,Salad Mix - 1 1/3 lb,2026,38,14,$350.00
+Markets,Salad Mix - 1/3 lb,2026,38,54,$378.00
+Markets,Salad Mix - 2/3 lb ,2026,38,72,"$1,008.00"
+Markets,Scallion - bu,2026,38,56,$224.00
+Markets,Tomato Cherry Mix - Pt,2026,38,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,38,147,"$1,029.00"
+Orders,Tomato Cherry Mix - Pt,2026,38,4,$19.60
+Markets,Tomato Cherry Sungold - pt,2026,38,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,38,91,$637.00
+Orders,Tomato Cherry Sungold - pt,2026,38,7,$34.30
+Markets,Tomato Heirloom - lb,2026,38,100,$500.00
+Markets,Tomato Heirloom - lb,2026,38,104.22,$521.10
+Markets,Tomato Sauce - Qt,2026,38,25,$175.00
+Markets,Tomato Sauce - Qt,2026,38,8,$56.00
+Markets,Turnip - bu,2026,38,54,$270.00
+Markets,Winter Squash Acorn - lb,2026,38,48.4,$193.60
+Markets,Winter Squash Acorn - lb,2026,38,73,$292.00
+Markets,Winter Squash Delicata - lb,2026,38,70,$280.00
+Markets,Winter Squash Delicata - lb,2026,38,59.35,$237.40
+Markets,Arugula - 1/3 lb,2026,39,50,$350.00
+Markets,Arugula - 2/3 lb ,2026,39,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,39,20,$280.00
+Markets,Basil - bu,2026,39,120,$480.00
+Markets,Basil - bu,2026,39,100,$400.00
+Orders,Basil - bu,2026,39,2,$5.60
+Markets,Beets Golden - bu,2026,39,40,$200.00
+Markets,Beets Golden - bu,2026,39,70,$350.00
+Markets,Beets Red - bu,2026,39,40,$200.00
+Markets,Beets Red - bu,2026,39,50,$250.00
+Markets,Bok Choy - ea,2026,39,200,$500.00
+Markets,Bok Choy - ea,2026,39,143,$357.50
+Markets,Broccolini - bu,2026,39,54,$324.00
+Markets,Broccolini - bu,2026,39,300,"$1,800.00"
+Orders,Broccolini - bu,2026,39,7,$29.40
+Markets,Cabbage Chinese - lb,2026,39,50,$200.00
+Markets,Cabbage Chinese - lb,2026,39,40,$160.00
+Markets,Cabbage Chinese Red - lb,2026,39,40,$160.00
+Markets,Cabbage Cone - lb,2026,39,50,$125.00
+Markets,Cabbage Flat - lb,2026,39,29,$72.50
+Markets,Cabbage Red - lb,2026,39,45,$112.50
+Markets,Cabbage Savoy - lb,2026,39,25,$62.50
+Markets,Carrot - bu,2026,39,200,"$1,200.00"
+Markets,Carrot - bu,2026,39,175,"$1,050.00"
+Markets,Cauliflower Romanesco - lb,2026,39,35.2,$140.80
+Markets,Cauliflower Sprouting - lb,2026,39,109.15,$654.90
+Markets,Celery - bu,2026,39,50,$250.00
+Markets,Chard - bu,2026,39,41,$205.00
+Markets,Cilantro - bu,2026,39,110,$440.00
+Markets,Cilantro - bu,2026,39,76,$304.00
+Orders,Cilantro - bu,2026,39,1,$2.80
+Markets,Collards - bu,2026,39,50,$250.00
+Orders,Collards - bu,2026,39,5,$17.50
+Markets,Dandelion - bu,2026,39,40,$200.00
+Markets,Dandelion - bu,2026,39,26,$130.00
+Markets,Eggplant Asian - lb,2026,39,3.75,$18.75
+Markets,Eggplant Italian Black - lb,2026,39,15,$75.00
+Markets,Eggplant Italian Black - lb,2026,39,3.25,$16.25
+Markets,Eggplant Italian Striped - lb,2026,39,78.75,$393.75
+Markets,Eggplant Italian Striped - lb,2026,39,34.8,$174.00
+Markets,Eggplant Mini - Pt,2026,39,24,$144.00
+Markets,Eggplant Mini - Pt,2026,39,27,$162.00
+Markets,Eggplant Mini - Qt,2026,39,8,$88.00
+Markets,Eggplant Mini - Qt,2026,39,16,$176.00
+Markets,Escarole - ea,2026,39,25,$125.00
+Markets,Escarole - ea,2026,39,20,$100.00
+Orders,Escarole - ea,2026,39,2,$7.00
+Markets,Garlic - lb,2026,39,7.3,$116.80
+Markets,Kale Curly - bu,2026,39,49,$245.00
+Orders,Kale Curly - bu,2026,39,2,$7.00
+Markets,Kale Lacinato - bu,2026,39,81,$405.00
+Orders,Kale Lacinato - bu,2026,39,3,$10.50
+Markets,Kohlrabi - bu,2026,39,32,$160.00
+Markets,Kohlrabi - bu,2026,39,21,$105.00
+Markets,Lettuce Mini Gem - ea,2026,39,150,$450.00
+Markets,Parsley - bu,2026,39,80,$320.00
+Markets,Parsley - bu,2026,39,68,$272.00
+Orders,Parsley - bu,2026,39,5,$14.00
+Markets,Pepper Carmen - lb,2026,39,96.55,$482.75
+Markets,Pepper Carmen - lb,2026,39,240,"$1,200.00"
+Markets,Pepper Hot - ea,2026,39,208,$208.00
+Markets,Pepper Hot - ea,2026,39,100,$100.00
+Markets,Pepper Shishito - Pt,2026,39,21,$126.00
+Markets,Pepper Shishito - Qt,2026,39,33,$363.00
+Markets,Pepper Shishito - Qt,2026,39,18,$198.00
+Markets,Potato Blue - lb,2026,39,6,$21.00
+Markets,Potato Red - lb,2026,39,3,$10.50
+Markets,Potato White - lb,2026,39,51.5,$180.25
+Markets,Puntarelle - lb,2026,39,86,$774.00
+Markets,Radicchio Round - lb,2026,39,39.8,$358.20
+Markets,Radicchio Treviso - lb,2026,39,34.1,$306.90
+Markets,Radicchio Variegated - lb,2026,39,23.35,$210.15
+Markets,Radish French Breakfast - bu,2026,39,48,$192.00
+Markets,Radish French Breakfast - bu,2026,39,33,$132.00
+Markets,Radish Purple - bu,2026,39,31,$124.00
+Markets,Radish Purple - bu,2026,39,38,$152.00
+Orders,Radish Purple - bu,2026,39,3,$8.40
+Markets,Radish Red - bu,2026,39,30,$120.00
+Markets,Radish Red - bu,2026,39,34,$136.00
+Markets,Salad Mix - 1 1/3 lb,2026,39,9,$225.00
+Markets,Salad Mix - 1/3 lb,2026,39,75,$525.00
+Markets,Salad Mix - 2/3 lb ,2026,39,66,$924.00
+Markets,Scallion - bu,2026,39,83,$332.00
+Orders,Scallion - bu,2026,39,8,$22.40
+Markets,Tomato Cherry Mix - Pt,2026,39,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,39,48,$336.00
+Orders,Tomato Cherry Mix - Pt,2026,39,3,$14.70
+Markets,Tomato Cherry Sungold - pt,2026,39,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,39,56,$392.00
+Orders,Tomato Cherry Sungold - pt,2026,39,8,$39.20
+Markets,Tomato Heirloom - lb,2026,39,100,$500.00
+Markets,Tomato Heirloom - lb,2026,39,83.9,$419.50
+Markets,Tomato Sauce - Qt,2026,39,25,$175.00
+Markets,Tomato Sauce - Qt,2026,39,10,$70.00
+Markets,Turnip - bu,2026,39,54,$270.00
+Markets,Winter Squash Acorn - lb,2026,39,55.9,$223.60
+Markets,Winter Squash Acorn - lb,2026,39,57.9,$231.60
+Markets,Winter Squash Delicata - lb,2026,39,76.2,$304.80
+Markets,Winter Squash Delicata - lb,2026,39,80.1,$320.40
+Markets,Arugula - 1/3 lb,2026,40,50,$350.00
+Markets,Arugula - 2/3 lb ,2026,40,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,40,20,$280.00
+Markets,Basil - bu,2026,40,120,$480.00
+Markets,Basil - bu,2026,40,100,$400.00
+Orders,Basil - bu,2026,40,4,$11.20
+Markets,Beets Golden - bu,2026,40,40,$200.00
+Markets,Beets Golden - bu,2026,40,70,$350.00
+Markets,Beets Red - bu,2026,40,40,$200.00
+Markets,Beets Red - bu,2026,40,50,$250.00
+Markets,Bok Choy - ea,2026,40,200,$500.00
+Markets,Bok Choy - ea,2026,40,5,$12.50
+Markets,Broccolini - bu,2026,40,389,"$2,334.00"
+Markets,Broccolini - bu,2026,40,300,"$1,800.00"
+Orders,Broccolini - bu,2026,40,16,$67.20
+Markets,Cabbage Chinese - lb,2026,40,50,$200.00
+Markets,Cabbage Chinese - lb,2026,40,40,$160.00
+Markets,Cabbage Chinese Red - lb,2026,40,40,$160.00
+Markets,Cabbage Cone - lb,2026,40,86.1,$215.25
+Markets,Cabbage Cone - lb,2026,40,50,$125.00
+Markets,Cabbage Flat - lb,2026,40,50,$125.00
+Markets,Cabbage Flat - lb,2026,40,29,$72.50
+Markets,Cabbage Red - lb,2026,40,45,$112.50
+Orders,Cabbage Red - lb,2026,40,1,$1.75
+Markets,Cabbage Savoy - lb,2026,40,25,$62.50
+Orders,Cabbage Savoy - lb,2026,40,1,$1.75
+Markets,Carrot - bu,2026,40,200,"$1,200.00"
+Markets,Carrot - bu,2026,40,175,"$1,050.00"
+Markets,Cauliflower - lb,2026,40,130.3,$521.20
+Markets,Cauliflower Purple - lb,2026,40,39.35,$157.40
+Markets,Cauliflower Romanesco - lb,2026,40,70.05,$280.20
+Markets,Cauliflower Sprouting - lb,2026,40,121.5,$729.00
+Markets,Cauliflower Sprouting - lb,2026,40,222.8,"$1,336.80"
+Markets,Celery - bu,2026,40,25,$125.00
+Markets,Celery - bu,2026,40,50,$250.00
+Markets,Chard - bu,2026,40,32,$160.00
+Orders,Chard - bu,2026,40,10,$35.00
+Markets,Cilantro - bu,2026,40,110,$440.00
+Markets,Cilantro - bu,2026,40,74,$296.00
+Orders,Cilantro - bu,2026,40,14,$39.20
+Markets,Collards - bu,2026,40,50,$250.00
+Orders,Collards - bu,2026,40,4,$14.00
+Markets,Dandelion - bu,2026,40,40,$200.00
+Markets,Dandelion - bu,2026,40,24,$120.00
+Orders,Dandelion - bu,2026,40,2,$7.00
+Markets,Eggplant Asian - lb,2026,40,3.5,$17.50
+Markets,Eggplant Asian - lb,2026,40,0.5,$2.50
+Markets,Eggplant Italian Black - lb,2026,40,16.4,$82.00
+Markets,Eggplant Italian Black - lb,2026,40,11.8,$59.00
+Markets,Eggplant Italian Striped - lb,2026,40,5,$25.00
+Markets,Eggplant Italian Striped - lb,2026,40,24.85,$124.25
+Markets,Eggplant Mini - Pt,2026,40,1,$6.00
+Markets,Eggplant Mini - Pt,2026,40,14,$84.00
+Markets,Eggplant Mini - Qt,2026,40,12,$132.00
+Markets,Escarole - ea,2026,40,28,$140.00
+Markets,Escarole - ea,2026,40,20,$100.00
+Orders,Escarole - ea,2026,40,3,$10.50
+Markets,Fennel - ea,2026,40,71,$284.00
+Markets,Fennel - ea,2026,40,36,$144.00
+Markets,Garlic - lb,2026,40,6.75,$108.00
+Markets,Kale Curly - bu,2026,40,45,$225.00
+Orders,Kale Curly - bu,2026,40,10,$35.00
+Markets,Kale Lacinato - bu,2026,40,89,$445.00
+Orders,Kale Lacinato - bu,2026,40,8,$28.00
+Markets,Kohlrabi - bu,2026,40,27,$135.00
+Markets,Kohlrabi - bu,2026,40,16,$80.00
+Markets,Lettuce Mini Gem - ea,2026,40,150,$450.00
+Markets,Parsley - bu,2026,40,80,$320.00
+Markets,Parsley - bu,2026,40,67,$268.00
+Orders,Parsley - bu,2026,40,14,$39.20
+Markets,Pepper Carmen - lb,2026,40,109,$545.00
+Markets,Pepper Carmen - lb,2026,40,193.3,$966.50
+Markets,Pepper Hot - ea,2026,40,146,$146.00
+Markets,Pepper Hot - ea,2026,40,118,$118.00
+Markets,Pepper Shishito - Pt,2026,40,18,$108.00
+Markets,Pepper Shishito - Qt,2026,40,31,$341.00
+Markets,Pepper Shishito - Qt,2026,40,17,$187.00
+Markets,Potato Blue - lb,2026,40,8,$28.00
+Markets,Puntarelle - lb,2026,40,34.1,$306.90
+Markets,Radicchio Round - lb,2026,40,33,$297.00
+Orders,Radicchio Round - lb,2026,40,3,$18.90
+Markets,Radicchio Treviso - lb,2026,40,51.4,$462.60
+Markets,Radicchio Variegated - lb,2026,40,19.3,$173.70
+Markets,Radish Daikon Mix - bu,2026,40,30,$105.00
+Markets,Radish Daikon Mix - bu,2026,40,29,$101.50
+Markets,Radish French Breakfast - bu,2026,40,52,$208.00
+Markets,Radish French Breakfast - bu,2026,40,30,$120.00
+Markets,Radish Purple - bu,2026,40,31,$124.00
+Markets,Radish Purple - bu,2026,40,34,$136.00
+Orders,Radish Purple - bu,2026,40,4,$11.20
+Markets,Radish Red - bu,2026,40,22,$88.00
+Markets,Salad Mix - 1 1/3 lb,2026,40,12,$300.00
+Markets,Salad Mix - 1/3 lb,2026,40,57,$399.00
+Markets,Salad Mix - 2/3 lb ,2026,40,64,$896.00
+Markets,Scallion - bu,2026,40,86,$344.00
+Orders,Scallion - bu,2026,40,11,$30.80
+Markets,Tomato Cherry Mix - Pt,2026,40,100,$700.00
+Markets,Tomato Cherry Mix - Pt,2026,40,30,$210.00
+Markets,Tomato Cherry Sungold - pt,2026,40,100,$700.00
+Markets,Tomato Cherry Sungold - pt,2026,40,30,$210.00
+Markets,Tomato Heirloom - lb,2026,40,100,$500.00
+Markets,Tomato Heirloom - lb,2026,40,26,$130.00
+Markets,Tomato Sauce - Qt,2026,40,50,$350.00
+Markets,Tomato Sauce - Qt,2026,40,63,$441.00
+Markets,Turnip - bu,2026,40,50,$250.00
+Markets,Winter Squash Acorn - lb,2026,40,14,$56.00
+Markets,Winter Squash Acorn - lb,2026,40,4.75,$19.00
+Markets,Winter Squash Delicata - lb,2026,40,34,$136.00
+Markets,Winter Squash Delicata - lb,2026,40,86.2,$344.80
+Markets,Arugula - 1/3 lb,2026,41,50,$350.00
+Markets,Arugula - 2/3 lb ,2026,41,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,41,20,$280.00
+Markets,Basil - bu,2026,41,120,$480.00
+Markets,Basil - bu,2026,41,50,$200.00
+Markets,Beets Golden - bu,2026,41,40,$200.00
+Markets,Beets Golden - bu,2026,41,70,$350.00
+Markets,Beets Red - bu,2026,41,40,$200.00
+Markets,Beets Red - bu,2026,41,50,$250.00
+Markets,Bok Choy - ea,2026,41,200,$500.00
+Markets,Broccolini - bu,2026,41,172,"$1,032.00"
+Markets,Broccolini - bu,2026,41,300,"$1,800.00"
+Orders,Broccolini - bu,2026,41,15,$63.00
+Markets,Cabbage Chinese - lb,2026,41,50,$200.00
+Markets,Cabbage Chinese - lb,2026,41,40,$160.00
+Markets,Cabbage Chinese Red - lb,2026,41,40,$160.00
+Markets,Cabbage Cone - lb,2026,41,52.95,$132.38
+Markets,Cabbage Cone - lb,2026,41,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,41,22.4,$56.00
+Markets,Cabbage Flat - lb,2026,41,50,$125.00
+Markets,Cabbage Flat - lb,2026,41,29,$72.50
+Markets,Cabbage Green Storage - lb,2026,41,23.9,$59.75
+Markets,Cabbage Red - lb,2026,41,45,$112.50
+Orders,Cabbage Red - lb,2026,41,1,$1.75
+Markets,Cabbage Savoy - lb,2026,41,25,$62.50
+Orders,Cabbage Savoy - lb,2026,41,1,$1.75
+Markets,Carrot - bu,2026,41,200,"$1,200.00"
+Markets,Carrot - bu,2026,41,175,"$1,050.00"
+Markets,Cauliflower - lb,2026,41,100.2,$400.80
+Markets,Cauliflower Purple - lb,2026,41,159.25,$637.00
+Markets,Cauliflower Romanesco - lb,2026,41,62.3,$249.20
+Markets,Cauliflower Sprouting - lb,2026,41,303,"$1,818.00"
+Markets,Cauliflower Sprouting - lb,2026,41,154.3,$925.80
+Markets,Celery - bu,2026,41,39,$195.00
+Markets,Celery - bu,2026,41,50,$250.00
+Markets,Chard - bu,2026,41,35,$175.00
+Markets,Cilantro - bu,2026,41,110,$440.00
+Markets,Cilantro - bu,2026,41,69,$276.00
+Orders,Cilantro - bu,2026,41,3,$8.40
+Markets,Collards - bu,2026,41,50,$250.00
+Orders,Collards - bu,2026,41,5,$17.50
+Markets,Dandelion - bu,2026,41,40,$200.00
+Markets,Dandelion - bu,2026,41,22,$110.00
+Orders,Dandelion - bu,2026,41,2,$7.00
+Markets,Eggplant Asian - lb,2026,41,7.75,$38.75
+Markets,Eggplant Asian - lb,2026,41,3.55,$17.75
+Markets,Eggplant Italian Black - lb,2026,41,8.4,$42.00
+Markets,Eggplant Italian Black - lb,2026,41,4.6,$23.00
+Markets,Eggplant Italian Striped - lb,2026,41,39.3,$196.50
+Markets,Eggplant Italian Striped - lb,2026,41,30.5,$152.50
+Markets,Eggplant Mini - Pt,2026,41,17,$102.00
+Markets,Eggplant Mini - Qt,2026,41,10,$110.00
+Markets,Escarole - ea,2026,41,29,$145.00
+Markets,Escarole - ea,2026,41,21,$105.00
+Orders,Escarole - ea,2026,41,2,$7.00
+Markets,Fennel - ea,2026,41,55,$220.00
+Markets,Fennel - ea,2026,41,68,$272.00
+Markets,Garlic - lb,2026,41,11.08,$177.28
+Markets,Kale Curly - bu,2026,41,46,$230.00
+Orders,Kale Curly - bu,2026,41,90,$315.00
+Markets,Kale Lacinato - bu,2026,41,100,$500.00
+Orders,Kale Lacinato - bu,2026,41,103,$360.50
+Markets,Kohlrabi - bu,2026,41,20,$100.00
+Markets,Kohlrabi - bu,2026,41,15,$75.00
+Markets,Lettuce Mini Gem - ea,2026,41,150,$450.00
+Markets,Parsley - bu,2026,41,80,$320.00
+Markets,Parsley - bu,2026,41,77,$308.00
+Orders,Parsley - bu,2026,41,5,$14.00
+Markets,Pepper Carmen - lb,2026,41,88.25,$441.25
+Markets,Pepper Carmen - lb,2026,41,210.1,"$1,050.50"
+Markets,Pepper Hot - ea,2026,41,114,$114.00
+Markets,Pepper Hot - ea,2026,41,97,$97.00
+Markets,Pepper Shishito - Pt,2026,41,14,$84.00
+Markets,Pepper Shishito - Qt,2026,41,27,$297.00
+Markets,Pepper Shishito - Qt,2026,41,12,$132.00
+Markets,Puntarelle - lb,2026,41,14.4,$129.60
+Markets,Puntarelle - lb,2026,41,56.05,$504.45
+Markets,Radicchio Round - lb,2026,41,27.6,$248.40
+Orders,Radicchio Round - lb,2026,41,13,$81.90
+Markets,Radicchio Treviso - lb,2026,41,43.8,$394.20
+Markets,Radicchio Variegated - lb,2026,41,26.8,$241.20
+Markets,Radish Daikon Mix - bu,2026,41,25,$87.50
+Markets,Radish Daikon Mix - bu,2026,41,33,$115.50
+Markets,Radish Purple - bu,2026,41,30,$120.00
+Markets,Radish Purple - bu,2026,41,40,$160.00
+Orders,Radish Purple - bu,2026,41,1,$2.80
+Markets,Salad Mix - 1 1/3 lb,2026,41,16,$400.00
+Markets,Salad Mix - 1/3 lb,2026,41,55,$385.00
+Markets,Salad Mix - 2/3 lb ,2026,41,68,$952.00
+Markets,Scallion - bu,2026,41,86,$344.00
+Orders,Scallion - bu,2026,41,17,$47.60
+Markets,Tomato Cherry Mix - Pt,2026,41,75,$525.00
+Markets,Tomato Cherry Sungold - pt,2026,41,50,$350.00
+Markets,Tomato Heirloom - lb,2026,41,100,$500.00
+Markets,Tomato Sauce - Qt,2026,41,100,$700.00
+Markets,Tomato Sauce - Qt,2026,41,54.5,$381.50
+Markets,Turnip - bu,2026,41,34,$170.00
+Markets,Winter Squash Acorn - lb,2026,41,5.3,$21.20
+Markets,Winter Squash Delicata - lb,2026,41,54.15,$216.60
+Markets,Winter Squash Delicata - lb,2026,41,6.75,$27.00
+Markets,Winter Squash Honeynut - lb,2026,41,129.4,$647.00
+Markets,Winter Squash Honeynut - lb,2026,41,197.9,$989.50
+Markets,Arugula - 1/3 lb,2026,42,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,42,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,42,20,$280.00
+Markets,Basil - bu,2026,42,120,$480.00
+Markets,Basil - bu,2026,42,25,$100.00
+Markets,Beets Golden - bu,2026,42,40,$200.00
+Markets,Beets Golden - bu,2026,42,70,$350.00
+Markets,Beets Red - bu,2026,42,40,$200.00
+Markets,Beets Red - bu,2026,42,50,$250.00
+Markets,Bok Choy - ea,2026,42,200,$500.00
+Markets,Braising Mix - 1 lb,2026,42,61,$549.00
+Markets,Broccolini - bu,2026,42,204,"$1,224.00"
+Markets,Broccolini - bu,2026,42,300,"$1,800.00"
+Markets,Cabbage Chinese - lb,2026,42,50,$200.00
+Markets,Cabbage Chinese - lb,2026,42,40,$160.00
+Markets,Cabbage Chinese Red - lb,2026,42,15,$60.00
+Markets,Cabbage Cone - lb,2026,42,47,$117.50
+Markets,Cabbage Cone - lb,2026,42,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,42,33.3,$83.25
+Markets,Cabbage Flat - lb,2026,42,50,$125.00
+Markets,Cabbage Flat - lb,2026,42,29,$72.50
+Markets,Cabbage Green Storage - lb,2026,42,72,$180.00
+Markets,Cabbage Red - lb,2026,42,45,$112.50
+Markets,Cabbage Savoy - lb,2026,42,25,$62.50
+Orders,Cabbage Savoy - lb,2026,42,1,$1.75
+Markets,Carrot - bu,2026,42,200,"$1,200.00"
+Markets,Carrot - bu,2026,42,175,"$1,050.00"
+Markets,Cauliflower - lb,2026,42,116.8,$467.20
+Markets,Cauliflower Purple - lb,2026,42,134,$536.00
+Markets,Cauliflower Romanesco - lb,2026,42,25.2,$100.80
+Markets,Cauliflower Sprouting - lb,2026,42,384.3,"$2,305.80"
+Markets,Celery - bu,2026,42,45,$225.00
+Markets,Celery - bu,2026,42,70,$350.00
+Markets,Chard - bu,2026,42,28,$140.00
+Orders,Chard - bu,2026,42,19,$66.50
+Markets,Cilantro - bu,2026,42,110,$440.00
+Markets,Cilantro - bu,2026,42,67,$268.00
+Orders,Cilantro - bu,2026,42,12,$33.60
+Markets,Collards - bu,2026,42,50,$250.00
+Orders,Collards - bu,2026,42,4,$14.00
+Markets,Dandelion - bu,2026,42,40,$200.00
+Markets,Dandelion - bu,2026,42,18,$90.00
+Markets,Eggplant Italian Striped - lb,2026,42,7,$35.00
+Markets,Escarole - ea,2026,42,24,$120.00
+Markets,Escarole - ea,2026,42,20,$100.00
+Orders,Escarole - ea,2026,42,1,$3.50
+Markets,Fennel - ea,2026,42,56,$224.00
+Markets,Fennel - ea,2026,42,69,$276.00
+Markets,Garlic - lb,2026,42,7.78,$124.48
+Markets,Kale Curly - bu,2026,42,49,$245.00
+Orders,Kale Curly - bu,2026,42,93,$325.50
+Markets,Kale Lacinato - bu,2026,42,89,$445.00
+Orders,Kale Lacinato - bu,2026,42,98,$343.00
+Markets,Kohlrabi - bu,2026,42,17,$85.00
+Markets,Lettuce Mini Gem - ea,2026,42,150,$450.00
+Markets,Parsley - bu,2026,42,80,$320.00
+Markets,Parsley - bu,2026,42,67,$268.00
+Orders,Parsley - bu,2026,42,11,$30.80
+Markets,Pepper Carmen - lb,2026,42,187.25,$936.25
+Markets,Pepper Carmen - lb,2026,42,82.65,$413.25
+Markets,Pepper Hot - ea,2026,42,97,$97.00
+Markets,Pepper Hot - ea,2026,42,131,$131.00
+Markets,Pepper Shishito - Qt,2026,42,22,$242.00
+Markets,Potato Red - lb,2026,42,155.5,$544.25
+Markets,Puntarelle - lb,2026,42,26.75,$240.75
+Markets,Puntarelle - lb,2026,42,43,$387.00
+Markets,Radicchio Round - lb,2026,42,26.6,$239.40
+Orders,Radicchio Round - lb,2026,42,3,$18.90
+Markets,Radicchio Treviso - lb,2026,42,24.3,$218.70
+Markets,Radicchio Variegated - lb,2026,42,24.8,$223.20
+Markets,Radish Daikon Mix - bu,2026,42,26,$91.00
+Markets,Radish Daikon Mix - bu,2026,42,41,$143.50
+Markets,Radish Purple - bu,2026,42,1,$4.00
+Orders,Radish Purple - bu,2026,42,1,$2.80
+Markets,Salad Mix - 1/3 lb,2026,42,51,$357.00
+Markets,Salad Mix - 2/3 lb ,2026,42,64,$896.00
+Markets,Scallion - bu,2026,42,81,$324.00
+Orders,Scallion - bu,2026,42,6,$16.80
+Markets,Tomato Cherry Mix - Pt,2026,42,75,$525.00
+Markets,Tomato Cherry Sungold - pt,2026,42,50,$350.00
+Markets,Tomato Sauce - Qt,2026,42,100,$700.00
+Markets,Tomato Sauce - Qt,2026,42,37,$259.00
+Markets,Turnip - bu,2026,42,29,$145.00
+Markets,Winter Squash Delicata - lb,2026,42,41.6,$166.40
+Markets,Winter Squash Honeynut - lb,2026,42,85.8,$429.00
+Markets,Winter Squash Honeynut - lb,2026,42,153,$765.00
+Markets,Arugula - 1/3 lb,2026,43,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,43,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,43,20,$280.00
+Markets,Beets Golden - bu,2026,43,40,$200.00
+Markets,Beets Golden - bu,2026,43,70,$350.00
+Markets,Beets Red - bu,2026,43,40,$200.00
+Markets,Beets Red - bu,2026,43,50,$250.00
+Markets,Braising Mix - 1 lb,2026,43,59,$531.00
+Markets,Broccolini - bu,2026,43,299,"$1,794.00"
+Markets,Broccolini - bu,2026,43,300,"$1,800.00"
+Orders,Broccolini - bu,2026,43,7,$29.40
+Markets,Cabbage Chinese - lb,2026,43,50,$200.00
+Markets,Cabbage Chinese - lb,2026,43,40,$160.00
+Markets,Cabbage Cone - lb,2026,43,77.6,$194.00
+Markets,Cabbage Cone - lb,2026,43,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,43,30.2,$75.50
+Markets,Cabbage Flat - lb,2026,43,50,$125.00
+Markets,Cabbage Flat - lb,2026,43,29,$72.50
+Markets,Cabbage Green Storage - lb,2026,43,66.3,$165.75
+Markets,Cabbage Red - lb,2026,43,45,$112.50
+Markets,Cabbage Savoy - lb,2026,43,25,$62.50
+Orders,Cabbage Savoy - lb,2026,43,23,$40.25
+Markets,Carrot - bu,2026,43,200,"$1,200.00"
+Markets,Carrot - bu,2026,43,175,"$1,050.00"
+Markets,Cauliflower - lb,2026,43,131.1,$524.40
+Markets,Cauliflower - lb,2026,43,94.8,$379.20
+Markets,Cauliflower Purple - lb,2026,43,30.1,$120.40
+Markets,Cauliflower Romanesco - lb,2026,43,52.95,$211.80
+Markets,Cauliflower Sprouting - lb,2026,43,173.25,"$1,039.50"
+Markets,Celery - bu,2026,43,64,$320.00
+Markets,Celery - bu,2026,43,70,$350.00
+Markets,Chard - bu,2026,43,32,$160.00
+Orders,Chard - bu,2026,43,90,$315.00
+Markets,Cilantro - bu,2026,43,110,$440.00
+Markets,Cilantro - bu,2026,43,68,$272.00
+Orders,Cilantro - bu,2026,43,4,$11.20
+Markets,Collards - bu,2026,43,50,$250.00
+Orders,Collards - bu,2026,43,95,$332.50
+Markets,Dandelion - bu,2026,43,40,$200.00
+Markets,Dandelion - bu,2026,43,17,$85.00
+Orders,Dandelion - bu,2026,43,1,$3.50
+Markets,Escarole - ea,2026,43,27,$135.00
+Markets,Escarole - ea,2026,43,17,$85.00
+Orders,Escarole - ea,2026,43,1,$3.50
+Markets,Fennel - ea,2026,43,54,$216.00
+Markets,Garlic - lb,2026,43,8.8,$140.80
+Markets,Kale Curly - bu,2026,43,50,$250.00
+Orders,Kale Curly - bu,2026,43,2,$7.00
+Markets,Kale Lacinato - bu,2026,43,90,$450.00
+Orders,Kale Lacinato - bu,2026,43,5,$17.50
+Markets,Kohlrabi - bu,2026,43,22,$110.00
+Markets,Parsley - bu,2026,43,80,$320.00
+Markets,Parsley - bu,2026,43,69,$276.00
+Orders,Parsley - bu,2026,43,5,$14.00
+Markets,Pepper Carmen - lb,2026,43,34.75,$173.75
+Markets,Pepper Carmen - lb,2026,43,52,$260.00
+Markets,Pepper Shishito - Qt,2026,43,34,$374.00
+Markets,Potato Red - lb,2026,43,179.5,$628.25
+Markets,Puntarelle - lb,2026,43,54.82,$493.38
+Markets,Puntarelle - lb,2026,43,8,$72.00
+Markets,Radicchio Round - lb,2026,43,33,$297.00
+Orders,Radicchio Round - lb,2026,43,1,$6.30
+Markets,Radicchio Treviso - lb,2026,43,51.4,$462.60
+Markets,Radicchio Variegated - lb,2026,43,25.7,$231.30
+Markets,Radish Daikon Mix - bu,2026,43,31,$108.50
+Markets,Radish Daikon Mix - bu,2026,43,48,$168.00
+Markets,Radish Purple - bu,2026,43,29,$116.00
+Orders,Radish Purple - bu,2026,43,3,$8.40
+Markets,Salad Mix - 1 1/3 lb,2026,43,9,$225.00
+Markets,Salad Mix - 1/3 lb,2026,43,54,$378.00
+Markets,Salad Mix - 2/3 lb ,2026,43,55,$770.00
+Markets,Scallion - bu,2026,43,85,$340.00
+Orders,Scallion - bu,2026,43,10,$28.00
+Markets,Spinach - 1 lb,2026,43,17,$238.00
+Markets,Spinach - 1/2 lb,2026,43,32,$224.00
+Markets,Turnip - bu,2026,43,38,$190.00
+Markets,Winter Squash Honeynut - lb,2026,43,124.2,$621.00
+Markets,Winter Squash Honeynut - lb,2026,43,124.7,$623.50
+Markets,Arugula - 1/3 lb,2026,44,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,44,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,44,20,$280.00
+Markets,Arugula Wild - 1/3 lb,2026,44,25,$175.00
+Markets,Beets Golden - bu,2026,44,40,$200.00
+Markets,Beets Golden - bu,2026,44,70,$350.00
+Markets,Beets Red - bu,2026,44,40,$200.00
+Markets,Beets Red - bu,2026,44,50,$250.00
+Markets,Braising Mix - 1 lb,2026,44,58,$522.00
+Markets,Broccolini - bu,2026,44,246,"$1,476.00"
+Markets,Broccolini - bu,2026,44,300,"$1,800.00"
+Orders,Broccolini - bu,2026,44,8,$33.60
+Markets,Cabbage Chinese - lb,2026,44,50,$200.00
+Markets,Cabbage Chinese - lb,2026,44,40,$160.00
+Markets,Cabbage Cone - lb,2026,44,62.7,$156.75
+Markets,Cabbage Cone - lb,2026,44,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,44,24.9,$62.25
+Markets,Cabbage Flat - lb,2026,44,50,$125.00
+Markets,Cabbage Flat - lb,2026,44,29,$72.50
+Markets,Cabbage Green Storage - lb,2026,44,84.1,$210.25
+Markets,Cabbage Red - lb,2026,44,45,$112.50
+Markets,Cabbage Savoy - lb,2026,44,25,$62.50
+Markets,Carrot - bu,2026,44,200,"$1,200.00"
+Markets,Carrot Bulk - lb,2026,44,225,$787.50
+Markets,Cauliflower - lb,2026,44,389.75,"$1,559.00"
+Markets,Cauliflower - lb,2026,44,19,$76.00
+Markets,Cauliflower Purple - lb,2026,44,174.45,$697.80
+Markets,Cauliflower Purple - lb,2026,44,12,$48.00
+Markets,Cauliflower Romanesco - lb,2026,44,96,$384.00
+Markets,Cauliflower Sprouting - lb,2026,44,10,$60.00
+Markets,Celery - bu,2026,44,70,$350.00
+Markets,Celery - bu,2026,44,70,$350.00
+Markets,Chard - bu,2026,44,34,$170.00
+Markets,Cilantro - bu,2026,44,110,$440.00
+Markets,Cilantro - bu,2026,44,68,$272.00
+Orders,Cilantro - bu,2026,44,4,$11.20
+Markets,Collards - bu,2026,44,50,$250.00
+Orders,Collards - bu,2026,44,3,$10.50
+Markets,Dandelion - bu,2026,44,40,$200.00
+Markets,Dandelion - bu,2026,44,21,$105.00
+Markets,Escarole - ea,2026,44,29,$145.00
+Markets,Fennel - ea,2026,44,50,$200.00
+Markets,Fennel - ea,2026,44,49,$196.00
+Markets,Garlic - lb,2026,44,8.9,$142.40
+Markets,Kale Curly - bu,2026,44,52,$260.00
+Orders,Kale Curly - bu,2026,44,3,$10.50
+Markets,Kale Lacinato - bu,2026,44,105,$525.00
+Orders,Kale Lacinato - bu,2026,44,4,$14.00
+Markets,Kohlrabi - bu,2026,44,10,$50.00
+Markets,Parsley - bu,2026,44,80,$320.00
+Markets,Parsley - bu,2026,44,80,$320.00
+Orders,Parsley - bu,2026,44,2,$5.60
+Markets,Potato Blue - lb,2026,44,93,$325.50
+Markets,Potato Red - lb,2026,44,103,$360.50
+Markets,Puntarelle - lb,2026,44,56.9,$512.10
+Markets,Radicchio Forced - lb,2026,44,7.9,$126.40
+Markets,Radicchio Round - lb,2026,44,22.5,$202.50
+Orders,Radicchio Round - lb,2026,44,1,$6.30
+Markets,Radicchio Treviso - lb,2026,44,37.8,$340.20
+Markets,Radicchio Variegated - lb,2026,44,9.65,$86.85
+Markets,Radish Daikon Mix - bu,2026,44,34,$119.00
+Markets,Radish Daikon Mix - bu,2026,44,44,$154.00
+Markets,Radish Purple - bu,2026,44,21,$84.00
+Orders,Radish Purple - bu,2026,44,1,$2.80
+Markets,Salad Mix - 1 1/3 lb,2026,44,7,$175.00
+Markets,Salad Mix - 1/3 lb,2026,44,53,$371.00
+Markets,Salad Mix - 2/3 lb ,2026,44,55,$770.00
+Markets,Scallion - bu,2026,44,86,$344.00
+Orders,Scallion - bu,2026,44,4,$11.20
+Markets,Spinach - 1 lb,2026,44,24,$336.00
+Markets,Spinach - 1/2 lb,2026,44,40,$280.00
+Markets,Winter Squash Butternut - lb,2026,44,150,$450.00
+Markets,Winter Squash Honeynut - lb,2026,44,121.9,$609.50
+Markets,Arugula - 1/3 lb,2026,45,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,45,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,45,20,$280.00
+Markets,Beets Golden - bu,2026,45,70,$350.00
+Markets,Beets Red - bu,2026,45,50,$250.00
+Markets,Braising Mix - 1 lb,2026,45,57,$513.00
+Markets,Broccolini - bu,2026,45,199,"$1,194.00"
+Markets,Broccolini - bu,2026,45,200,"$1,200.00"
+Orders,Broccolini - bu,2026,45,9,$37.80
+Markets,Cabbage Chinese - lb,2026,45,50,$200.00
+Markets,Cabbage Chinese - lb,2026,45,40,$160.00
+Markets,Cabbage Cone - lb,2026,45,51.8,$129.50
+Markets,Cabbage Cone - lb,2026,45,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,45,33.7,$84.25
+Markets,Cabbage Flat - lb,2026,45,50,$125.00
+Markets,Cabbage Flat - lb,2026,45,29,$72.50
+Orders,Cabbage Flat - lb,2026,45,1,$1.75
+Markets,Cabbage Green Storage - lb,2026,45,98.5,$246.25
+Markets,Cabbage Red - lb,2026,45,45,$112.50
+Markets,Cabbage Savoy - lb,2026,45,25,$62.50
+Orders,Cabbage Savoy - lb,2026,45,1,$1.75
+Markets,Carrot Bulk - lb,2026,45,225,$787.50
+Orders,Carrot Bulk - lb,2026,45,3,$7.35
+Markets,Cauliflower - lb,2026,45,425.25,"$1,701.00"
+Markets,Cauliflower Purple - lb,2026,45,157.75,$631.00
+Markets,Cauliflower Romanesco - lb,2026,45,47.25,$189.00
+Markets,Celery - bu,2026,45,68,$340.00
+Markets,Celery - bu,2026,45,70,$350.00
+Markets,Chard - bu,2026,45,37,$185.00
+Orders,Chard - bu,2026,45,1,$3.50
+Markets,Cilantro - bu,2026,45,110,$440.00
+Markets,Cilantro - bu,2026,45,65,$260.00
+Orders,Cilantro - bu,2026,45,4,$11.20
+Markets,Collards - bu,2026,45,50,$250.00
+Orders,Collards - bu,2026,45,15,$52.50
+Markets,Dandelion - bu,2026,45,40,$200.00
+Markets,Dandelion - bu,2026,45,19,$95.00
+Orders,Dandelion - bu,2026,45,12,$42.00
+Markets,Escarole - ea,2026,45,32,$160.00
+Markets,Escarole - ea,2026,45,21,$105.00
+Markets,Fennel - ea,2026,45,40,$160.00
+Markets,Fennel - ea,2026,45,39,$156.00
+Markets,Garlic - lb,2026,45,14.2,$227.20
+Markets,Kale Curly - bu,2026,45,52,$260.00
+Orders,Kale Curly - bu,2026,45,15,$52.50
+Markets,Kale Lacinato - bu,2026,45,110,$550.00
+Orders,Kale Lacinato - bu,2026,45,29,$101.50
+Markets,Kohlrabi - bu,2026,45,8,$40.00
+Markets,Kohlrabi Storage - ea,2026,45,16,$64.00
+Markets,Mustard - bu,2026,45,16,$80.00
+Markets,Parsley - bu,2026,45,80,$320.00
+Markets,Parsley - bu,2026,45,80,$320.00
+Orders,Parsley - bu,2026,45,8,$22.40
+Markets,Potato Blue - lb,2026,45,100,$350.00
+Markets,Potato White - lb,2026,45,130,$455.00
+Markets,Puntarelle - lb,2026,45,43.3,$389.70
+Markets,Radicchio Forced - lb,2026,45,19,$304.00
+Markets,Radicchio Round - lb,2026,45,20.5,$184.50
+Orders,Radicchio Round - lb,2026,45,2,$12.60
+Markets,Radicchio Treviso - lb,2026,45,28.4,$255.60
+Markets,Radicchio Variegated - lb,2026,45,25.9,$233.10
+Markets,Radish Daikon Bulk - lb,2026,45,49,$171.50
+Markets,Radish Daikon Mix - bu,2026,45,38,$133.00
+Markets,Radish Purple - bu,2026,45,24,$96.00
+Orders,Radish Purple - bu,2026,45,1,$2.80
+Markets,Salad Mix - 1/3 lb,2026,45,54,$378.00
+Markets,Salad Mix - 2/3 lb ,2026,45,61,$854.00
+Markets,Scallion - bu,2026,45,82,$328.00
+Orders,Scallion - bu,2026,45,10,$28.00
+Markets,Spinach - 1 lb,2026,45,34,$476.00
+Markets,Spinach - 1/2 lb,2026,45,50,$350.00
+Markets,Sweet Potato Covington - lb,2026,45,30.5,$106.75
+Markets,Winter Squash Butternut - lb,2026,45,39.8,$119.40
+Markets,Winter Squash Futsu - lb,2026,45,35,$105.00
+Markets,Winter Squash Honeynut - lb,2026,45,71.4,$357.00
+Markets,Arugula - 1/3 lb,2026,46,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,46,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,46,20,$280.00
+Markets,Beets Golden - bu,2026,46,70,$350.00
+Markets,Beets Red - bu,2026,46,50,$250.00
+Markets,Braising Mix - 1 lb,2026,46,66,$594.00
+Markets,Broccolini - bu,2026,46,273,"$1,638.00"
+Markets,Broccolini - bu,2026,46,150,$900.00
+Markets,Brussels Sprouts - ea,2026,46,100,$800.00
+Markets,Cabbage Chinese - lb,2026,46,50,$200.00
+Markets,Cabbage Chinese - lb,2026,46,40,$160.00
+Markets,Cabbage Cone - lb,2026,46,3.4,$8.50
+Markets,Cabbage Cone - lb,2026,46,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,46,47.8,$119.50
+Markets,Cabbage Flat - lb,2026,46,50,$125.00
+Markets,Cabbage Flat - lb,2026,46,29,$72.50
+Markets,Cabbage Green Storage - lb,2026,46,69.3,$173.25
+Markets,Cabbage Red - lb,2026,46,45,$112.50
+Orders,Cabbage Red - lb,2026,46,3,$5.25
+Markets,Cabbage Savoy - lb,2026,46,25,$62.50
+Orders,Cabbage Savoy - lb,2026,46,1,$1.75
+Markets,Carrot Bulk - lb,2026,46,225,$787.50
+Orders,Carrot Bulk - lb,2026,46,2,$4.90
+Markets,Cauliflower - lb,2026,46,294.7,"$1,178.80"
+Markets,Cauliflower Purple - lb,2026,46,116.4,$465.60
+Markets,Cauliflower Romanesco - lb,2026,46,24.3,$97.20
+Markets,Cauliflower Sprouting - lb,2026,46,12.4,$74.40
+Markets,Celery - bu,2026,46,72,$360.00
+Markets,Celery - bu,2026,46,70,$350.00
+Markets,Chard - bu,2026,46,46,$230.00
+Markets,Cilantro - bu,2026,46,110,$440.00
+Markets,Cilantro - bu,2026,46,40,$160.00
+Markets,Collards - bu,2026,46,50,$250.00
+Orders,Collards - bu,2026,46,4,$14.00
+Markets,Dandelion - bu,2026,46,40,$200.00
+Markets,Dandelion - bu,2026,46,14,$70.00
+Orders,Dandelion - bu,2026,46,2,$7.00
+Markets,Escarole - ea,2026,46,33,$165.00
+Markets,Fennel - ea,2026,46,50,$200.00
+Markets,Garlic - lb,2026,46,21.2,$339.20
+Markets,Kale Curly - bu,2026,46,50,$250.00
+Orders,Kale Curly - bu,2026,46,3,$10.50
+Markets,Kale Lacinato - bu,2026,46,114,$570.00
+Orders,Kale Lacinato - bu,2026,46,8,$28.00
+Markets,Kohlrabi Storage - ea,2026,46,25,$100.00
+Markets,Mustard - bu,2026,46,14,$70.00
+Markets,Parsley - bu,2026,46,80,$320.00
+Markets,Parsley - bu,2026,46,76,$304.00
+Orders,Parsley - bu,2026,46,5,$14.00
+Markets,Potato Blue - lb,2026,46,64,$224.00
+Markets,Potato White - lb,2026,46,87,$304.50
+Markets,Potato Yellow - lb,2026,46,94,$329.00
+Markets,Puntarelle - lb,2026,46,21,$189.00
+Markets,Radicchio Forced - lb,2026,46,20.7,$331.20
+Markets,Radicchio Round - lb,2026,46,26.7,$240.30
+Orders,Radicchio Round - lb,2026,46,2,$12.60
+Markets,Radicchio Treviso - lb,2026,46,35.8,$322.20
+Markets,Radicchio Variegated - lb,2026,46,14.3,$128.70
+Markets,Radish Daikon Bulk - lb,2026,46,45.4,$158.90
+Markets,Radish Purple - bu,2026,46,20,$80.00
+Markets,Salad Mix - 1/3 lb,2026,46,35,$245.00
+Markets,Scallion - bu,2026,46,80,$320.00
+Orders,Scallion - bu,2026,46,7,$19.60
+Markets,Spinach - 1 lb,2026,46,49,$686.00
+Markets,Spinach - 1/2 lb,2026,46,58,$406.00
+Markets,Sweet Potato Covington - lb,2026,46,63,$220.50
+Markets,Turnip - bu,2026,46,1,$5.00
+Markets,Winter Squash Butternut - lb,2026,46,121.5,$364.50
+Markets,Winter Squash Futsu - lb,2026,46,57.5,$172.50
+Markets,Winter Squash Honeynut - lb,2026,46,103.25,$516.25
+Markets,Arugula - 1/3 lb,2026,47,30,$210.00
+Markets,Arugula - 2/3 lb ,2026,47,15,$210.00
+Markets,Arugula - 2/3 lb ,2026,47,20,$280.00
+Markets,Beets Golden - bu,2026,47,70,$350.00
+Markets,Beets Red - bu,2026,47,50,$250.00
+Markets,Braising Mix - 1 lb,2026,47,58,$522.00
+Markets,Broccolini - bu,2026,47,192,"$1,152.00"
+Markets,Broccolini - bu,2026,47,150,$900.00
+Markets,Brussels Sprouts - ea,2026,47,300,"$2,400.00"
+Markets,Brussels Sprouts - ea,2026,47,276,"$2,208.00"
+Markets,Cabbage Chinese - lb,2026,47,50,$200.00
+Markets,Cabbage Chinese - lb,2026,47,40,$160.00
+Markets,Cabbage Cone - lb,2026,47,50,$125.00
+Markets,Cabbage Cone Storage - lb,2026,47,51.8,$129.50
+Markets,Cabbage Flat - lb,2026,47,50,$125.00
+Markets,Cabbage Green Storage - lb,2026,47,84.6,$211.50
+Markets,Cabbage Red - lb,2026,47,45,$112.50
+Orders,Cabbage Red - lb,2026,47,1,$1.75
+Markets,Cabbage Savoy - lb,2026,47,25,$62.50
+Orders,Cabbage Savoy - lb,2026,47,1,$1.75
+Markets,Carrot Bulk - lb,2026,47,600,"$2,100.00"
+Orders,Carrot Bulk - lb,2026,47,1,$2.45
+Markets,Cauliflower - lb,2026,47,223,$892.00
+Markets,Cauliflower Purple - lb,2026,47,20.5,$82.00
+Markets,Cauliflower Romanesco - lb,2026,47,30.5,$122.00
+Markets,Celery - bu,2026,47,206,"$1,030.00"
+Markets,Celery - bu,2026,47,190,$950.00
+Markets,Chard - bu,2026,47,50,$250.00
+Orders,Chard - bu,2026,47,3,$10.50
+Markets,Cilantro - bu,2026,47,62,$248.00
+Markets,Collards - bu,2026,47,50,$250.00
+Orders,Collards - bu,2026,47,2,$7.00
+Markets,Dandelion - bu,2026,47,40,$200.00
+Markets,Dandelion - bu,2026,47,14,$70.00
+Orders,Dandelion - bu,2026,47,1,$3.50
+Markets,Escarole - ea,2026,47,27,$135.00
+Markets,Fennel - ea,2026,47,83,$332.00
+Markets,Fennel - ea,2026,47,20,$80.00
+Markets,Garlic - lb,2026,47,97,"$1,552.00"
+Markets,Kale Curly - bu,2026,47,43,$215.00
+Orders,Kale Curly - bu,2026,47,2,$7.00
+Markets,Kale Lacinato - bu,2026,47,176,$880.00
+Orders,Kale Lacinato - bu,2026,47,11,$38.50
+Markets,Kale Russian - bu,2026,47,14,$70.00
+Markets,Kohlrabi Storage - ea,2026,47,38,$152.00
+Markets,Mustard - bu,2026,47,16,$80.00
+Markets,Parsley - bu,2026,47,125,$500.00
+Markets,Parsley - bu,2026,47,135,$540.00
+Orders,Parsley - bu,2026,47,3,$8.40
+Markets,Potato Blue - lb,2026,47,108,$378.00
+Markets,Potato Red - lb,2026,47,84,$294.00
+Markets,Potato White - lb,2026,47,227.5,$796.25
+Markets,Potato White - lb,2026,47,266.5,$932.75
+Markets,Potato Yellow - lb,2026,47,310.5,"$1,086.75"
+Markets,Puntarelle - lb,2026,47,59.3,$533.70
+Markets,Radicchio Forced - lb,2026,47,55,$880.00
+Markets,Radicchio Round - lb,2026,47,28.8,$259.20
+Markets,Radicchio Treviso - lb,2026,47,58.8,$529.20
+Markets,Radicchio Variegated - lb,2026,47,26.2,$235.80
+Markets,Radish Daikon Bulk - lb,2026,47,70,$245.00
+Markets,Radish Purple - bu,2026,47,5,$20.00
+Markets,Salad Mix - 1 1/3 lb,2026,47,27,$675.00
+Markets,Salad Mix - 1/3 lb,2026,47,53,$371.00
+Markets,Salad Mix - 2/3 lb ,2026,47,70,$980.00
+Markets,Scallion - bu,2026,47,132,$528.00
+Orders,Scallion - bu,2026,47,5,$14.00
+Markets,Spinach - 1 lb,2026,47,35,$490.00
+Markets,Spinach - 1/2 lb,2026,47,41,$287.00
+Markets,Sweet Potato Covington - lb,2026,47,165,$577.50
+Markets,Winter Squash Butternut - lb,2026,47,255.6,$766.80
+Markets,Winter Squash Futsu - lb,2026,47,38,$114.00
+Markets,Winter Squash Honeynut - lb,2026,47,53.2,$266.00
+Markets,Winter Squash Koginut - lb,2026,47,60.4,$181.20
+Markets,Beets Bulk Golden - lb,2026,48,25,$87.50
+Markets,Beets Bulk Red - lb,2026,48,25,$87.50
+Markets,Cabbage Chinese - lb,2026,48,40,$160.00
+Markets,Beets Bulk Golden - lb,2026,49,25,$87.50
+Markets,Beets Bulk Red - lb,2026,49,25,$87.50
+Markets,Braising Mix - 1 lb,2026,49,45,$405.00
+Markets,Broccolini - bu,2026,49,150,$900.00
+Markets,Cabbage Chinese - lb,2026,49,40,$160.00
+Markets,Cabbage Cone Storage - lb,2026,49,55,$137.50
+Markets,Cabbage Green Storage - lb,2026,49,36.1,$90.25
+Markets,Cabbage Red - lb,2026,49,45,$112.50
+Markets,Cabbage Savoy - lb,2026,49,40,$100.00
+Markets,Carrot Bulk - lb,2026,49,250,$875.00
+Markets,Collards - bu,2026,49,42,$210.00
+Markets,Kale Curly - bu,2026,49,58,$290.00
+Markets,Kale Lacinato - bu,2026,49,135,$675.00
+Markets,Kohlrabi Storage - ea,2026,49,44,$176.00
+Markets,Potato Red - lb,2026,49,44.3,$155.05
+Markets,Potato White - lb,2026,49,84.7,$296.45
+Markets,Potato Yellow - lb,2026,49,83.1,$290.85
+Markets,Radicchio Round - lb,2026,49,40.1,$360.90
+Markets,Radicchio Treviso - lb,2026,49,15,$135.00
+Markets,Radish Daikon Bulk - lb,2026,49,46.6,$163.10
+Markets,Salad Mix - 1/3 lb,2026,49,56,$392.00
+Markets,Spinach - 1 lb,2026,49,40,$560.00
+Markets,Spinach - 1/2 lb,2026,49,39,$273.00
+Markets,Sweet Potato Covington - lb,2026,49,55,$192.50
+Markets,Winter Squash Butternut - lb,2026,49,107.8,$323.40
+Markets,Winter Squash Futsu - lb,2026,49,46.35,$139.05
+Markets,Beets Bulk Golden - lb,2026,50,25,$87.50
+Markets,Beets Bulk Red - lb,2026,50,25,$87.50
+Markets,Cabbage Chinese - lb,2026,50,40,$160.00
+Markets,Cabbage Cone Storage - lb,2026,50,31.6,$79.00
+Markets,Cabbage Red - lb,2026,50,45,$112.50
+Markets,Cabbage Savoy - lb,2026,50,40,$100.00
+Markets,Carrot Bulk - lb,2026,50,250,$875.00
+Markets,Collards - bu,2026,50,20,$100.00
+Markets,Kale Lacinato - bu,2026,50,47,$235.00
+Markets,Kohlrabi Storage - ea,2026,50,31,$124.00
+Markets,Potato Red - lb,2026,50,50,$175.00
+Markets,Potato White - lb,2026,50,55,$192.50
+Markets,Potato White - lb,2026,50,43,$150.50
+Markets,Potato Yellow - lb,2026,50,47.5,$166.25
+Markets,Radish Daikon Bulk - lb,2026,50,43,$150.50
+Markets,Spinach - 1 lb,2026,50,28,$392.00
+Markets,Spinach - 1/2 lb,2026,50,29,$203.00
+Markets,Sweet Potato Covington - lb,2026,50,25,$87.50
+Markets,Winter Squash Butternut - lb,2026,50,62,$186.00
+Markets,Winter Squash Futsu - lb,2026,50,19,$57.00
+Markets,Winter Squash Koginut - lb,2026,50,26.7,$80.10
+Markets,Beets Bulk Golden - lb,2026,51,25,$87.50
+Markets,Beets Bulk Red - lb,2026,51,25,$87.50
+Markets,Bok Choy - ea,2026,51,10,$25.00
+Markets,Bok Choy - lb,2026,51,13,$130.00
+Markets,Braising Mix - 1 lb,2026,51,50,$450.00
+Markets,Cabbage Cone Storage - lb,2026,51,65.2,$163.00
+Markets,Cabbage Green Storage - lb,2026,51,32.3,$80.75
+Markets,Cabbage Red - lb,2026,51,45,$112.50
+Markets,Cabbage Savoy - lb,2026,51,40,$100.00
+Markets,Carrot Bulk - lb,2026,51,250,$875.00
+Markets,Chard - bu,2026,51,14,$70.00
+Markets,Collards - bu,2026,51,22,$110.00
+Markets,Kale Curly - bu,2026,51,38,$190.00
+Markets,Kale Lacinato - bu,2026,51,150,$750.00
+Markets,Kale Russian - bu,2026,51,30,$150.00
+Markets,Kohlrabi Storage - ea,2026,51,45,$180.00
+Markets,Mustard - bu,2026,51,16,$80.00
+Markets,Potato Red - lb,2026,51,57,$199.50
+Markets,Potato White - lb,2026,51,76.75,$268.63
+Markets,Potato White - lb,2026,51,88,$308.00
+Markets,Potato Yellow - lb,2026,51,105,$367.50
+Markets,Radicchio Forced - lb,2026,51,27,$432.00
+Markets,Radicchio Round - lb,2026,51,35.3,$317.70
+Markets,Radicchio Treviso - lb,2026,51,6,$54.00
+Markets,Radish Daikon Bulk - lb,2026,51,71.4,$249.90
+Markets,Salad Mix - 1/3 lb,2026,51,42,$294.00
+Markets,Salad Mix - 2/3 lb ,2026,51,26,$364.00
+Markets,Spinach - 1 lb,2026,51,20,$280.00
+Markets,Spinach - 1/2 lb,2026,51,27,$189.00
+Markets,Sweet Potato Covington - lb,2026,51,77,$269.50
+Markets,Winter Squash Butternut - lb,2026,51,101.6,$304.80
+Markets,Winter Squash Futsu - lb,2026,51,9.8,$29.40
+Markets,Winter Squash Koginut - lb,2026,51,48,$144.00
+Markets,Beets Bulk Golden - lb,2026,52,25,$87.50
+Markets,Beets Bulk Red - lb,2026,52,25,$87.50
+Markets,Cabbage Red - lb,2026,52,45,$112.50
+Markets,Cabbage Savoy - lb,2026,52,40,$100.00
+Markets,Potato White - lb,2026,52,55,$192.50

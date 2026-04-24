@@ -1,8 +1,9 @@
-{# Single ISO week control: prev / label / next. Reused on week-ops and week print views.
-   Context: week_num, prev_week, next_week, week_monday, week_sunday, year
-   Optional: field_week_print_kind — "walk_print" | "needs_print" | unset (interactive week-ops)
-   When unset: weekops_phase — "walk" | "needs" | "record" selects target URLs.
-#}
+{% comment %}
+Single ISO week control: prev / label / next. Reused on week-ops and week print views.
+Context: week_num, prev_week, next_week, week_monday, week_sunday, year
+Optional: field_week_print_kind — "walk_print" | "needs_print" | unset (interactive week-ops)
+When unset: weekops_phase — "walk" | "needs" | "record" selects target URLs.
+{% endcomment %}
 <div class="field-week-filter weekops-week-row no-print" role="group" aria-label="Field week">
     {% if field_week_print_kind == "walk_print" %}
     <a href="{% url 'operations:field_walk_print' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>

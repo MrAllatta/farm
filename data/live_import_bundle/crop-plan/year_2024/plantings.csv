@@ -1,0 +1,1473 @@
+Crop,Variety,Block,Bed Start,Bed End,Planned Plant Date,Planned Bedfeet,Status
+Arugula,Astro,HT2,3,3,2026-02-16,50,Planned
+Greens Mix Baby Kale,Red Russian Kale,HT2,4,4,2026-02-16,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT2,3,3,2026-02-16,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT2,4,4,2026-02-23,50,Planned
+Greens Mix Baby Kale,Red Russian Kale,CAT2,3,3,2026-03-02,100,Planned
+Radish French Breakfast,French Breakfast,CAT2,2,2,2026-03-02,100,Planned
+Radish Purple,Bacchus,CAT2,1,1,2026-03-02,100,Planned
+Greens Mix Cheap Frills,Cheap Frills,CAT3,3,3,2026-03-02,100,Planned
+Garlic,German White,B3,29,29,2026-03-16,200,Planned
+Garlic,German White,B3,30,30,2026-03-16,200,Planned
+Garlic,Hardneck - Em,B3,28,28,2026-03-16,100,Planned
+Garlic,Hardneck - Em,B3,28,28,2026-03-16,100,Planned
+Garlic,Music,B3,26,26,2026-03-16,200,Planned
+Garlic,Music,B3,27,27,2026-03-16,200,Planned
+Garlic,Softneck - Em,B3,25,25,2026-03-16,200,Planned
+Pea Snap,Sweet Gem,CAT4,1,1,2026-03-16,100,Planned
+Pea Snap,Sweet Gem,CAT4,2,2,2026-03-16,100,Planned
+Pea Snap,Sweet Gem,CAT4,3,3,2026-03-16,100,Planned
+Pea Shelling,PLS595,HT4,1,1,2026-03-16,100,Planned
+Pea Shelling,PLS595,HT4,2,2,2026-03-16,100,Planned
+Pea Snap,Super Sugar Snap,JSS,1,1,2026-03-16,100,Planned
+Pea Snap,Super Sugar Snap,JSS,2,2,2026-03-16,100,Planned
+Pea Snap,Super Sugar Snap,JSS,3,3,2026-03-16,100,Planned
+Arugula,Astro,B1,1,1,2026-03-30,100,Planned
+Frisee,Curlesi,B1,2,2,2026-03-30,75,Planned
+Greens Mix Baby Kale,Red Russian Kale,B1,3,3,2026-03-30,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,B1,3,3,2026-03-30,85,Planned
+Lettuce Head,Alkindus,B1,4,4,2026-03-30,50,Planned
+Lettuce Mini Gem,Gatsbi,B1,4,4,2026-03-30,50,Planned
+Lettuce Mini Gem,Rosaine,B1,5,5,2026-03-30,100,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B1,6,6,2026-03-30,100,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B1,7,7,2026-03-30,100,Planned
+Radish French Breakfast,French Breakfast,B1,8,8,2026-03-30,100,Planned
+Radish Purple,Bacchus,B1,9,9,2026-03-30,100,Planned
+Radish Red,Sora,B1,10,10,2026-03-30,100,Planned
+Arugula,Astro,B1,11,11,2026-04-06,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,B1,12,12,2026-04-06,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,B1,12,12,2026-04-06,85,Planned
+Radish French Breakfast,French Breakfast,B1,13,13,2026-04-06,100,Planned
+Radish Purple,Bacchus,B1,14,14,2026-04-06,100,Planned
+Radish Red,Sora,B1,15,15,2026-04-06,100,Planned
+Cilantro,Cruiser,C3,1,1,2026-04-06,200,Planned
+Scallion,Parade,C3,2,2,2026-04-06,200,Planned
+Arugula,Astro,B1,16,16,2026-04-13,100,Planned
+Bok Choy,Li Ren Choi,B1,17,17,2026-04-13,100,Planned
+Bok Choy,Li Ren Choi,B1,18,18,2026-04-13,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,B1,19,19,2026-04-13,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,B1,19,19,2026-04-13,85,Planned
+Radish French Breakfast,French Breakfast,B1,20,20,2026-04-13,100,Planned
+Radish Purple,Bacchus,B1,21,21,2026-04-13,100,Planned
+Radish Red,Sora,B1,22,22,2026-04-13,100,Planned
+Dandelion,Clio,B2,1,1,2026-04-13,100,Planned
+Escarole,Eros,B2,2,2,2026-04-13,100,Planned
+Fennel,Orazio,B2,3,3,2026-04-13,200,Planned
+Lettuce Head,Alkindus,B2,4,4,2026-04-13,50,Planned
+Lettuce Mini Gem,Gatsbi,B2,4,4,2026-04-13,75,Planned
+Lettuce Mini Gem,Rosaine,B2,4,4,2026-04-13,75,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B2,5,5,2026-04-13,200,Planned
+Radicchio Round,Indigo,B2,6,6,2026-04-13,200,Planned
+Radicchio Variegated,Giorgine,B2,7,7,2026-04-13,200,Planned
+Zucchini Green,Noche,C1,1,1,2026-04-13,200,Planned
+Zucchini Green,Noche,C1,2,2,2026-04-13,200,Planned
+Parsley,Giant of Italy,C3,3,3,2026-04-13,200,Planned
+Scallion,Parade,C3,4,4,2026-04-13,100,Planned
+Chard,Bright Lights,D3,1,1,2026-04-13,200,Planned
+Collards,Flash,D3,2,2,2026-04-13,200,Planned
+Kale Curly,Winterbor,D3,3,3,2026-04-13,200,Planned
+Kale Curly,Winterbor,D3,4,4,2026-04-13,200,Planned
+Kale Lacinato,Ebony,D3,5,5,2026-04-13,200,Planned
+Kale Lacinato,Ebony,D3,6,6,2026-04-13,200,Planned
+Kale Lacinato,Ebony,D3,7,7,2026-04-13,200,Planned
+Kale Lacinato,Ebony,D3,8,8,2026-04-13,200,Planned
+Broccolini,BC1611,E2,1,1,2026-04-13,200,Planned
+Broccolini,BC1611,E2,2,2,2026-04-13,200,Planned
+Broccolini,BC1611,E2,3,3,2026-04-13,200,Planned
+Arugula,Astro,B1,23,23,2026-04-20,100,Planned
+Frisee,Curlesi,B1,28,28,2026-04-20,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,B1,24,24,2026-04-20,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,B1,24,24,2026-04-20,85,Planned
+Radish French Breakfast,French Breakfast,B1,25,25,2026-04-20,100,Planned
+Radish Purple,Bacchus,B1,26,26,2026-04-20,100,Planned
+Radish Red,Sora,B1,27,27,2026-04-20,100,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B2,8,8,2026-04-20,200,Planned
+Zucchini Green,Noche,C1,3,3,2026-04-20,200,Planned
+Zucchini Green,Noche,C1,4,4,2026-04-20,200,Planned
+Zucchini Green,Noche,C1,5,5,2026-04-20,200,Planned
+Zucchini Green,Noche,C1,6,6,2026-04-20,200,Planned
+Zucchini Striped,Pantheon,C1,7,7,2026-04-20,200,Planned
+Zucchini Striped,Pantheon,C1,8,8,2026-04-20,200,Planned
+Zucchini Yellow,Golden Glory,C1,9,9,2026-04-20,200,Planned
+Zucchini Yellow,Golden Glory,C1,10,10,2026-04-20,200,Planned
+Scallion,Parade,C3,4,4,2026-04-20,100,Planned
+Cabbage Chinese,Minuet,E2,4,4,2026-04-20,200,Planned
+Cabbage Chinese,Minuet,E2,5,5,2026-04-20,200,Planned
+Cabbage Savoy,Alcosa,E2,6,6,2026-04-20,200,Planned
+Cauliflower Sprouting,Song,E2,7,7,2026-04-20,200,Planned
+Cauliflower Sprouting,Song,E2,8,8,2026-04-20,200,Planned
+Arugula,Astro,B1,29,29,2026-04-27,100,Planned
+Escarole,Eliance,B2,9,9,2026-04-27,200,Planned
+Lettuce Head,Alkindus,B2,10,10,2026-04-27,50,Planned
+Lettuce Mini Gem,Gatsbi,B2,10,10,2026-04-27,75,Planned
+Lettuce Mini Gem,Rosaine,B2,10,10,2026-04-27,75,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B2,11,11,2026-04-27,200,Planned
+Celery,merengo,C3,6,6,2026-04-27,200,Planned
+Cilantro,Cruiser,C3,7,7,2026-04-27,200,Planned
+Scallion,Parade,C3,5,5,2026-04-27,100,Planned
+Bok Choy,Li Ren Choi,D1,1,1,2026-04-27,200,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,2,2,2026-04-27,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,2,2,2026-04-27,85,Planned
+Radish French Breakfast,French Breakfast,D1,2,2,2026-04-27,100,Planned
+Radish Purple,Bacchus,D1,3,3,2026-04-27,100,Planned
+Radish Red,Sora,D1,3,3,2026-04-27,100,Planned
+Beets Golden,Yellow Sunrise,D2,1,1,2026-04-27,200,Planned
+Beets Golden,Yellow Sunrise,D2,2,2,2026-04-27,200,Planned
+Beets Red,Red Ace F1,D2,3,3,2026-04-27,200,Planned
+Chard,Bright Lights,D3,9,9,2026-04-27,200,Planned
+Chard,Bright Lights,D3,10,10,2026-04-27,200,Planned
+Collards,Flash,D3,11,11,2026-04-27,200,Planned
+Collards,Flash,D3,12,12,2026-04-27,200,Planned
+Kale Curly,Winterbor,D3,13,13,2026-04-27,200,Planned
+Kale Curly,Winterbor,D3,14,14,2026-04-27,200,Planned
+Kale Lacinato,Ebony,D3,15,15,2026-04-27,200,Planned
+Kale Lacinato,Ebony,D3,16,16,2026-04-27,200,Planned
+Kale Lacinato,Ebony,D3,17,17,2026-04-27,200,Planned
+Kale Lacinato,Ebony,D3,18,18,2026-04-27,200,Planned
+Broccolini,Bella Verde,E2,9,9,2026-04-27,200,Planned
+Broccolini,Bella Verde,E2,10,10,2026-04-27,200,Planned
+Broccolini,Happy Rich,E2,11,11,2026-04-27,200,Planned
+Broccolini,Happy Rich,E2,12,12,2026-04-27,200,Planned
+Broccolini,Happy Rich,E2,13,13,2026-04-27,200,Planned
+Cauliflower Sprouting,Song,E2,14,14,2026-04-27,200,Planned
+Cauliflower Sprouting,Song,E2,15,15,2026-04-27,200,Planned
+Cucumber,Corinto,HT5,3,3,2026-04-27,100,Planned
+Cucumber Katrina,Katrina,HT5,1,1,2026-04-27,100,Planned
+Cucumber Katrina,Katrina,HT5,2,2,2026-04-27,100,Planned
+Cucumber Pickling,Excelsior,HT5,4,4,2026-04-27,100,Planned
+Oats & Peas,Standard,A2,1,1,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,2,2,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,3,3,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,4,4,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,5,5,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,6,6,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,7,7,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,8,8,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,9,9,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,10,10,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,11,11,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,12,12,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,13,13,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,14,14,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,16,16,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,17,17,2026-05-04,200,Planned
+Oats & Peas,Standard,A2,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,1,1,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,2,2,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,3,3,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,4,4,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,5,5,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,6,6,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,7,7,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,8,8,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,9,9,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,10,10,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,11,11,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,12,12,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,13,13,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,14,14,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,16,16,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,17,17,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,19,19,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,20,20,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,21,21,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,22,22,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,23,23,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,24,24,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,25,25,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,26,26,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,27,27,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,28,28,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,29,29,2026-05-04,200,Planned
+Oats & Peas,Standard,A3,30,30,2026-05-04,200,Planned
+Fennel,Orazio,B2,12,12,2026-05-04,200,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B2,13,13,2026-05-04,200,Planned
+Radicchio Round,Indigo,B2,14,14,2026-05-04,200,Planned
+Radicchio Variegated,Giorgine,B2,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,1,1,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,2,2,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,3,3,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,4,4,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,5,5,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,6,6,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,7,7,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,8,8,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,9,9,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,10,10,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,11,11,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,12,12,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,13,13,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,14,14,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,16,16,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,17,17,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,19,19,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,20,20,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,21,21,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,22,22,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,23,23,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,24,24,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,25,25,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,26,26,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,27,27,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,28,28,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,29,29,2026-05-04,200,Planned
+Oats & Peas,Standard,B3,30,30,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,19,19,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,20,20,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,21,21,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,22,22,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,23,23,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,24,24,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,25,25,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,26,26,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,27,27,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,28,28,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,29,29,2026-05-04,200,Planned
+Oats & Peas,Standard,C1,30,30,2026-05-04,200,Planned
+Zucchini Green,Noche,C1,11,11,2026-05-04,200,Planned
+Zucchini Green,Noche,C1,12,12,2026-05-04,200,Planned
+Zucchini Green,Noche,C1,13,13,2026-05-04,200,Planned
+Zucchini Green,Noche,C1,14,14,2026-05-04,200,Planned
+Zucchini Striped,Pantheon,C1,15,15,2026-05-04,200,Planned
+Zucchini Yellow,Golden Glory,C1,16,16,2026-05-04,200,Planned
+Zucchini Yellow,Golden Glory,C1,17,17,2026-05-04,200,Planned
+Zucchini Yellow,Golden Glory,C1,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,16,16,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,17,17,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,19,19,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,20,20,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,21,21,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,22,22,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,23,23,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,24,24,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,25,25,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,26,26,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,27,27,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,28,28,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,29,29,2026-05-04,200,Planned
+Oats & Peas,Standard,C2,30,30,2026-05-04,200,Planned
+Buckwheat,Standard,C3,15,15,2026-05-04,200,Planned
+Buckwheat,Standard,C3,16,16,2026-05-04,200,Planned
+Buckwheat,Standard,C3,17,17,2026-05-04,200,Planned
+Buckwheat,Standard,C3,18,18,2026-05-04,200,Planned
+Buckwheat,Standard,C3,19,19,2026-05-04,200,Planned
+Buckwheat,Standard,C3,20,20,2026-05-04,200,Planned
+Buckwheat,Standard,C3,21,21,2026-05-04,200,Planned
+Buckwheat,Standard,C3,22,22,2026-05-04,200,Planned
+Buckwheat,Standard,C3,23,23,2026-05-04,200,Planned
+Buckwheat,Standard,C3,24,24,2026-05-04,200,Planned
+Buckwheat,Standard,C3,25,25,2026-05-04,200,Planned
+Buckwheat,Standard,C3,26,26,2026-05-04,200,Planned
+Buckwheat,Standard,C3,27,27,2026-05-04,200,Planned
+Buckwheat,Standard,C3,28,28,2026-05-04,200,Planned
+Buckwheat,Standard,C3,29,29,2026-05-04,200,Planned
+Buckwheat,Standard,C3,30,30,2026-05-04,200,Planned
+Parsley,Giant of Italy,C3,8,8,2026-05-04,200,Planned
+Scallion,Parade,C3,5,5,2026-05-04,100,Planned
+Arugula,Astro,D1,4,4,2026-05-04,100,Planned
+Buckwheat,Standard,D1,15,15,2026-05-04,200,Planned
+Buckwheat,Standard,D1,16,16,2026-05-04,200,Planned
+Buckwheat,Standard,D1,17,17,2026-05-04,200,Planned
+Buckwheat,Standard,D1,18,18,2026-05-04,200,Planned
+Buckwheat,Standard,D1,19,19,2026-05-04,200,Planned
+Buckwheat,Standard,D1,20,20,2026-05-04,200,Planned
+Buckwheat,Standard,D1,21,21,2026-05-04,200,Planned
+Buckwheat,Standard,D1,22,22,2026-05-04,200,Planned
+Buckwheat,Standard,D1,23,23,2026-05-04,200,Planned
+Buckwheat,Standard,D1,24,24,2026-05-04,200,Planned
+Buckwheat,Standard,D1,25,25,2026-05-04,200,Planned
+Buckwheat,Standard,D1,26,26,2026-05-04,200,Planned
+Buckwheat,Standard,D1,27,27,2026-05-04,200,Planned
+Buckwheat,Standard,D1,28,28,2026-05-04,200,Planned
+Buckwheat,Standard,D1,29,29,2026-05-04,200,Planned
+Buckwheat,Standard,D1,30,30,2026-05-04,200,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,4,4,2026-05-04,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,4,4,2026-05-04,85,Planned
+Greens Mix Rosie,Rosie,D1,5,5,2026-05-04,100,Planned
+Radish French Breakfast,French Breakfast,D1,5,5,2026-05-04,100,Planned
+Radish Purple,Bacchus,D1,6,6,2026-05-04,100,Planned
+Lettuce Mini Gem,Rosaine,CAT1,1,1,2024-09-09,100,Planned
+Lettuce Mini Gem,Rosaine,CAT1,2,2,2024-09-09,100,Planned
+Lettuce Mini Gem,Rosaine,CAT1,3,3,2024-09-16,100,Planned
+Radish Red,Sora,D1,6,6,2026-05-04,100,Planned
+Buckwheat,Standard,D2,7,7,2026-05-04,200,Planned
+Buckwheat,Standard,D2,8,8,2026-05-04,200,Planned
+Scallion,Parade,CAT2,3,3,2024-09-02,100,Planned
+Scallion,Parade,CAT2,2,2,2024-09-23,100,Planned
+Scallion,Parade,CAT2,1,1,2024-10-14,100,Planned
+Buckwheat,Standard,D2,9,9,2026-05-04,200,Planned
+Buckwheat,Standard,D2,10,10,2026-05-04,200,Planned
+Buckwheat,Standard,D2,11,11,2026-05-04,200,Planned
+Buckwheat,Standard,D2,12,12,2026-05-04,200,Planned
+Buckwheat,Standard,D2,13,13,2026-05-04,200,Planned
+Buckwheat,Standard,D2,14,14,2026-05-04,200,Planned
+Buckwheat,Standard,D2,15,15,2026-05-04,200,Planned
+Buckwheat,Standard,D2,16,16,2026-05-04,200,Planned
+Dandelion,Clio,CAT4,1,1,2024-09-16,100,Planned
+Dandelion,Clio,CAT4,2,2,2024-09-16,100,Planned
+Buckwheat,Standard,D2,17,17,2026-05-04,200,Planned
+Buckwheat,Standard,D2,18,18,2026-05-04,200,Planned
+Buckwheat,Standard,D2,19,19,2026-05-04,200,Planned
+Buckwheat,Standard,D2,20,20,2026-05-04,200,Planned
+Buckwheat,Standard,D2,21,21,2026-05-04,200,Planned
+Buckwheat,Standard,D2,22,22,2026-05-04,200,Planned
+Buckwheat,Standard,D2,23,23,2026-05-04,200,Planned
+Buckwheat,Standard,D2,24,24,2026-05-04,200,Planned
+Buckwheat,Standard,D2,25,25,2026-05-04,200,Planned
+Buckwheat,Standard,D2,26,26,2026-05-04,200,Planned
+Buckwheat,Standard,D2,27,27,2026-05-04,200,Planned
+Buckwheat,Standard,D2,28,28,2026-05-04,200,Planned
+Buckwheat,Standard,D2,29,29,2026-05-04,200,Planned
+Buckwheat,Standard,D2,30,30,2026-05-04,200,Planned
+Buckwheat,Standard,E1,1,1,2026-05-04,200,Planned
+Buckwheat,Standard,E1,2,2,2026-05-04,200,Planned
+Buckwheat,Standard,E1,3,3,2026-05-04,200,Planned
+Buckwheat,Standard,E1,4,4,2026-05-04,200,Planned
+Buckwheat,Standard,E1,5,5,2026-05-04,200,Planned
+Buckwheat,Standard,E1,6,6,2026-05-04,200,Planned
+Buckwheat,Standard,E1,7,7,2026-05-04,200,Planned
+Buckwheat,Standard,E1,8,8,2026-05-04,200,Planned
+Buckwheat,Standard,E1,9,9,2026-05-04,200,Planned
+Buckwheat,Standard,E1,10,10,2026-05-04,200,Planned
+Buckwheat,Standard,E1,11,11,2026-05-04,200,Planned
+Buckwheat,Standard,E1,12,12,2026-05-04,200,Planned
+Buckwheat,Standard,E1,13,13,2026-05-04,200,Planned
+Buckwheat,Standard,E1,14,14,2026-05-04,200,Planned
+Buckwheat,Standard,E1,15,15,2026-05-04,200,Planned
+Buckwheat,Standard,E1,16,16,2026-05-04,200,Planned
+Buckwheat,Standard,E1,17,17,2026-05-04,200,Planned
+Buckwheat,Standard,E1,18,18,2026-05-04,200,Planned
+Buckwheat,Standard,E1,19,19,2026-05-04,200,Planned
+Buckwheat,Standard,E1,20,20,2026-05-04,200,Planned
+Buckwheat,Standard,E1,21,21,2026-05-04,200,Planned
+Buckwheat,Standard,E1,22,22,2026-05-04,200,Planned
+Buckwheat,Standard,E1,23,23,2026-05-04,200,Planned
+Buckwheat,Standard,E1,24,24,2026-05-04,200,Planned
+Buckwheat,Standard,E1,25,25,2026-05-04,200,Planned
+Cabbage Cone,Caraflex,E2,16,16,2026-05-04,200,Planned
+Cabbage Cone,Caraflex,E2,17,17,2026-05-04,200,Planned
+Cabbage Cone,Caraflex,E2,18,18,2026-05-04,200,Planned
+Triticale & Winter Peas,Standard,C2,1,1,2026-10-26,200,Planned
+Cabbage Red,Omero,E2,19,19,2026-05-04,200,Planned
+Triticale & Winter Peas,Standard,C2,2,2,2026-10-26,200,Planned
+Cabbage Red,Omero,E2,20,20,2026-05-04,200,Planned
+Triticale & Winter Peas,Standard,C2,3,3,2026-10-26,200,Planned
+Tomato Cherry Mix,Artemis,HT3,7,7,2026-05-04,25,Planned
+Triticale & Winter Peas,Standard,C2,4,4,2026-10-26,200,Planned
+Tomato Cherry Mix,Attracta,HT3,7,7,2026-05-04,25,Planned
+Triticale & Winter Peas,Standard,C2,5,5,2026-10-26,200,Planned
+Tomato Cherry Mix,Chocolate Sprinkles,HT3,8,8,2026-05-04,50,Planned
+Triticale & Winter Peas,Standard,C2,6,6,2026-10-26,200,Planned
+Tomato Cherry Mix,Honey Bee,HT3,8,8,2026-05-04,50,Planned
+Triticale & Winter Peas,Standard,C2,7,7,2026-10-26,200,Planned
+Tomato Cherry Mix,Mimi,HT3,7,7,2026-05-04,50,Planned
+Triticale & Winter Peas,Standard,C2,8,8,2026-10-26,200,Planned
+Tomato Cherry Mix,SunGreen,HT3,6,6,2026-05-04,50,Planned
+Triticale & Winter Peas,Standard,C2,9,9,2026-10-26,200,Planned
+Tomato Cherry Mix,Sunpeach,HT3,6,6,2026-05-04,50,Planned
+Tomato Cherry Sungold,SunOrange,HT3,3,3,2026-05-04,100,Planned
+Triticale & Winter Peas,Standard,C2,10,10,2026-10-26,200,Planned
+Tomato Cherry Sungold,SunOrange,HT3,4,4,2026-05-04,100,Planned
+Triticale & Winter Peas,Standard,C2,11,11,2026-10-26,200,Planned
+Triticale & Winter Peas,Standard,C2,12,12,2026-10-26,200,Planned
+Tomato Cherry Sungold,SunOrange,HT3,5,5,2026-05-04,100,Planned
+Triticale & Winter Peas,Standard,C2,13,13,2026-10-26,200,Planned
+Triticale & Winter Peas,Standard,C2,14,14,2026-10-26,200,Planned
+Tomato Heirloom,MarMango,HT3,1,1,2026-05-04,100,Planned
+Tomato Heirloom,Marnouar,HT3,2,2,2026-05-04,100,Planned
+Bean Snap TP,Nor'easter,HT4,6,6,2026-05-04,100,Planned
+Bean Snap TP,Nor'easter,HT4,8,8,2026-05-04,100,Planned
+Cabbage Red,Omero,X1,1,1,2026-05-04,200,Planned
+Cabbage Red,Omero,X1,2,2,2026-05-04,200,Planned
+Cabbage Red,Omero,X1,3,3,2026-05-04,200,Planned
+Cabbage Savoy,Alcosa,X1,4,4,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,7,7,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,8,8,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,9,9,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,10,10,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,11,11,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,12,12,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,13,13,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,14,14,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,16,16,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,17,17,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,19,19,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,20,20,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,21,21,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,22,22,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,23,23,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,24,24,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,25,25,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,26,26,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,27,27,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,28,28,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,29,29,2026-05-04,200,Planned
+Oats & Peas,Standard,X1,30,30,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,1,1,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,2,2,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,3,3,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,4,4,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,5,5,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,6,6,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,7,7,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,8,8,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,9,9,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,10,10,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,11,11,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,12,12,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,13,13,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,14,14,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,15,15,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,16,16,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,17,17,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,18,18,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,19,19,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,20,20,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,21,21,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,22,22,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,23,23,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,24,24,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,25,25,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,26,26,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,27,27,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,28,28,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,29,29,2026-05-04,200,Planned
+Oats & Peas,Standard,X2,30,30,2026-05-04,200,Planned
+Potato Blue,Adirondack Blue,X3,1,1,2026-05-04,200,Planned
+Potato Blue,Adirondack Blue,X3,2,2,2026-05-04,200,Planned
+Potato Blue,Adirondack Blue,X3,3,3,2026-05-04,200,Planned
+Potato Blue,Adirondack Blue,X3,4,4,2026-05-04,200,Planned
+Potato White,Purple Viking,X3,5,5,2026-05-04,200,Planned
+Potato White,Purple Viking,X3,6,6,2026-05-04,200,Planned
+Potato White,Dark Red Norland,Y3,1,1,2026-05-04,200,Planned
+Potato White,Dark Red Norland,Y3,2,2,2026-05-04,200,Planned
+Potato White,Dark Red Norland,Y3,3,3,2026-05-04,200,Planned
+Potato White,Dark Red Norland,Y3,4,4,2026-05-04,200,Planned
+Potato White,Dark Red Norland,Y3,5,5,2026-05-04,200,Planned
+Potato White,Dark Red Norland,Y3,6,6,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,7,7,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,8,8,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,9,9,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,10,10,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,11,11,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,12,12,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,13,13,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,14,14,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,15,15,2026-05-04,200,Planned
+Potato White,Kennebec,Y3,16,16,2026-05-04,200,Planned
+Potato White,Purple Viking,Y3,17,17,2026-05-04,200,Planned
+Potato White,Purple Viking,Y3,18,18,2026-05-04,200,Planned
+Potato White,Purple Viking,Y3,19,19,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,20,20,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,21,21,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,22,22,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,23,23,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,24,24,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,25,25,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,26,26,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,27,27,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,28,28,2026-05-04,200,Planned
+Potato Yellow,Satina,Y3,29,29,2026-05-04,200,Planned
+Dandelion,Clio,B2,16,16,2026-05-11,200,Planned
+Escarole,Eliance,B2,17,17,2026-05-11,100,Planned
+Frisee,Curlesi,B2,17,17,2026-05-11,100,Planned
+Lettuce Head,Alkindus,B2,18,18,2026-05-11,50,Planned
+Lettuce Mini Gem,Gatsbi,B2,18,18,2026-05-11,75,Planned
+Lettuce Mini Gem,Rosaine,B2,18,18,2026-05-11,75,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B2,19,19,2026-05-11,200,Planned
+Eggplant Italian Black,Gaudi,C2,1,1,2026-05-11,200,Planned
+Eggplant Italian Striped,Annina,C2,2,2,2026-05-11,200,Planned
+Eggplant Italian Striped,Annina,C2,3,3,2026-05-11,200,Planned
+Eggplant Mini,Fairytale,C2,4,4,2026-05-11,200,Planned
+Eggplant Mini,Fairytale,C2,5,5,2026-05-11,200,Planned
+Cilantro,Cruiser,C3,9,9,2026-05-11,200,Planned
+Scallion,Parade,C3,10,10,2026-05-11,100,Planned
+Arugula,Astro,D1,7,7,2026-05-11,100,Planned
+Bok Choy,Li Ren Choi,D1,8,8,2026-05-11,200,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,7,7,2026-05-11,15,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,7,7,2026-05-11,85,Planned
+Collards,Flash,D3,19,19,2026-05-11,200,Planned
+Kale Curly,Winterbor,D3,20,20,2026-05-11,200,Planned
+Kale Curly,Winterbor,D3,21,21,2026-05-11,100,Planned
+Kale Lacinato,Ebony,D3,21,21,2026-05-11,100,Planned
+Kale Lacinato,Ebony,D3,22,22,2026-05-11,200,Planned
+Kale Curly,Winterbor,HT1,6,6,2024-09-02,100,Planned
+Kale Curly,Winterbor,HT1,7,7,2024-09-02,100,Planned
+Kale Curly,Winterbor,HT1,8,8,2024-09-02,100,Planned
+Kale Lacinato,Ebony,HT1,1,1,2024-09-02,100,Planned
+Kale Lacinato,Ebony,HT1,2,2,2024-09-02,100,Planned
+Kale Lacinato,Ebony,HT1,3,3,2024-09-02,100,Planned
+Kale Lacinato,Ebony,HT1,4,4,2024-09-02,100,Planned
+Kale Lacinato,Ebony,HT1,5,5,2024-09-02,100,Planned
+Kale Lacinato,Ebony,D3,23,23,2026-05-11,200,Planned
+Kale Lacinato,Ebony,D3,24,24,2026-05-11,200,Planned
+Cucumber,Corinto,HT5,5,5,2026-05-11,100,Planned
+Cucumber,Corinto,HT5,6,6,2026-05-11,100,Planned
+Cucumber Katrina,Katrina,HT5,8,8,2026-05-11,95,Planned
+Kale Russian,Siberian,HT2,1,1,2024-09-09,110,Planned
+Kale Russian,Siberian,HT2,2,2,2024-09-09,110,Planned
+Cucumber Pickling,Excelsior,HT5,7,7,2026-05-11,100,Planned
+Kale Russian,Siberian,HT2,4,4,2024-09-16,110,Planned
+Kale Russian,Siberian,HT2,3,3,2024-09-16,110,Planned
+Kale Russian,Siberian,HT2,5,5,2024-09-16,110,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,B2,20,20,2026-05-18,200,Planned
+Radicchio Round,Indigo,B2,21,21,2026-05-18,200,Planned
+Radicchio Variegated,Giorgine,B2,22,22,2026-05-18,200,Planned
+Lettuce Mini Gem,Rosaine,HT2,8,8,2024-09-30,110,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT2,7,7,2024-09-30,110,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT2,6,6,2024-09-30,110,Planned
+Pepper Carmen,Carmen,C2,6,6,2026-05-18,200,Planned
+Pepper Carmen,Carmen,C2,7,7,2026-05-18,200,Planned
+Pepper Carmen,Carmen,C2,8,8,2026-05-18,200,Planned
+Pepper Carmen,Carmen,C2,9,9,2026-05-18,200,Planned
+Pepper Hot,Amazing,C2,10,10,2026-05-18,150,Planned
+Pepper Hot,Jedi Jalapeno,C2,10,10,2026-05-18,50,Planned
+Pepper Shishito,Shishimai,C2,11,11,2026-05-18,200,Planned
+Basil,Prospera DMR CG1,C3,11,11,2026-05-18,200,Planned
+Celery,merengo,C3,12,12,2026-05-18,200,Planned
+Scallion,Parade,C3,10,10,2026-05-18,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,9,9,2026-05-18,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,9,9,2026-05-18,150,Planned
+Beets Golden,Yellow Sunrise,D2,4,4,2026-05-18,200,Planned
+Beets Golden,Yellow Sunrise,D2,5,5,2026-05-18,200,Planned
+Beets Red,Red Ace F1,D2,6,6,2026-05-18,200,Planned
+Bean Snap TP,Nor'easter,HT4,4,4,2026-05-18,100,Planned
+Cabbage Flat,Tendersweet,X1,5,5,2026-05-18,200,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT3,2,2,2024-09-16,100,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT3,3,3,2024-09-16,100,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT3,5,5,2024-09-16,100,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT3,6,6,2024-09-16,100,Planned
+Cabbage Flat,Tendersweet,X1,6,6,2026-05-18,200,Planned
+Lettuce Head,Alkindus,B2,23,23,2026-05-25,50,Planned
+Lettuce Mini Gem,Gatsbi,B2,23,23,2026-05-25,75,Planned
+Lettuce Mini Gem,Rosaine,B2,23,23,2026-05-25,75,Planned
+Bok Choy,Little Shanghai,HT3,7,7,2024-09-16,100,Planned
+Mustard,Miike Giant,HT3,4,4,2024-09-16,100,Planned
+Lettuce Mix SN,(Summer) Foundation Mix + Batavia,B2,24,24,2026-05-25,200,Planned
+Cilantro,Cruiser,C3,13,13,2026-05-25,200,Planned
+Bok Choy,Li Ren Choi,D1,10,10,2026-05-25,200,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,11,11,2026-05-25,15,Planned
+Arugula,Astro,HT3,1,1,2024-09-16,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT3,1,1,2024-09-16,50,Planned
+Arugula,Astro,HT3,8,8,2024-11-11,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT3,8,8,2024-11-11,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,11,11,2026-05-25,85,Planned
+Lettuce Mix SN,(Summer) Foundation Mix + Batavia,B2,25,25,2026-06-01,200,Planned
+Parsley,Giant of Italy,C3,14,14,2026-06-01,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,11,11,2026-06-01,100,Planned
+Sweet Corn,Superb,X3,6,6,2026-06-01,200,Planned
+Sweet Corn,Vision,x3,7,7,2026-06-01,200,Planned
+Lettuce Head,Fusion,B2,26,26,2026-06-08,67,Planned
+Lettuce Head,Muir,B2,26,26,2026-06-08,66,Planned
+Lettuce Head,Purple Fusion,B2,26,26,2026-06-08,67,Planned
+Lettuce Mix SN,(Summer) Foundation Mix + Batavia,B2,27,27,2026-06-08,200,Planned
+Tomato Sauce,Tiren,C2,13,13,2026-06-08,200,Planned
+Basil,Prospera DMR CG1,C3,15,15,2026-06-08,200,Planned
+Cilantro,Cruiser,C3,16,16,2026-06-08,200,Planned
+Bok Choy,Li Ren Choi,D1,12,12,2026-06-08,200,Planned
+Chard,Bright Lights,HT4,4,4,2024-09-16,100,Planned
+Chard,Bright Lights,HT4,5,5,2024-09-16,100,Planned
+Chard,Bright Lights,HT4,6,6,2024-09-16,50,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,13,13,2026-06-08,100,Planned
+Carrot Bulk,Bolero,D2,7,7,2026-06-08,200,Planned
+Carrot Bulk,Bolero,D2,8,8,2026-06-08,200,Planned
+Carrot Bulk,Bolero,D2,9,9,2026-06-08,200,Planned
+Chard,Bright Lights,D3,25,25,2026-06-08,200,Planned
+Spinach,Kolibri,HT4,1,1,2024-09-23,100,Planned
+Spinach,Kolibri,HT4,2,2,2024-09-23,100,Planned
+Spinach,Kolibri,HT4,3,3,2024-09-23,100,Planned
+Kale Curly,Winterbor,D3,26,26,2026-06-08,200,Planned
+Kale Curly,Winterbor,D3,27,27,2026-06-08,200,Planned
+Kale Lacinato,Ebony,D3,28,28,2026-06-08,200,Planned
+Spinach,Kolibri,HT4,8,8,2024-10-21,100,Planned
+Spinach,Kolibri,HT4,7,7,2024-10-21,100,Planned
+Spinach,Kolibri,HT4,6,6,2024-10-21,50,Planned
+Kale Lacinato,Ebony,D3,29,29,2026-06-08,200,Planned
+Kale Lacinato,Ebony,D3,30,30,2026-06-08,200,Planned
+Winter Squash Acorn,Night Shift,E1,1,1,2026-06-08,200,Planned
+Winter Squash Acorn,Night Shift,E1,2,2,2026-06-08,200,Planned
+Winter Squash Butternut,Waltham,E1,3,3,2026-06-08,200,Planned
+Winter Squash Butternut,Waltham,E1,4,4,2026-06-08,200,Planned
+Winter Squash Butternut,Waltham,E1,5,5,2026-06-08,200,Planned
+Winter Squash Delicata,Delicata JS,E1,6,6,2026-06-08,200,Planned
+Winter Squash Delicata,Honeyboat,E1,7,7,2026-06-08,200,Planned
+Winter Squash Delicata,Honeyboat,E1,8,8,2026-06-08,200,Planned
+Winter Squash Honeynut,Honeynut,E1,9,9,2026-06-08,200,Planned
+Winter Squash Honeynut,Honeynut,E1,10,10,2026-06-08,200,Planned
+Winter Squash Honeynut,Honeynut,E1,11,11,2026-06-08,200,Planned
+Winter Squash Honeynut,Honeynut,E1,12,12,2026-06-08,200,Planned
+Winter Squash Kabocha,Black Futsu,E1,13,13,2026-06-08,200,Planned
+Winter Squash Kabocha,Tetsukabuto,E1,14,14,2026-06-08,200,Planned
+Winter Squash Kabocha,Tetsukabuto,E1,15,15,2026-06-08,200,Planned
+Winter Squash Koginut,Autumn Frost,E1,16,16,2026-06-08,200,Planned
+Winter Squash Koginut,Autumn Frost,E1,17,17,2026-06-08,200,Planned
+Lettuce Mix SN,(Summer) Foundation Mix + Batavia,B2,28,28,2026-06-15,200,Planned
+Celery,merengo,C3,17,17,2026-06-15,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,13,13,2026-06-15,100,Planned
+Sweet Corn,Superb,X3,8,8,2026-06-15,200,Planned
+Sweet Corn,Vision,X3,9,9,2026-06-15,200,Planned
+Cilantro,Cruiser,JSS,3,3,2024-09-16,50,Planned
+Lettuce Head,Fusion,B2,29,29,2026-06-22,67,Planned
+Lettuce Head,Muir,B2,29,29,2026-06-22,66,Planned
+Lettuce Head,Purple Fusion,B2,29,29,2026-06-22,67,Planned
+Lettuce Mix SN,(Summer) Foundation Mix + Batavia,B2,30,30,2026-06-22,200,Planned
+Cilantro,Cruiser,C3,18,18,2026-06-22,200,Planned
+Parsley,Giant of Italy,C3,19,19,2026-06-22,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,14,14,2026-06-22,100,Planned
+Radicchio Pink,Rosa Alba,B3,21,21,2026-06-29,200,Planned
+Radicchio Pink,Rosa Alba,B3,22,22,2026-06-29,200,Planned
+Radicchio Pink,Rosa Alba,B3,23,23,2026-06-29,200,Planned
+Radicchio Pink,Rosa Alba,B3,24,24,2026-06-29,200,Planned
+Radicchio Round,T&T 614,B3,16,16,2026-06-29,200,Planned
+Radicchio Round,T&T 614,B3,17,17,2026-06-29,200,Planned
+Radicchio Round,T&T 614,B3,18,18,2026-06-29,200,Planned
+Radicchio Variegated,Aquerello,B3,19,19,2026-06-29,200,Planned
+Radicchio Variegated,Aquerello,B3,20,20,2026-06-29,200,Planned
+Basil,Prospera DMR CG1,C3,20,20,2026-06-29,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,14,14,2026-06-29,100,Planned
+Beets Bulk Golden,Yellow Sunrise,D2,10,10,2026-06-29,200,Planned
+Beets Bulk Golden,Yellow Sunrise,D2,11,11,2026-06-29,200,Planned
+Beets Bulk Red,Boro F1,D2,12,12,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,13,13,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,14,14,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,15,15,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,16,16,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,17,17,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,18,18,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,19,19,2026-06-29,200,Planned
+Carrot Bulk,Bolero,D2,20,20,2026-06-29,200,Planned
+Cauliflower Sprouting,Fioretto 70,X1,7,7,2026-06-29,200,Planned
+Escarole,Eliance,B3,15,15,2026-07-06,100,Planned
+Lettuce Head,Marciano,C1,19,19,2026-07-06,66,Planned
+Lettuce Head,Milagro,C1,19,19,2026-07-06,67,Planned
+Lettuce Head,Shirane Sky,C1,19,19,2026-07-06,67,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C1,20,20,2026-07-06,200,Planned
+Celery,merengo,C3,21,21,2026-07-06,200,Planned
+Cilantro,Cruiser,C3,22,22,2026-07-06,200,Planned
+Parsley,Giant of Italy,C3,23,23,2026-07-06,200,Planned
+Bok Choy,Li Ren Choi,D1,15,15,2026-07-06,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,16,16,2026-07-06,100,Planned
+Broccolini,Bella Verde,X1,8,8,2026-07-06,200,Planned
+Broccolini,Bella Verde,X1,9,9,2026-07-06,200,Planned
+Broccolini,Bella Verde,X1,10,10,2026-07-06,200,Planned
+Broccolini,Bella Verde,X1,11,11,2026-07-06,200,Planned
+Broccolini,Bella Verde,X1,12,12,2026-07-06,200,Planned
+Brussels Sprouts,Dagan,X1,13,13,2026-07-06,200,Planned
+Brussels Sprouts,Dagan,X1,14,14,2026-07-06,200,Planned
+Brussels Sprouts,Dagan,X1,15,15,2026-07-06,200,Planned
+Brussels Sprouts,Dagan,X1,16,16,2026-07-06,200,Planned
+Cauliflower,Denali,X1,17,17,2026-07-06,200,Planned
+Cauliflower,Denali,X1,18,18,2026-07-06,200,Planned
+Cauliflower,Denali,X1,19,19,2026-07-06,200,Planned
+Cauliflower,Lavender,X1,21,21,2026-07-06,200,Planned
+Cauliflower,Lavender,X1,21,21,2026-07-06,200,Planned
+Cauliflower,Lavender,X1,22,22,2026-07-06,200,Planned
+Cauliflower,Puntaverde,X1,23,23,2026-07-06,200,Planned
+Cauliflower,Puntaverde,X1,24,24,2026-07-06,200,Planned
+Cauliflower,Puntaverde,X1,25,25,2026-07-06,200,Planned
+Cauliflower,Skywalker,X1,26,26,2026-07-06,200,Planned
+Cauliflower,Skywalker,X1,27,27,2026-07-06,200,Planned
+Cabbage Chinese,Merlot,A2,1,1,2026-07-13,200,Planned
+Cabbage Chinese,Minuet,A2,2,2,2026-07-13,200,Planned
+Cabbage Cone,Caraflex,A2,3,3,2026-07-13,200,Planned
+Cabbage Cone Storage,Murdoc,A2,4,4,2026-07-13,200,Planned
+Cabbage Cone Storage,Murdoc,A2,5,5,2026-07-13,200,Planned
+Cabbage Green Storage,Promise,A2,6,6,2026-07-13,200,Planned
+Cabbage Green Storage,Promise,A2,7,7,2026-07-13,200,Planned
+Cabbage Red,Omero,A2,8,8,2026-07-13,200,Planned
+Cabbage Red,Pink Cabbage Hybrid,A2,9,9,2026-07-13,200,Planned
+Cabbage Red,Ruby Perfection,A2,10,10,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,19,19,2026-10-26,200,Planned
+Cabbage Red,Ruby Perfection,A2,11,11,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,20,20,2026-10-26,200,Planned
+Cabbage Savoy,Famosa,A2,12,12,2026-07-13,200,Planned
+Cabbage Savoy,Famosa,A2,13,13,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,21,21,2026-10-26,200,Planned
+Puntarelle,Medusa,B3,13,13,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,22,22,2026-10-26,200,Planned
+Puntarelle,Medusa,B3,14,14,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,23,23,2026-10-26,200,Planned
+Lettuce Head,Marciano,C1,21,21,2026-07-13,66,Planned
+Triticale & Winter Peas,Standard,D3,24,24,2026-10-26,200,Planned
+Lettuce Head,Milagro,C1,21,21,2026-07-13,67,Planned
+Triticale & Winter Peas,Standard,D3,25,25,2026-10-26,200,Planned
+Lettuce Head,Shirane Sky,C1,21,21,2026-07-13,67,Planned
+Triticale & Winter Peas,Standard,D3,26,26,2026-10-26,200,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C1,22,22,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,27,27,2026-10-26,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,16,16,2026-07-13,100,Planned
+Triticale & Winter Peas,Standard,D3,28,28,2026-10-26,200,Planned
+Cauliflower Sprouting,Fioretto 70,X2,1,1,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,29,29,2026-10-26,200,Planned
+Cauliflower Sprouting,Murasaki Fioretto,X2,2,2,2026-07-13,200,Planned
+Triticale & Winter Peas,Standard,D3,30,30,2026-10-26,200,Planned
+Chard,Bright Lights,A3,1,1,2026-07-20,200,Planned
+Chard,Bright Lights,A3,2,2,2026-07-20,200,Planned
+Collards,Flash,A3,3,3,2026-07-20,200,Planned
+Collards,Flash,A3,4,4,2026-07-20,200,Planned
+Kale Curly,Winterbor,A3,5,5,2026-07-20,200,Planned
+Kale Curly,Winterbor,A3,6,6,2026-07-20,200,Planned
+Kale Lacinato,Ebony,A3,7,7,2026-07-20,200,Planned
+Kale Lacinato,Ebony,A3,8,8,2026-07-20,200,Planned
+Kale Lacinato,Ebony,A3,9,9,2026-07-20,200,Planned
+Kale Lacinato,Ebony,A3,10,10,2026-07-20,200,Planned
+Escarole,Eliance,B3,15,15,2026-07-20,100,Planned
+Frisee,Curlesi,B3,12,12,2026-07-20,200,Planned
+Radicchio Round,Indigo,B3,11,11,2026-07-20,200,Planned
+Radicchio Round,Vasari,B3,10,10,2026-07-20,200,Planned
+Radicchio Treviso,Baldo (T&T 306),B3,9,9,2026-07-20,200,Planned
+Radicchio Treviso,Regina Rosa,B3,8,8,2026-07-20,200,Planned
+Radicchio Treviso,Sangria,B3,7,7,2026-07-20,200,Planned
+Radicchio Variegated,Beatrice,B3,6,6,2026-07-20,200,Planned
+Radicchio Variegated,Giorgine,B3,5,5,2026-07-20,200,Planned
+Radicchio Variegated,Mirabella,B3,4,4,2026-07-20,200,Planned
+Fennel,Orazio,C1,23,23,2026-07-20,200,Planned
+Fennel,Orazio,C1,24,24,2026-07-20,200,Planned
+Fennel,Orazio,C1,25,25,2026-07-20,200,Planned
+Lettuce Head,Marciano,C2,15,15,2026-07-20,66,Planned
+Lettuce Head,Milagro,C2,15,15,2026-07-20,67,Planned
+Lettuce Head,Shirane Sky,C2,15,15,2026-07-20,67,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,16,16,2026-07-20,200,Planned
+Celery,merengo,C3,24,24,2026-07-20,200,Planned
+Cilantro,Cruiser,C3,25,25,2026-07-20,200,Planned
+Scallion,Parade,C3,26,26,2026-07-20,100,Planned
+Bok Choy,Li Ren Choi,D1,17,17,2026-07-20,200,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,18,18,2026-07-20,100,Planned
+Broccolini,Bella Verde,X2,3,3,2026-07-20,200,Planned
+Broccolini,Bella Verde,X2,4,4,2026-07-20,200,Planned
+Broccolini,Bella Verde,X2,5,5,2026-07-20,200,Planned
+Broccolini,Bella Verde,X2,6,6,2026-07-20,200,Planned
+Broccolini,Bella Verde,X2,7,7,2026-07-20,200,Planned
+Cauliflower Sprouting,Fioretto 70,X2,8,8,2026-07-20,200,Planned
+Cauliflower Sprouting,Murasaki Fioretto,X2,9,9,2026-07-20,200,Planned
+Escarole,Eliance,B3,3,3,2026-07-27,100,Planned
+Radicchio Round,Indigo,B3,2,2,2026-07-27,200,Planned
+Radicchio Round,Indigo,B3,3,3,2026-07-27,100,Planned
+Lettuce Head,Marciano,C2,17,17,2026-07-27,66,Planned
+Lettuce Head,Milagro,C2,17,17,2026-07-27,67,Planned
+Lettuce Head,Shirane Sky,C2,17,17,2026-07-27,67,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,18,18,2026-07-27,200,Planned
+Scallion,Parade,C3,26,26,2026-07-27,100,Planned
+Arugula,Astro,D1,18,18,2026-07-27,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,19,19,2026-07-27,20,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,19,19,2026-07-27,60,Planned
+Greens Mix Rosie,Rosie,D1,19,19,2026-07-27,20,Planned
+Radish French Breakfast,French Breakfast,D1,19,19,2026-07-27,100,Planned
+Radish Purple,Bacchus,D1,20,20,2026-07-27,100,Planned
+Radish Red,Sora,D1,20,20,2026-07-27,100,Planned
+Beets Bulk Golden,Boldor,D2,21,21,2026-07-27,200,Planned
+Beets Bulk Golden,Boldor,D2,22,22,2026-07-27,200,Planned
+Beets Bulk Golden,Boldor,D2,23,23,2026-07-27,200,Planned
+Beets Bulk Golden,Boldor,D2,24,24,2026-07-27,200,Planned
+Beets Bulk Golden,Yellow Sunrise,D2,25,25,2026-07-27,200,Planned
+Beets Bulk Golden,Yellow Sunrise,D2,26,26,2026-07-27,200,Planned
+Beets Bulk Red,Boro F1,D2,27,27,2026-07-27,200,Planned
+Beets Bulk Red,Boro F1,D2,28,28,2026-07-27,200,Planned
+Beets Bulk Red,Boro F1,D2,29,29,2026-07-27,200,Planned
+Beets Bulk Red,Boro F1,D2,30,30,2026-07-27,200,Planned
+Cabbage Chinese,Minuet,X2,10,10,2026-07-27,200,Planned
+Cauliflower,Denali,X2,11,11,2026-07-27,200,Planned
+Cauliflower Sprouting,Fioretto 70,X2,12,12,2026-07-27,200,Planned
+Chard,Bright Lights,A3,11,11,2026-08-03,200,Planned
+Chard,Bright Lights,A3,12,12,2026-08-03,200,Planned
+Collards,Flash,A3,13,13,2026-08-03,200,Planned
+Collards,Flash,A3,14,14,2026-08-03,200,Planned
+Kale Curly,Winterbor,A3,15,15,2026-08-03,200,Planned
+Kale Curly,Winterbor,A3,16,16,2026-08-03,200,Planned
+Kale Lacinato,Ebony,A3,17,17,2026-08-03,200,Planned
+Kale Lacinato,Ebony,A3,18,18,2026-08-03,200,Planned
+Kale Lacinato,Ebony,A3,19,19,2026-08-03,200,Planned
+Kale Lacinato,Ebony,A3,20,20,2026-08-03,200,Planned
+Kale Lacinato,Ebony,A3,21,21,2026-08-03,200,Planned
+Kale Lacinato,Ebony,A3,22,22,2026-08-03,200,Planned
+Lettuce Head,Marciano,C2,19,19,2026-08-03,66,Planned
+Lettuce Head,Milagro,C2,19,19,2026-08-03,67,Planned
+Lettuce Head,Shirane Sky,C2,19,19,2026-08-03,67,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,20,20,2026-08-03,200,Planned
+Cilantro,Cruiser,C3,28,28,2026-08-03,200,Planned
+Scallion,Parade,C3,27,27,2026-08-03,100,Planned
+Bok Choy,Li Ren Choi,D1,21,21,2026-08-03,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,21,21,2026-08-03,20,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,21,21,2026-08-03,60,Planned
+Greens Mix Rosie,Rosie,D1,21,21,2026-08-03,20,Planned
+Broccolini,BC1611,X2,13,13,2026-08-03,200,Planned
+Broccolini,BC1611,X2,14,14,2026-08-03,200,Planned
+Broccolini,BC1611,X2,15,15,2026-08-03,200,Planned
+Broccolini,BC1611,X2,16,16,2026-08-03,200,Planned
+Broccolini,Burgundy,X2,17,17,2026-08-03,200,Planned
+Broccolini,Burgundy,X2,18,18,2026-08-03,200,Planned
+Broccolini,Burgundy,X2,19,19,2026-08-03,200,Planned
+Broccolini,Burgundy,X2,20,20,2026-08-03,200,Planned
+Kohlrabi,Kolibri,X2,22,22,2026-08-03,100,Planned
+Kohlrabi Storage,Kossak,X2,21,21,2026-08-03,200,Planned
+Radish Daikon Bulk,Artesia,X2,22,22,2026-08-03,100,Planned
+Radish Daikon Bulk,Bora Nam,X2,23,23,2026-08-03,100,Planned
+Radish Daikon Bulk,Red King 2,X2,23,23,2026-08-03,100,Planned
+Radish Daikon Bulk,Red Meat,X2,24,24,2026-08-03,200,Planned
+Oats & Peas,Standard,B1,1,1,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,2,2,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,3,3,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,4,4,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,5,5,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,6,6,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,7,7,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,8,8,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,9,9,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,10,10,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,11,11,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,12,12,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,13,13,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,14,14,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,15,15,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,16,16,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,17,17,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,18,18,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,19,19,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,20,20,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,21,21,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,22,22,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,23,23,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,24,24,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,25,25,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,26,26,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,27,27,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,28,28,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,29,29,2026-08-10,100,Planned
+Oats & Peas,Standard,B1,30,30,2026-08-10,100,Planned
+Lettuce Head,Marciano,C2,21,21,2026-08-10,66,Planned
+Lettuce Head,Milagro,C2,21,21,2026-08-10,67,Planned
+Lettuce Head,Shirane Sky,C2,21,21,2026-08-10,67,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,22,22,2026-08-10,200,Planned
+Scallion,Parade,C3,27,27,2026-08-10,100,Planned
+Arugula,Astro,D1,22,22,2026-08-10,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,22,22,2026-08-10,20,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,22,22,2026-08-10,60,Planned
+Greens Mix Rosie,Rosie,D1,22,22,2026-08-10,20,Planned
+Radish French Breakfast,French Breakfast,D1,23,23,2026-08-10,100,Planned
+Radish Purple,Bacchus,D1,23,23,2026-08-10,100,Planned
+Radish Red,Sora,D1,24,24,2026-08-10,100,Planned
+Oats & Peas,Standard,E2,1,1,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,2,2,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,3,3,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,4,4,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,5,5,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,6,6,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,7,7,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,8,8,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,9,9,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,10,10,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,11,11,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,12,12,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,13,13,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,14,14,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,15,15,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,16,16,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,17,17,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,18,18,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,19,19,2026-08-10,200,Planned
+Oats & Peas,Standard,E2,20,20,2026-08-10,200,Planned
+Chard,Bright Lights,A3,23,23,2026-08-17,200,Planned
+Kale Lacinato,Ebony,A3,24,24,2026-08-17,200,Planned
+Kale Lacinato,Ebony,A3,25,25,2026-08-17,200,Planned
+Kale Lacinato,Ebony,A3,26,26,2026-08-17,200,Planned
+Kale Lacinato,Ebony,A3,27,27,2026-08-17,200,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,23,23,2026-08-17,200,Planned
+Cilantro,Cruiser,C3,29,29,2026-08-17,200,Planned
+Bok Choy,Li Ren Choi,D1,24,24,2026-08-17,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,25,25,2026-08-17,20,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,25,25,2026-08-17,60,Planned
+Greens Mix Rosie,Rosie,D1,25,25,2026-08-17,20,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,24,24,2026-08-24,200,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,C2,25,25,2026-08-24,200,Planned
+Arugula,Astro,D1,25,25,2026-08-24,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,D1,26,26,2026-08-24,20,Planned
+Greens Mix Cheap Frills,Cheap Frills,D1,26,26,2026-08-24,60,Planned
+Greens Mix Rosie,Rosie,D1,26,26,2026-08-24,20,Planned
+Radish French Breakfast,French Breakfast,D1,26,26,2026-08-24,100,Planned
+Radish Purple,Bacchus,D1,27,27,2026-08-24,100,Planned
+Radish Red,Sora,D1,27,27,2026-08-24,100,Planned
+Oats & Peas,Standard,B2,1,1,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,2,2,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,3,3,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,4,4,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,5,5,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,6,6,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,7,7,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,8,8,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,9,9,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,10,10,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,11,11,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,12,12,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,13,13,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,14,14,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,15,15,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,16,16,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,17,17,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,18,18,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,19,19,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,20,20,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,21,21,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,22,22,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,23,23,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,24,24,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,25,25,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,26,26,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,27,27,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,28,28,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,29,29,2026-08-31,200,Planned
+Oats & Peas,Standard,B2,30,30,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,1,1,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,2,2,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,3,3,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,4,4,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,5,5,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,6,6,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,7,7,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,8,8,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,9,9,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,10,10,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,11,11,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,12,12,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,13,13,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,14,14,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,15,15,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,16,16,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,17,17,2026-08-31,200,Planned
+Oats & Peas,Standard,C1,18,18,2026-08-31,200,Planned
+Bok Choy,Li Ren Choi,D1,28,28,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,1,1,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,2,2,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,3,3,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,4,4,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,5,5,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,6,6,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,7,7,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,8,8,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,9,9,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,10,10,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,11,11,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,12,12,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,13,13,2026-08-31,200,Planned
+Oats & Peas,Standard,D1,14,14,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,1,1,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,2,2,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,3,3,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,4,4,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,5,5,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,6,6,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,7,7,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,8,8,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,9,9,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,10,10,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,11,11,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,12,12,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,13,13,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,14,14,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,15,15,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,16,16,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,17,17,2026-08-31,200,Planned
+Oats & Peas,Standard,D3,18,18,2026-08-31,200,Planned
+Chard,Bright Lights,HT-W,,,2026-08-31,100,Planned
+Chard,Bright Lights,HT-W,,,2026-08-31,100,Planned
+Chard,Bright Lights,HT-W,,,2026-08-31,100,Planned
+Chard,Bright Lights,HT-W,,,2026-08-31,100,Planned
+Dandelion,Clio,HT-W,,,2026-08-31,100,Planned
+Dandelion,Clio,HT-W,,,2026-08-31,100,Planned
+Greens Mix Baby Kale,Red Russian Kale,HT-W,,,2026-08-31,20,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT-W,,,2026-08-31,60,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Kale Lacinato,Ebony,HT-W,,,2026-08-31,100,Planned
+Lettuce Mix SN,(Spring/Fall) Prismatic + Butters,HT-W,,,2026-08-31,100,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT-W,,,2026-08-31,100,Planned
+Mustard,Miike Giant,HT-W,,,2026-08-31,110,Planned
+Scallion,Parade,HT-W,,,2026-08-31,100,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-09-07,55,Planned
+Arugula Wild,Bellezia,HT-W,,,2026-09-14,100,Planned
+Arugula Wild,Bellezia,HT-W,,,2026-09-14,100,Planned
+Arugula Wild,Bellezia,HT-W,,,2026-09-14,100,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-09-14,55,Planned
+Kale Russian,Siberian,HT-W,,,2026-09-14,100,Planned
+Kale Russian,Siberian,HT-W,,,2026-09-14,100,Planned
+Kale Russian,Siberian,HT-W,,,2026-09-14,100,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT-W,,,2026-09-14,100,Planned
+Mustard,Miike Giant,HT-W,,,2026-09-14,110,Planned
+Scallion,Parade,HT-W,,,2026-09-14,100,Planned
+Spinach,Kolibri,HT-W,,,2026-09-14,100,Planned
+Spinach,Kolibri,HT-W,,,2026-09-14,100,Planned
+Spinach,Rangitoto,HT-W,,,2026-09-14,50,Planned
+Spinach,Space,HT-W,,,2026-09-14,50,Planned
+Spinach,Sunangel,HT-W,,,2026-09-14,50,Planned
+Spinach,Tarsier,HT-W,,,2026-09-14,50,Planned
+Arugula,Astro,HT-W,,,2026-09-21,50,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-09-21,55,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT-W,,,2026-09-21,50,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT-W,,,2026-09-21,100,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-09-28,55,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT-W,,,2026-09-28,100,Planned
+Scallion,Parade,HT-W,,,2026-09-28,100,Planned
+Spinach,Kolibri,HT-W,,,2026-09-28,100,Planned
+Spinach,Kolibri,HT-W,,,2026-09-28,100,Planned
+Spinach,Rangitoto,HT-W,,,2026-09-28,50,Planned
+Spinach,Space,HT-W,,,2026-09-28,50,Planned
+Spinach,Sunangel,HT-W,,,2026-09-28,50,Planned
+Spinach,Tarsier,HT-W,,,2026-09-28,50,Planned
+Arugula,Astro,HT-W,,,2026-10-05,50,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-10-05,55,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT-W,,,2026-10-05,50,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT-W,,,2026-10-05,100,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-10-12,55,Planned
+Lettuce Mix SN,(Winter) Prismatic + Batavian,HT-W,,,2026-10-12,100,Planned
+Scallion,Parade,HT-W,,,2026-10-12,100,Planned
+Arugula,Astro,HT-W,,,2026-10-19,50,Planned
+Bok Choy,Li Ren Choi,HT-W,,,2026-10-19,55,Planned
+Greens Mix Cheap Frills,Cheap Frills,HT-W,,,2026-10-19,50,Planned
+Bok Choy,Bopak,HT-W,,,2026-10-26,55,Planned
+Bok Choy,Bopak,HT-W,,,2026-11-02,55,Planned
+Bok Choy,Bopak,HT-W,,,2026-11-09,55,Planned
+Bok Choy,Bopak,HT-W,,,2026-11-16,55,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
+,,,,,,,Planned
