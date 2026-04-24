@@ -1,6 +1,7 @@
 {
   "source_id": "live-import-historical-601",
   "drive_folder_id": "1rVKuvkLTF--ogy1rjBQ3N0l3cH3A20nI",
+  "drive_search_subfolders": true,
   "start_year": 2023,
   "end_year": 2025,
   "tabs": [

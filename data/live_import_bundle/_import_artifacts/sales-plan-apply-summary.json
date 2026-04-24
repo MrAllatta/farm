@@ -1,0 +1,48 @@
+{
+  "fatal_error": null,
+  "results": {
+    "escalation_summary": [],
+    "failure_signatures": [],
+    "models": {
+      "PlanningYear": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 3
+      },
+      "RotationHistory": {
+        "created": 69,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesEvent": {
+        "created": 2086,
+        "error": 0,
+        "skipped": 0,
+        "updated": 574
+      }
+    },
+    "row_errors": [],
+    "totals": {
+      "created": 2155,
+      "error": 0,
+      "skipped": 0,
+      "updated": 577
+    }
+  },
+  "run": {
+    "atomic_apply": true,
+    "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/sales-plan",
+    "dry_run": false,
+    "end_year": 2026,
+    "finished_at": "2026-04-24T16:46:21.863531Z",
+    "run_id": "20260424T164616870404",
+    "start_year": 2024,
+    "started_at": "2026-04-24T16:46:16.870404Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.4",
+  "status": "ok"
+}

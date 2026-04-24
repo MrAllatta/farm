@@ -1,0 +1,169 @@
+{
+  "fatal_error": null,
+  "results": {
+    "escalation_summary": [
+      {
+        "count": 13,
+        "escalation_path": "ops-oncall -> reference-data",
+        "owner_area": "reference-data",
+        "owner_team": "import-pipeline",
+        "recovery_steps": [
+          "seed missing reference rows and rerun --validate-only"
+        ],
+        "severity": "high",
+        "signatures": [
+          "stale_fk"
+        ]
+      }
+    ],
+    "failure_signatures": [
+      {
+        "count": 13,
+        "escalation_path": "ops-oncall -> reference-data",
+        "example": {
+          "field_path": "sales_plan_302.product",
+          "message": "product not found 'Cucumber Persian - lb'",
+          "model": "SalesEvent"
+        },
+        "owner_area": "reference-data",
+        "owner_team": "import-pipeline",
+        "recovery": "seed missing reference rows and rerun --validate-only",
+        "severity": "high",
+        "signature": "stale_fk"
+      }
+    ],
+    "models": {
+      "PlanningYear": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 3
+      },
+      "RotationHistory": {
+        "created": 77,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 13,
+        "updated": 2647
+      }
+    },
+    "row_errors": [
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 675
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 746
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 822
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 897
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 981
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1073
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1163
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1249
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1330
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1409
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1484
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1567
+      },
+      {
+        "code": "stale_fk",
+        "field_path": "sales_plan_302.product",
+        "message": "product not found 'Cucumber Persian - lb'",
+        "model": "SalesEvent",
+        "row": 1648
+      }
+    ],
+    "totals": {
+      "created": 77,
+      "error": 0,
+      "skipped": 13,
+      "updated": 2650
+    }
+  },
+  "run": {
+    "atomic_apply": true,
+    "data_dir": "farm/data/live_import_bundle/sales-plan",
+    "dry_run": false,
+    "end_year": 2026,
+    "finished_at": "2026-04-24T16:35:18.853459Z",
+    "run_id": "20260424T163512849388",
+    "start_year": 2024,
+    "started_at": "2026-04-24T16:35:12.849388Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.4",
+  "status": "ok"
+}

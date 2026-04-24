@@ -1,0 +1,988 @@
+Pack Date,Planning Year,Mix Product Name,Component Crop Name,Component Percent,Component Quantity,Component Unit,Variety Request,Safety Factor,Harvest Date,Notes,Component Source Type
+2025-02-15,2025,Salad Mix,Greens Mix Cheap Frills,8,3.4,,,1.1,2025-02-13,,crop
+2025-02-15,2025,Salad Mix,Lettuce Mix SN,25,10.5,,,1.1,2025-02-13,,crop
+2025-02-15,2025,Salad Mix,Radicchio Round,47,19.8,,,1.1,2025-02-13,,crop
+2025-02-15,2025,Salad Mix,Lettuce Mini Gem,12,5.1,,,1.1,2025-02-13,,crop
+2025-02-15,2025,Salad Mix,Arugula,8,3.4,,,1.1,2025-02-13,,crop
+2025-02-22,2025,Salad Mix,Greens Mix Cheap Frills,12,3.7,,,1.1,2025-02-20,,crop
+2025-02-22,2025,Salad Mix,Lettuce Mix SN,20,6.1,,,1.1,2025-02-20,,crop
+2025-02-22,2025,Salad Mix,Lettuce Mini Gem,20,6.1,,,1.1,2025-02-20,,crop
+2025-02-22,2025,Salad Mix,Radicchio Round,35,10.7,,,1.1,2025-02-20,,crop
+2025-02-22,2025,Salad Mix,Arugula,13,4,,,1.1,2025-02-20,,crop
+2025-03-01,2025,Salad Mix,Radicchio Round,32,11.3,,,1.1,2025-02-27,,crop
+2025-03-01,2025,Salad Mix,Lettuce Mini Gem,28,9.9,,,1.1,2025-02-27,,crop
+2025-03-01,2025,Salad Mix,Greens Mix Cheap Frills,10,3.5,,,1.1,2025-02-27,,crop
+2025-03-01,2025,Salad Mix,Arugula,10,3.5,,,1.1,2025-02-27,,crop
+2025-03-01,2025,Salad Mix,Lettuce Mix SN,20,7,,,1.1,2025-02-27,,crop
+2025-03-08,2025,Salad Mix,Lettuce Mini Gem,33,7.3,,,1.1,2025-03-06,,crop
+2025-03-08,2025,Salad Mix,Greens Mix Cheap Frills,1,0.2,,,1.1,2025-03-06,,crop
+2025-03-08,2025,Salad Mix,Arugula,33,7.3,,,1.1,2025-03-06,,crop
+2025-03-08,2025,Salad Mix,Lettuce Mix SN,33,7.3,,,1.1,2025-03-06,,crop
+2025-03-15,2025,Salad Mix,Lettuce Mini Gem,35,9.2,,,1.1,2025-03-13,,crop
+2025-03-15,2025,Salad Mix,Greens Mix Cheap Frills,17,4.5,,,1.1,2025-03-13,,crop
+2025-03-15,2025,Salad Mix,Arugula,18,4.8,,,1.1,2025-03-13,,crop
+2025-03-15,2025,Salad Mix,Lettuce Mix SN,30,7.9,,,1.1,2025-03-13,,crop
+2025-03-22,2025,Salad Mix,Lettuce Mini Gem,45,13.4,,,1.1,2025-03-20,,crop
+2025-03-22,2025,Salad Mix,Greens Mix Cheap Frills,10,3,,,1.1,2025-03-20,,crop
+2025-03-22,2025,Salad Mix,Arugula,15,4.5,,,1.1,2025-03-20,,crop
+2025-03-22,2025,Salad Mix,Lettuce Mix SN,25,7.4,,,1.1,2025-03-20,,crop
+2025-03-29,2025,Salad Mix,Lettuce Mini Gem,40,10.7,,,1.1,2025-03-27,,crop
+2025-03-29,2025,Salad Mix,Greens Mix Cheap Frills,15,4,,,1.1,2025-03-27,,crop
+2025-03-29,2025,Salad Mix,Arugula,20,5.3,,,1.1,2025-03-27,,crop
+2025-03-29,2025,Salad Mix,Lettuce Mix SN,20,5.3,,,1.1,2025-03-27,,crop
+2025-03-22,2025,Salad Mix,Radicchio Round,5,1.5,,treviso,1.1,2025-03-20,,crop
+2025-03-29,2025,Salad Mix,Radicchio Round,5,1.3,,treviso,1.1,2025-03-27,,crop
+2025-04-05,2025,Salad Mix,Lettuce Mini Gem,45,11.9,,,1.1,2025-04-03,,crop
+2025-04-05,2025,Salad Mix,Greens Mix Cheap Frills,10,2.6,,,1.1,2025-04-03,,crop
+2025-04-05,2025,Salad Mix,Arugula,10,2.6,,,1.1,2025-04-03,,crop
+2025-04-05,2025,Salad Mix,Lettuce Mix SN,35,9.2,,,1.1,2025-04-03,,crop
+2025-04-12,2025,Salad Mix,Lettuce Mix SN,35,9.1,,,1.1,2025-04-10,,crop
+2025-04-12,2025,Salad Mix,Arugula,25,6.5,,,1.1,2025-04-10,,crop
+2025-04-12,2025,Salad Mix,Greens Mix Cheap Frills,25,6.5,,,1.1,2025-04-10,,crop
+2025-04-12,2025,Salad Mix,Lettuce Mini Gem,15,3.9,,,1.1,2025-04-10,,crop
+2025-04-19,2025,Salad Mix,Lettuce Mix SN,10,3.3,,,1.1,2025-04-17,,crop
+2025-04-19,2025,Salad Mix,Lettuce Mini Gem,20,6.5,,,1.1,2025-04-17,,crop
+2025-04-19,2025,Salad Mix,Greens Mix Cheap Frills,31,10.1,,,1.1,2025-04-17,,crop
+2025-04-19,2025,Salad Mix,Greens Mix Baby Kale,24,7.8,,,1.1,2025-04-17,,crop
+2025-04-19,2025,Salad Mix,Arugula,15,4.9,,,1.1,2025-04-17,,crop
+2025-04-26,2025,Salad Mix,Lettuce Mix SN,20,7.5,,,1.1,2025-04-24,,crop
+2025-04-26,2025,Salad Mix,Lettuce Mini Gem,30,11.2,,,1.1,2025-04-24,,crop
+2025-04-26,2025,Salad Mix,Greens Mix Cheap Frills,20,7.5,,,1.1,2025-04-24,,crop
+2025-04-26,2025,Salad Mix,Greens Mix Baby Kale,14,5.2,,,1.1,2025-04-24,,crop
+2025-04-26,2025,Salad Mix,Arugula,16,6,,,1.1,2025-04-24,,crop
+2025-05-03,2025,Salad Mix,Lettuce Mini Gem,27,9.3,,,1.1,2025-05-01,,crop
+2025-05-03,2025,Salad Mix,Greens Mix Cheap Frills,36,12.4,,,1.1,2025-05-01,,crop
+2025-05-03,2025,Salad Mix,Greens Mix Baby Kale,14,4.8,,,1.1,2025-05-01,,crop
+2025-05-03,2025,Salad Mix,Arugula,23,7.9,,,1.1,2025-05-01,,crop
+2025-05-10,2025,Salad Mix,Lettuce Mini Gem,22,8.9,,,1.1,2025-05-08,,crop
+2025-05-10,2025,Salad Mix,Greens Mix Cheap Frills,35,14.1,,,1.1,2025-05-08,,crop
+2025-05-10,2025,Salad Mix,Greens Mix Baby Kale,3,1.2,,,1.1,2025-05-08,,crop
+2025-05-10,2025,Salad Mix,Arugula,12,4.8,,,1.1,2025-05-08,,crop
+2025-05-10,2025,Salad Mix,Greens Mix Mizuna,3,1.2,,,1.1,2025-05-08,,crop
+2025-05-10,2025,Salad Mix,Greens Mix Rosie,12,4.8,,,1.1,2025-05-08,,crop
+2025-05-10,2025,Salad Mix,Greens Mix Tokyo Bekana,13,5.2,,,1.1,2025-05-08,,crop
+2025-05-17,2025,Salad Mix,Greens Mix Cheap Frills,40,7,,,1.1,2025-05-15,,crop
+2025-05-17,2025,Salad Mix,Greens Mix Baby Kale,5,0.9,,,1.1,2025-05-15,,crop
+2025-05-17,2025,Salad Mix,Lettuce Mix SN,40,7,,,1.1,2025-05-15,,crop
+2025-05-17,2025,Salad Mix,Greens Mix Mizuna,5,0.9,,,1.1,2025-05-15,,crop
+2025-05-17,2025,Salad Mix,Greens Mix Rosie,5,0.9,,,1.1,2025-05-15,,crop
+2025-05-17,2025,Salad Mix,Greens Mix Tokyo Bekana,5,0.9,,,1.1,2025-05-15,,crop
+2025-05-24,2025,Salad Mix,Greens Mix Cheap Frills,40,14.2,,,1.1,2025-05-22,,crop
+2025-05-24,2025,Salad Mix,Greens Mix Baby Kale,4,1.4,,,1.1,2025-05-22,,crop
+2025-05-24,2025,Salad Mix,Lettuce Mix SN,40,14.2,,,1.1,2025-05-22,,crop
+2025-05-24,2025,Salad Mix,Greens Mix Mizuna,4,1.4,,,1.1,2025-05-22,,crop
+2025-05-24,2025,Salad Mix,Greens Mix Rosie,4,1.4,,,1.1,2025-05-22,,crop
+2025-05-24,2025,Salad Mix,Greens Mix Tokyo Bekana,4,1.4,,,1.1,2025-05-22,,crop
+2025-05-24,2025,Salad Mix,Greens Mix Purslane,4,1.4,,,1.1,2025-05-22,,crop
+2025-05-31,2025,Salad Mix,Greens Mix Cheap Frills,25,12.7,,,1.1,2025-05-29,,crop
+2025-05-31,2025,Salad Mix,Greens Mix Baby Kale,3,1.5,,,1.1,2025-05-29,,crop
+2025-05-31,2025,Salad Mix,Lettuce Mix SN,63,32.1,,,1.1,2025-05-29,,crop
+2025-05-31,2025,Salad Mix,Greens Mix Mizuna,3,1.5,,,1.1,2025-05-29,,crop
+2025-05-31,2025,Salad Mix,Greens Mix Rosie,3,1.5,,,1.1,2025-05-29,,crop
+2025-05-31,2025,Salad Mix,Greens Mix Purslane,3,1.5,,,1.1,2025-05-29,,crop
+2025-06-04,2025,Salad Mix,Greens Mix Cheap Frills,25,3.4,,,1.1,2025-06-03,,crop
+2025-06-04,2025,Salad Mix,Greens Mix Baby Kale,3,0.4,,,1.1,2025-06-03,,crop
+2025-06-04,2025,Salad Mix,Lettuce Mix SN,63,8.5,,,1.1,2025-06-03,,crop
+2025-06-04,2025,Salad Mix,Greens Mix Mizuna,3,0.4,,,1.1,2025-06-03,,crop
+2025-06-04,2025,Salad Mix,Greens Mix Rosie,3,0.4,,,1.1,2025-06-03,,crop
+2025-06-04,2025,Salad Mix,Greens Mix Purslane,3,0.4,,,1.1,2025-06-03,,crop
+2025-06-07,2025,Salad Mix,Greens Mix Cheap Frills,8.5,5.9,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Greens Mix Baby Kale,1,0.7,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Lettuce Mix SN,80,55.8,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Greens Mix Mizuna,1,0.7,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Greens Mix Rosie,0.5,0.3,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Greens Mix Purslane,0.5,0.3,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Lettuce Mini Gem,8,5.6,,,1.1,2025-06-05,,crop
+2025-06-07,2025,Salad Mix,Greens Mix Tokyo Bekana,0.5,0.3,,,1.1,2025-06-05,,crop
+2025-06-11,2025,Salad Mix,Greens Mix Cheap Frills,20,3,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Greens Mix Baby Kale,0.5,0.1,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Lettuce Mix SN,44.5,6.7,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Greens Mix Mizuna,0.5,0.1,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Greens Mix Rosie,0.5,0.1,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Greens Mix Purslane,0.5,0.1,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Lettuce Mini Gem,20,3,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Greens Mix Tokyo Bekana,0.5,0.1,,,1.1,2025-06-10,,crop
+2025-06-11,2025,Salad Mix,Frisee,13,2,,,1.1,2025-06-10,,crop
+2025-06-13,2025,Salad Mix,Greens Mix Cheap Frills,20,13.4,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Greens Mix Baby Kale,0.5,0.3,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Lettuce Mix SN,50,33.4,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Greens Mix Mizuna,0.5,0.3,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Greens Mix Rosie,0.5,0.3,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Greens Mix Purslane,0.5,0.3,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Lettuce Mini Gem,19,12.7,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Greens Mix Tokyo Bekana,0.5,0.3,,,1.1,2025-06-12,,crop
+2025-06-13,2025,Salad Mix,Frisee,8.5,5.7,,,1.1,2025-06-12,,crop
+2025-06-18,2025,Salad Mix,Lettuce Mix SN,50,7.7,,,1.1,2025-06-17,,crop
+2025-06-18,2025,Salad Mix,Lettuce Mini Gem,20,3.1,,,1.1,2025-06-17,,crop
+2025-06-18,2025,Salad Mix,Greens Mix Cheap Frills,10,1.5,,,1.1,2025-06-17,,crop
+2025-06-18,2025,Salad Mix,Frisee,18,2.8,,,1.1,2025-06-17,,crop
+2025-06-18,2025,Salad Mix,Radicchio Variegated,2,0.3,,,1.1,2025-06-17,,crop
+2025-06-21,2025,Salad Mix,Lettuce Mix SN,50,39.5,,,1.1,2025-06-19,,crop
+2025-06-21,2025,Salad Mix,Lettuce Mini Gem,20,15.8,,,1.1,2025-06-19,,crop
+2025-06-21,2025,Salad Mix,Greens Mix Cheap Frills,10,7.9,,,1.1,2025-06-19,,crop
+2025-06-21,2025,Salad Mix,Frisee,18,14.2,,,1.1,2025-06-19,,crop
+2025-06-21,2025,Salad Mix,Radicchio Variegated,1,0.8,,,1.1,2025-06-19,,crop
+2025-06-21,2025,Salad Mix,Greens Mix Amaranth,1,0.8,,beet greens,1.1,2025-06-19,,crop
+2025-06-25,2025,Salad Mix,Lettuce Mix SN,45,6.4,,,1.1,2025-06-24,,crop
+2025-06-25,2025,Salad Mix,Lettuce Mini Gem,20,2.9,,,1.1,2025-06-24,,crop
+2025-06-25,2025,Salad Mix,Greens Mix Cheap Frills,5,0.7,,,1.1,2025-06-24,,crop
+2025-06-25,2025,Salad Mix,Frisee,20,2.9,,,1.1,2025-06-24,,crop
+2025-06-25,2025,Salad Mix,Radicchio Variegated,10,1.4,,,1.1,2025-06-24,,crop
+2025-06-28,2025,Salad Mix,Lettuce Mix SN,45,46.2,,,1.1,2025-06-26,,crop
+2025-06-28,2025,Salad Mix,Lettuce Mini Gem,19,19.5,,,1.1,2025-06-26,,crop
+2025-06-28,2025,Salad Mix,Greens Mix Cheap Frills,8,8.2,,,1.1,2025-06-26,,crop
+2025-06-28,2025,Salad Mix,Frisee,15,15.4,,,1.1,2025-06-26,,crop
+2025-06-28,2025,Salad Mix,Radicchio Variegated,10,10.3,,,1.1,2025-06-26,,crop
+2025-06-28,2025,Salad Mix,Greens Mix Amaranth,3,3.1,,,1.1,2025-06-26,,crop
+2025-07-02,2025,Salad Mix,Lettuce Mix SN,50,8.6,,,1.1,2025-07-01,,crop
+2025-07-02,2025,Salad Mix,Lettuce Mini Gem,20,3.5,,,1.1,2025-07-01,,crop
+2025-07-02,2025,Salad Mix,Frisee,15,2.6,,,1.1,2025-07-01,,crop
+2025-07-02,2025,Salad Mix,Radicchio Variegated,7,1.2,,,1.1,2025-07-01,,crop
+2025-07-02,2025,Salad Mix,Radicchio Round,8,1.4,,,1.1,2025-07-01,,crop
+2025-07-05,2025,Salad Mix,Lettuce Mix SN,50,49.5,,,1.1,2025-07-03,,crop
+2025-07-05,2025,Salad Mix,Lettuce Mini Gem,20,19.8,,,1.1,2025-07-03,,crop
+2025-07-05,2025,Salad Mix,Frisee,15,14.8,,,1.1,2025-07-03,,crop
+2025-07-05,2025,Salad Mix,Radicchio Variegated,7,6.9,,,1.1,2025-07-03,,crop
+2025-07-05,2025,Salad Mix,Radicchio Round,8,7.9,,,1.1,2025-07-03,,crop
+2025-07-09,2025,Salad Mix,Lettuce Mix SN,40,6.8,,,1.1,2025-07-08,,crop
+2025-07-09,2025,Salad Mix,Lettuce Mini Gem,20,3.4,,,1.1,2025-07-08,,crop
+2025-07-09,2025,Salad Mix,Frisee,20,3.4,,,1.1,2025-07-08,,crop
+2025-07-09,2025,Salad Mix,Radicchio Variegated,8,1.4,,,1.1,2025-07-08,,crop
+2025-07-09,2025,Salad Mix,Radicchio Round,12,2,,,1.1,2025-07-08,,crop
+2025-07-12,2025,Salad Mix,Lettuce Mix SN,40,39.6,,,1.1,2025-07-10,,crop
+2025-07-12,2025,Salad Mix,Lettuce Mini Gem,15,14.9,,,1.1,2025-07-10,,crop
+2025-07-12,2025,Salad Mix,Frisee,17,16.8,,,1.1,2025-07-10,,crop
+2025-07-12,2025,Salad Mix,Radicchio Variegated,8,7.9,,,1.1,2025-07-10,,crop
+2025-07-12,2025,Salad Mix,Radicchio Round,10,9.9,,,1.1,2025-07-10,,crop
+2025-07-12,2025,Salad Mix,Greens Mix Cheap Frills,10,9.9,,,1.1,2025-07-10,,crop
+2025-07-16,2025,Salad Mix,Lettuce Mix SN,40,7.3,,,1.1,2025-07-15,,crop
+2025-07-16,2025,Salad Mix,Lettuce Mini Gem,20,3.7,,,1.1,2025-07-15,,crop
+2025-07-16,2025,Salad Mix,Frisee,20,3.7,,,1.1,2025-07-15,,crop
+2025-07-16,2025,Salad Mix,Radicchio Variegated,8,1.5,,,1.1,2025-07-15,,crop
+2025-07-16,2025,Salad Mix,Radicchio Round,12,2.2,,,1.1,2025-07-15,,crop
+2025-07-19,2025,Salad Mix,Lettuce Mix SN,30,27.5,,,1.1,2025-07-17,,crop
+2025-07-19,2025,Salad Mix,Lettuce Mini Gem,20,18.3,,,1.1,2025-07-17,,crop
+2025-07-19,2025,Salad Mix,Frisee,20,18.3,,,1.1,2025-07-17,,crop
+2025-07-19,2025,Salad Mix,Radicchio Variegated,12,11,,,1.1,2025-07-17,,crop
+2025-07-19,2025,Salad Mix,Radicchio Round,12,11,,,1.1,2025-07-17,,crop
+2025-07-19,2025,Salad Mix,Greens Mix Cheap Frills,5,4.6,,,1.1,2025-07-17,,crop
+2025-07-19,2025,Salad Mix,Greens Mix Amaranth,1,0.9,,,1.1,2025-07-17,,crop
+2025-07-23,2025,Salad Mix,Lettuce Mix SN,40,10.1,,,1.1,2025-07-22,,crop
+2025-07-23,2025,Salad Mix,Lettuce Mini Gem,15,3.8,,,1.1,2025-07-22,,crop
+2025-07-23,2025,Salad Mix,Frisee,25,6.3,,,1.1,2025-07-22,,crop
+2025-07-23,2025,Salad Mix,Radicchio Variegated,10,2.5,,,1.1,2025-07-22,,crop
+2025-07-23,2025,Salad Mix,Radicchio Round,10,2.5,,,1.1,2025-07-22,,crop
+2025-07-26,2025,Salad Mix,Lettuce Mix SN,35,26.4,,,1.1,2025-07-24,,crop
+2025-07-26,2025,Salad Mix,Lettuce Mini Gem,15,11.3,,,1.1,2025-07-24,,crop
+2025-07-26,2025,Salad Mix,Frisee,25,18.9,,,1.1,2025-07-24,,crop
+2025-07-26,2025,Salad Mix,Radicchio Variegated,13,9.8,,,1.1,2025-07-24,,crop
+2025-07-26,2025,Salad Mix,Radicchio Round,12,9.1,,,1.1,2025-07-24,,crop
+2025-07-30,2025,Salad Mix,Lettuce Mix SN,45,4.8,,,1.1,2025-07-29,,crop
+2025-07-30,2025,Salad Mix,Lettuce Mini Gem,15,1.6,,,1.1,2025-07-29,,crop
+2025-07-30,2025,Salad Mix,Radicchio Round,20,2.1,,,1.1,2025-07-29,,crop
+2025-07-30,2025,Salad Mix,Radicchio Variegated,20,2.1,,,1.1,2025-07-29,,crop
+2025-08-02,2025,Salad Mix,Lettuce Mix SN,47,16.6,,,1.1,2025-07-31,,crop
+2025-08-02,2025,Salad Mix,Lettuce Mini Gem,17,6,,,1.1,2025-07-31,,crop
+2025-08-02,2025,Salad Mix,Radicchio Round,18,6.3,,,1.1,2025-07-31,,crop
+2025-08-02,2025,Salad Mix,Radicchio Variegated,18,6.3,,,1.1,2025-07-31,,crop
+2025-08-09,2025,Salad Mix,Lettuce Mix SN,45,16.9,,,1.1,2025-08-07,,crop
+2025-08-09,2025,Salad Mix,Lettuce Mini Gem,15,5.6,,,1.1,2025-08-07,,crop
+2025-08-09,2025,Salad Mix,Radicchio Round,20,7.5,,,1.1,2025-08-07,,crop
+2025-08-09,2025,Salad Mix,Radicchio Variegated,20,7.5,,,1.1,2025-08-07,,crop
+2025-08-16,2025,Salad Mix,Lettuce Mix SN,45,22,,,1.1,2025-08-14,,crop
+2025-08-16,2025,Salad Mix,Lettuce Mini Gem,15,7.3,,,1.1,2025-08-14,,crop
+2025-08-16,2025,Salad Mix,Radicchio Round,20,9.8,,,1.1,2025-08-14,,crop
+2025-08-16,2025,Salad Mix,Radicchio Variegated,20,9.8,,,1.1,2025-08-14,,crop
+2025-08-30,2025,Salad Mix,Lettuce Mix SN,50,13.4,,,1.1,2025-08-28,,crop
+2025-08-30,2025,Salad Mix,Greens Mix Amaranth,10,2.7,,,1.1,2025-08-28,,crop
+2025-08-30,2025,Salad Mix,Radicchio Variegated,40,10.7,,,1.1,2025-08-28,,crop
+2025-09-10,2025,Salad Mix,Lettuce Mix SN,25,2.9,,,1.1,2025-09-09,,crop
+2025-09-10,2025,Salad Mix,Lettuce Mini Gem,25,2.9,,,1.1,2025-09-09,,crop
+2025-09-10,2025,Salad Mix,Greens Mix Cheap Frills,25,2.9,,,1.1,2025-09-09,,crop
+2025-09-10,2025,Salad Mix,Frisee,25,2.9,,,1.1,2025-09-09,,crop
+2025-09-13,2025,Salad Mix,Lettuce Mix SN,35,32.6,,,1.1,2025-09-11,,crop
+2025-09-13,2025,Salad Mix,Lettuce Mini Gem,15,14,,,1.1,2025-09-11,,crop
+2025-09-13,2025,Salad Mix,Greens Mix Cheap Frills,25,23.3,,,1.1,2025-09-11,,crop
+2025-09-13,2025,Salad Mix,Frisee,25,23.3,,,1.1,2025-09-11,,crop
+2025-09-17,2025,Salad Mix,Lettuce Mix SN,20,2.9,,,1.1,2025-09-16,,crop
+2025-09-17,2025,Salad Mix,Lettuce Mini Gem,20,2.9,,,1.1,2025-09-16,,crop
+2025-09-17,2025,Salad Mix,Greens Mix Cheap Frills,20,2.9,,,1.1,2025-09-16,,crop
+2025-09-17,2025,Salad Mix,Frisee,20,2.9,,,1.1,2025-09-16,,crop
+2025-09-17,2025,Salad Mix,Radicchio Variegated,20,2.9,,,1.1,2025-09-16,,crop
+2025-09-20,2025,Salad Mix,Lettuce Mix SN,22,22.7,,,1.1,2025-09-18,,crop
+2025-09-20,2025,Salad Mix,Lettuce Mini Gem,10,10.3,,,1.1,2025-09-18,,crop
+2025-09-20,2025,Salad Mix,Greens Mix Cheap Frills,25,25.8,,,1.1,2025-09-18,,crop
+2025-09-20,2025,Salad Mix,Frisee,18,18.6,,,1.1,2025-09-18,,crop
+2025-09-20,2025,Salad Mix,Radicchio Variegated,20,20.6,,,1.1,2025-09-18,,crop
+2025-09-20,2025,Salad Mix,Greens Mix Rosie,2.5,2.6,,,1.1,2025-09-18,,crop
+2025-09-20,2025,Salad Mix,Greens Mix Baby Kale,2.5,2.6,,,1.1,2025-09-18,,crop
+2025-09-24,2025,Salad Mix,Lettuce Mix SN,20,2.4,,,1.1,2025-09-23,,crop
+2025-09-24,2025,Salad Mix,Lettuce Mini Gem,15,1.8,,,1.1,2025-09-23,,crop
+2025-09-24,2025,Salad Mix,Greens Mix Cheap Frills,15,1.8,,,1.1,2025-09-23,,crop
+2025-09-24,2025,Salad Mix,Frisee,20,2.4,,,1.1,2025-09-23,,crop
+2025-09-24,2025,Salad Mix,Radicchio Variegated,20,2.4,,,1.1,2025-09-23,,crop
+2025-09-24,2025,Salad Mix,Greens Mix Rosie,5,0.6,,,1.1,2025-09-23,,crop
+2025-09-24,2025,Salad Mix,Greens Mix Baby Kale,5,0.6,,,1.1,2025-09-23,,crop
+2025-09-27,2025,Salad Mix,Lettuce Mix SN,23,21.9,,,1.1,2025-09-25,,crop
+2025-09-27,2025,Salad Mix,Lettuce Mini Gem,10,9.5,,,1.1,2025-09-25,,crop
+2025-09-27,2025,Salad Mix,Greens Mix Cheap Frills,22,20.9,,,1.1,2025-09-25,,crop
+2025-09-27,2025,Salad Mix,Frisee,20,19,,,1.1,2025-09-25,,crop
+2025-09-27,2025,Salad Mix,Radicchio Variegated,20,19,,,1.1,2025-09-25,,crop
+2025-09-27,2025,Salad Mix,Greens Mix Rosie,3,2.9,,,1.1,2025-09-25,,crop
+2025-09-27,2025,Salad Mix,Greens Mix Baby Kale,2,1.9,,,1.1,2025-09-25,,crop
+2025-10-01,2025,Salad Mix,Lettuce Mix SN,25,3.4,,,1.1,2025-09-30,,crop
+2025-10-01,2025,Salad Mix,Lettuce Mini Gem,5,0.7,,,1.1,2025-09-30,,crop
+2025-10-01,2025,Salad Mix,Greens Mix Cheap Frills,20,2.7,,,1.1,2025-09-30,,crop
+2025-10-01,2025,Salad Mix,Frisee,20,2.7,,,1.1,2025-09-30,,crop
+2025-10-01,2025,Salad Mix,Radicchio Variegated,12,1.6,,,1.1,2025-09-30,,crop
+2025-10-01,2025,Salad Mix,Radicchio Round,13,1.8,,,1.1,2025-09-30,,crop
+2025-10-01,2025,Salad Mix,Greens Mix Baby Kale,5,0.7,,,1.1,2025-09-30,,crop
+2025-10-04,2025,Salad Mix,Lettuce Mix SN,34,30.5,,,1.1,2025-10-02,,crop
+2025-10-04,2025,Salad Mix,Lettuce Mini Gem,1,0.9,,,1.1,2025-10-02,,crop
+2025-10-04,2025,Salad Mix,Greens Mix Cheap Frills,15,13.5,,,1.1,2025-10-02,,crop
+2025-10-04,2025,Salad Mix,Frisee,22,19.8,,,1.1,2025-10-02,,crop
+2025-10-04,2025,Salad Mix,Radicchio Variegated,10,9,,,1.1,2025-10-02,,crop
+2025-10-04,2025,Salad Mix,Radicchio Round,13,11.7,,,1.1,2025-10-02,,crop
+2025-10-04,2025,Salad Mix,Greens Mix Baby Kale,5,4.5,,,1.1,2025-10-02,,crop
+2025-10-11,2025,Salad Mix,Lettuce Mix SN,42,38.2,,,1.1,2025-10-09,,crop
+2025-10-11,2025,Salad Mix,Greens Mix Cheap Frills,10,9.1,,,1.1,2025-10-09,,crop
+2025-10-11,2025,Salad Mix,Frisee,20,18.2,,,1.1,2025-10-09,,crop
+2025-10-11,2025,Salad Mix,Radicchio Round,10,9.1,,,1.1,2025-10-09,,crop
+2025-10-11,2025,Salad Mix,Radicchio Variegated,11,10,,,1.1,2025-10-09,,crop
+2025-10-11,2025,Salad Mix,Greens Mix Baby Kale,4,3.6,,,1.1,2025-10-09,,crop
+2025-10-11,2025,Salad Mix,Greens Mix Rosie,3,2.7,,,1.1,2025-10-09,,crop
+2025-10-08,2025,Salad Mix,Lettuce Mix SN,40,4.8,,,1.1,2025-10-07,,crop
+2025-10-08,2025,Salad Mix,Greens Mix Cheap Frills,10,1.2,,,1.1,2025-10-07,,crop
+2025-10-08,2025,Salad Mix,Frisee,20,2.4,,,1.1,2025-10-07,,crop
+2025-10-08,2025,Salad Mix,Radicchio Round,15,1.8,,,1.1,2025-10-07,,crop
+2025-10-08,2025,Salad Mix,Radicchio Variegated,15,1.8,,,1.1,2025-10-07,,crop
+2025-10-18,2025,Braising Mix,Chard,15,12.4,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Brussels Sprouts,15,12.4,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Escarole,15,12.4,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Kale Lacinato,8,6.6,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Kale Curly,8,6.6,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Collards,8,6.6,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Cabbage Chinese Red,15,12.4,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Radicchio Treviso,10,8.3,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Braising Mix,Radicchio Pink,6,5,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Salad Mix,Greens Mix Cheap Frills,1,0.7,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Salad Mix,Greens Mix Baby Kale,1,0.7,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Salad Mix,Greens Mix Rosie,1,0.7,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Salad Mix,Radicchio Round,58,39.2,,,1.1,2025-10-16,,crop
+2025-10-18,2025,Salad Mix,Radicchio Variegated,39,26.3,,,1.1,2025-10-16,,crop
+2025-10-25,2025,Braising Mix,Chard,15,12.2,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Brussels Sprouts,11,9,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Escarole,11,9,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Kale Lacinato,12,9.8,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Kale Curly,10,8.1,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Collards,8,6.5,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Cabbage Chinese Red,18,14.7,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Radicchio Treviso,10,8.1,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Braising Mix,Radicchio Pink,5,4.1,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Greens Mix Cheap Frills,17,13.4,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Greens Mix Baby Kale,4,3.2,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Greens Mix Rosie,4,3.2,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Radicchio Round,14,11,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Radicchio Variegated,14,11,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Lettuce Mix SN,25,19.7,,,1.1,2025-10-23,,crop
+2025-10-25,2025,Salad Mix,Frisee,22,17.3,,,1.1,2025-10-23,,crop
+2025-11-01,2025,Salad Mix,Lettuce Mix SN,30,24.6,,,1.1,2025-10-30,,crop
+2025-11-01,2025,Salad Mix,Frisee,30,24.6,,,1.1,2025-10-30,,crop
+2025-11-01,2025,Salad Mix,Greens Mix Cheap Frills,15,12.3,,,1.1,2025-10-30,,crop
+2025-11-01,2025,Salad Mix,Radicchio Round,13,10.7,,salad,1.1,2025-10-30,,crop
+2025-11-01,2025,Salad Mix,Radicchio Variegated,12,9.9,,salad,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Chard,16,12.7,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Brussels Sprouts,8,6.3,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Escarole,11,8.7,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Kale Lacinato,12,9.5,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Kale Curly,11,8.7,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Greens Mix Mizuna,7,5.5,,braising dandelion,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Cabbage Chinese Red,20,15.8,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Radicchio Treviso,10,7.9,,braising,1.1,2025-10-30,,crop
+2025-11-01,2025,Braising Mix,Radicchio Pink,5,4,,braising,1.1,2025-10-30,,crop
+2025-11-08,2025,Salad Mix,Lettuce Mix SN,30,19.6,,,1.1,2025-11-06,,crop
+2025-11-08,2025,Salad Mix,Frisee,30,19.6,,,1.1,2025-11-06,,crop
+2025-11-08,2025,Salad Mix,Radicchio Round,15,9.8,,salad,1.1,2025-11-06,,crop
+2025-11-08,2025,Salad Mix,Radicchio Variegated,25,16.3,,salad,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Chard,16,11.3,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Brussels Sprouts,3,2.1,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Escarole,1,0.7,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Kale Lacinato,15,10.6,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Kale Curly,10,7,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Greens Mix Mizuna,9,6.3,,braising dandelion,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Cabbage Chinese Red,20,14.1,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Radicchio Treviso,9,6.3,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Radicchio Pink,6,4.2,,braising,1.1,2025-11-06,,crop
+2025-11-08,2025,Braising Mix,Collards,11,7.7,,braising,1.1,2025-11-06,,crop
+2025-11-15,2025,Salad Mix,Radicchio Round,40,5.1,,salad,1.1,2025-11-13,,crop
+2025-11-15,2025,Salad Mix,Radicchio Variegated,60,7.6,,salad,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Chard,17,13.8,,braising,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Kale Lacinato,15,12.2,,braising,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Kale Curly,10,8.1,,braising,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Greens Mix Mizuna,8,6.5,,braising dandelion,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Cabbage Chinese Red,20,16.3,,braising,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Radicchio Treviso,12,9.8,,braising,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Radicchio Pink,5,4.1,,braising,1.1,2025-11-13,,crop
+2025-11-15,2025,Braising Mix,Collards,13,10.6,,braising,1.1,2025-11-13,,crop
+2025-11-22,2025,Braising Mix,Chard,17,16.8,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Kale Lacinato,15,14.8,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Kale Curly,10,9.9,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Greens Mix Mizuna,8,7.9,,braising dandelion,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Cabbage Chinese Red,15,14.8,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Radicchio Treviso,12,11.8,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Radicchio Pink,5,4.9,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Cabbage Chinese Red,5,4.9,,braising napa,1.05,2025-11-20,,crop
+2025-11-22,2025,Braising Mix,Collards,13,12.8,,braising,1.05,2025-11-20,,crop
+2025-11-22,2025,Salad Mix,Radicchio Round,15,17.9,,salad,1.1,2025-11-20,,crop
+2025-11-22,2025,Salad Mix,Radicchio Variegated,15,17.9,,salad,1.1,2025-11-20,,crop
+2025-11-22,2025,Salad Mix,Lettuce Mix SN,30,35.8,,,1.1,2025-11-20,,crop
+2025-11-22,2025,Salad Mix,Frisee,25,29.9,,,1.1,2025-11-20,,crop
+2025-11-22,2025,Salad Mix,Greens Mix Cheap Frills,10,11.9,,,1.1,2025-11-20,,crop
+2025-11-22,2025,Salad Mix,Greens Mix Baby Kale,5,6,,,1.1,2025-11-20,,crop
+2025-12-06,2025,Salad Mix,Lettuce Mix SN,50,10.2,,,1.1,2025-12-04,,crop
+2025-12-06,2025,Salad Mix,Radicchio Round,23,4.7,,salad,1.1,2025-12-04,,crop
+2025-12-06,2025,Salad Mix,Radicchio Variegated,25,5.1,,salad,1.1,2025-12-04,,crop
+2025-12-06,2025,Salad Mix,Frisee,1,0.2,,,1.1,2025-12-04,,crop
+2025-12-06,2025,Salad Mix,Greens Mix Cheap Frills,1,0.2,,,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Chard,0,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Kale Lacinato,37,18.3,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Kale Curly,0,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Greens Mix Mizuna,0,0,,braising dandelion,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Cabbage Chinese Red,25,12.4,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Radicchio Treviso,25,12.4,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Radicchio Pink,0,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Collards,0,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Cabbage Chinese Red,13,6.4,,braising napa,1.1,2025-12-04,,crop
+2025-12-20,2025,Braising Mix,Kale Lacinato,35,19.3,,braising,1.1,2025-12-18,,crop
+2025-12-20,2025,Braising Mix,Cabbage Chinese Red,15,8.3,,braising,1.1,2025-12-18,,crop
+2025-12-20,2025,Braising Mix,Cabbage Chinese Red,25,13.8,,braising napa,1.1,2025-12-18,,crop
+2025-12-20,2025,Braising Mix,Radicchio Treviso,15,8.3,,braising,1.1,2025-12-18,,crop
+2025-12-20,2025,Braising Mix,Radicchio Pink,10,5.5,,braising,1.1,2025-12-18,,crop
+2025-12-20,2025,Salad Mix,Lettuce Mix SN,40,13.8,,salad,1.1,2025-12-18,,crop
+2025-12-20,2025,Salad Mix,Radicchio Round,30,10.3,,salad,1.1,2025-12-18,,crop
+2025-12-20,2025,Salad Mix,Radicchio Pink,30,10.3,,salad,1.1,2025-12-18,,crop
+2025-12-27,2025,Braising Mix,Kale Lacinato,35,0,,braising,1.1,2025-12-25,,crop
+2025-12-27,2025,Braising Mix,Cabbage Chinese Red,15,0,,braising,1.1,2025-12-25,,crop
+2025-12-27,2025,Braising Mix,Cabbage Chinese Red,25,0,,braising napa,1.1,2025-12-25,,crop
+2025-12-27,2025,Braising Mix,Radicchio Treviso,15,0,,braising,1.1,2025-12-25,,crop
+2025-12-27,2025,Braising Mix,Radicchio Pink,10,0,,braising,1.1,2025-12-25,,crop
+2025-12-27,2025,Salad Mix,Lettuce Mix SN,40,0,,salad,1.1,2025-12-25,,crop
+2025-12-27,2025,Salad Mix,Radicchio Round,30,0,,salad,1.1,2025-12-25,,crop
+2025-12-27,2025,Salad Mix,Radicchio Pink,30,0,,salad,1.1,2025-12-25,,crop
+2026-01-03,2026,Braising Mix,Kale Lacinato,15,5.9,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Cabbage Chinese Red,15,5.9,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Cabbage Chinese Red,15,5.9,,braising napa,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Radicchio Round,10,4,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Radicchio Pink,0,0,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Salad Mix,Lettuce Mix SN,45,15.4,,salad,1.1,2026-01-01,,crop
+2026-01-03,2026,Salad Mix,Radicchio Round,45,15.4,,salad,1.1,2026-01-01,,crop
+2026-01-03,2026,Salad Mix,Radicchio Pink,10,3.4,,salad,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Kale Curly,25,9.9,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Collards,10,4,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Chard,10,4,,braising,1.1,2026-01-01,,crop
+2026-01-10,2026,Salad Mix,Lettuce Mix SN,45,13,,salad,1.1,2026-01-08,,crop
+2026-01-10,2026,Salad Mix,Radicchio Round,45,13,,salad,1.1,2026-01-08,,crop
+2026-01-10,2026,Salad Mix,Greens Mix Cheap Frills,10,2.9,,salad,1.1,2026-01-08,,crop
+2026-01-10,2026,Braising Mix,Kale Lacinato,25,5.5,,braising,1.1,2026-01-08,,crop
+2026-01-10,2026,Braising Mix,Kale Curly,30,6.6,,braising,1.1,2026-01-08,,crop
+2026-01-10,2026,Braising Mix,Cabbage Chinese Red,30,6.6,,braising,1.1,2026-01-08,,crop
+2026-01-10,2026,Braising Mix,Radicchio Round,15,3.3,,braising,1.1,2026-01-08,,crop
+2026-01-17,2026,Salad Mix,Lettuce Mix SN,40,14.1,,salad,1.1,2026-01-15,,crop
+2026-01-17,2026,Salad Mix,Radicchio Round,50,17.6,,salad,1.1,2026-01-15,,crop
+2026-01-17,2026,Salad Mix,Greens Mix Cheap Frills,10,3.5,,salad,1.1,2026-01-15,,crop
+2026-01-17,2026,Braising Mix,Kale Lacinato,25,11.3,,braising,1.1,2026-01-15,,crop
+2026-01-17,2026,Braising Mix,Kale Curly,25,11.3,,braising,1.1,2026-01-15,,crop
+2026-01-17,2026,Braising Mix,Cabbage Chinese Red,27,12.2,,braising,1.1,2026-01-15,,crop
+2026-01-17,2026,Braising Mix,Radicchio Round,10,4.5,,braising,1.1,2026-01-15,,crop
+2026-01-17,2026,Braising Mix,Escarole,13,5.9,,dandy braising,1.1,2026-01-15,,crop
+2026-01-31,2026,Salad Mix,Lettuce Mix SN,45,16.4,,salad,1.1,2026-01-29,,crop
+2026-01-31,2026,Salad Mix,Radicchio Round,45,16.4,,salad,1.1,2026-01-29,,crop
+2026-01-31,2026,Salad Mix,Greens Mix Cheap Frills,10,3.6,,salad,1.1,2026-01-29,,crop
+2026-01-31,2026,Braising Mix,Kale Lacinato,20,7.7,,braising,1.1,2026-01-29,,crop
+2026-01-31,2026,Braising Mix,Kale Curly,30,11.6,,braising,1.1,2026-01-29,,crop
+2026-01-31,2026,Braising Mix,Cabbage Chinese Red,30,11.6,,braising,1.1,2026-01-29,,crop
+2026-01-31,2026,Braising Mix,Radicchio Round,6,2.3,,braising,1.1,2026-01-29,,crop
+2026-01-31,2026,Braising Mix,Escarole,14,5.4,,dandy braising,1.1,2026-01-29,,crop
+2026-02-14,2026,Salad Mix,Lettuce Mix SN,75,17.1,,salad,1.1,2026-02-12,,crop
+2026-02-14,2026,Salad Mix,Radicchio Round,13,3,,salad,1.1,2026-02-12,,crop
+2026-02-14,2026,Salad Mix,Greens Mix Cheap Frills,12,2.7,,salad,1.1,2026-02-12,,crop
+2026-02-14,2026,Braising Mix,Kale Lacinato,28,9.5,,braising,1.1,2026-02-12,,crop
+2026-02-14,2026,Braising Mix,Kale Curly,30,10.2,,braising,1.1,2026-02-12,,crop
+2026-02-14,2026,Braising Mix,Cabbage Chinese Red,15,5.1,,braising,1.1,2026-02-12,,crop
+2026-02-14,2026,Braising Mix,Radicchio Round,2,0.7,,braising,1.1,2026-02-12,,crop
+2026-02-14,2026,Braising Mix,Escarole,12,4.1,,dandy braising,1.1,2026-02-12,,crop
+2026-02-14,2026,Braising Mix,Chard,13,4.4,,braising,1.1,2026-02-12,,crop
+2026-02-21,2026,Salad Mix,Lettuce Mix SN,80,8.5,,salad,1.1,2026-02-19,,crop
+2026-02-21,2026,Salad Mix,Greens Mix Cheap Frills,20,2.1,,salad,1.1,2026-02-19,,crop
+2026-02-28,2026,Salad Mix,Lettuce Mix SN,78,8.6,,salad,1.1,2026-02-26,,crop
+2026-02-28,2026,Salad Mix,Greens Mix Cheap Frills,22,2.4,,salad,1.1,2026-02-26,,crop
+2026-03-07,2026,Salad Mix,Lettuce Mix SN,78,11.1,,salad,1.1,2026-03-05,,crop
+2026-03-07,2026,Salad Mix,Greens Mix Cheap Frills,22,3.1,,salad,1.1,2026-03-05,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
+,,,,,,,,1.1,,,crop
