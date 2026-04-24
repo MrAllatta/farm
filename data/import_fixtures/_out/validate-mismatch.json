@@ -246,10 +246,10 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-24T18:23:53.965792Z",
-    "run_id": "20260424T182353734568",
+    "finished_at": "2026-04-24T19:27:44.283038Z",
+    "run_id": "20260424T192744039397",
     "start_year": 2021,
-    "started_at": "2026-04-24T18:23:53.734568Z",
+    "started_at": "2026-04-24T19:27:44.039397Z",
     "validate_only": true,
     "verbose": false
   },

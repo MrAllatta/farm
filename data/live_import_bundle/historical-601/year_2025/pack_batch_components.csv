@@ -344,14 +344,14 @@ Pack Date,Planning Year,Mix Product Name,Component Crop Name,Component Percent,C
 2025-12-06,2025,Salad Mix,Radicchio Variegated,25,5.1,,salad,1.1,2025-12-04,,crop
 2025-12-06,2025,Salad Mix,Frisee,1,0.2,,,1.1,2025-12-04,,crop
 2025-12-06,2025,Salad Mix,Greens Mix Cheap Frills,1,0.2,,,1.1,2025-12-04,,crop
-2025-12-06,2025,Braising Mix,Chard,0,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Chard,,0,,braising,1.1,2025-12-04,,crop
 2025-12-06,2025,Braising Mix,Kale Lacinato,37,18.3,,braising,1.1,2025-12-04,,crop
-2025-12-06,2025,Braising Mix,Kale Curly,0,0,,braising,1.1,2025-12-04,,crop
-2025-12-06,2025,Braising Mix,Greens Mix Mizuna,0,0,,braising dandelion,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Kale Curly,,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Greens Mix Mizuna,,0,,braising dandelion,1.1,2025-12-04,,crop
 2025-12-06,2025,Braising Mix,Cabbage Chinese Red,25,12.4,,braising,1.1,2025-12-04,,crop
 2025-12-06,2025,Braising Mix,Radicchio Treviso,25,12.4,,braising,1.1,2025-12-04,,crop
-2025-12-06,2025,Braising Mix,Radicchio Pink,0,0,,braising,1.1,2025-12-04,,crop
-2025-12-06,2025,Braising Mix,Collards,0,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Radicchio Pink,,0,,braising,1.1,2025-12-04,,crop
+2025-12-06,2025,Braising Mix,Collards,,0,,braising,1.1,2025-12-04,,crop
 2025-12-06,2025,Braising Mix,Cabbage Chinese Red,13,6.4,,braising napa,1.1,2025-12-04,,crop
 2025-12-20,2025,Braising Mix,Kale Lacinato,35,19.3,,braising,1.1,2025-12-18,,crop
 2025-12-20,2025,Braising Mix,Cabbage Chinese Red,15,8.3,,braising,1.1,2025-12-18,,crop
@@ -373,7 +373,7 @@ Pack Date,Planning Year,Mix Product Name,Component Crop Name,Component Percent,C
 2026-01-03,2026,Braising Mix,Cabbage Chinese Red,15,5.9,,braising,1.1,2026-01-01,,crop
 2026-01-03,2026,Braising Mix,Cabbage Chinese Red,15,5.9,,braising napa,1.1,2026-01-01,,crop
 2026-01-03,2026,Braising Mix,Radicchio Round,10,4,,braising,1.1,2026-01-01,,crop
-2026-01-03,2026,Braising Mix,Radicchio Pink,0,0,,braising,1.1,2026-01-01,,crop
+2026-01-03,2026,Braising Mix,Radicchio Pink,,0,,braising,1.1,2026-01-01,,crop
 2026-01-03,2026,Salad Mix,Lettuce Mix SN,45,15.4,,salad,1.1,2026-01-01,,crop
 2026-01-03,2026,Salad Mix,Radicchio Round,45,15.4,,salad,1.1,2026-01-01,,crop
 2026-01-03,2026,Salad Mix,Radicchio Pink,10,3.4,,salad,1.1,2026-01-01,,crop

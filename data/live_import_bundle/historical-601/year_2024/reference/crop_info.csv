@@ -1,0 +1,107 @@
+Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce
+Amaranth,Salad Greens,Amaranthaceae,Fresh Holds,0,Yes,pounds,1,15,rubbermaid,Knife,20,,,,,,,
+Artichoke,Specialty/Misc,Aster,Storage,1,Yes,pounds,0.2,20,rubbermaid,5 gal bucket,40,10,4,18,128,1,,600
+Arugula,Salad Greens,Brassica,Fresh Perishable,0,No,pounds,1,15,rubbermaid,Knife,20,,,,,,,18200
+Asparagus,Specialty/Misc,Asparagaceae,Storage,1,No,pounds,0.5,40,rubbermaid,Knife,10,,,,,,,
+Basil,Herbs,Lamiaceae,Fresh Perishable,0,No,bunches,0.25,30,rubbermaid,Snips,40,6,,,128,2,1,46700
+Bean Snap,Specialty/Misc,Fabaceae,Storage,1,No,bunches,0.6,40,rubbermaid,Belly Bucket,30,,,,,,,85
+Beets Bulk Golden,Roots,Chenopod,Storage,10,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,3000
+Beets Bulk Red,Roots,Chenopod,Storage,10,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,3000
+Beets Golden,Roots,Chenopod,Fresh Holds,0,Yes,bunches,1,15,rubbermaid,,30,,,,,,,3000
+Beets Golden PP,Roots,Chenopod,Fresh Holds,0,Yes,bunches,1,15,rubbermaid,,30,4,,,264,1,,3000
+Beets Red,Roots,Chenopod,Fresh Holds,0,Yes,bunches,1,15,rubbermaid,,30,,,,,,,3000
+Beets Red PP,Roots,Chenopod,Fresh Perishable,0,No,bunches,1,15,rubbermaid,,30,4,,,264,1,,3000
+Bok Choy,Greens,Brassica,Fresh Perishable,0,No,eaches,0.25,45,rubbermaid,,90,4,,,128,1,,8600
+Bok Choy Small,Greens,Brassica,Fresh Perishable,0,No,pounds,0.1,20,rubbermaid,,40,4,,,128,1,,8600
+Broccoli Raab,Greens,Brassica,Fresh Perishable,0,No,bunches,0.5,15,rubbermaid,,30,5,,,128,1,,15500
+Broccolini,Specialty/Misc,Brassica,Fresh Perishable,0,No,bunches,0.75,25,rubbermaid,Belly Bucket,20,5,,,72,1,,4900
+Brussels Sprouts,Specialty/Misc,Brassica,Storage,4,Yes,stalk,1,150,bulk bin,Snips,60,5,,,72,1,,4000
+Brussels Tops,Greens,Brassica,Storage,8,Yes,pounds,1,8,grain bags,Knife,40,,,,,,,4000
+Cabbage,Brassica,Brassica,Storage,4,Yes,heads,1,6,rubbermaid,Knife,50,5,,,72,1,,5500
+Cabbage Chinese,Brassica,Brassica,Storage,4,No,heads,1,12,rubbermaid,Knife,50,5,,,72,1,,8400
+Cabbage Storage,Brassica,Brassica,Storage,12,Yes,heads,1,400,bulk bin,Knife,50,5,,,72,1,,5500
+Carrot,Roots,Apiaceae,Fresh Holds,0,Yes,bunches,1,15,bulk bin,,25,,,,,,,15600
+Carrot Bulk,Roots,Apiaceae,Storage,24,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,15600
+Cauliflower,Specialty/Misc,Brassica,Fresh Holds,0,Yes,heads,1,8,rubbermaid,Knife,40,5,,,72,1,,15600
+Cauliflower Sprouting,Specialty/Misc,Brassica,Fresh Perishable,0,No,eaches,1,8,rubbermaid,Belly Bucket,40,5,,,72,1,,6000
+Celery,Herbs,Apiaceae,Fresh Holds,0,Yes,bunches,1,15,rubbermaid,Knife,40,10,4,72,Speed,1,,66000
+Chard,Greens,Chenopod,Fresh Perishable,0,No,bunches,0.6,15,rubbermaid,Knife,30,6,,,72,1,1,1900
+Cilantro,Herbs,Apiaceae,Fresh Perishable,0,No,bunches,0.5,60,rubbermaid,Knife,30,,,,,,,3400
+Collards,Greens,Brassica,Fresh Holds,0,Yes,bunches,0.6,15,rubbermaid,Knife,30,6,,,72,1,,5325
+Cucumber,Cucumbers,Cucurbit,Storage,1,No,pounds,1,35,rubbermaid,Snips,70,4,,,72,1,,1100
+Cucumber Pickling,Cucumbers,Cucurbit,Storage,1,No,pounds,1,35,rubbermaid,Snips,70,4,,,72,1,,1100
+Dandelion,Greens,Chicorium,Fresh Holds,0,Yes,bunches,0.6,30,rubbermaid,Knife,30,4,,,128,1,,17200
+Dill,Herbs,Apiaceae,Fresh Perishable,0,No,bunches,0.5,60,rubbermaid,Knife,30,,,,,,,21600
+Dry Beans,Beans/Peas,Fabaceae,Storage,36,Yes,na,1,,,,,,,,,,,145
+Eggplant,Eggplant,Solanaceae,Storage,1,No,pounds,1,25,rubbermaid,Snips,60,8,4,32,Speed,1,,7500
+Eggplant Mini,Eggplant,Solanaceae,Storage,1,No,pounds,1,40,rubbermaid,Snips,60,8,4,32,Speed,1,,7500
+Escarole,Salad Greens,Aster,Fresh Perishable,0,No,heads,0.6,15,rubbermaid,Knife,45,5,,,128,1,,15600
+Escarole Mix,Salad Greens,Aster,Fresh Perishable,0,No,pounds,1,15,rubbermaid,Knife,25,5,,,128,1,,15600
+Fennel,Specialty/Misc,Apiaceae,Storage,2,Yes,heads,1,18,green bin,Knife,54,6,,,128,2,1,400
+Frisee mix,Salad Greens,Apiaceae,Fresh Holds,0,Yes,pounds,1,15,rubbermaid,Knife,25,5,,,128,1,,15000
+Garlic,Garlic,Allium,Storage,24,No,na,1,,,,,,,,,,,
+Garlic Green,Garlic,Allium,Fresh Holds,0,Yes,bunches,0.6,35,rubbermaid,,35,,,,,,,
+Garlic Scape,Garlic,Allium,Storage,4,No,bunches,0.6,50,rubbermaid,Belly Bucket,40,,,,,,,
+Greens Mix Cheap Frills,Salad Greens,Brassica,Fresh Perishable,0,No,pounds,1,15,rubbermaid,Knife,20,,,,,,,1625
+Greens Mix Misc,Salad Greens,Brassica,Fresh Perishable,0,No,pounds,1,15,rubbermaid,Knife,20,,,,,,,
+Kale Baby,Salad Greens,Brassica,Fresh Perishable,0,No,pounds,1,15,rubbermaid,Knife,20,,,,,,,9300
+Kale Braising,Greens,Brassica,Storage,4,Yes,pounds,1,8,grain bags,Knife,40,,,,,,,9300
+Kale Curly,Greens,Brassica,Fresh Holds,0,Yes,bunches,0.6,15,rubbermaid,,30,6,,,72,1,,9300
+Kale Lacinato,Greens,Brassica,Fresh Holds,0,Yes,bunches,0.6,15,rubbermaid,,30,6,,,72,1,,9300
+Kale Russian,Greens,Brassica,Fresh Holds,0,Yes,bunches,0.6,15,rubbermaid,,30,6,,,72,1,,9300
+Kohlrabi,Roots,Brassica,Fresh Holds,0,Yes,bunches,1,20,rubbermaid,Snips,30,6,,,72,1,,6250
+Kohlrabi Storage,Roots,Brassica,Storage,24,Yes,eaches,1,45,grain bags,Snips,100,6,,,72,1,,6250
+Komatsuna,Greens,Brassica,Fresh Holds,0,Yes,bunches,0.6,12,rubbermaid,Knife,40,4,,,128,1,,9600
+Lettuce Head,Salad Greens,Aster,Fresh Perishable,0,No,heads,1,15,rubbermaid,Knife,60,5,,,128,1,,3800
+Lettuce Mini Gem,Salad Greens,Aster,Fresh Perishable,0,No,heads,1,40,rubbermaid,Knife,60,5,,,128,1,,3800
+Lettuce Mix SN,Salad Greens,Aster,Fresh Perishable,0,No,pounds,1,15,rubbermaid,Knife,20,5,,,128,1,,3800
+Mustard,Greens,Brassica,Fresh Perishable,0,No,bunches,0.6,15,rubbermaid,,30,4,,,128,1,,1800
+Okra,Specialty/Misc,Mallow,Fresh Perishable,0,No,pounds,1,30,rubbermaid,5 gal bucket,20,5,,,50,1,,420
+Onion Bulk,Roots,Allium,Storage,4,Yes,pounds,1,50,green bin,Snips,35,10,,,72,3,,7250
+Onion Spring,Roots,Allium,Fresh Holds,0,Yes,bunches,1,20,rubbermaid,,40,10,,,128,3,,7250
+Parsley,Herbs,Apiaceae,Fresh Holds,0,Yes,bunches,0.5,60,rubbermaid,,30,8,,,128,3,1,13500
+Pea Shelling,Specialty/Misc,Fabaceae,Storage,1,No,pounds,1,40,rubbermaid,5 gal bucket,40,2,,,264,1,,125
+Pea Snap,Specialty/Misc,Fabaceae,Storage,1,No,pounds,1,15,rubbermaid,Belly Bucket,20,,,,,,,125
+Pepper Carmen,Peppers,Solanaceae,Storage,3,No,pounds,1,25,rubbermaid,Snips,50,8,4,50,Speed,1,,4500
+Pepper Hot,Peppers,Solanaceae,Storage,3,Yes,eaches,0.15,30,rubbermaid,5 gal bucket,100,8,4,50,Speed,1,,4500
+Pepper Lunchbox,Peppers,Solanaceae,Storage,3,No,pounds,1,30,rubbermaid,5 gal bucket,100,8,4,50,Speed,1,,4500
+Pepper Shishito,Peppers,Solanaceae,Storage,2,No,pounds,1,25,rubbermaid,5 gal bucket,40,8,4,50,Speed,1,,4500
+Potato Blue,Roots,Solanaceae,Storage,30,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,0.5
+Potato Fingerling,Roots,Solanaceae,Storage,30,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,0.5
+Potato White,Roots,Solanaceae,Storage,30,Yes,pounds,1, ,grain bags,5 gal bucket,100,,,,,,,0.5
+Potato Yellow,Roots,Solanaceae,Storage,30,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,0.5
+Puntarelle,Salad Greens,Chicorium,Storage,2,No,pounds,1,25,rubbermaid,Knife,40,5,,,128,1,,14000
+Radicchio,Salad Greens,Chicorium,Storage,6,No,heads,1,50,Buckthorn,Knife,60,5,,,128,1,,14000
+Radicchio Forced,Salad Greens,Chicorium,Fresh Perishable,0,No,pounds,1,,,,,5,,,128,1,,14000
+Radicchio Mix,Salad Greens,Chicorium,Storage,6,No,pounds,1,30,rubbermaid,Knife,60,5,,,128,1,,14000
+Radicchio Treviso,Salad Greens,Chicorium,Storage,6,No,heads,1,50,Buckthorn,Knife,60,5,,,128,1,,14000
+Radicchio Treviso Mix,Salad Greens,Chicorium,Storage,6,No,pounds,1,30,rubbermaid,Knife,60,5,,,128,1,,14000
+Radicchio Variegated,Salad Greens,Chicorium,Storage,6,No,heads,1,50,Buckthorn,Knife,60,5,,,128,1,,14000
+Radicchio Variegated Mix,Salad Greens,Chicorium,Storage,6,No,pounds,1,30,rubbermaid,Knife,60,5,,,128,1,,14000
+Radish Bulk,Roots,Brassica,Storage,24,Yes,pounds,1,50,grain bags,5 gal bucket,100,,,,,,,2300
+Radish French Breakfast,Roots,Brassica,Fresh Perishable,0,No,bunches,0.7,40,rubbermaid,,30,,,,,,,3000
+Radish Mix,Roots,Brassica,Fresh Holds,0,Yes,bunches,1,15,rubbermaid,,30,,,,,,,2300
+Radish Red,Roots,Brassica,Fresh Perishable,0,No,bunches,0.7,40,rubbermaid,,30,,,,,,,3000
+Radish Round Purple,Roots,Brassica,Fresh Perishable,0,No,bunches,0.7,40,rubbermaid,,30,,,,,,,3000
+Scallion,Herbs,Allium,Fresh Holds,0,Yes,bunches,0.5,45,rubbermaid,hori hori ,40,8,,,264,4,,11700
+Spinach,Greens,Chenopod,Fresh Perishable,0,No,pounds,1,9,rubbermaid,,15,4,,,128,4,1,1725
+Sweet Potatoes,Roots,Mallow,Storage,24,No,pounds,1,50,grain bags,Knife,75,,,,,,,
+Tomato Cherry,Tomatoes,Solanaceae,Fresh Perishable,0,No,pints,0.7,30,breadtray,1 gal bucket,30,6,3,32,Speed,1,,15000
+Tomato Heirloom,Tomatoes,Solanaceae,Fresh Perishable,0,No,pounds,1,15,breadtray,5 gal bucket,45,6,3,32,Speed,1,,15000
+Tomato Red,Tomatoes,Solanaceae,Fresh Perishable,0,No,pounds,1,15,breadtray,5 gal bucket,45,6,3,32,Speed,1,,15000
+Tomato Sauce,Tomatoes,Solanaceae,Storage,1,Yes,pounds,1,15,breadtray,5 gal bucket,45,6,3,32,Speed,1,,15000
+Turnip,Roots,Brassica,Fresh Perishable,0,No,bunches,0.7,20,rubbermaid,,30,,,,,,,8500
+Turnip Bulk,Roots,Brassica,Storage,10,Yes,pounds,1,40,grain bags,5 gal bucket,100,,,,,,,8500
+Winter Squash Acorn Type,Winter Squash,Cucurbit,Storage,4,No,eaches,1,20,green bin,5 gal bucket,60,4,,,50,1,,450
+Winter Squash Butternut,Winter Squash,Cucurbit,Storage,24,No,eaches,1,150,bulk bin,5 gal bucket,60,4,,,50,1,,450
+Winter Squash Delicata,Winter Squash,Cucurbit,Storage,2,No,eaches,1,40,green bin,5 gal bucket,60,4,,,50,1,,450
+Winter Squash Honeynut,Winter Squash,Cucurbit,Storage,6,No,eaches,1,400,bulk bin,5 gal bucket,60,4,,,50,1,,450
+Winter Squash Kabocha,Winter Squash,Cucurbit,Storage,24,No,eaches,1,150,bulk bin,5 gal bucket,60,4,,,50,1,,450
+Winter Squash Koginut,Winter Squash,Cucurbit,Storage,24,No,eaches,1,150,bulk bin,5 gal bucket,60,4,,,50,1,,450
+Winter Squash Spaghetti,Winter Squash,Cucurbit,Storage,2,No,eaches,1,20,green bin,5 gal bucket,60,4,,,50,1,,450
+Zucchini,Zucchini,Cucurbit,Storage,2,No,pounds,1,30,rubbermaid,Knife,90,4,,,50,1,,200
+Bean Snap TP,Specialty/Misc,Fabaceae,Storage,1,No,bunches,1,30,rubbermaid,Belly Bucket,15,2,,,50,2,,
+Peas Snap PP,Specialty/Misc,Fabaceae,Storage,1,No,pounds,1,30,rubbermaid,Belly Bucket,30,4,,,264,3,,125
+Bitter Melon,Specialty/Misc,Cucurbit,Storage,1,No,pounds,1,30,rubbermaid,Belly Bucket,30,3,,,50,1,,420
+Cucumber Persian,Cucumbers,Cucurbit,Storage,1,No,pounds,1,40,rubbermaid,Belly Bucket,40,4,,,72,1,,
+Corn,Specialty/Misc,,Storage,1,No,eaches,1,40,rubbermaid,Knife,70,3,,,128,2,,

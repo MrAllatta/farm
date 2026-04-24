@@ -1,123 +1,569 @@
-Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active
-Artichoke,Artichoke - lb,$11.00,lb,1,-lb,true
-Arugula,Arugula - 1/3 lb,$7.00,1/3 lb,0.33,-1/3 lb,true
-Arugula,Arugula - 2/3 lb ,$14.00,2/3 lb ,0.66,-2/3 lb,true
-Asparagus,Asparagus - bu,$6.00,bu,0.33,-bu,true
-Basil,Basil - bu,$4.00,bu,1,-bu,true
-Bean Snap,Bean Snap - bu,$6.00,bu,1,-bu,true
-Beets Bulk Golden,Beets Bulk Golden - lb,$3.50,lb,1,-lb,true
-Beets Bulk Red,Beets Bulk Red - lb,$3.50,lb,1,-lb,true
-Beets Golden,Beets Golden - bu,$5.00,bu,1,-bu,true
-Beets Red,Beets Red - bu,$5.00,bu,1,-bu,true
-Bitter Melon,Bitter Melon - lb,$5.00,lb,1,-lb,true
-Bok Choy,Bok Choy - ea,$2.50,ea,1,-ea,true
-Bok Choy,Bok Choy - lb,$10.00,lb,1,-lb,true
-Braising Mix,Braising Mix - 1 lb,$9.00,1 lb,1,-1 lb,true
-Broccoli Raab,Broccoli Raab - bu,$4.50,bu,1,-bu,true
-Broccolini,Broccolini - bu,$6.00,bu,1,-bu,true
-Brussels Sprouts,Brussels Sprouts - ea,$8.00,ea,1,-ea,true
-Cabbage Chinese,Cabbage Chinese - lb,$4.00,lb,1,-lb,true
-Cabbage Chinese Red,Cabbage Chinese Red - lb,$4.00,lb,1,-lb,true
-Cabbage Cone,Cabbage Cone - lb,$2.50,lb,1,-lb,true
-Cabbage Cone Storage,Cabbage Cone Storage - lb,$2.50,lb,1,-lb,true
-Cabbage Flat,Cabbage Flat - lb,$2.50,lb,1,-lb,true
-Cabbage Green Storage,Cabbage Green Storage - lb,$2.50,lb,1,-lb,true
-Cabbage Red,Cabbage Red - lb,$2.50,lb,1,-lb,true
-Cabbage Savoy,Cabbage Savoy - lb,$2.50,lb,1,-lb,true
-Carrot,Carrot - bu,$6.00,bu,1,-bu,true
-Carrot Bulk,Carrot Bulk - lb,$3.50,lb,1,-lb,true
-Cauliflower,Cauliflower - lb,$4.00,lb,1,-lb,true
-Cauliflower Purple,Cauliflower Purple - lb,$4.00,lb,1,-lb,true
-Cauliflower Romanesco,Cauliflower Romanesco - lb,$4.00,lb,1,-lb,true
-Cauliflower Sprouting,Cauliflower Sprouting - lb,$6.00,lb,1,-lb,true
-Celery,Celery - bu,$5.00,bu,1,-bu,true
-Chard,Chard - bu,$5.00,bu,1,-bu,true
-Cilantro,Cilantro - bu,$4.00,bu,1,-bu,true
-Collards,Collards - bu,$5.00,bu,1,-bu,true
-Corn,Corn - ea,$1.66,ea,1,-ea,true
-Cucumber,Cucumber - lb,$3.50,lb,1,-lb,true
-Cucumber Katrina,Cucumber Katrina - lb,$4.50,lb,1,-lb,true
-Cucumber Pickling,Cucumber Pickling - lb,$3.50,lb,1,-lb,true
-Dandelion,Dandelion - bu,$5.00,bu,1,-bu,true
-Dill,Dill - bu,$4.00,bu,1,-bu,true
-Dry Beans,Dry Beans - lb,$9.00,lb,1,-lb,true
-Eggplant Italian Striped,Eggplant Italian Striped - lb,$5.00,lb,1,-lb,true
-Eggplant Asian,Eggplant Asian - lb,$5.00,lb,1,-lb,true
-Eggplant Italian Black,Eggplant Italian Black - lb,$5.00,lb,1,-lb,true
-Eggplant Mini,Eggplant Mini - Pt,$6.00,Pt,0.75,-pt,true
-Eggplant Mini,Eggplant Mini - Qt,$11.00,Qt,1,-qt,true
-Escarole,Escarole - ea,$5.00,ea,1,-ea,true
-Fennel,Fennel - ea,$4.00,ea,1,-ea,true
-Garlic,Garlic - 1/2 lb,$8.00,1/2 lb,0.5,-1/2 lb,true
-Garlic,Garlic - lb,$16.00,lb,1,-lb,true
-Garlic Green,Garlic Green - bu,$3.50,bu,1,-bu,true
-Garlic Scape,Garlic Scape - bu,$3.50,bu,1,-bu,true
-Kale Curly,Kale Curly - bu,$5.00,bu,1,-bu,true
-Kale Lacinato,Kale Lacinato - bu,$5.00,bu,1,-bu,true
-Kale Russian,Kale Russian - bu,$5.00,bu,1,-bu,true
-Kohlrabi,Kohlrabi - bu,$5.00,bu,1,-bu,true
-Kohlrabi Storage,Kohlrabi Storage - ea,$4.00,ea,1,-ea,true
-Komatsuna,Komatsuna - bu,$5.00,bu,1,-bu,true
-Lettuce Head,Lettuce Head - ea,$4.00,ea,1,-ea,true
-Lettuce Mini Gem,Lettuce Mini Gem - ea,$3.00,ea,1,-ea,true
-Mustard,Mustard - bu,$5.00,bu,1,-bu,true
-Okra,Okra - Pt,$6.00,Pt,0.75,-pt,true
-Onion Spring,Onion Spring - bu,$5.00,bu,1,-bu,true
-Onion Spring,Onion Spring - lb,$5.00,lb,1,-lb,true
-Parsley,Parsley - bu,$4.00,bu,1,-bu,true
-Pea Shelling,Pea Shelling - Pt,$6.00,Pt,0.75,-pt,true
-Pea Shelling,Pea Shelling - Qt,$11.00,Qt,1.5,-qt,true
-Pea Snap,Pea Snap - Pt,$6.00,Pt,0.75,-pt,true
-Pea Snap,Pea Snap - Qt,$11.00,Qt,1.5,-qt,true
-Pepper Carmen,Pepper Carmen - lb,$5.00,lb,1,-lb,true
-Pepper Hot,Pepper Hot - ea,$1.00,ea,1,-ea,true
-Pepper Lunchbox,Pepper Lunchbox - Pt,$4.00,Pt,0.5,-pt,true
-Pepper Lunchbox,Pepper Lunchbox - Qt,$7.00,Qt,1,-qt,true
-Pepper Shishito,Pepper Shishito - Pt,$6.00,Pt,0.6,-pt,true
-Pepper Shishito,Pepper Shishito - Qt,$11.00,Qt,1.2,-qt,true
-Potato Blue,Potato Blue - lb,$3.50,lb,1,-lb,true
-Potato Fingerling,Potato Fingerling - lb,$3.50,lb,1,-lb,true
-Potato Red,Potato Red - lb,$3.50,lb,1,-lb,true
-Potato White,Potato White - lb,$3.50,lb,1,-lb,true
-Potato Yellow,Potato Yellow - lb,$3.50,lb,1,-lb,true
-Puntarelle,Puntarelle - lb,$9.00,lb,1,-lb,true
-Radicchio Forced,Radicchio Forced - lb,$16.00,lb,1,-lb,true
-Radicchio Round,Radicchio Round - lb,$9.00,lb,1,-lb,true
-Radicchio Treviso,Radicchio Treviso - lb,$9.00,lb,1,-lb,true
-Radicchio Variegated,Radicchio Variegated - lb,$9.00,lb,1,-lb,true
-Radish Daikon Bulk,Radish Daikon Bulk - lb,$3.50,lb,1,-lb,true
-Radish Daikon Mix,Radish Daikon Mix - bu,$3.50,bu,1,-bu,true
-Radish French Breakfast,Radish French Breakfast - bu,$4.00,bu,1,-bu,true
-Radish Purple,Radish Purple - bu,$4.00,bu,1,-bu,true
-Radish Red,Radish Red - bu,$4.00,bu,1,-bu,true
-Salad Mix,Salad Mix - 1 1/3 lb,$25.00,1 1/3 lb,1.33,-1 1/3 lb,true
-Salad Mix,Salad Mix - 1/3 lb,$7.00,1/3 lb,0.33,-1/3 lb,true
-Salad Mix,Salad Mix - 2/3 lb ,$14.00,2/3 lb ,0.67,-2/3 lb,true
-Scallion,Scallion - bu,$4.00,bu,1,-bu,true
-Spinach,Spinach - 1 lb,$14.00,1 lb,1,-1 lb,true
-Spinach,Spinach - 1/2 lb,$7.00,1/2 lb,0.5,-1/2 lb,true
-Sweet Potato Covington,Sweet Potato Covington - lb,$3.50,lb,1,-lb,true
-Sweet Potato Murasaki,Sweet Potato Murasaki - lb,$3.50,lb,1,-lb,true
-Tokyo Bekana,Tokyo Bekana - bu,$4.50,bu,1,-bu,true
-Tomato Cherry Mix,Tomato Cherry Mix - Pt,$7.00,Pt,1,-pt,true
-Tomato Cherry Sungold,Tomato Cherry Sungold - pt,$7.00,pt,1,-pt,true
-Tomato Heirloom,Tomato Heirloom - lb,$5.00,lb,1,-lb,true
-Tomato Red,Tomato Red - lb,$5.00,lb,1,-lb,true
-Tomato Sauce,Tomato Sauce - Qt,$7.00,Qt,1.5,-qt,true
-Turnip,Turnip - bu,$5.00,bu,1,-bu,true
-Turnip Bulk,Turnip Bulk - lb,$3.50,lb,1,-lb,true
-Winter Squash Acorn,Winter Squash Acorn - lb,$4.00,lb,1,-lb,true
-Winter Squash Butternut,Winter Squash Butternut - lb,$3.00,lb,1,-lb,true
-Winter Squash Delicata,Winter Squash Delicata - lb,$4.00,lb,1,-lb,true
-Winter Squash Futsu,Winter Squash Futsu - lb,$3.00,lb,1,-lb,true
-Winter Squash Honeynut,Winter Squash Honeynut - lb,$5.00,lb,1,-lb,true
-Winter Squash Kabocha,Winter Squash Kabocha - lb,$3.00,lb,1,-lb,true
-Winter Squash Koginut,Winter Squash Koginut - lb,$3.00,lb,1,-lb,true
-Yu Choy,Yu Choy - bu,$4.50,bu,1,-bu,true
-Zucchini Green,Zucchini Green - lb,$3.50,lb,1,-lb,true
-Zucchini Striped,Zucchini Striped - lb,$3.50,lb,1,-lb,true
-Zucchini Yellow,Zucchini Yellow - lb,$3.50,lb,1,-lb,true
-Arugula Wild,Arugula Wild - 1/3 lb,$7.00,1/3 lb,1,-1/3 lb,true
-Cucumber Katrina,Cucumber Katrina - lb,$4.50,lb,1,-lb,true
-Braising Mix,Braising Mix,0,pounds,1,,true
-Salad Mix,Salad Mix,0,heads,1,,true
+Crop Name,Product Name,Planning Year,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active
+Artichoke,Artichoke - lb,2023,$9.00,lb,1,-lb,true
+Arugula,Arugula - lb,2023,$8.00,lb,1,-lb,true
+Arugula,Arugula - 5 lbs,2023,$37.50,5 lbs,5,-5 lb,true
+Arugula,Arugula - 2/3 lb,2023,$11.00,2/3 lb,0.67,-2/3 lb,true
+Arugula,Arugula - 1/3 lb,2023,$6.00,1/3 lb,0.33,-1/3 lb,true
+Basil,Basil - bunch,2023,$3.00,bunch,1,-bu,true
+Basil,Basil - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Bean Long,Bean Long - bunch,2023,$4.00,bunch,1,-bu,true
+Bean Snap,Bean Snap - quart,2023,$4.00,quart,1,-qt,true
+Bean Snap,Bean Snap - lb,2023,$5.00,lb,1,-lb,true
+Bean Snap,Bean Snap - bunch,2023,$4.00,bunch,0.65,-bu,true
+Beets Bulk Chioggia,Beets Bulk Chioggia - lb,2023,$3.00,lb,1,-lb,true
+Beets Bulk Chioggia,Beets Bulk Chioggia - 10 lbs,2023,$18.00,10 lbs,10,-10 lbs,true
+Beets Bulk Golden,Beets Bulk Golden - lb,2023,$3.00,lb,1,-lb,true
+Beets Bulk Golden,Beets Bulk Golden - 10 lbs,2023,$18.00,10 lbs,10,-10 lbs,true
+Beets Bulk Red,Beets Bulk Red - lb,2023,$3.00,lb,1,-lb,true
+Beets Bulk Red,Beets Bulk Red - 10 lbs,2023,$15.00,10 lbs,10,-10 lbs,true
+Beets Chioggia,Beets Chioggia - bunch,2023,$4.00,bunch,1,-bu,true
+Beets Chioggia,Beets Chioggia - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Beets Golden,Beets Golden - bunch,2023,$4.00,bunch,1,-bu,true
+Beets Golden,Beets Golden - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Beets Golden P,Beets Golden P - bunch,2023,$4.00,bunch,1,-bu,true
+Beets Golden P,Beets Golden P - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Beets Red,Beets Red - bunch,2023,$4.00,bunch,1,-bu,true
+Beets Red,Beets Red - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Beets Red P,Beets Red P - bunch,2023,$4.00,bunch,1,-bu,true
+Beets Red P,Beets Red P - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Bok Choy,Bok Choy - each,2023,$2.00,each,1,-ea,true
+Bok Choy Small,Bok Choy Small - lb,2023,$6.00,lb,1,-lb,true
+Bok Choy Small,Bok Choy Small - 15 lbs,2023,$45.00,15 lbs,15,-15 lb,true
+Braising Mix,Braising Mix - 1/2 lb,2023,$4.00,1/2 lb,0.5,-1/2 lb,true
+Braising Mix,Braising Mix - 1 lb,2023,$7.00,1 lb,1,-1 lb,true
+Broccoli,Broccoli - lb,2023,$3.00,lb,1,-lb,true
+Broccoli Raab,Broccoli Raab - bunch,2023,$4.00,bunch,1,-bu,true
+Broccolini,Broccolini - bunch,2023,$5.00,bunch,1,-bu,true
+Brussels Sprouts,Brussels Sprouts - stalk,2023,$7.00,stalk,1,-stalk,true
+Cabbage,Cabbage - lb,2023,$2.00,lb,0.5,-lb,true
+Cabbage,Cabbage - 20 lbs,2023,$25.00,20 lbs,10,-20 lb,true
+Cabbage Chinese,Cabbage Chinese - lb,2023,$2.00,lb,0.5,-lb,true
+Cabbage Chinese,Cabbage Chinese - 10 lbs,2023,$12.50,10 lbs,5,-10 lbs,true
+Cabbage Storage,Cabbage Storage - lb,2023,$2.00,lb,0.25,-lb,true
+Cabbage Storage,Cabbage Storage - 20 lbs,2023,$20.00,20 lbs,5,-20 lb,true
+Carrot,Carrot - bunch,2023,$5.00,bunch,1,-bu,true
+Carrot Bulk,Carrot Bulk - lb,2023,$3.00,lb,1,-lb,true
+Carrot Rainbow Bulk,Carrot Rainbow Bulk - lb,2023,$3.00,lb,1,-lb,true
+Cauliflower,Cauliflower - lb,2023,$3.50,lb,1,-lb,true
+Cauliflower Sprouting,Cauliflower Sprouting - lb,2023,$3.50,lb,1,-lb,true
+Celeriac,Celeriac - each,2023,$3.00,each,1,-ea,true
+Celery,Celery - bunch,2023,$4.00,bunch,1,-bu,true
+Celery,Celery - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Chard,Chard - bunch,2023,$4.00,bunch,1,-bu,true
+Chard,Chard - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Cilantro,Cilantro - bunch,2023,$3.00,bunch,1,-bu,true
+Cilantro,Cilantro - 12 bu,2023,$24.00,12 bu,12,-12 bu,true
+Collards,Collards - bunch,2023,$4.00,bunch,1,-bu,true
+Collards,Collards - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Cucumber,Cucumber - lb,2023,$3.00,lb,1,-lb,true
+Cucumber,Cucumber - 10 lbs,2023,$15.00,10 lbs,10,-10 lbs,true
+Cucumber Misc,Cucumber Misc - lb,2023,$3.00,lb,1,-lb,true
+Cucumber Misc,Cucumber Misc - 10 lbs,2023,$15.00,10 lbs,10,-10 lbs,true
+Cucumber Pickling,Cucumber Pickling - lb,2023,$3.00,lb,1,-lb,true
+Cucumber Pickling,Cucumber Pickling - 10 lbs,2023,$15.00,10 lbs,10,-10 lbs,true
+Dandelion,Dandelion - bunch,2023,$4.00,bunch,1,-bu,true
+Dandelion,Dandelion - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Dill,Dill - bunch,2023,$3.00,bunch,1,-bu,true
+Dill,Dill - 12 bu,2023,$24.00,12 bu,12,-12 bu,true
+Eggplant,Eggplant - quart,2023,$5.00,quart,1.25,-qt,true
+Eggplant,Eggplant - lb,2023,$4.00,lb,1,-lb,true
+Eggplant Mini,Eggplant Mini - quart,2023,$7.00,quart,1.2,-qt,true
+Eggplant Mini,Eggplant Mini - pint,2023,$4.00,pint,0.75,-pt,true
+Eggplant Mini,Eggplant Mini - lb,2023,$5.00,lb,1,-lb,true
+Escarole,Escarole - head,2023,$5.00,head,1,-hd,true
+Escarole,Escarole - 6 heads,2023,$18.00,6 heads,6,-6 hd,true
+Fall Mix,Fall Mix - lb,2023,$15.00,lb,1,-lb,true
+Fall Mix,Fall Mix - 2/3 lb,2023,$11.00,2/3 lb,0.67,-2/3 lb,true
+Fall Mix,Fall Mix - 1/3 lb,2023,$6.00,1/3 lb,0.35,-1/3 lb,true
+Fennel,Fennel - lb,2023,$4.00,lb,4,-lb,true
+Fennel,Fennel - each,2023,$4.00,each,1,-ea,true
+Fennel,Fennel - bunch,2023,$4.00,bunch,2,-bu,true
+Frisee,Frisee - lb,2023,$12.00,lb,1,-lb,true
+Frisee,Frisee - 1 lb,2023,$7.00,1 lb,4,-1 lb,true
+Garlic,Garlic - pint,2023,$7.00,pint,5,-pt,true
+Garlic,Garlic - lb,2023,$14.00,lb,1,-lb,true
+Garlic,Garlic - head,2023,$2.00,head,1,-hd,true
+Garlic Green,Garlic Green - bunch,2023,$3.50,bunch,1,-bu,true
+Garlic Scape,Garlic Scape - lb,2023,$8.00,lb,3,-lb,true
+Garlic Scape,Garlic Scape - bunch,2023,$3.00,bunch,1,-bu,true
+Kale Curly,Kale Curly - bunch,2023,$4.00,bunch,1,-bu,true
+Kale Curly,Kale Curly - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Kale Lacinato,Kale Lacinato - bunch,2023,$4.00,bunch,1,-bu,true
+Kale Lacinato,Kale Lacinato - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Kale Loose,Kale Loose - 1 lb,2023,$8.00,1 lb,1,-1 lb,true
+Kale Russian,Kale Russian - bunch,2023,$4.00,bunch,1,-bu,true
+Kale Russian,Kale Russian - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Kohlrabi,Kohlrabi - bunch,2023,$3.50,bunch,1,-bu,true
+Kohlrabi,Kohlrabi - 12 bu,2023,$30.00,12 bu,12,-12 bu,true
+Kohlrabi Storage,Kohlrabi Storage - each,2023,$4.00,each,1,-ea,true
+Komatsuna,Komatsuna - bunch,2023,$4.00,bunch,1,-bu,true
+Komatsuna,Komatsuna - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Leek,Leek - bunch,2023,$4.00,bunch,3,-bu,true
+Lettuce Head,Lettuce Head - head,2023,$3.00,head,1,-hd,true
+Lettuce Head,Lettuce Head - 6 heads,2023,$12.00,6 heads,6,-6 hd,true
+Lettuce Mini/Gem,Lettuce Mini/Gem - lb,2023,$5.00,lb,4,-lb,true
+Lettuce Mini/Gem,Lettuce Mini/Gem - head,2023,$3.00,head,1,-hd,true
+Lettuce Mini/Gem,Lettuce Mini/Gem - 5 lbs,2023,$22.50,5 lbs,40,-5 lb,true
+Lettuce Mini/Gem,Lettuce Mini/Gem - 12 heads,2023,$18.00,12 heads,12,-12 hd,true
+Melons,Melons - lb,2023,$2.00,lb,1,-lb,true
+Microgreens,Microgreens - 1/4 lb,2023,$8.00,1/4 lb,0.25,-1/4 lb,true
+Mustard,Mustard - bunch,2023,$4.00,bunch,1,-bu,true
+Mustard,Mustard - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Mustard Baby,Mustard Baby - lb,2023,$15.00,lb,1,-lb,true
+Mustard Baby,Mustard Baby - 1/2 lb,2023,$7.00,1/2 lb,1,-1/2 lb,true
+Okra,Okra - pint,2023,$5.00,pint,0.5,-pt,true
+Onion Bulk,Onion Bulk - lb,2023,$3.00,lb,1,-lb,true
+Onion Spring,Onion Spring - bunch,2023,$4.00,bunch,1,-bu,true
+Onion Spring Red,Onion Spring Red - bunch,2023,$4.00,bunch,1,-bu,true
+Parsley,Parsley - bunch,2023,$3.00,bunch,1,-bu,true
+Parsley,Parsley - 12 bu,2023,$24.00,12 bu,12,-12 bu,true
+Parsnip,Parsnip - lb,2023,$3.00,lb,1,-lb,true
+Pea Shelling,Pea Shelling - quart,2023,$9.00,quart,1,-qt,true
+Pea Shelling,Pea Shelling - pint,2023,$5.00,pint,0.5,-pt,true
+Pea Snap,Pea Snap - pint,2023,$5.00,pint,0.5,-pt,true
+Pea Snap,Pea Snap - lb,2023,$9.00,lb,1,-lb,true
+Pepper Carmen,Pepper Carmen - quart,2023,$6.00,quart,1.25,-qt,true
+Pepper Carmen,Pepper Carmen - lb,2023,$4.00,lb,1,-lb,true
+Pepper Carmen,Pepper Carmen - 10 lbs,2023,$30.00,10 lbs,10,-10 lbs,true
+Pepper Hot,Pepper Hot - pint,2023,$4.00,pint,0.5,-pt,true
+Pepper Hot,Pepper Hot - lb,2023,$8.00,lb,1,-lb,true
+Pepper Hot,Pepper Hot - each,2023,$1.00,each,0.2,-ea,true
+Pepper Mini,Pepper Mini - quart,2023,$6.00,quart,1,-qt,true
+Pepper Mini,Pepper Mini - pint,2023,$3.00,pint,0.5,-pt,true
+Pepper Shishito,Pepper Shishito - quart,2023,$7.00,quart,0.67,-qt,true
+Pepper Shishito,Pepper Shishito - pint,2023,$4.00,pint,0.33,-pt,true
+Pepper Shishito,Pepper Shishito - lb,2023,$5.50,lb,1,-lb,true
+Potato Blue,Potato Blue - lb,2023,$3.00,lb,1,-lb,true
+Potato Fingerling,Potato Fingerling - lb,2023,$3.00,lb,1,-lb,true
+Potato White,Potato White - lb,2023,$3.00,lb,1,-lb,true
+Potato Yellow,Potato Yellow - lb,2023,$3.00,lb,1,-lb,true
+Puntarelle,Puntarelle - lb,2023,$6.00,lb,1,-lb,true
+Puntarelle,Puntarelle - 10 lbs,2023,$50.00,10 lbs,10,-10 lbs,true
+Radicchio,Radicchio  - lb,2023,$6.00,lb,1,-lb,true
+Radicchio,Radicchio  - 10 lbs,2023,$35.00,10 lbs,10,-10 lbs,true
+Radicchio Forced,Radicchio Forced - lb,2023,$18.00,lb,3,-lb,true
+Radicchio Forced,Radicchio Forced - 10 lbs,2023,$120.00,10 lbs,33,-10 lbs,true
+Radicchio Specialty,Radicchio Specialty - lb,2023,$6.00,lb,1,-lb,true
+Radicchio Specialty,Radicchio Specialty - 10 lbs,2023,$45.00,10 lbs,14,-10 lbs,true
+Radicchio Sugarloaf,Radicchio Sugarloaf - lb,2023,$3.00,lb,1,-lb,true
+Radicchio Sugarloaf,Radicchio Sugarloaf - 10 lbs,2023,$35.00,10 lbs,10,-10 lbs,true
+Radicchio Variegated,Radicchio Variegated - lb,2023,$6.00,lb,1,-lb,true
+Radicchio Variegated,Radicchio Variegated - 10 lbs,2023,$35.00,10 lbs,20,-10 lbs,true
+Radish Bulk,Radish Bulk - lb,2023,$3.00,lb,1,-lb,true
+Radish Bulk,Radish Bulk - 10 lbs,2023,$10.00,10 lbs,10,-10 lbs,true
+Radish French Breakfast,Radish French Breakfast - bunch,2023,$3.50,bunch,1,-bu,true
+Radish French Breakfast,Radish French Breakfast - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Radish Mix,Radish Mix - bunch,2023,$4.00,bunch,1,-bu,true
+Radish Round,Radish Round - bunch,2023,$3.50,bunch,1,-bu,true
+Radish Round,Radish Round - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Radish Round Purple,Radish Round Purple - bunch,2023,$3.50,bunch,1,-bu,true
+Radish Round Purple,Radish Round Purple - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Sage,Sage - bunch,2023,$3.00,bunch,1,-bu,true
+Scallion,Scallion - bunch,2023,$3.00,bunch,1,-bu,true
+Scallion,Scallion - 12 bu,2023,$24.00,12 bu,12,-12 bu,true
+Scallion Negi,Scallion Negi - bunch,2023,$3.00,bunch,1,-bu,true
+Shiso,Shiso - bunch,2023,$3.00,bunch,1,-bu,true
+Spinach,Spinach - 5 lbs,2023,$25.00,5 lbs,5,-5 lb,true
+Spinach,Spinach - 1/2 lb,2023,$6.00,1/2 lb,0.5,-1/2 lb,true
+Spinach,Spinach - 1 lb,2023,$12.00,1 lb,1,-1 lb,true
+Spring Mix,Spring Mix - lb,2023,$10.00,lb,1,-lb,true
+Spring Mix,Spring Mix - 5 lbs,2023,$45.00,5 lbs,5,-5 lb,true
+Spring Mix,Spring Mix - 2/3 lb,2023,$11.00,2/3 lb,0.67,-2/3 lb,true
+Spring Mix,Spring Mix - 1/3 lb,2023,$6.00,1/3 lb,0.35,-1/3 lb,true
+Summer Mix,Summer Mix - lb,2023,$10.00,lb,1,-lb,true
+Summer Mix,Summer Mix - 5 lbs,2023,$45.00,5 lbs,5,-5 lb,true
+Summer Mix,Summer Mix - 2/3 lb,2023,$11.00,2/3 lb,0.67,-2/3 lb,true
+Summer Mix,Summer Mix - 1/3 lb,2023,$6.00,1/3 lb,0.35,-1/3 lb,true
+Sweet Potatoes,Sweet Potatoes - lb,2023,$3.00,lb,1,-lb,true
+Tatsoi,Tatsoi - bunch,2023,$4.00,bunch,3,-bu,true
+Tomatillo,Tomatillo - pint,2023,$4.00,pint,1,-pt,true
+Tomato Cherry,Tomato Cherry - pint,2023,$4.00,pint,1,-pt,true
+Tomato Cherry,Tomato Cherry - 12 pints,2023,$28.00,12 pints,12,-12 pt,true
+Tomato Heirloom,Tomato Heirloom - lb,2023,$4.50,lb,1,-lb,true
+Tomato Heirloom,Tomato Heirloom - 10 lbs,2023,$37.50,10 lbs,10,-10 lbs,true
+Tomato Red,Tomato Red - quart,2023,$6.00,quart,1.5,-qt,true
+Tomato Red,Tomato Red - lb,2023,$4.00,lb,1,-lb,true
+Tomato Red,Tomato Red - 10 lbs,2023,$25.00,10 lbs,10,-10 lbs,true
+Tomato Sauce,Tomato Sauce - quart,2023,$6.00,quart,1.5,-qt,true
+Tomato Sauce,Tomato Sauce - pint,2023,$4.00,pint,0.68,-pt,true
+Tomato Sauce,Tomato Sauce - 10 lbs,2023,$30.00,10 lbs,10,-10 lbs,true
+Turnip,Turnip - bunch,2023,$4.00,bunch,1,-bu,true
+Turnip,Turnip - 12 bu,2023,$27.00,12 bu,12,-12 bu,true
+Turnip Bulk,Turnip Bulk - lb,2023,$3.00,lb,1,-lb,true
+Turnip Bulk,Turnip Bulk - 10 lbs,2023,$15.00,10 lbs,10,-10 lbs,true
+Watermelon,Watermelon - lb,2023,$2.00,lb,1,-lb,true
+Winter Mix,Winter Mix - lb,2023,$15.00,lb,1,-lb,true
+Winter Mix,Winter Mix - 2/3 lb,2023,$11.00,2/3 lb,0.67,-2/3 lb,true
+Winter Mix,Winter Mix - 1/3 lb,2023,$6.00,1/3 lb,0.33,-1/3 lb,true
+Winter Squash Acorn Type,Winter Squash Acorn Type - lb,2023,$3.00,lb,1,-lb,true
+Winter Squash Butternut,Winter Squash Butternut - lb,2023,$2.00,lb,1,-lb,true
+Winter Squash Delicata,Winter Squash Delicata - lb,2023,$3.00,lb,1,-lb,true
+Winter Squash Honeynut,Winter Squash Honeynut - lb,2023,$3.00,lb,1,-lb,true
+Winter Squash Spaghetti,Winter Squash Spaghetti - lb,2023,$2.00,lb,1,-lb,true
+Winter Squash Specialty,Winter Squash Specialty - lb,2023,$2.00,lb,1,-lb,true
+Zucchini,Zucchini - lb,2023,$3.00,lb,1,-lb,true
+Zucchini,Zucchini - 10 lbs,2023,$15.00,10 lbs,10,-10 lbs,true
+Asparagus,Asparagus - bunch,2023,$5.00,bunch,0.6,-bu,true
+Spring Mix,Spring Mix - 1.5 lb,2023,$25.00,1.5 lb,1.5,-1.5 lb,true
+Summer Mix,Summer Mix - 1.5 lb,2023,$25.00,1.5 lb,1.5,-1.5 lb,true
+Fall Mix,Fall Mix - 1.5 lb,2023,$25.00,1.5 lb,1.5,-1.5 lb,true
+Winter Mix,Winter Mix - 1.5 lb,2023,$25.00,1.5 lb,1.5,-1.5 lb,true
+Artichoke,Artichoke - lb,2024,$11.00,lb,1,-lb,true
+Arugula,Arugula - 1/3 lb,2024,$7.00,1/3 lb,0.33,-1/3 lb,true
+Arugula,Arugula - 2/3 lb,2024,$14.00,2/3 lb,0.66,-2/3 lb,true
+Asparagus,Asparagus - bu,2024,$5.00,bu,0.33,-bu,true
+Basil,Basil - bu,2024,$3.50,bu,1,-bu,true
+Bean Snap,Bean Snap - bu,2024,$6.00,bu,1,-bu,true
+Beets Bulk Golden,Beets Bulk Golden - lb,2024,$3.50,lb,1,-lb,true
+Beets Bulk Red,Beets Bulk Red - lb,2024,$3.50,lb,1,-lb,true
+Beets Golden,Beets Golden - bu,2024,$5.00,bu,1,-bu,true
+Beets Golden PP,Beets Golden PP - bu,2024,$5.00,bu,1,-bu,true
+Beets Red,Beets Red - bu,2024,$5.00,bu,1,-bu,true
+Beets Red PP,Beets Red PP - bu,2024,$5.00,bu,1,-bu,true
+Bok Choy,Bok Choy - ea,2024,$3.00,ea,1,-ea,true
+Bok Choy Small,Bok Choy Small - lb,2024,$9.00,lb,1,-lb,true
+Braising Mix,Braising Mix - 1 lb,2024,$8.00,1 lb,1,-1 lb,true
+Broccoli Raab,Broccoli Raab - bu,2024,$4.50,bu,1,-bu,true
+Broccolini,Broccolini - bu,2024,$6.00,bu,1,-bu,true
+Brussels Sprouts,Brussels Sprouts - ea,2024,$7.00,ea,1,-ea,true
+Cabbage,Cabbage - lb,2024,$3.00,lb,1,-lb,true
+Cabbage Chinese,Cabbage Chinese - lb,2024,$4.00,lb,1,-lb,true
+Cabbage Storage,Cabbage Storage - lb,2024,$2.50,lb,1,-lb,true
+Carrot,Carrot - bu,2024,$6.00,bu,1,-bu,true
+Carrot Bulk,Carrot Bulk - lb,2024,$3.50,lb,1,-lb,true
+Cauliflower,Cauliflower - lb,2024,$4.00,lb,1,-lb,true
+Cauliflower Sprouting,Cauliflower Sprouting - lb,2024,$6.00,lb,1,-lb,true
+Celery,Celery - bu,2024,$4.50,bu,1,-bu,true
+Chard,Chard - bu,2024,$4.50,bu,1,-bu,true
+Cilantro,Cilantro - bu,2024,$3.50,bu,1,-bu,true
+Collards,Collards - bu,2024,$4.50,bu,1,-bu,true
+Cucumber,Cucumber - lb,2024,$3.50,lb,1,-lb,true
+Cucumber Pickling,Cucumber Pickling - lb,2024,$3.50,lb,1,-lb,true
+Dandelion,Dandelion - bu,2024,$4.50,bu,1,-bu,true
+Dill,Dill - bu,2024,$3.50,bu,1,-bu,true
+Eggplant,Eggplant - lb,2024,$5.00,lb,1,-lb,true
+Eggplant Mini,Eggplant Mini - Pt,2024,$6.00,Pt,0.75,-pt,true
+Escarole,Escarole - ea,2024,$5.00,ea,1,-ea,true
+Fall Mix,Fall Mix - 1 1/4 lb,2024,$25.00,1 1/4 lb,1.25,-1 1/4 lb,true
+Fall Mix,Fall Mix - 1/3 lb,2024,$7.00,1/3 lb,0.33,-1/3 lb,true
+Fall Mix,Fall Mix - 2/3 lb,2024,$14.00,2/3 lb,0.67,-2/3 lb,true
+Fennel,Fennel - bu,2024,$4.00,bu,2,-bu,true
+Fennel,Fennel - ea,2024,$4.00,ea,1,-ea,true
+Garlic,Garlic - 1/2 lb,2024,$8.00,1/2 lb,0.5,-1/2 lb,true
+Garlic,Garlic - lb,2024,$16.00,lb,1,-lb,true
+Garlic Green,Garlic Green - bu,2024,$3.50,bu,1,-bu,true
+Garlic Scape,Garlic Scape - bu,2024,$3.50,bu,1,-bu,true
+Kale Curly,Kale Curly - bu,2024,$4.50,bu,1,-bu,true
+Kale Lacinato,Kale Lacinato - bu,2024,$4.50,bu,1,-bu,true
+Kale Russian,Kale Russian - bu,2024,$4.50,bu,1,-bu,true
+Kohlrabi,Kohlrabi - bu,2024,$4.50,bu,1,-bu,true
+Kohlrabi Storage,Kohlrabi Storage - ea,2024,$3.00,ea,1,-ea,true
+Komatsuna,Komatsuna - bu,2024,$4.50,bu,1,-bu,true
+Lettuce Head,Lettuce Head - ea,2024,$4.00,ea,1,-ea,true
+Lettuce Mini Gem,Lettuce Mini Gem - ea,2024,$3.00,ea,1,-ea,true
+Mustard,Mustard - bu,2024,$4.50,bu,1,-bu,true
+Okra,Okra - Pt,2024,$6.00,Pt,0.75,-pt,true
+Onion Bulk,Onion Bulk - lb,2024,$5.00,lb,1,-lb,true
+Onion Spring,Onion Spring - bu,2024,$5.00,bu,1,-bu,true
+Parsley,Parsley - bu,2024,$3.50,bu,1,-bu,true
+Pea Shelling,Pea Shelling - Pt,2024,$6.00,Pt,0.75,-pt,true
+Pea Shelling,Pea Shelling - Qt,2024,$11.00,Qt,1.5,-qt,true
+Pea Snap,Pea Snap - Pt,2024,$6.00,Pt,0.75,-pt,true
+Pea Snap,Pea Snap - Qt,2024,$11.00,Qt,1.5,-qt,true
+Pepper Carmen,Pepper Carmen - lb,2024,$5.00,lb,1,-lb,true
+Pepper Hot,Pepper Hot - ea,2024,$1.00,ea,1,-ea,true
+Pepper Lunchbox,Pepper Lunchbox - Pt,2024,$4.00,Pt,0.5,-pt,true
+Pepper Lunchbox,Pepper Lunchbox - Qt,2024,$7.00,Qt,1,-qt,true
+Pepper Shishito,Pepper Shishito - Pt,2024,$6.00,Pt,0.6,-pt,true
+Pepper Shishito,Pepper Shishito - Qt,2024,$11.00,Qt,1.2,-qt,true
+Potato Blue,Potato Blue - lb,2024,$3.50,lb,1,-lb,true
+Potato Fingerling,Potato Fingerling - lb,2024,$3.50,lb,1,-lb,true
+Potato White,Potato White - lb,2024,$3.50,lb,1,-lb,true
+Potato Yellow,Potato Yellow - lb,2024,$3.50,lb,1,-lb,true
+Puntarelle,Puntarelle - lb,2024,$9.00,lb,1,-lb,true
+Radicchio,Radicchio - lb,2024,$8.00,lb,1,-lb,true
+Radicchio Forced,Radicchio Forced - lb,2024,$16.00,lb,1,-lb,true
+Radicchio Treviso,Radicchio Treviso - lb,2024,$8.00,lb,1,-lb,true
+Radicchio Variegated,Radicchio Variegated - lb,2024,$8.00,lb,1,-lb,true
+Radish Bulk,Radish Bulk - lb,2024,$3.50,lb,1,-lb,true
+Radish French Breakfast,Radish French Breakfast - bu,2024,$3.50,bu,1,-bu,true
+Radish Mix,Radish Mix - bu,2024,$3.50,bu,1,-bu,true
+Radish Red,Radish Red - bu,2024,$3.50,bu,1,-bu,true
+Radish Round Purple,Radish Round Purple - bu,2024,$3.50,bu,1,-bu,true
+Scallion,Scallion - bu,2024,$3.50,bu,1,-bu,true
+Spinach,Spinach - 1 lb,2024,$14.00,1 lb,1,-1 lb,true
+Spinach,Spinach - 1/2 lb,2024,$7.00,1/2 lb,0.5,-1/2 lb,true
+Spring Mix,Spring Mix - 1 1/4 lb,2024,$25.00,1 1/4 lb,1.25,-1 1/4 lb,true
+Spring Mix,Spring Mix - 1/3 lb,2024,$7.00,1/3 lb,0.33,-1/3 lb,true
+Spring Mix,Spring Mix - 2/3 lb,2024,$14.00,2/3 lb,0.67,-2/3 lb,true
+Summer Mix,Summer Mix - 1 1/4 lb,2024,$25.00,1 1/4 lb,1.25,-1 1/4 lb,true
+Summer Mix,Summer Mix - 1/3 lb,2024,$7.00,1/3 lb,0.33,-1/3 lb,true
+Summer Mix,Summer Mix - 2/3 lb,2024,$14.00,2/3 lb,0.67,-2/3 lb,true
+Sweet Potatoes,Sweet Potatoes - lb,2024,$3.50,lb,1,-lb,true
+Tomato Cherry,Tomato Cherry - Pt,2024,$6.00,Pt,0.7,-pt,true
+Tomato Heirloom,Tomato Heirloom - lb,2024,$5.00,lb,1,-lb,true
+Tomato Red,Tomato Red - lb,2024,$5.00,lb,1,-lb,true
+Tomato Sauce,Tomato Sauce - Qt,2024,$7.00,Qt,1.5,-qt,true
+Turnip,Turnip - bu,2024,$4.50,bu,1,-bu,true
+Turnip Bulk,Turnip Bulk - lb,2024,$3.50,lb,1,-lb,true
+Winter Mix,Winter Mix - 1 1/4 lb,2024,$25.00,1 1/4 lb,1.25,-1 1/4 lb,true
+Winter Mix,Winter Mix - 1/3 lb,2024,$7.00,1/3 lb,0.33,-1/3 lb,true
+Winter Mix,Winter Mix - 2/3 lb,2024,$14.00,2/3 lb,0.67,-2/3 lb,true
+Winter Squash Acorn Type,Winter Squash Acorn Type - lb,2024,$4.00,lb,1,-lb,true
+Winter Squash Butternut,Winter Squash Butternut - lb,2024,$3.00,lb,1,-lb,true
+Winter Squash Delicata,Winter Squash Delicata - lb,2024,$4.00,lb,1,-lb,true
+Winter Squash Honeynut,Winter Squash Honeynut - lb,2024,$5.00,lb,1,-lb,true
+Winter Squash Kabocha,Winter Squash Kabocha - lb,2024,$3.00,lb,1,-lb,true
+Winter Squash Koginut,Winter Squash Koginut - lb,2024,$3.00,lb,1,-lb,true
+Winter Squash Spaghetti,Winter Squash Spaghetti - lb,2024,$3.00,lb,1,-lb,true
+Zucchini,Zucchini - lb,2024,$3.50,lb,1,-lb,true
+Dry Beans,Dry Beans - lb,2024,$9.00,lb,1,-lb,true
+Eggplant Mini,Eggplant Mini - Qt,2024,$11.00,Qt,1,-qt,true
+Bitter Melon,Bitter Melon - lb,2024,$5.00,lb,1,-lb,true
+Cucumber Persian,Cucumber Persian - lb,2024,$3.50,lb,1,-lb,true
+Corn,Corn - ea,2024,$1.66,ea,1,-ea,true
+Summer Mix,Summer Mix - 1 1/3 lb,2024,$25.00,1 1/3 lb,1,-1 1/3 lb,true
+Artichoke,Artichoke - lb,2025,$11.00,lb,1,-lb,true
+Arugula,Arugula - 1/3 lb,2025,$7.00,1/3 lb,0.33,-1/3 lb,true
+Arugula,Arugula - 2/3 lb,2025,$14.00,2/3 lb,0.66,-2/3 lb,true
+Asparagus,Asparagus - bu,2025,$6.00,bu,0.33,-bu,true
+Basil,Basil - bu,2025,$4.00,bu,1,-bu,true
+Bean Snap,Bean Snap - bu,2025,$6.00,bu,1,-bu,true
+Beets Bulk Golden,Beets Bulk Golden - lb,2025,$3.50,lb,1,-lb,true
+Beets Bulk Red,Beets Bulk Red - lb,2025,$3.50,lb,1,-lb,true
+Beets Golden,Beets Golden - bu,2025,$5.00,bu,1,-bu,true
+Beets Red,Beets Red - bu,2025,$5.00,bu,1,-bu,true
+Bitter Melon,Bitter Melon - lb,2025,$5.00,lb,1,-lb,true
+Bok Choy,Bok Choy - ea,2025,$2.50,ea,1,-ea,true
+Bok Choy,Bok Choy - lb,2025,$10.00,lb,1,-lb,true
+Braising Mix,Braising Mix - 1 lb,2025,$9.00,1 lb,1,-1 lb,true
+Broccoli Raab,Broccoli Raab - bu,2025,$4.50,bu,1,-bu,true
+Broccolini,Broccolini - bu,2025,$6.00,bu,1,-bu,true
+Brussels Sprouts,Brussels Sprouts - ea,2025,$8.00,ea,1,-ea,true
+Cabbage Chinese,Cabbage Chinese - lb,2025,$4.00,lb,1,-lb,true
+Cabbage Chinese Red,Cabbage Chinese Red - lb,2025,$4.00,lb,1,-lb,true
+Cabbage Cone,Cabbage Cone - lb,2025,$2.50,lb,1,-lb,true
+Cabbage Cone Storage,Cabbage Cone Storage - lb,2025,$2.50,lb,1,-lb,true
+Cabbage Flat,Cabbage Flat - lb,2025,$2.50,lb,1,-lb,true
+Cabbage Green Storage,Cabbage Green Storage - lb,2025,$2.50,lb,1,-lb,true
+Cabbage Red,Cabbage Red - lb,2025,$2.50,lb,1,-lb,true
+Cabbage Savoy,Cabbage Savoy - lb,2025,$2.50,lb,1,-lb,true
+Carrot,Carrot - bu,2025,$6.00,bu,1,-bu,true
+Carrot Bulk,Carrot Bulk - lb,2025,$3.50,lb,1,-lb,true
+Cauliflower,Cauliflower - lb,2025,$4.00,lb,1,-lb,true
+Cauliflower Purple,Cauliflower Purple - lb,2025,$4.00,lb,1,-lb,true
+Cauliflower Romanesco,Cauliflower Romanesco - lb,2025,$4.00,lb,1,-lb,true
+Cauliflower Sprouting,Cauliflower Sprouting - lb,2025,$6.00,lb,1,-lb,true
+Celery,Celery - bu,2025,$5.00,bu,1,-bu,true
+Chard,Chard - bu,2025,$5.00,bu,1,-bu,true
+Cilantro,Cilantro - bu,2025,$4.00,bu,1,-bu,true
+Collards,Collards - bu,2025,$5.00,bu,1,-bu,true
+Corn,Corn - ea,2025,$1.66,ea,1,-ea,true
+Cucumber,Cucumber - lb,2025,$3.50,lb,1,-lb,true
+Cucumber Katrina,Cucumber Katrina - lb,2025,$4.50,lb,1,-lb,true
+Cucumber Pickling,Cucumber Pickling - lb,2025,$3.50,lb,1,-lb,true
+Dandelion,Dandelion - bu,2025,$5.00,bu,1,-bu,true
+Dill,Dill - bu,2025,$4.00,bu,1,-bu,true
+Dry Beans,Dry Beans - lb,2025,$9.00,lb,1,-lb,true
+Eggplant Italian Striped,Eggplant Italian Striped - lb,2025,$5.00,lb,1,-lb,true
+Eggplant Asian,Eggplant Asian - lb,2025,$5.00,lb,1,-lb,true
+Eggplant Italian Black,Eggplant Italian Black - lb,2025,$5.00,lb,1,-lb,true
+Eggplant Mini,Eggplant Mini - Pt,2025,$6.00,Pt,0.75,-pt,true
+Eggplant Mini,Eggplant Mini - Qt,2025,$11.00,Qt,1,-qt,true
+Escarole,Escarole - ea,2025,$5.00,ea,1,-ea,true
+Fennel,Fennel - ea,2025,$4.00,ea,1,-ea,true
+Garlic,Garlic - 1/2 lb,2025,$8.00,1/2 lb,0.5,-1/2 lb,true
+Garlic,Garlic - lb,2025,$16.00,lb,1,-lb,true
+Garlic Green,Garlic Green - bu,2025,$3.50,bu,1,-bu,true
+Garlic Scape,Garlic Scape - bu,2025,$3.50,bu,1,-bu,true
+Kale Curly,Kale Curly - bu,2025,$5.00,bu,1,-bu,true
+Kale Lacinato,Kale Lacinato - bu,2025,$5.00,bu,1,-bu,true
+Kale Russian,Kale Russian - bu,2025,$5.00,bu,1,-bu,true
+Kohlrabi,Kohlrabi - bu,2025,$5.00,bu,1,-bu,true
+Kohlrabi Storage,Kohlrabi Storage - ea,2025,$4.00,ea,1,-ea,true
+Komatsuna,Komatsuna - bu,2025,$5.00,bu,1,-bu,true
+Lettuce Head,Lettuce Head - ea,2025,$4.00,ea,1,-ea,true
+Lettuce Mini Gem,Lettuce Mini Gem - ea,2025,$3.00,ea,1,-ea,true
+Mustard,Mustard - bu,2025,$5.00,bu,1,-bu,true
+Okra,Okra - Pt,2025,$6.00,Pt,0.75,-pt,true
+Onion Spring,Onion Spring - bu,2025,$5.00,bu,1,-bu,true
+Onion Spring,Onion Spring - lb,2025,$5.00,lb,1,-lb,true
+Parsley,Parsley - bu,2025,$4.00,bu,1,-bu,true
+Pea Shelling,Pea Shelling - Pt,2025,$6.00,Pt,0.75,-pt,true
+Pea Shelling,Pea Shelling - Qt,2025,$11.00,Qt,1.5,-qt,true
+Pea Snap,Pea Snap - Pt,2025,$6.00,Pt,0.75,-pt,true
+Pea Snap,Pea Snap - Qt,2025,$11.00,Qt,1.5,-qt,true
+Pepper Carmen,Pepper Carmen - lb,2025,$5.00,lb,1,-lb,true
+Pepper Hot,Pepper Hot - ea,2025,$1.00,ea,1,-ea,true
+Pepper Lunchbox,Pepper Lunchbox - Pt,2025,$4.00,Pt,0.5,-pt,true
+Pepper Lunchbox,Pepper Lunchbox - Qt,2025,$7.00,Qt,1,-qt,true
+Pepper Shishito,Pepper Shishito - Pt,2025,$6.00,Pt,0.6,-pt,true
+Pepper Shishito,Pepper Shishito - Qt,2025,$11.00,Qt,1.2,-qt,true
+Potato Blue,Potato Blue - lb,2025,$3.50,lb,1,-lb,true
+Potato Fingerling,Potato Fingerling - lb,2025,$3.50,lb,1,-lb,true
+Potato Red,Potato Red - lb,2025,$3.50,lb,1,-lb,true
+Potato White,Potato White - lb,2025,$3.50,lb,1,-lb,true
+Potato Yellow,Potato Yellow - lb,2025,$3.50,lb,1,-lb,true
+Puntarelle,Puntarelle - lb,2025,$9.00,lb,1,-lb,true
+Radicchio Forced,Radicchio Forced - lb,2025,$16.00,lb,1,-lb,true
+Radicchio Round,Radicchio Round - lb,2025,$9.00,lb,1,-lb,true
+Radicchio Treviso,Radicchio Treviso - lb,2025,$9.00,lb,1,-lb,true
+Radicchio Variegated,Radicchio Variegated - lb,2025,$9.00,lb,1,-lb,true
+Radish Daikon Bulk,Radish Daikon Bulk - lb,2025,$3.50,lb,1,-lb,true
+Radish Daikon Mix,Radish Daikon Mix - bu,2025,$3.50,bu,1,-bu,true
+Radish French Breakfast,Radish French Breakfast - bu,2025,$4.00,bu,1,-bu,true
+Radish Purple,Radish Purple - bu,2025,$4.00,bu,1,-bu,true
+Radish Red,Radish Red - bu,2025,$4.00,bu,1,-bu,true
+Salad Mix,Salad Mix - 1 1/3 lb,2025,$25.00,1 1/3 lb,1.33,-1 1/3 lb,true
+Salad Mix,Salad Mix - 1/3 lb,2025,$7.00,1/3 lb,0.33,-1/3 lb,true
+Salad Mix,Salad Mix - 2/3 lb,2025,$14.00,2/3 lb,0.67,-2/3 lb,true
+Scallion,Scallion - bu,2025,$4.00,bu,1,-bu,true
+Spinach,Spinach - 1 lb,2025,$14.00,1 lb,1,-1 lb,true
+Spinach,Spinach - 1/2 lb,2025,$7.00,1/2 lb,0.5,-1/2 lb,true
+Sweet Potato Covington,Sweet Potato Covington - lb,2025,$3.50,lb,1,-lb,true
+Sweet Potato Murasaki,Sweet Potato Murasaki - lb,2025,$3.50,lb,1,-lb,true
+Tokyo Bekana,Tokyo Bekana - bu,2025,$4.50,bu,1,-bu,true
+Tomato Cherry Mix,Tomato Cherry Mix - Pt,2025,$7.00,Pt,1,-pt,true
+Tomato Cherry Sungold,Tomato Cherry Sungold - pt,2025,$7.00,pt,1,-pt,true
+Tomato Heirloom,Tomato Heirloom - lb,2025,$5.00,lb,1,-lb,true
+Tomato Red,Tomato Red - lb,2025,$5.00,lb,1,-lb,true
+Tomato Sauce,Tomato Sauce - Qt,2025,$7.00,Qt,1.5,-qt,true
+Turnip,Turnip - bu,2025,$5.00,bu,1,-bu,true
+Turnip Bulk,Turnip Bulk - lb,2025,$3.50,lb,1,-lb,true
+Winter Squash Acorn,Winter Squash Acorn - lb,2025,$4.00,lb,1,-lb,true
+Winter Squash Butternut,Winter Squash Butternut - lb,2025,$3.00,lb,1,-lb,true
+Winter Squash Delicata,Winter Squash Delicata - lb,2025,$4.00,lb,1,-lb,true
+Winter Squash Futsu,Winter Squash Futsu - lb,2025,$3.00,lb,1,-lb,true
+Winter Squash Honeynut,Winter Squash Honeynut - lb,2025,$5.00,lb,1,-lb,true
+Winter Squash Kabocha,Winter Squash Kabocha - lb,2025,$3.00,lb,1,-lb,true
+Winter Squash Koginut,Winter Squash Koginut - lb,2025,$3.00,lb,1,-lb,true
+Yu Choy,Yu Choy - bu,2025,$4.50,bu,1,-bu,true
+Zucchini Green,Zucchini Green - lb,2025,$3.50,lb,1,-lb,true
+Zucchini Striped,Zucchini Striped - lb,2025,$3.50,lb,1,-lb,true
+Zucchini Yellow,Zucchini Yellow - lb,2025,$3.50,lb,1,-lb,true
+Arugula Wild,Arugula Wild - 1/3 lb,2025,$7.00,1/3 lb,1,-1/3 lb,true
+Oats & Peas,Oats & Peas -,2025,$0.00,,1,NA,true
+Triticale & Winter Peas,Triticale & Winter Peas -,2025,$0.00,,1,NA,true
+Buckwheat,Buckwheat -,2025,$0.00,,1,NA,true
+Sudan Grass & Sunn Hemp,Sudan Grass & Sunn Hemp -,2025,$0.00,,1,NA,true
+Artichoke,Artichoke - lb,2026,$11.00,lb,1,-lb,true
+Arugula,Arugula - 1/3 lb,2026,$7.00,1/3 lb,0.33,-1/3 lb,true
+Arugula,Arugula - 2/3 lb,2026,$14.00,2/3 lb,0.66,-2/3 lb,true
+Asparagus,Asparagus - bu,2026,$6.00,bu,0.33,-bu,true
+Basil,Basil - bu,2026,$4.00,bu,1,-bu,true
+Bean Snap,Bean Snap - bu,2026,$6.00,bu,1,-bu,true
+Beets Bulk Golden,Beets Bulk Golden - lb,2026,$3.50,lb,1,-lb,true
+Beets Bulk Red,Beets Bulk Red - lb,2026,$3.50,lb,1,-lb,true
+Beets Golden,Beets Golden - bu,2026,$5.00,bu,1,-bu,true
+Beets Red,Beets Red - bu,2026,$5.00,bu,1,-bu,true
+Bitter Melon,Bitter Melon - lb,2026,$5.00,lb,1,-lb,true
+Bok Choy,Bok Choy - ea,2026,$2.50,ea,1,-ea,true
+Bok Choy,Bok Choy - lb,2026,$10.00,lb,1,-lb,true
+Braising Mix,Braising Mix - 1 lb,2026,$9.00,1 lb,1,-1 lb,true
+Broccoli Raab,Broccoli Raab - bu,2026,$4.50,bu,1,-bu,true
+Broccolini,Broccolini - bu,2026,$6.00,bu,1,-bu,true
+Brussels Sprouts,Brussels Sprouts - ea,2026,$8.00,ea,1,-ea,true
+Cabbage Chinese,Cabbage Chinese - lb,2026,$4.00,lb,1,-lb,true
+Cabbage Chinese Red,Cabbage Chinese Red - lb,2026,$4.00,lb,1,-lb,true
+Cabbage Cone,Cabbage Cone - lb,2026,$2.50,lb,1,-lb,true
+Cabbage Cone Storage,Cabbage Cone Storage - lb,2026,$2.50,lb,1,-lb,true
+Cabbage Flat,Cabbage Flat - lb,2026,$2.50,lb,1,-lb,true
+Cabbage Green Storage,Cabbage Green Storage - lb,2026,$2.50,lb,1,-lb,true
+Cabbage Red,Cabbage Red - lb,2026,$2.50,lb,1,-lb,true
+Cabbage Savoy,Cabbage Savoy - lb,2026,$2.50,lb,1,-lb,true
+Carrot,Carrot - bu,2026,$6.00,bu,1,-bu,true
+Carrot Bulk,Carrot Bulk - lb,2026,$3.50,lb,1,-lb,true
+Cauliflower,Cauliflower - lb,2026,$4.00,lb,1,-lb,true
+Cauliflower Purple,Cauliflower Purple - lb,2026,$4.00,lb,1,-lb,true
+Cauliflower Romanesco,Cauliflower Romanesco - lb,2026,$4.00,lb,1,-lb,true
+Cauliflower Sprouting,Cauliflower Sprouting - lb,2026,$6.00,lb,1,-lb,true
+Celery,Celery - bu,2026,$5.00,bu,1,-bu,true
+Chard,Chard - bu,2026,$5.00,bu,1,-bu,true
+Cilantro,Cilantro - bu,2026,$4.00,bu,1,-bu,true
+Collards,Collards - bu,2026,$5.00,bu,1,-bu,true
+Corn,Corn - ea,2026,$1.66,ea,1,-ea,true
+Cucumber,Cucumber - lb,2026,$3.50,lb,1,-lb,true
+Cucumber Katrina,Cucumber Katrina - lb,2026,$4.50,lb,1,-lb,true
+Cucumber Pickling,Cucumber Pickling - lb,2026,$3.50,lb,1,-lb,true
+Dandelion,Dandelion - bu,2026,$5.00,bu,1,-bu,true
+Dill,Dill - bu,2026,$4.00,bu,1,-bu,true
+Dry Beans,Dry Beans - lb,2026,$9.00,lb,1,-lb,true
+Eggplant Italian Striped,Eggplant Italian Striped - lb,2026,$5.00,lb,1,-lb,true
+Eggplant Asian,Eggplant Asian - lb,2026,$5.00,lb,1,-lb,true
+Eggplant Italian Black,Eggplant Italian Black - lb,2026,$5.00,lb,1,-lb,true
+Eggplant Mini,Eggplant Mini - Pt,2026,$6.00,Pt,0.75,-pt,true
+Eggplant Mini,Eggplant Mini - Qt,2026,$11.00,Qt,1,-qt,true
+Escarole,Escarole - ea,2026,$5.00,ea,1,-ea,true
+Fennel,Fennel - ea,2026,$4.00,ea,1,-ea,true
+Garlic,Garlic - 1/2 lb,2026,$8.00,1/2 lb,0.5,-1/2 lb,true
+Garlic,Garlic - lb,2026,$16.00,lb,1,-lb,true
+Garlic Green,Garlic Green - bu,2026,$3.50,bu,1,-bu,true
+Garlic Scape,Garlic Scape - bu,2026,$3.50,bu,1,-bu,true
+Kale Curly,Kale Curly - bu,2026,$5.00,bu,1,-bu,true
+Kale Lacinato,Kale Lacinato - bu,2026,$5.00,bu,1,-bu,true
+Kale Russian,Kale Russian - bu,2026,$5.00,bu,1,-bu,true
+Kohlrabi,Kohlrabi - bu,2026,$5.00,bu,1,-bu,true
+Kohlrabi Storage,Kohlrabi Storage - ea,2026,$4.00,ea,1,-ea,true
+Komatsuna,Komatsuna - bu,2026,$5.00,bu,1,-bu,true
+Lettuce Head,Lettuce Head - ea,2026,$4.00,ea,1,-ea,true
+Lettuce Mini Gem,Lettuce Mini Gem - ea,2026,$3.00,ea,1,-ea,true
+Mustard,Mustard - bu,2026,$5.00,bu,1,-bu,true
+Okra,Okra - Pt,2026,$6.00,Pt,0.75,-pt,true
+Onion Spring,Onion Spring - bu,2026,$5.00,bu,1,-bu,true
+Onion Spring,Onion Spring - lb,2026,$5.00,lb,1,-lb,true
+Parsley,Parsley - bu,2026,$4.00,bu,1,-bu,true
+Pea Shelling,Pea Shelling - Pt,2026,$6.00,Pt,0.75,-pt,true
+Pea Shelling,Pea Shelling - Qt,2026,$11.00,Qt,1.5,-qt,true
+Pea Snap,Pea Snap - Pt,2026,$6.00,Pt,0.75,-pt,true
+Pea Snap,Pea Snap - Qt,2026,$11.00,Qt,1.5,-qt,true
+Pepper Carmen,Pepper Carmen - lb,2026,$5.00,lb,1,-lb,true
+Pepper Hot,Pepper Hot - ea,2026,$1.00,ea,1,-ea,true
+Pepper Lunchbox,Pepper Lunchbox - Pt,2026,$4.00,Pt,0.5,-pt,true
+Pepper Lunchbox,Pepper Lunchbox - Qt,2026,$7.00,Qt,1,-qt,true
+Pepper Shishito,Pepper Shishito - Pt,2026,$6.00,Pt,0.6,-pt,true
+Pepper Shishito,Pepper Shishito - Qt,2026,$11.00,Qt,1.2,-qt,true
+Potato Blue,Potato Blue - lb,2026,$3.50,lb,1,-lb,true
+Potato Fingerling,Potato Fingerling - lb,2026,$3.50,lb,1,-lb,true
+Potato Red,Potato Red - lb,2026,$3.50,lb,1,-lb,true
+Potato White,Potato White - lb,2026,$3.50,lb,1,-lb,true
+Potato Yellow,Potato Yellow - lb,2026,$3.50,lb,1,-lb,true
+Puntarelle,Puntarelle - lb,2026,$9.00,lb,1,-lb,true
+Radicchio Forced,Radicchio Forced - lb,2026,$16.00,lb,1,-lb,true
+Radicchio Round,Radicchio Round - lb,2026,$9.00,lb,1,-lb,true
+Radicchio Treviso,Radicchio Treviso - lb,2026,$9.00,lb,1,-lb,true
+Radicchio Variegated,Radicchio Variegated - lb,2026,$9.00,lb,1,-lb,true
+Radish Daikon Bulk,Radish Daikon Bulk - lb,2026,$3.50,lb,1,-lb,true
+Radish Daikon Mix,Radish Daikon Mix - bu,2026,$3.50,bu,1,-bu,true
+Radish French Breakfast,Radish French Breakfast - bu,2026,$4.00,bu,1,-bu,true
+Radish Purple,Radish Purple - bu,2026,$4.00,bu,1,-bu,true
+Radish Red,Radish Red - bu,2026,$4.00,bu,1,-bu,true
+Salad Mix,Salad Mix - 1 1/3 lb,2026,$25.00,1 1/3 lb,1.33,-1 1/3 lb,true
+Salad Mix,Salad Mix - 1/3 lb,2026,$7.00,1/3 lb,0.33,-1/3 lb,true
+Salad Mix,Salad Mix - 2/3 lb,2026,$14.00,2/3 lb,0.67,-2/3 lb,true
+Scallion,Scallion - bu,2026,$4.00,bu,1,-bu,true
+Spinach,Spinach - 1 lb,2026,$14.00,1 lb,1,-1 lb,true
+Spinach,Spinach - 1/2 lb,2026,$7.00,1/2 lb,0.5,-1/2 lb,true
+Sweet Potato Covington,Sweet Potato Covington - lb,2026,$3.50,lb,1,-lb,true
+Sweet Potato Murasaki,Sweet Potato Murasaki - lb,2026,$3.50,lb,1,-lb,true
+Tokyo Bekana,Tokyo Bekana - bu,2026,$4.50,bu,1,-bu,true
+Tomato Cherry Mix,Tomato Cherry Mix - Pt,2026,$7.00,Pt,1,-pt,true
+Tomato Cherry Sungold,Tomato Cherry Sungold - pt,2026,$7.00,pt,1,-pt,true
+Tomato Heirloom,Tomato Heirloom - lb,2026,$5.00,lb,1,-lb,true
+Tomato Red,Tomato Red - lb,2026,$5.00,lb,1,-lb,true
+Tomato Sauce,Tomato Sauce - Qt,2026,$7.00,Qt,1.5,-qt,true
+Turnip,Turnip - bu,2026,$5.00,bu,1,-bu,true
+Turnip Bulk,Turnip Bulk - lb,2026,$3.50,lb,1,-lb,true
+Winter Squash Acorn,Winter Squash Acorn - lb,2026,$4.00,lb,1,-lb,true
+Winter Squash Butternut,Winter Squash Butternut - lb,2026,$3.00,lb,1,-lb,true
+Winter Squash Delicata,Winter Squash Delicata - lb,2026,$4.00,lb,1,-lb,true
+Winter Squash Futsu,Winter Squash Futsu - lb,2026,$3.00,lb,1,-lb,true
+Winter Squash Honeynut,Winter Squash Honeynut - lb,2026,$5.00,lb,1,-lb,true
+Winter Squash Kabocha,Winter Squash Kabocha - lb,2026,$3.00,lb,1,-lb,true
+Winter Squash Koginut,Winter Squash Koginut - lb,2026,$3.00,lb,1,-lb,true
+Yu Choy,Yu Choy - bu,2026,$4.50,bu,1,-bu,true
+Zucchini Green,Zucchini Green - lb,2026,$3.50,lb,1,-lb,true
+Zucchini Striped,Zucchini Striped - lb,2026,$3.50,lb,1,-lb,true
+Zucchini Yellow,Zucchini Yellow - lb,2026,$3.50,lb,1,-lb,true
+Arugula Wild,Arugula Wild - 1/3 lb,2026,$7.00,1/3 lb,1,-1/3 lb,true
+Braising Mix,Braising Mix,2026,0,pounds,1,,true
+Salad Mix,Salad Mix,2026,0,heads,1,,true

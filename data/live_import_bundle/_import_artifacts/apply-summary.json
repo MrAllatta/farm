@@ -1,0 +1,1124 @@
+{
+  "run_id": "614e9752-3017-4b30-a353-d87303d8a4f8",
+  "lanes": {
+    "reference": {
+      "fatal_error": null,
+      "results": {
+        "escalation_summary": [],
+        "failure_signatures": [],
+        "models": {
+          "Block": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 39
+          },
+          "CropBySeason": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 150
+          },
+          "CropInfo": {
+            "created": 25,
+            "error": 0,
+            "skipped": 0,
+            "updated": 124
+          },
+          "CropSalesFormat": {
+            "created": 194,
+            "error": 0,
+            "skipped": 0,
+            "updated": 374
+          },
+          "PlanningYear": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 3
+          },
+          "ProductRecipe": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 2
+          },
+          "ProductRecipeComponent": {
+            "created": 19,
+            "error": 0,
+            "skipped": 4,
+            "updated": 0
+          },
+          "RotationHistory": {
+            "created": 77,
+            "error": 0,
+            "skipped": 0,
+            "updated": 0
+          },
+          "SalesChannel": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 3
+          },
+          "SeedOrder": {
+            "created": 0,
+            "error": 0,
+            "skipped": 110,
+            "updated": 135
+          },
+          "Variety": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 245
+          }
+        },
+        "row_errors": [],
+        "totals": {
+          "created": 315,
+          "error": 0,
+          "skipped": 114,
+          "updated": 1075
+        }
+      },
+      "run": {
+        "atomic_apply": true,
+        "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/reference",
+        "dry_run": false,
+        "end_year": 2026,
+        "finished_at": "2026-04-24T19:26:43.740170Z",
+        "run_id": "20260424T192641601067",
+        "start_year": 2024,
+        "started_at": "2026-04-24T19:26:41.601067Z",
+        "validate_only": false,
+        "verbose": false
+      },
+      "schema_version": "1.4",
+      "status": "ok"
+    },
+    "crop-plan": {
+      "fatal_error": null,
+      "results": {
+        "escalation_summary": [],
+        "failure_signatures": [],
+        "models": {
+          "FieldWalkNote": {
+            "created": 0,
+            "error": 0,
+            "skipped": 2944,
+            "updated": 41
+          },
+          "NurseryEvent": {
+            "created": 0,
+            "error": 0,
+            "skipped": 1153,
+            "updated": 223
+          },
+          "PlanningYear": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 3
+          },
+          "Planting": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 3123
+          },
+          "PlantingFieldActuals": {
+            "created": 0,
+            "error": 0,
+            "skipped": 8879,
+            "updated": 76
+          },
+          "RotationHistory": {
+            "created": 77,
+            "error": 0,
+            "skipped": 0,
+            "updated": 0
+          }
+        },
+        "row_errors": [],
+        "totals": {
+          "created": 77,
+          "error": 0,
+          "skipped": 12976,
+          "updated": 3466
+        }
+      },
+      "run": {
+        "atomic_apply": true,
+        "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/crop-plan",
+        "dry_run": false,
+        "end_year": 2026,
+        "finished_at": "2026-04-24T19:26:55.263762Z",
+        "run_id": "20260424T192644128341",
+        "start_year": 2024,
+        "started_at": "2026-04-24T19:26:44.128341Z",
+        "validate_only": false,
+        "verbose": false
+      },
+      "schema_version": "1.4",
+      "status": "ok"
+    },
+    "sales-plan": {
+      "fatal_error": null,
+      "results": {
+        "escalation_summary": [],
+        "failure_signatures": [],
+        "models": {
+          "PlanningYear": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 3
+          },
+          "RotationHistory": {
+            "created": 77,
+            "error": 0,
+            "skipped": 0,
+            "updated": 0
+          },
+          "SalesEvent": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 2660
+          }
+        },
+        "row_errors": [],
+        "totals": {
+          "created": 77,
+          "error": 0,
+          "skipped": 0,
+          "updated": 2663
+        }
+      },
+      "run": {
+        "atomic_apply": true,
+        "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/sales-plan",
+        "dry_run": false,
+        "end_year": 2026,
+        "finished_at": "2026-04-24T19:27:01.830179Z",
+        "run_id": "20260424T192655640748",
+        "start_year": 2024,
+        "started_at": "2026-04-24T19:26:55.640748Z",
+        "validate_only": false,
+        "verbose": false
+      },
+      "schema_version": "1.4",
+      "status": "ok"
+    },
+    "historical-601": {
+      "fatal_error": null,
+      "results": {
+        "escalation_summary": [
+          {
+            "count": 117,
+            "escalation_path": "ops-oncall -> data-contracts",
+            "owner_area": "data-contracts",
+            "owner_team": "import-pipeline",
+            "recovery_steps": [
+              "correct source value namespaces and rerun --validate-only"
+            ],
+            "severity": "medium",
+            "signatures": [
+              "namespace_mismatch"
+            ]
+          }
+        ],
+        "failure_signatures": [
+          {
+            "count": 117,
+            "escalation_path": "ops-oncall -> data-contracts",
+            "example": {
+              "field_path": "pack_batch_components.packed_quantity",
+              "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+              "model": "PackBatch"
+            },
+            "owner_area": "data-contracts",
+            "owner_team": "import-pipeline",
+            "recovery": "correct source value namespaces and rerun --validate-only",
+            "severity": "medium",
+            "signature": "namespace_mismatch"
+          }
+        ],
+        "models": {
+          "PackBatch": {
+            "created": 39,
+            "error": 0,
+            "skipped": 568,
+            "updated": 78
+          },
+          "PackBatchComponent": {
+            "created": 761,
+            "error": 0,
+            "skipped": 15,
+            "updated": 0
+          },
+          "PlanningYear": {
+            "created": 0,
+            "error": 0,
+            "skipped": 0,
+            "updated": 3
+          },
+          "RotationHistory": {
+            "created": 77,
+            "error": 0,
+            "skipped": 0,
+            "updated": 0
+          },
+          "SalesEvent": {
+            "created": 746,
+            "error": 0,
+            "skipped": 0,
+            "updated": 8579
+          }
+        },
+        "row_errors": [
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 1
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 5
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 8
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 12
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 16
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 19
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 22
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 23
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 27
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 31
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 35
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 38
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 47
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 58
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 69
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 80
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 85
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 94
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 101
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 102
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 104
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 110
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 118
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 126
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 135
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 155
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 165
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 175
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 181
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 189
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 205
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 215
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 231
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 241
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 257
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 265
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 273
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 278
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 286
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 293
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 295
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 298
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 304
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 307
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 314
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 317
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 324
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 327
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 335
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 338
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 344
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 349
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 353
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 1
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 6
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 11
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 16
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 20
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 24
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 28
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 34
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 38
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 42
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 47
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 52
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 56
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 63
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 69
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 76
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 82
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 96
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 114
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 125
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 136
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 146
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 157
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 169
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 179
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 187
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 191
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 195
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 198
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 206
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 218
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 232
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 246
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 258
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 267
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 272
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 281
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 288
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 293
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 302
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 306
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 316
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 318
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 326
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 335
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 341
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 346
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 355
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 360
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 363
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 368
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 371
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 376
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 382
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 385
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 389
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 392
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 397
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 400
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 405
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 408
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 414
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 416
+          },
+          {
+            "code": "namespace_mismatch",
+            "field_path": "pack_batch_components.packed_quantity",
+            "message": "using sentinel packed_quantity=1 (H1b10.1); reconcile from SalesEvent if needed",
+            "model": "PackBatch",
+            "row": 418
+          }
+        ],
+        "totals": {
+          "created": 1623,
+          "error": 0,
+          "skipped": 583,
+          "updated": 8660
+        }
+      },
+      "run": {
+        "atomic_apply": true,
+        "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/historical-601",
+        "dry_run": false,
+        "end_year": 2026,
+        "finished_at": "2026-04-24T19:27:22.029499Z",
+        "run_id": "20260424T192702208039",
+        "start_year": 2024,
+        "started_at": "2026-04-24T19:27:02.208039Z",
+        "validate_only": false,
+        "verbose": false
+      },
+      "schema_version": "1.4",
+      "status": "ok"
+    }
+  }
+}

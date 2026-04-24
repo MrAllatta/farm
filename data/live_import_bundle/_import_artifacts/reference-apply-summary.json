@@ -17,16 +17,16 @@
         "updated": 150
       },
       "CropInfo": {
-        "created": 0,
+        "created": 25,
         "error": 0,
         "skipped": 0,
-        "updated": 123
+        "updated": 124
       },
       "CropSalesFormat": {
-        "created": 0,
+        "created": 194,
         "error": 0,
         "skipped": 0,
-        "updated": 122
+        "updated": 374
       },
       "PlanningYear": {
         "created": 0,
@@ -47,7 +47,7 @@
         "updated": 0
       },
       "RotationHistory": {
-        "created": 69,
+        "created": 77,
         "error": 0,
         "skipped": 0,
         "updated": 0
@@ -73,10 +73,10 @@
     },
     "row_errors": [],
     "totals": {
-      "created": 88,
+      "created": 315,
       "error": 0,
       "skipped": 114,
-      "updated": 822
+      "updated": 1075
     }
   },
   "run": {
@@ -84,10 +84,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/reference",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T16:57:43.140253Z",
-    "run_id": "20260424T165742213346",
+    "finished_at": "2026-04-24T19:26:43.740170Z",
+    "run_id": "20260424T192641601067",
     "start_year": 2024,
-    "started_at": "2026-04-24T16:57:42.213346Z",
+    "started_at": "2026-04-24T19:26:41.601067Z",
     "validate_only": false,
     "verbose": false
   },
