@@ -14,6 +14,7 @@ from reference.models import (
     SalesChannel,
     SalesPlanBucket,
 )
+from reference.services.crop_category import derive_fresh_or_storage
 
 
 class Command(BaseCommand):
@@ -254,11 +255,14 @@ class Command(BaseCommand):
                     # Determine perennial
                     is_perennial = name in ("Asparagus",)
 
-                    # Parse fresh/storage
-                    fresh_or_storage = row.get("Fresh or Storage", "Fresh").strip()
-                    if fresh_or_storage not in ("Fresh", "Storage"):
-                        fresh_or_storage = "Fresh"
-                    fresh_or_storage = fresh_or_storage.lower()
+                    # Legacy "Fresh or Storage" column remains in CSV contracts; persisted
+                    # category is DG-14–derived from Storage Weeks + Can Hold In Field.
+                    storage_weeks = self._int(row.get("Storage Weeks", 0))
+                    can_hold_in_field = self._bool_csv(row.get("Can Hold In Field"))
+                    fresh_or_storage = derive_fresh_or_storage(
+                        storage_weeks=storage_weeks,
+                        can_hold_in_field=can_hold_in_field,
+                    )
 
                     data = {
                         "crop_type": crop_type,
@@ -266,8 +270,8 @@ class Command(BaseCommand):
                         "propagation_type": propagation_type,
                         "is_perennial": is_perennial,
                         "fresh_or_storage": fresh_or_storage,
-                        "storage_weeks": self._int(row.get("Storage Weeks", 0)),
-                        "can_hold_in_field": self._bool_csv(row.get("Can Hold In Field")),
+                        "storage_weeks": storage_weeks,
+                        "can_hold_in_field": can_hold_in_field,
                         "harvest_unit": harvest_unit,
                         "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
                         "units_per_bin": self._int_or_none(row.get("Units Per Bin")),

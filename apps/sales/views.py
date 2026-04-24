@@ -216,9 +216,9 @@ class MarketSalesEntryView(TemplateView):
                     try:
                         actual_price = Decimal(request.POST[price_key])
                     except (ValueError, InvalidOperation):
-                        actual_price = product.sale_price
+                        actual_price = product.sale_price or Decimal("0")
                 else:
-                    actual_price = product.sale_price
+                    actual_price = product.sale_price or Decimal("0")
 
                 revenue = sold_qty * actual_price
 

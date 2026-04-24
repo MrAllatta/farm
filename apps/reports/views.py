@@ -166,7 +166,7 @@ class PackListPrintView(ReportContextMixin, TemplateView):
                 by_product[pid] = {
                     "product": p,
                     "product_name": p.product_name,
-                    "price": p.sale_price,
+                    "price": p.sale_price if p.sale_price is not None else Decimal("0"),
                     "unit": p.sale_unit,
                     "crop": crop,
                     "channel_qtys": {c.id: Decimal("0") for c in channels},
@@ -454,7 +454,9 @@ class RevenueProjectionView(TemplateView):
         for f in formats:
             if f.crop_id not in crop_formats:
                 crop_formats[f.crop_id] = f
-            elif f.sale_price > crop_formats[f.crop_id].sale_price:
+            elif (f.sale_price or Decimal("0")) > (
+                crop_formats[f.crop_id].sale_price or Decimal("0")
+            ):
                 crop_formats[f.crop_id] = f
 
         # Project revenue per week
@@ -472,7 +474,7 @@ class RevenueProjectionView(TemplateView):
                 fmt = crop_formats.get(crop_id)
                 if fmt:
                     sale_units = Decimal(str(qty)) / fmt.harvest_qty_per_sale_unit
-                    revenue = sale_units * fmt.sale_price
+                    revenue = sale_units * (fmt.sale_price or Decimal("0"))
                     week_revenue += revenue
                     week_products.append(
                         {
@@ -1088,7 +1090,9 @@ class SeasonSummaryView(AnalyzeViewMixin, TemplateView):
                 )
 
                 if fmt:
-                    revenue = harvest / fmt.harvest_qty_per_sale_unit * fmt.sale_price
+                    revenue = harvest / fmt.harvest_qty_per_sale_unit * (
+                        fmt.sale_price or Decimal("0")
+                    )
                     crop_performance[crop_name]["total_revenue"] += revenue
 
         for name, data in crop_performance.items():
@@ -1329,7 +1333,7 @@ class BlockUtilizationView(AnalyzeViewMixin, TemplateView):
 
                     if fmt:
                         units = harvest_total / fmt.harvest_qty_per_sale_unit
-                        total_revenue += units * fmt.sale_price
+                        total_revenue += units * (fmt.sale_price or Decimal("0"))
 
             bf = block.total_bedfeet
 

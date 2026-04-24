@@ -1532,7 +1532,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
 
                     self._delete_category_plan_slice(sales_category, product, sale_date)
                     if n == 0:
-                        revenue = quantity * product.sale_price
+                        revenue = quantity * (product.sale_price or Decimal("0"))
                         SalesEvent.objects.update_or_create(
                             entry_kind=SalesEvent.EntryKind.PLAN,
                             planning_year=self.year_obj,
@@ -1553,7 +1553,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                                 continue
                             defaults = {
                                 "planned_quantity": amt,
-                                "planned_revenue": amt * product.sale_price,
+                                "planned_revenue": amt * (product.sale_price or Decimal("0")),
                                 "notes": "Sales plan entry (allocated)",
                             }
                             if ch.category_id:
@@ -1596,7 +1596,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 except (InvalidOperation, TypeError):
                     continue
 
-                revenue = quantity * product.sale_price
+                revenue = quantity * (product.sale_price or Decimal("0"))
                 SalesEvent.objects.update_or_create(
                     entry_kind=SalesEvent.EntryKind.PLAN,
                     planning_year=self.year_obj,
@@ -1712,10 +1712,10 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                     if ops_sum > 0:
                         planned_lookup[key] = SimpleNamespace(
                             planned_quantity=ops_sum,
-                            planned_revenue=ops_sum * product.sale_price,
+                            planned_revenue=ops_sum * (product.sale_price or Decimal("0")),
                         )
                         summary_qty += ops_sum
-                        summary_revenue += ops_sum * product.sale_price
+                        summary_revenue += ops_sum * (product.sale_price or Decimal("0"))
                     elif key in rollup_by_key:
                         pr = rollup_by_key[key]
                         planned_lookup[key] = pr

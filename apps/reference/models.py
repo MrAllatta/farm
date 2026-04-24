@@ -1,11 +1,14 @@
 """reference/models.py data models for farm references."""
 
-from django.core.exceptions import ValidationError
-from django.db import models
-from django.db.models import Q
 import math
 import re
 from decimal import Decimal
+
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Q
+
+from reference.services.crop_category import derive_fresh_or_storage
 
 
 class CropInfo(models.Model):
@@ -24,7 +27,12 @@ class CropInfo(models.Model):
     )
     is_perennial = models.BooleanField(default=False)
     fresh_or_storage = models.CharField(
-        max_length=10, choices=[("fresh", "Fresh"), ("storage", "Storage")]
+        max_length=12,
+        choices=[
+            ("fresh", "Fresh"),
+            ("fresh_holds", "Fresh holds"),
+            ("storage", "Storage"),
+        ],
     )
     storage_weeks = models.PositiveIntegerField(default=0)
     can_hold_in_field = models.BooleanField(default=False)
@@ -46,6 +54,17 @@ class CropInfo(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+    def save(self, *args, **kwargs):
+        self.fresh_or_storage = derive_fresh_or_storage(
+            storage_weeks=self.storage_weeks,
+            can_hold_in_field=bool(self.can_hold_in_field),
+        )
+        if kwargs.get("update_fields") is not None:
+            kwargs["update_fields"] = tuple(
+                set(kwargs["update_fields"]) | {"fresh_or_storage"}
+            )
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -145,7 +164,9 @@ class CropBySeason(models.Model):
 class CropSalesFormat(models.Model):
     crop = models.ForeignKey(CropInfo, on_delete=models.CASCADE, related_name="sales_formats")
     product_name = models.CharField(max_length=100)
-    sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+    # Denormalized cache: latest year's sale_price / is_active from CropSalesFormatYear
+    # (max planning_year.year). Nullable when no yearly rows exist yet.
+    sale_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     sale_unit = models.CharField(max_length=20)  # "each", "pound", "bunch", "pint", "bag"
     harvest_qty_per_sale_unit = models.DecimalField(
         max_digits=6, decimal_places=2, default=Decimal("1.00")
@@ -157,7 +178,24 @@ class CropSalesFormat(models.Model):
         ordering = ["crop__name", "product_name"]
 
     def __str__(self):
-        return f"{self.product_name} @ ${self.sale_price}/{self.sale_unit}"
+        if self.sale_price is not None:
+            return f"{self.product_name} @ ${self.sale_price}/{self.sale_unit}"
+        return f"{self.product_name} ({self.sale_unit})"
+
+    def refresh_sale_cache_from_yearly(self):
+        """Recompute nullable sale_price / is_active from the row with the greatest planning year."""
+        latest = (
+            self.yearly_prices.select_related("planning_year")
+            .order_by("-planning_year__year", "-id")
+            .first()
+        )
+        if latest:
+            CropSalesFormat.objects.filter(pk=self.pk).update(
+                sale_price=latest.sale_price,
+                is_active=latest.is_active,
+            )
+        else:
+            CropSalesFormat.objects.filter(pk=self.pk).update(sale_price=None)
 
     @property
     def is_mix_product(self):
@@ -178,6 +216,35 @@ class CropSalesFormat(models.Model):
         pn = self.product_name.casefold()
         cn = self.crop.name.casefold()
         return bool(cn and re.search(r"\b" + re.escape(cn) + r"\b", pn))
+
+
+class CropSalesFormatYear(models.Model):
+    """Per-planning-year sale price and active flag for a product (Farm Crop Formats by year)."""
+
+    product = models.ForeignKey(
+        CropSalesFormat,
+        on_delete=models.CASCADE,
+        related_name="yearly_prices",
+    )
+    planning_year = models.ForeignKey(
+        "planning.PlanningYear",
+        on_delete=models.PROTECT,
+        related_name="crop_sales_format_years",
+    )
+    sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-planning_year__year", "product__product_name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "planning_year"],
+                name="cropsalesformatyear_unique_product_planning_year",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.product.product_name} {self.planning_year.year} @ ${self.sale_price}"
 
 
 class SalesChannel(models.Model):

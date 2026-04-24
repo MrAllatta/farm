@@ -6,6 +6,7 @@ from .models import (
     CropBySeason,
     CropInfo,
     CropSalesFormat,
+    CropSalesFormatYear,
     ProductRecipe,
     ProductRecipeComponent,
     SalesCategory,
@@ -35,7 +36,23 @@ class CropBySeasonInline(admin.TabularInline):
 class CropSalesFormatInline(admin.TabularInline):
     model = CropSalesFormat
     extra = 1
-    fields = ["product_name", "sale_price", "sale_unit", "harvest_qty_per_sale_unit", "is_active"]
+    fields = [
+        "product_name",
+        "sale_price",
+        "sale_unit",
+        "harvest_qty_per_sale_unit",
+        "is_active",
+    ]
+    # sale_price / is_active are denormalized from CropSalesFormatYear (latest planning year).
+    readonly_fields = ["sale_price", "is_active"]
+
+
+@admin.register(CropSalesFormatYear)
+class CropSalesFormatYearAdmin(admin.ModelAdmin):
+    list_display = ["product", "planning_year", "sale_price", "is_active"]
+    list_filter = ["planning_year", "is_active"]
+    search_fields = ["product__product_name"]
+    raw_id_fields = ["product", "planning_year"]
 
 
 @admin.register(Variety)

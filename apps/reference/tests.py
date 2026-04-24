@@ -11,8 +11,64 @@ from django.urls import reverse
 
 from reference.models import CropInfo, CropSalesFormat, ProductRecipe
 from reference.services import variety_scrape as variety_scrape_mod
+from reference.services.crop_category import derive_fresh_or_storage
 
 FS_PREFIX = "components"
+
+
+class CropCategoryDerivationTests(SimpleTestCase):
+    def test_zero_weeks_is_always_fresh(self):
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=0, can_hold_in_field=False), "fresh"
+        )
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=0, can_hold_in_field=True), "fresh"
+        )
+
+    def test_positive_weeks_no_field_hold_is_storage(self):
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=4, can_hold_in_field=False), "storage"
+        )
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=12, can_hold_in_field=False), "storage"
+        )
+
+    def test_positive_weeks_with_field_hold_is_fresh_holds(self):
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=1, can_hold_in_field=True), "fresh_holds"
+        )
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=4, can_hold_in_field=True), "fresh_holds"
+        )
+
+    def test_invalid_weeks_coerce_to_fresh(self):
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks="x", can_hold_in_field=True), "fresh"
+        )
+
+    def test_none_storage_weeks_coerce_to_fresh(self):
+        """None storage_weeks is treated as 0 → always fresh regardless of field-hold flag."""
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=None, can_hold_in_field=False), "fresh"
+        )
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=None, can_hold_in_field=True), "fresh"
+        )
+
+    def test_negative_storage_weeks_clamp_to_fresh(self):
+        """Negative storage_weeks is clamped to 0 → always fresh."""
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=-1, can_hold_in_field=True), "fresh"
+        )
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=-4, can_hold_in_field=False), "fresh"
+        )
+
+    def test_large_storage_weeks_with_field_hold_is_fresh_holds(self):
+        """storage_weeks=12 + can_hold_in_field=True → fresh_holds (full matrix row from Thread-02)."""
+        self.assertEqual(
+            derive_fresh_or_storage(storage_weeks=12, can_hold_in_field=True), "fresh_holds"
+        )
 
 
 class JohnnySeedsVarietyScrapeTests(SimpleTestCase):

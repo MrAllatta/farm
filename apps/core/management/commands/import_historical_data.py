@@ -30,6 +30,7 @@ from reference.models import (
     Block,
     CropBySeason,
     CropSalesFormat,
+    CropSalesFormatYear,
     ProductRecipe,
     ProductRecipeComponent,
     SalesCategory,
@@ -37,6 +38,7 @@ from reference.models import (
     SalesPlanBucket,
 )
 from reference.sales_rollups import ANNUAL_PLAN_SALES_CHANNELS
+from reference.services.crop_category import derive_fresh_or_storage
 from planning.models import (
     PlanningYear,
     Planting,
@@ -720,9 +722,12 @@ class Command(BaseCommand):
 
                     is_perennial = name in ("Asparagus",)
 
-                    fresh_or_storage = row.get("Fresh or Storage", "Fresh").strip().lower()
-                    if fresh_or_storage not in ("fresh", "storage"):
-                        fresh_or_storage = "fresh"
+                    storage_weeks = self._int(row.get("Storage Weeks", 0))
+                    can_hold_in_field = self._bool_csv(row.get("Can Hold In Field"))
+                    fresh_or_storage = derive_fresh_or_storage(
+                        storage_weeks=storage_weeks,
+                        can_hold_in_field=can_hold_in_field,
+                    )
 
                     data = {
                         "crop_type": crop_type,
@@ -730,8 +735,8 @@ class Command(BaseCommand):
                         "propagation_type": propagation_type,
                         "is_perennial": is_perennial,
                         "fresh_or_storage": fresh_or_storage,
-                        "storage_weeks": self._int(row.get("Storage Weeks", 0)),
-                        "can_hold_in_field": self._bool_csv(row.get("Can Hold In Field")),
+                        "storage_weeks": storage_weeks,
+                        "can_hold_in_field": can_hold_in_field,
                         "harvest_unit": row.get("Harvest Units", "pounds").strip() or "pounds",
                         "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
                         "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
@@ -1081,20 +1086,44 @@ class Command(BaseCommand):
                         self.stats["CropSalesFormat"]["errors"] += 1
                         continue
 
-                    data = {
-                        "sale_price": self._dec(row.get("Sale Price", 0)),
+                    plan_y_raw = (row.get("Planning Year") or "").strip()
+                    stable_defaults = {
                         "sale_unit": row.get("Sale Unit", "").strip() or "pound",
                         "harvest_qty_per_sale_unit": self._dec(
                             row.get("Harvest Qty Per Sale Unit", 1)
                         ),
                         "sku": row.get("SKU", "").strip(),
-                        "is_active": row.get("Is Active", "true").strip().lower() == "true",
                     }
+                    yearly_price = self._dec(row.get("Sale Price", 0))
+                    yearly_active = row.get("Is Active", "true").strip().lower() == "true"
 
                     if not self.write_disabled:
-                        obj, created = CropSalesFormat.objects.update_or_create(
-                            crop=crop, product_name=product_name, defaults=data
-                        )
+                        if plan_y_raw:
+                            plan_year_int = self._int(plan_y_raw)
+                            obj, created = CropSalesFormat.objects.update_or_create(
+                                crop=crop, product_name=product_name, defaults=stable_defaults
+                            )
+                            py = self._ensure_planning_year(plan_year_int)
+                            CropSalesFormatYear.objects.update_or_create(
+                                product=obj,
+                                planning_year=py,
+                                defaults={
+                                    "sale_price": yearly_price,
+                                    "is_active": yearly_active,
+                                },
+                            )
+                            obj.refresh_sale_cache_from_yearly()
+                        else:
+                            # Legacy reference CSV (no Planning Year): keep price on CropSalesFormat only
+                            # so we do not create PlanningYear rows from command default --end-year.
+                            legacy_defaults = {
+                                **stable_defaults,
+                                "sale_price": yearly_price,
+                                "is_active": yearly_active,
+                            }
+                            obj, created = CropSalesFormat.objects.update_or_create(
+                                crop=crop, product_name=product_name, defaults=legacy_defaults
+                            )
                         self.stats["CropSalesFormat"]["created" if created else "processed"] += 1
                         self.product_cache[(crop_name, product_name)] = obj
                     else:

@@ -42,6 +42,7 @@ class Command(BaseCommand):
                 "is_perennial",
                 "fresh_or_storage",
                 "storage_weeks",
+                "can_hold_in_field",
                 "harvest_unit",
                 "avg_unit_weight",
                 "units_per_bin",

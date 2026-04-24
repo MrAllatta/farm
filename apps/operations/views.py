@@ -491,12 +491,12 @@ class InventoryDashboardView(TemplateView):
             )
             if fmt:
                 units = item["balance"] / fmt.harvest_qty_per_sale_unit
-                item["estimated_value"] = units * fmt.sale_price
+                item["estimated_value"] = units * (fmt.sale_price or Decimal("0"))
                 total_value += item["estimated_value"]
             else:
                 item["estimated_value"] = None
 
-        fresh_items = [i for i in inventory_items if i["crop"].fresh_or_storage == "fresh"]
+        fresh_items = [i for i in inventory_items if i["crop"].fresh_or_storage != "storage"]
         storage_items = [i for i in inventory_items if i["crop"].fresh_or_storage == "storage"]
 
         def _rollup(section):
