@@ -1,0 +1,183 @@
+{
+  "source_id": "live-import-historical-601",
+  "drive_folder_id": "1rVKuvkLTF--ogy1rjBQ3N0l3cH3A20nI",
+  "start_year": 2023,
+  "end_year": 2025,
+  "tabs": [
+    {
+      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+      "worksheet_title": "Market",
+      "output_path": "year_${YEAR}/sales_events.csv",
+      "header_row_index": 4,
+      "required_headers": [
+        "Distribution Date",
+        "Product",
+        "Sales Channel",
+        "Harvest Date",
+        "Distribution Year",
+        "Price",
+        "Start Qty",
+        "End Qty",
+        "Sold",
+        "Total Value",
+        "Notes",
+        "Entry Kind",
+        "Variety Request"
+      ],
+      "aliases": {
+        "sales outlet": "Sales Channel"
+      },
+      "output_headers": [
+        "Sale Date",
+        "Harvest Date",
+        "Planning Year",
+        "Channel Name",
+        "Product Name",
+        "Actual Price",
+        "Brought Quantity",
+        "Returned Quantity",
+        "Actual Quantity",
+        "Actual Revenue",
+        "Notes",
+        "Entry Kind"
+      ],
+      "column_map": {
+        "Sale Date": "Distribution Date",
+        "Harvest Date": "Harvest Date",
+        "Planning Year": "Distribution Year",
+        "Channel Name": "Sales Channel",
+        "Product Name": "Product",
+        "Actual Price": "Price",
+        "Brought Quantity": "Start Qty",
+        "Returned Quantity": "End Qty",
+        "Actual Quantity": "Sold",
+        "Actual Revenue": "Total Value",
+        "Notes": "Notes",
+        "Entry Kind": "Entry Kind"
+      },
+      "default_values": {
+        "Entry Kind": "actual"
+      },
+      "fold_into_notes": [
+        {
+          "into": "Notes",
+          "from": "Variety Request",
+          "prefix": "Variety"
+        }
+      ]
+    },
+    {
+      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+      "worksheet_title": "Orders",
+      "append_without_header": true,
+      "output_path": "year_${YEAR}/sales_events.csv",
+      "header_row_index": 4,
+      "required_headers": [
+        "Distribution Date",
+        "Product",
+        "Sales Outlet",
+        "Harvest Date",
+        "Distribution Year",
+        "Price",
+        "QTY Available",
+        "Returned Quantity",
+        "Actual Order",
+        "Total Value",
+        "Notes",
+        "Entry Kind",
+        "Variety Request"
+      ],
+      "output_headers": [
+        "Sale Date",
+        "Harvest Date",
+        "Planning Year",
+        "Channel Name",
+        "Product Name",
+        "Actual Price",
+        "Brought Quantity",
+        "Returned Quantity",
+        "Actual Quantity",
+        "Actual Revenue",
+        "Notes",
+        "Entry Kind"
+      ],
+      "column_map": {
+        "Sale Date": "Distribution Date",
+        "Harvest Date": "Harvest Date",
+        "Planning Year": "Distribution Year",
+        "Channel Name": "Sales Outlet",
+        "Product Name": "Product",
+        "Actual Price": "Price",
+        "Brought Quantity": "QTY Available",
+        "Returned Quantity": "Returned Quantity",
+        "Actual Quantity": "Actual Order",
+        "Actual Revenue": "Total Value",
+        "Notes": "Notes",
+        "Entry Kind": "Entry Kind"
+      },
+      "default_values": {
+        "Entry Kind": "actual"
+      },
+      "fold_into_notes": [
+        {
+          "into": "Notes",
+          "from": "Variety Request",
+          "prefix": "Variety"
+        }
+      ]
+    },
+    {
+      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+      "worksheet_title": "Build Crop Mix",
+      "output_path": "year_${YEAR}/pack_batch_components.csv",
+      "header_row_index": 5,
+      "required_headers": [
+        "Distribution Date",
+        "Year",
+        "Mix",
+        "Ingredients",
+        "%",
+        "Need",
+        "Ingredients Units",
+        "Variety Request",
+        "Safety Factor",
+        "Harvest Date",
+        "Notes"
+      ],
+      "aliases": {
+        "ingredients units": "Component Unit",
+        "units": "Component Unit"
+      },
+      "output_headers": [
+        "Pack Date",
+        "Planning Year",
+        "Mix Product Name",
+        "Component Crop Name",
+        "Component Percent",
+        "Component Quantity",
+        "Component Unit",
+        "Variety Request",
+        "Safety Factor",
+        "Harvest Date",
+        "Notes",
+        "Component Source Type"
+      ],
+      "column_map": {
+        "Pack Date": "Distribution Date",
+        "Planning Year": "Year",
+        "Mix Product Name": "Mix",
+        "Component Crop Name": "Ingredients",
+        "Component Percent": "%",
+        "Component Quantity": "Need",
+        "Component Unit": "Ingredients Units",
+        "Variety Request": "Variety Request",
+        "Safety Factor": "Safety Factor",
+        "Harvest Date": "Harvest Date",
+        "Notes": "Notes"
+      },
+      "constant_columns": {
+        "Component Source Type": "crop"
+      }
+    }
+  ]
+}
