@@ -19,6 +19,8 @@ from core.spreadsheet_connector import normalize_rows
 
 YEAR_TOKEN = "${YEAR}"
 
+SALES_PLAN_302_FILENAME = "sales_plan_302.csv"
+
 
 def _tab_uses_year_token(tab):
     for key in ("output_path", "worksheet_title", "spreadsheet_name"):
@@ -113,6 +115,70 @@ def _resolve_year_list(cli_years_str, cli_start, cli_end, config, config_needs_y
     return [None]
 
 
+def _harvest_year_column_index(header_row):
+    """Return 0-based column index for Harvest Year (case-insensitive), or None."""
+    for i, cell in enumerate(header_row or []):
+        if str(cell).strip().casefold() == "harvest year":
+            return i
+    return None
+
+
+def _filter_csv_rows_by_harvest_year(rows_matrix, year):
+    """Keep header + rows whose Harvest Year cell matches ``year`` (string compare).
+
+    Used for Sales Plan 302 long tables: the same sheet is fetched for each calendar year
+    folder, but only rows belonging to that harvest year should land in ``year_YYYY/``.
+    """
+    if not rows_matrix or len(rows_matrix) < 2 or year is None:
+        return rows_matrix
+    header = rows_matrix[0]
+    idx = _harvest_year_column_index(header)
+    if idx is None:
+        return rows_matrix
+    want = str(int(year))
+    out = [header]
+    for row in rows_matrix[1:]:
+        cell = row[idx] if idx < len(row) else ""
+        if str(cell).strip() == want:
+            out.append(row)
+    return out
+
+
+def _ensure_planning_year_csv(output_dir: Path, year: int) -> None:
+    """Create ``year_<Y>/planning_year.csv`` when missing so ``import_historical_data`` can upsert.
+
+    Live-import bundles are produced by ``pull_stage_a2_bundle`` (local Makefile or cloud pull
+    job), not shipped as a static deploy artifact. Planning years are not pulled from Google
+    Sheets in the crop-plan lane today; this stub prevents ``planning year not found`` on fresh
+    databases when only plantings/nursery CSVs exist for a calendar year.
+    """
+    rel = Path(f"year_{year}") / "planning_year.csv"
+    path = output_dir / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        return
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["Year", "Status", "Overplant Factor"])
+        writer.writerow([str(year), "planning", "1.10"])
+
+
+def _drive_folder_id_for_year(config, year, default_folder_id):
+    """Optional per-calendar-year Drive root for resolve (see drive_folder_id_by_year in lane JSON)."""
+    mapping = config.get("drive_folder_id_by_year")
+    if not mapping or year is None:
+        return default_folder_id
+    if not isinstance(mapping, dict):
+        raise CommandError("drive_folder_id_by_year must be an object mapping year to folder id or URL")
+    raw = mapping.get(str(year))
+    if raw is None or raw == "":
+        return default_folder_id
+    resolved = extract_drive_folder_id(raw)
+    if not resolved:
+        raise CommandError(f"drive_folder_id_by_year[{year!r}] could not be resolved to a folder id")
+    return resolved
+
+
 def _prepare_tab_for_year(tab, year):
     """Return a shallow copy of tab with year tokens substituted for resolve/fetch paths."""
     t = deepcopy(tab)
@@ -172,6 +238,7 @@ class Command(BaseCommand):
         first_year = years[0]
 
         folder_id = extract_drive_folder_id(config.get("drive_folder_id") or config.get("drive_folder_url"))
+        search_descendants = bool(config.get("drive_search_subfolders"))
         drive_service = None
         if folder_id:
             drive_service = build_google_service("drive", "v3", [DRIVE_READONLY_SCOPE])
@@ -206,7 +273,13 @@ class Command(BaseCommand):
                 tab_run = _prepare_tab_for_year(tab, year)
                 worksheet_title_run = tab_run["worksheet_title"]
 
-                resolved = resolve_spreadsheet(tab_run, drive_service=drive_service, folder_id=folder_id)
+                resolve_folder_id = _drive_folder_id_for_year(config, year, folder_id)
+                resolved = resolve_spreadsheet(
+                    tab_run,
+                    drive_service=drive_service,
+                    folder_id=resolve_folder_id,
+                    search_descendants=search_descendants,
+                )
                 try:
                     rows = fetch_tab_rows(
                         spreadsheet_id=resolved["spreadsheet_id"],
@@ -249,6 +322,15 @@ class Command(BaseCommand):
                 )
 
                 rel_output = tab_run["output_path"]
+                rows_matrix = normalized["rows"]
+                if (
+                    year is not None
+                    and isinstance(rel_output, str)
+                    and rel_output.replace("\\", "/").endswith(SALES_PLAN_302_FILENAME)
+                ):
+                    rows_matrix = _filter_csv_rows_by_harvest_year(rows_matrix, year)
+                    normalized["rows"] = rows_matrix
+
                 output_path = output_dir / rel_output
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 append_without_header = tab_run.get("append_without_header", False)
@@ -285,6 +367,9 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f"pulled {resolved['spreadsheet_name']}:{worksheet_title_run} -> {rel_output}"
                 )
+
+            if multi_year_pass and year is not None:
+                _ensure_planning_year_csv(output_dir, year)
 
         manifest_path = output_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")

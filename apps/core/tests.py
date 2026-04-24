@@ -5878,6 +5878,54 @@ class PullStageA2BundleYearRangeTest(TestCase):
             self.assertEqual(len(manifest["tabs"]), 2)
 
 
+class PullStageA2SalesPlanFilterTest(TestCase):
+    """Harvest-year filtering and planning_year stub helpers for live-import bundles."""
+
+    def test_filter_csv_rows_by_harvest_year_keeps_matching_rows_only(self):
+        from core.management.commands.pull_stage_a2_bundle import _filter_csv_rows_by_harvest_year
+
+        rows = [
+            ["Channel", "Product", "Harvest Year", "Harvest Week", "Qty", "Value"],
+            ["Markets", "Arugula - lb", "2024", "1", "10", "$0"],
+            ["Markets", "Beets - lb", "2026", "2", "5", "$0"],
+            ["Markets", "Chard - lb", "2024", "3", "8", "$0"],
+        ]
+        out = _filter_csv_rows_by_harvest_year(rows, 2024)
+        self.assertEqual(len(out), 3)
+        self.assertEqual(out[1][1], "Arugula - lb")
+        self.assertEqual(out[2][1], "Chard - lb")
+
+    def test_ensure_planning_year_csv_writes_once(self):
+        from core.management.commands.pull_stage_a2_bundle import _ensure_planning_year_csv
+
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "bundle"
+            _ensure_planning_year_csv(root, 2025)
+            p = root / "year_2025" / "planning_year.csv"
+            self.assertTrue(p.exists())
+            first = p.read_text(encoding="utf-8")
+            _ensure_planning_year_csv(root, 2025)
+            self.assertEqual(p.read_text(encoding="utf-8"), first)
+
+
+class ComposeCropSalesFormatProductNameTest(TestCase):
+    def test_compose_prefixes_crop_when_format_is_suffix(self):
+        from core.management.commands.import_historical_data import compose_crop_sales_format_product_name
+
+        self.assertEqual(
+            compose_crop_sales_format_product_name("Cucumber", "Persian - lb"),
+            "Cucumber Persian - lb",
+        )
+
+    def test_compose_unchanged_when_format_starts_with_crop(self):
+        from core.management.commands.import_historical_data import compose_crop_sales_format_product_name
+
+        self.assertEqual(
+            compose_crop_sales_format_product_name("Cucumber", "Cucumber - lb"),
+            "Cucumber - lb",
+        )
+
+
 class StageA2BaselineBundleTests(TestCase):
     def _write_csv(self, parent, name, lines):
         Path(parent, name).write_text("\n".join(lines), encoding="utf-8")

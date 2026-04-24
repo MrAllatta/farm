@@ -59,6 +59,31 @@ from core.models import RotationHistory
 DEFAULT_PRODUCT_RECIPE_PLANNING_YEAR = 2026
 
 
+def compose_crop_sales_format_product_name(crop_name: str, format_column: str) -> str:
+    """Derive ``CropSalesFormat.product_name`` from Farm Crop Formats columns.
+
+    The workbook maps **Product** → crop label and **Format** → ``Product Name`` in CSV.
+    When Format is a suffix such as ``Persian - lb`` (does not start with the crop token),
+    concatenate so Sales Plan 302 strings like ``Cucumber Persian - lb`` resolve after reference
+    import. When Format already includes the crop (``Cucumber - lb``), return it unchanged.
+    """
+    crop_name = (crop_name or "").strip()
+    format_column = (format_column or "").strip()
+    if not format_column:
+        return ""
+    cn = crop_name.casefold()
+    pn = format_column.casefold()
+    if not cn:
+        return format_column
+    if pn == cn:
+        return format_column
+    if pn.startswith(cn):
+        remainder = pn[len(cn) :]
+        if not remainder or remainder[0] in " -/|":
+            return format_column
+    return f"{crop_name} {format_column}".strip()
+
+
 class Command(BaseCommand):
     help = """Import 5 years of historical farm data from CSV files.
     
@@ -1036,7 +1061,8 @@ class Command(BaseCommand):
                     crop_name = row.get("Crop Name") or row.get("Crop")
                     if crop_name:
                         crop_name = crop_name.strip()
-                    product_name = row.get("Product Name", "").strip()
+                    raw_product_name = row.get("Product Name", "").strip()
+                    product_name = compose_crop_sales_format_product_name(crop_name, raw_product_name)
 
                     if not crop_name or not product_name:
                         continue
@@ -3913,8 +3939,58 @@ class Command(BaseCommand):
             product_name,
             label="product",
         )
+        if (
+            resolved is None
+            and product_name
+            and not self.validate_only
+            and not self.write_disabled
+        ):
+            resolved = self._ensure_design_time_crop_sales_format(product_name.strip())
         self.product_cache[product_name] = resolved
         return resolved
+
+    def _ensure_design_time_crop_sales_format(self, stripped: str):
+        """Create ``CropSalesFormat`` when Sales Plan names a product not yet in reference CSV.
+
+        Resolves the longest ``CropInfo`` name that prefixes the plan ``product_name`` and checks
+        ``compose_crop_sales_format_product_name`` agreement so rows like ``Cucumber Persian - lb``
+        work once ``Crop Info`` lists ``Cucumber Persian`` even if **Farm Crop Formats** lagged.
+        """
+        if not stripped:
+            return None
+        sn = stripped.casefold()
+        best = None
+        for crop in sorted(CropInfo.objects.all(), key=lambda c: len(c.name), reverse=True):
+            cn = crop.name.casefold()
+            if sn.startswith(cn + " "):
+                best = crop
+                break
+        if not best:
+            return None
+        remainder = stripped[len(best.name) :].strip()
+        composed = compose_crop_sales_format_product_name(best.name, remainder)
+        if composed.casefold() != sn:
+            return None
+        defaults = {
+            "sale_price": Decimal("0.00"),
+            "sale_unit": "lb",
+            "harvest_qty_per_sale_unit": Decimal("1.00"),
+            "sku": "",
+            "is_active": True,
+        }
+        try:
+            obj, created = CropSalesFormat.objects.update_or_create(
+                crop=best, product_name=stripped, defaults=defaults
+            )
+            if created:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"   ⚙  Auto-created CropSalesFormat for plan product '{stripped}' (crop='{best.name}')"
+                    )
+                )
+            return obj
+        except (ValueError, ValidationError, IntegrityError, DatabaseError):
+            return None
 
     def _get_recipe_for_product(self, product, recipe_name, pack_date_year=None):
         """Resolve ProductRecipe for product + recipe name + planning calendar year."""
