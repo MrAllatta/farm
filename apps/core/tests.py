@@ -2397,6 +2397,31 @@ class ImportHistoricalDataCommandTests(TestCase):
             1,
         )
 
+    def test_601_h1a_formula_skeleton_rows_without_sale_identity_are_skipped(self):
+        """Connector/formula padding rows with only default zero values do not become row errors."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "sales_events.csv",
+                [
+                    "Channel Name,Sale Date,Product Name,Actual Price,Actual Revenue,Entry Kind",
+                    "Farm Stand,2021-06-01,Carrot Bunch,3.50,7.00,actual",
+                    ",,,0.00,0.00,actual",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(SalesEvent.objects.count(), 1)
+        self.assertFalse(
+            [
+                e
+                for e in summary["results"]["row_errors"]
+                if e["field_path"] in ("sales_events.channel", "sales_events.sale_date")
+            ]
+        )
+
     # ── Thread-06 H1b: 601 PackBatch / PackBatchComponent invariants ─────────
 
     def test_601_h1b_basic_grouping_creates_one_batch_two_components(self):
@@ -2503,6 +2528,67 @@ class ImportHistoricalDataCommandTests(TestCase):
             if e["code"] == "stale_fk" and "component_crop" in e["field_path"]
         ]
         self.assertGreaterEqual(len(stale_errors), 1)
+
+    def test_601_h1b_short_mix_label_resolves_prefixed_sales_format(self):
+        """Build Crop Mix short labels resolve products such as 'Salad Mix - 1/3 lb'."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
+                    "Salad Mix,Vegetables,Mix,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "crop_sales_formats.csv",
+                [
+                    "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                    "Carrot,Carrot Bunch,3.50,bunch,1,CAR-BUN,true",
+                    "Salad Mix,Salad Mix - 1/3 lb,7.00,1/3 lb,0.33,-1/3 lb,true",
+                ],
+            )
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Component Source Type,Component Crop Name,Component Quantity,Component Unit",
+                    "Salad Mix,2021-06-07,crop,Carrot,5,pounds",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(PackBatch.objects.get().product.product_name, "Salad Mix - 1/3 lb")
+        self.assertEqual(PackBatchComponent.objects.count(), 1)
+
+    def test_601_h1b_zero_component_percent_and_quantity_skips_template_row(self):
+        """Zero percent + zero quantity rows from formulas are skipped without component errors."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Component Source Type,Component Crop Name,Component Percent,Component Quantity,Component Unit",
+                    "Carrot Bunch,2021-06-07,crop,Carrot,0,0,bunch",
+                    "Carrot Bunch,2021-06-07,crop,Carrot,50,5,bunch",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s.json")
+        self.assertEqual(summary["status"], "ok")
+        self.assertEqual(PackBatchComponent.objects.count(), 1)
+        self.assertFalse(
+            [
+                e
+                for e in summary["results"]["row_errors"]
+                if e["field_path"] == "pack_batch_components.component_percent"
+            ]
+        )
 
 
 class LiveImportValidateCommandTests(TestCase):
@@ -6217,6 +6303,34 @@ class PullStageA2SalesPlanFilterTest(TestCase):
             first = p.read_text(encoding="utf-8")
             _ensure_planning_year_csv(root, 2025)
             self.assertEqual(p.read_text(encoding="utf-8"), first)
+
+    def test_tab_years_filter_limits_numbered_workbook_pull_to_matching_years(self):
+        from core.management.commands.pull_stage_a2_bundle import _tab_years
+
+        self.assertEqual(_tab_years({"years": [2025, 2024, 2025]}), [2024, 2025])
+        self.assertIsNone(_tab_years({}))
+
+    def test_skip_rows_missing_drops_formula_skeleton_after_projection_defaults(self):
+        rows = [
+            ["Distribution Date", "Sales Channel", "Product", "Price", "Total Value"],
+            ["2025-11-22", "Staff", "Carrot - lb", "$3.50", "$7.00"],
+            ["", "", "", "$0.00", "$0.00"],
+        ]
+        normalized = normalize_rows(
+            rows,
+            required_headers=["Distribution Date", "Sales Channel", "Product"],
+            output_headers=["Sale Date", "Channel Name", "Product Name", "Actual Price", "Entry Kind"],
+            column_map={
+                "Sale Date": "Distribution Date",
+                "Channel Name": "Sales Channel",
+                "Product Name": "Product",
+                "Actual Price": "Price",
+            },
+            default_values={"Entry Kind": "actual"},
+            skip_rows_missing=["Sale Date", "Channel Name"],
+        )
+        self.assertEqual(len(normalized["rows"]), 2)
+        self.assertEqual(normalized["rows"][1][2], "Carrot - lb")
 
 
 class PullStageA2BundleRowYearRoutingTest(TestCase):

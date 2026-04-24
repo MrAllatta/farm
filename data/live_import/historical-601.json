@@ -69,7 +69,11 @@
       "row_year_routing": {
         "year_column": "Planning Year",
         "date_column": "Sale Date"
-      }
+      },
+      "skip_rows_missing": [
+        "Sale Date",
+        "Channel Name"
+      ]
     },
     {
       "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
@@ -133,7 +137,11 @@
       "row_year_routing": {
         "year_column": "Planning Year",
         "date_column": "Sale Date"
-      }
+      },
+      "skip_rows_missing": [
+        "Sale Date",
+        "Channel Name"
+      ]
     },
     {
       "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
@@ -189,9 +197,13 @@
       }
     },
     {
-      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
+      "spreadsheet_name": "201 Farm Grown Crop List LSF ${YEAR}",
       "worksheet_title": "Crop Info",
       "output_path": "year_${YEAR}/reference/crop_info.csv",
+      "years": [
+        2024,
+        2025
+      ],
       "required_headers": [
         "Crop",
         "PRODUCT Type",
@@ -242,8 +254,7 @@
       }
     },
     {
-      "spreadsheet_name": "601 Field Walk & Weekly Sales Plan LSF ${YEAR}",
-      "worksheet_title": "Farm Crop Formats",
+      "spreadsheet_name": "202 Product & Format List LSF ${YEAR}",
       "output_path": "year_${YEAR}/reference/crop_sales_formats.csv",
       "required_headers": [
         "Format",
@@ -272,7 +283,54 @@
       },
       "default_values": {
         "Is Active": "true"
-      }
+      },
+      "stop_on_blank_in": [
+        "Product"
+      ],
+      "worksheet_title": "Choose Crop Formats",
+      "years": [
+        2023
+      ]
+    },
+    {
+      "spreadsheet_name": "202 Product & Format List LSF ${YEAR}",
+      "output_path": "year_${YEAR}/reference/crop_sales_formats.csv",
+      "required_headers": [
+        "Format",
+        "Product",
+        "Sale price",
+        "Sale Units",
+        "Harvest Qty",
+        "Product SKU"
+      ],
+      "output_headers": [
+        "Crop Name",
+        "Product Name",
+        "Sale Price",
+        "Sale Unit",
+        "Harvest Qty Per Sale Unit",
+        "SKU",
+        "Is Active"
+      ],
+      "column_map": {
+        "Crop Name": "Product",
+        "Product Name": "Format",
+        "Sale Price": "Sale price",
+        "Sale Unit": "Sale Units",
+        "Harvest Qty Per Sale Unit": "Harvest Qty",
+        "SKU": "Product SKU"
+      },
+      "default_values": {
+        "Is Active": "true"
+      },
+      "stop_on_blank_in": [
+        "Product"
+      ],
+      "worksheet_title": "Farm Crop Formats",
+      "years": [
+        2024,
+        2025
+      ]
     }
   ]
 }

@@ -30,6 +30,20 @@ def _tab_uses_year_token(tab):
     return False
 
 
+def _tab_years(tab):
+    raw = tab.get("years")
+    if raw is None:
+        return None
+    if not isinstance(raw, list) or not raw:
+        raise CommandError("Tab 'years' must be a non-empty list of integers")
+    years = []
+    for item in raw:
+        if not isinstance(item, int):
+            raise CommandError("Tab 'years' must contain only integers")
+        years.append(item)
+    return sorted(set(years))
+
+
 def _substitute_year(value, year):
     if value is None:
         return None
@@ -324,6 +338,10 @@ class Command(BaseCommand):
 
         for year in years:
             for tab in tabs:
+                tab_allowed_years = _tab_years(tab)
+                if tab_allowed_years is not None and year not in tab_allowed_years:
+                    continue
+
                 uses_year = _tab_uses_year_token(tab)
                 if multi_year_pass and not uses_year and year != first_year:
                     continue
@@ -381,6 +399,7 @@ class Command(BaseCommand):
                     grid_unpivot=tab_run.get("grid_unpivot"),
                     fold_into_notes=tab_run.get("fold_into_notes"),
                     constant_columns=tab_run.get("constant_columns"),
+                    skip_rows_missing=tab_run.get("skip_rows_missing"),
                 )
 
                 rel_output = tab_run["output_path"]

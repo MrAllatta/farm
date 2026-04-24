@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 ALLOWED_ROW_TRANSFORMS = {"split", "copy", "week_monday", "grid_unpivot"}
-OUTPUT_PATH_PATTERN = re.compile(r"^(reference|year_\d{4}|year_\$\{YEAR\})/[^/]+\.csv$")
+OUTPUT_PATH_PATTERN = re.compile(r"^(reference|year_\d{4}|year_\$\{YEAR\})/(?:reference/)?[^/]+\.csv$")
 YEAR_TOKEN = "${YEAR}"
 
 

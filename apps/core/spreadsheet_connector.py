@@ -47,6 +47,38 @@ def _project_rows(rows, output_headers=None, column_map=None, default_values=Non
     return projected_rows
 
 
+def _filter_rows_missing_required_outputs(rows, required_output_values=None):
+    """Drop projected rows whose named output columns are blank.
+
+    This runs after projection/defaults/transforms, so lane configs can remove
+    formula-skeleton rows without making importers treat connector padding as
+    source data.
+    """
+    if not required_output_values or len(rows) < 2:
+        return rows
+    header = rows[0]
+    idx = {_normalize_text(h): i for i, h in enumerate(header)}
+    required_indexes = [
+        idx[_normalize_text(name)]
+        for name in required_output_values
+        if _normalize_text(name) in idx
+    ]
+    if not required_indexes:
+        return rows
+
+    filtered = [header]
+    for row in rows[1:]:
+        keep = True
+        for i in required_indexes:
+            value = row[i] if i < len(row) else ""
+            if str(value).strip() == "":
+                keep = False
+                break
+        if keep:
+            filtered.append(row)
+    return filtered
+
+
 def _split_value(value, delimiter):
     if delimiter not in value:
         return value.strip(), ""
@@ -362,6 +394,7 @@ def _normalize_single_region(
     grid_unpivot=None,
     fold_into_notes=None,
     constant_columns=None,
+    skip_rows_missing=None,
 ):
     header_index, canonical_header, strategy = detect_header_row(
         rows,
@@ -398,6 +431,10 @@ def _normalize_single_region(
         normalized_rows,
         row_transforms=row_transforms,
         source_rows=source_rows,
+    )
+    normalized_rows = _filter_rows_missing_required_outputs(
+        normalized_rows,
+        required_output_values=skip_rows_missing,
     )
     return {
         "header_row_index": header_index,
@@ -471,6 +508,7 @@ def normalize_rows(
     grid_unpivot=None,
     fold_into_notes=None,
     constant_columns=None,
+    skip_rows_missing=None,
 ):
     if grid_unpivot and source_regions:
         raise ValueError("grid_unpivot cannot be combined with source_regions in one tab")
@@ -492,6 +530,7 @@ def normalize_rows(
             grid_unpivot=grid_unpivot,
             fold_into_notes=fold_into_notes,
             constant_columns=constant_columns,
+            skip_rows_missing=skip_rows_missing,
         )
 
     region_results = []
@@ -513,6 +552,7 @@ def normalize_rows(
                 grid_unpivot=region.get("grid_unpivot"),
                 fold_into_notes=region.get("fold_into_notes", fold_into_notes),
                 constant_columns=region.get("constant_columns", constant_columns),
+                skip_rows_missing=region.get("skip_rows_missing", skip_rows_missing),
             )
         )
 
@@ -549,6 +589,7 @@ def normalize_csv_file(
     append_without_header=False,
     fold_into_notes=None,
     constant_columns=None,
+    skip_rows_missing=None,
 ):
     with Path(source_path).open("r", encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.reader(handle))
@@ -570,6 +611,7 @@ def normalize_csv_file(
         grid_unpivot=grid_unpivot,
         fold_into_notes=fold_into_notes,
         constant_columns=constant_columns,
+        skip_rows_missing=skip_rows_missing,
     )
 
     output_path = Path(output_path)

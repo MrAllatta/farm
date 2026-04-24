@@ -3123,6 +3123,12 @@ class Command(BaseCommand):
 
             product = self._get_product_by_name(mix_name)
             if not product:
+                matches = self._csf_matches_for_mix_label(None, mix_name)
+                if len(matches) == 1:
+                    product = matches[0]
+                elif matches and len({m.crop_id for m in matches}) == 1:
+                    product = matches[0]
+            if not product:
                 for line_no, _, _ in group_rows:
                     self._record_stale_fk(
                         "PackBatch",
@@ -3213,7 +3219,9 @@ class Command(BaseCommand):
                 if pct_raw:
                     try:
                         pct = self._dec(pct_raw)
-                        if pct <= 0 or pct > Decimal("100"):
+                        if pct <= 0:
+                            pct = None
+                        elif pct > Decimal("100"):
                             raise ValueError("percent range")
                     except (InvalidOperation, ValueError):
                         self._record_row_error(
@@ -3612,6 +3620,9 @@ class Command(BaseCommand):
                     sale_date_str = row.get("Sale Date", "").strip()
 
                     if not (channel_name and sale_date_str):
+                        if self._sales_event_row_is_formula_skeleton(row):
+                            self.stats["SalesEvent"]["skipped"] += 1
+                            continue
                         if not channel_name:
                             self._record_missing_required(
                                 "SalesEvent",
@@ -3790,6 +3801,42 @@ class Command(BaseCommand):
             f"{self.stats['SalesEvent']['skipped']} skipped, "
             f"{self.stats['SalesEvent']['errors']} errors\n"
         )
+
+    def _sales_event_row_is_formula_skeleton(self, row):
+        """True for empty 601 formula rows that only carry default zero expressions."""
+        identity_fields = [
+            "Channel Name",
+            "Channel",
+            "Sale Date",
+            "Product Name",
+            "Product",
+            "Planning Year",
+            "Distribution Year",
+            "Harvest Date",
+            "Notes",
+            "Variety Request",
+        ]
+        if any((row.get(name) or "").strip() for name in identity_fields):
+            return False
+        quantity_fields = [
+            "Planned Quantity",
+            "Planned Revenue",
+            "Actual Quantity",
+            "Actual Revenue",
+            "Actual Price",
+            "Brought Quantity",
+            "Returned Quantity",
+        ]
+        if not any((row.get(name) or "").strip() for name in quantity_fields):
+            return False
+        entry_kind = (row.get("Entry Kind") or row.get("entry_kind") or "").strip().casefold()
+        if entry_kind and entry_kind not in ("actual", "plan"):
+            return False
+        for name in quantity_fields:
+            value = (row.get(name) or "").strip()
+            if value and self._csv_decimal_allow_zero(value) not in (None, Decimal("0")):
+                return False
+        return True
 
     def _import_quick_sales_entries(self, year, year_dir):
         """Import quick sales entries."""
