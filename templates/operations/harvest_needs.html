@@ -44,6 +44,8 @@
             <thead>
                 <tr>
                     <th>Date</th>
+                    <th>ID</th>
+                    <th>Schedule</th>
                     <th>Crop</th>
                     <th>Variety</th>
                     <th>Walk</th>
@@ -62,6 +64,8 @@
                 {% with ev=row.event p=row.planting crop=p.crop %}
                 <tr>
                     <td>{{ ev.planned_date }}</td>
+                    <td><span class="planting-id-badge planting-id-badge--table">{{ row.prow.planting_display_id }}</span></td>
+                    <td>{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.prow.schedule_chip_class %}</td>
                     <td>{{ crop.name }}</td>
                     <td>{{ row.variety_label|default:"—" }}</td>
                     <td>{% include "operations/_weekops/_planting_status_chip.html" with prow=row.prow %}</td>
@@ -104,6 +108,7 @@
             <thead>
                 <tr>
                     <th>Date</th>
+                    <th>ID</th>
                     <th>Crop</th>
                     <th>Variety</th>
                     <th>Beds</th>
@@ -116,6 +121,7 @@
                 {% with ev=row.event p=row.planting %}
                 <tr>
                     <td>{{ ev.planned_date }}</td>
+                    <td><span class="planting-id-badge planting-id-badge--table">{{ row.prow.planting_display_id }}</span></td>
                     <td>{{ p.crop.name }}</td>
                     <td>{{ row.variety_label|default:"—" }}</td>
                     <td>b{{ p.bed_start }}-{{ p.bed_end }}</td>

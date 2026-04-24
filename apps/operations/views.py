@@ -19,6 +19,7 @@ from decimal import Decimal
 
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from operations.services import week_ops as week_ops_service
+from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
 
 
 def _weekops_header_context(phase: str, iso_week: int, year_obj, wctx: dict) -> dict:
@@ -141,11 +142,17 @@ class FieldWalkNoteView(TemplateView):
         recent_notes = planting.field_walk_notes.order_by("-walk_date")[:12]
         latest_note = recent_notes[0] if recent_notes else None
 
+        today = date.today()
         ctx.update(
             {
                 "planting": planting,
                 "recent_notes": recent_notes,
                 "latest_note": latest_note,
+                "today": today,
+                "planting_display_id": format_planting_display_id(planting.pk),
+                "schedule_chip_class": planting_schedule_chip_css_class(
+                    planting.planned_plant_date, planting.actual_plant_date, today
+                ),
             }
         )
         return ctx
@@ -762,6 +769,7 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
         elif planting.variety:
             variety_display = planting.variety
         field_notes = list(planting.field_walk_notes.order_by("-walk_date", "-id")[:25])
+        today = date.today()
         ctx.update(
             {
                 "year": self.year_obj,
@@ -769,6 +777,11 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
                 "variety_display": variety_display,
                 "field_walk_notes": field_notes,
                 "planting_status_choices": PlantingStatus.choices,
+                "today": today,
+                "planting_display_id": format_planting_display_id(planting.pk),
+                "schedule_chip_class": planting_schedule_chip_css_class(
+                    planting.planned_plant_date, planting.actual_plant_date, today
+                ),
             }
         )
         return ctx
@@ -882,11 +895,21 @@ class FieldWalkPrintView(FieldWalkView):
 
     template_name = "operations/field_walk_print.html"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["field_week_print_kind"] = "walk_print"
+        return ctx
+
 
 class HarvestNeedsPrintView(HarvestNeedsView):
     """Printable harvest-needs checklist for a week."""
 
     template_name = "operations/harvest_needs_print.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["field_week_print_kind"] = "needs_print"
+        return ctx
 
 
 class FieldWalkCurrentRedirect(RedirectView):
@@ -969,6 +992,7 @@ class PrintablePlantingListView(OperationsPlanningYearMixin, TemplateView):
             .order_by("block__walk_route_order", "block__name", "bed_start", "planned_plant_date")
         )
         rows = []
+        today = date.today()
         for p in plantings:
             v = p.variety_obj.name if p.variety_obj_id else (p.variety or "—")
             rows.append(
@@ -976,6 +1000,10 @@ class PrintablePlantingListView(OperationsPlanningYearMixin, TemplateView):
                     "planting": p,
                     "variety": v,
                     "harvest_wk": f"{p.planned_first_harvest_date.isocalendar()[1]}-{p.planned_last_harvest_date.isocalendar()[1]}",
+                    "planting_display_id": format_planting_display_id(p.pk),
+                    "schedule_chip_class": planting_schedule_chip_css_class(
+                        p.planned_plant_date, p.actual_plant_date, today
+                    ),
                 }
             )
         ctx.update(
@@ -1009,6 +1037,7 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
         end_d = Week(year, max(1, min(52, wk_to))).monday() + timedelta(days=6)
 
         nursery_rows = []
+        today = date.today()
         for ev in (
             NurseryEvent.objects.filter(
                 planting__planning_year=year_obj,
@@ -1017,20 +1046,36 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
                 planned_date__lte=end_d,
             )
             .exclude(planting__status__in=["skipped", "failed", "revised"])
-            .select_related("planting", "planting__crop", "planting__crop_season", "planting__block")
+            .select_related(
+                "planting",
+                "planting__crop",
+                "planting__crop_season",
+                "planting__block",
+                "planting__variety_obj",
+            )
             .order_by("planned_date", "planting__block__walk_route_order")
         ):
-            cs = ev.planting.crop_season
+            pl = ev.planting
+            cs = pl.crop_season
+            vl = week_ops_service.variety_label(pl)
             nursery_rows.append(
                 {
                     "kind": "greenhouse_seed",
                     "date": ev.planned_date,
-                    "crop": ev.planting.crop.name,
-                    "block": ev.planting.block.name,
-                    "beds": f"b{ev.planting.bed_start}-{ev.planting.bed_end}",
+                    "crop": pl.crop.name,
+                    "block": pl.block.name,
+                    "beds": f"b{pl.bed_start}-{pl.bed_end}",
                     "seeder": cs.seeder_settings if cs else "",
                     "ds_rate": cs.ds_seed_rate if cs else None,
                     "notes": ev.notes or "",
+                    "event": ev,
+                    "planting": pl,
+                    "variety_display": vl,
+                    "field_week": pl.planned_plant_date.isocalendar()[1],
+                    "planting_display_id": format_planting_display_id(pl.pk),
+                    "schedule_chip_class": planting_schedule_chip_css_class(
+                        pl.planned_plant_date, pl.actual_plant_date, today
+                    ),
                 }
             )
 
@@ -1057,6 +1102,10 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
                     "seeder": cs.seeder_settings if cs else "",
                     "ds_rate": cs.ds_seed_rate if cs else None,
                     "notes": p.notes or "",
+                    "planting_display_id": format_planting_display_id(p.pk),
+                    "schedule_chip_class": planting_schedule_chip_css_class(
+                        p.planned_plant_date, p.actual_plant_date, today
+                    ),
                 }
             )
 

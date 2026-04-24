@@ -3,19 +3,14 @@
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
 {% block title %}Planting list print{% endblock %}
 {% block content %}
-<div class="no-print" style="margin-bottom:1rem;">
-    <form method="get" style="display:flex; gap:0.5rem; align-items:end;">
-        <label>From week <input type="number" name="from_week" min="1" max="52" value="{{ wk_from }}"></label>
-        <label>To week <input type="number" name="to_week" min="1" max="52" value="{{ wk_to }}"></label>
-        <button type="submit">Apply</button>
-        <button type="button" onclick="window.print()">Print</button>
-    </form>
-</div>
+{% include "operations/_weekops/_field_week_range_filter.html" with show_print_button=True %}
 <h1>Planting list — {{ year.year }}</h1>
 <p>Weeks {{ wk_from }}–{{ wk_to }}</p>
 <table style="width:100%; border-collapse:collapse;">
     <thead>
         <tr style="background:#eee;">
+            <th style="text-align:left; padding:0.25rem;">ID</th>
+            <th style="text-align:left; padding:0.25rem;">Schedule</th>
             <th style="text-align:left; padding:0.25rem;">Block</th>
             <th style="text-align:left; padding:0.25rem;">Beds</th>
             <th style="text-align:left; padding:0.25rem;">Crop</th>
@@ -28,6 +23,8 @@
     <tbody>
         {% for row in rows %}
         <tr style="border-bottom:1px solid #ccc;">
+            <td style="padding:0.25rem;">{{ row.planting_display_id }}</td>
+            <td style="padding:0.25rem;">{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.schedule_chip_class %}</td>
             <td style="padding:0.25rem;">{{ row.planting.block.name }}</td>
             <td style="padding:0.25rem;">b{{ row.planting.bed_start }}-{{ row.planting.bed_end }}</td>
             <td style="padding:0.25rem;">{{ row.planting.crop.name }}</td>
@@ -37,7 +34,7 @@
             <td style="padding:0.25rem; text-align:right;">{{ row.planting.planned_bedfeet }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="7">No plantings in range.</td></tr>
+        <tr><td colspan="9">No plantings in range.</td></tr>
         {% endfor %}
     </tbody>
 </table>

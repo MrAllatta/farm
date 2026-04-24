@@ -12,6 +12,7 @@ from django.db.models import Prefetch
 from isoweek import Week
 
 from operations.models import FieldWalkNote, InventoryLedger
+from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
 from planning.models import HarvestEvent, Planting, PlantingStatus
 from reference.sales_rollups import plan_events_without_shadowed_rollups
 from sales.models import SalesEvent
@@ -249,6 +250,10 @@ def week_context(
             "expected_stage": expected_stage(p, today),
             "target_bins_week_sum": target_bins_sum,
             "harvest_start": p.actual_first_harvest_date or p.planned_first_harvest_date,
+            "planting_display_id": format_planting_display_id(p.pk),
+            "schedule_chip_class": planting_schedule_chip_css_class(
+                p.planned_plant_date, p.actual_plant_date, today
+            ),
         }
         bucket["plantings"].append(row)
 

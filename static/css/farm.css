@@ -1641,6 +1641,63 @@ body {
     border-bottom: 1px solid var(--color-border);
 }
 
+.field-week-filter {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--color-border);
+}
+
+.field-week-range-filter {
+    margin-bottom: 1rem;
+}
+
+.planting-id-badge {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    vertical-align: middle;
+}
+
+.planting-id-badge--table {
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.planting-schedule-chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.chip-plant-schedule-on {
+    background: var(--color-planted);
+    border-color: var(--color-primary-light);
+    color: var(--color-text);
+}
+
+.chip-plant-schedule-behind {
+    background: var(--color-failed);
+    border-color: #f87171;
+    color: #7f1d1d;
+}
+
+.chip-plant-schedule-ahead {
+    background: #dbeafe;
+    border-color: #60a5fa;
+    color: #1e3a8a;
+}
+
 .weekops-tabs {
     display: flex;
     flex-wrap: wrap;

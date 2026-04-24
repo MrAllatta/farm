@@ -11,6 +11,7 @@ from django.urls import reverse
 from isoweek import Week
 
 from operations.models import FieldWalkNote
+from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
 from operations.services import week_ops as week_ops_service
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from planning.models import HarvestEvent, PlanningYear, Planting
@@ -292,6 +293,12 @@ class WeekOpsServiceTests(TestCase):
         self.assertEqual(prow["yield_adjust_pct"], 80)
         self.assertEqual(prow["last_walk_note"].condition, "fair")
 
+    def test_week_context_prow_includes_planting_display_and_schedule_chip(self):
+        ctx = week_ops_service.week_context(self.year, 20, today=date(2026, 4, 10), mode="field_walk")
+        prow = ctx["blocks"][0]["plantings"][0]
+        self.assertEqual(prow["planting_display_id"], format_planting_display_id(prow["planting"].pk))
+        self.assertTrue(prow["schedule_chip_class"].startswith("chip-plant-schedule-"))
+
 
 class WeekOpsViewTests(TestCase):
     """Smoke + POST behaviour for unified week-ops URLs."""
@@ -441,3 +448,37 @@ class WeekOpsViewTests(TestCase):
         r = self.client.get(reverse("operations:field_walk_current"))
         self.assertEqual(r.status_code, 302)
         self.assertIn("/operations/week/", r["Location"])
+
+    def test_weekops_needs_lists_planting_display_id(self):
+        r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, format_planting_display_id(self.planting.pk))
+
+
+class PlantingScheduleChipCssClassTests(TestCase):
+    def test_format_planting_display_id_zero_pads(self):
+        self.assertEqual(format_planting_display_id(1), "P-00001")
+        self.assertEqual(format_planting_display_id(123), "P-00123")
+
+    def test_schedule_chip_css_class_derivation(self):
+        planned = date(2026, 6, 10)
+        self.assertEqual(
+            planting_schedule_chip_css_class(planned, None, date(2026, 6, 5)),
+            "chip-plant-schedule-on",
+        )
+        self.assertEqual(
+            planting_schedule_chip_css_class(planned, None, date(2026, 6, 15)),
+            "chip-plant-schedule-behind",
+        )
+        self.assertEqual(
+            planting_schedule_chip_css_class(planned, date(2026, 6, 8), date(2026, 6, 20)),
+            "chip-plant-schedule-ahead",
+        )
+        self.assertEqual(
+            planting_schedule_chip_css_class(planned, date(2026, 6, 10), date(2026, 6, 20)),
+            "chip-plant-schedule-on",
+        )
+        self.assertEqual(
+            planting_schedule_chip_css_class(planned, date(2026, 6, 12), date(2026, 6, 20)),
+            "chip-plant-schedule-behind",
+        )

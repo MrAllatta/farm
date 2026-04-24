@@ -45,6 +45,11 @@ urlpatterns = [
         name="nursery_schedule_print",
     ),
     path("seed-order/", views.SeedOrderReportView.as_view(), name="seed_order"),
+    path(
+        "planting-trace/<int:planting_id>/",
+        views.PlantingTraceView.as_view(),
+        name="planting_trace",
+    ),
     # Analysis
     path("crop-performance/", views.CropPerformanceView.as_view(), name="crop_performance"),
     path(

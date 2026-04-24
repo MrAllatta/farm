@@ -1,0 +1,38 @@
+{# Single ISO week control: prev / label / next. Reused on week-ops and week print views.
+   Context: week_num, prev_week, next_week, week_monday, week_sunday, year
+   Optional: field_week_print_kind — "walk_print" | "needs_print" | unset (interactive week-ops)
+   When unset: weekops_phase — "walk" | "needs" | "record" selects target URLs.
+#}
+<div class="field-week-filter weekops-week-row no-print" role="group" aria-label="Field week">
+    {% if field_week_print_kind == "walk_print" %}
+    <a href="{% url 'operations:field_walk_print' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+    {% elif field_week_print_kind == "needs_print" %}
+    <a href="{% url 'operations:harvest_needs_print' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+    {% elif weekops_phase == "walk" %}
+    <a href="{% url 'operations:weekops_walk' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+    {% elif weekops_phase == "needs" %}
+    <a href="{% url 'operations:weekops_needs' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+    {% else %}
+    <a href="{% url 'operations:weekops_record' week=prev_week %}" class="btn">← Wk {{ prev_week }}</a>
+    {% endif %}
+    <div class="weekops-week-label">
+        <strong>Field week {{ week_num }}</strong>
+        {% if week_monday and week_sunday %}
+        <span class="muted">{{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j, Y" }}</span>
+        {% endif %}
+        {% if year %}
+        <span class="muted">· Plan {{ year.year }}</span>
+        {% endif %}
+    </div>
+    {% if field_week_print_kind == "walk_print" %}
+    <a href="{% url 'operations:field_walk_print' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+    {% elif field_week_print_kind == "needs_print" %}
+    <a href="{% url 'operations:harvest_needs_print' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+    {% elif weekops_phase == "walk" %}
+    <a href="{% url 'operations:weekops_walk' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+    {% elif weekops_phase == "needs" %}
+    <a href="{% url 'operations:weekops_needs' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+    {% else %}
+    <a href="{% url 'operations:weekops_record' week=next_week %}" class="btn">Wk {{ next_week }} →</a>
+    {% endif %}
+</div>

@@ -4,12 +4,13 @@ import math
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.db.models import Sum
+from django.db.models import Prefetch, Sum
+from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from isoweek import Week
 
 from core.planning_year import resolve_current_planning_year
-from planning.models import HarvestEvent, NurseryEvent, Planting
+from planning.models import HarvestEvent, NurseryEvent, Planting, SeedOrder
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import Block, SalesChannel, CropSalesFormat
 from operations.models import InventoryLedger, PackAllocation, PackBatch, PackBatchComponent
@@ -1707,4 +1708,66 @@ class CropMapSuccessionsByBlockView(ReportContextMixin, TemplateView):
         year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
         service = CropMapOccupancyService(year_obj)
         ctx.update({"year": year_obj, "rows": service.get_successions_by_block()})
+        return ctx
+
+
+class PlantingTraceView(ReportContextMixin, TemplateView):
+    """Read-only planting traceability: seed order lineage and harvest→pack→sales chain."""
+
+    template_name = "reports/planting_trace.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        planting_id = int(kwargs["planting_id"])
+        planting = get_object_or_404(
+            Planting.objects.select_related(
+                "planning_year", "crop", "crop_season", "block", "variety_obj"
+            ),
+            pk=planting_id,
+        )
+
+        variety = planting.variety_obj
+        seed_orders = []
+        if variety is not None:
+            seed_orders = list(
+                SeedOrder.objects.filter(
+                    variety=variety, planning_year=planting.planning_year
+                ).order_by("id")
+            )
+
+        nursery_events = list(planting.nursery_events.order_by("planned_date", "id"))
+
+        pa_qs = PackAllocation.objects.select_related(
+            "channel", "product", "pack_batch"
+        ).order_by("pack_date", "id")
+        harvest_events = list(
+            planting.harvest_events.order_by("planned_date", "id").prefetch_related(
+                Prefetch("pack_allocations", queryset=pa_qs)
+            )
+        )
+
+        harvest_trace = []
+        for he in harvest_events:
+            alloc_rows = []
+            for pa in he.pack_allocations.all():
+                sales_events = []
+                if pa.pack_batch_id:
+                    sales_events = list(
+                        SalesEvent.objects.filter(pack_batch_id=pa.pack_batch_id)
+                        .select_related("channel", "product")
+                        .order_by("sale_date", "id")
+                    )
+                alloc_rows.append({"allocation": pa, "sales_events": sales_events})
+            harvest_trace.append({"harvest_event": he, "allocations": alloc_rows})
+
+        ctx.update(
+            {
+                "planting": planting,
+                "variety": variety,
+                "seed_orders": seed_orders,
+                "nursery_events": nursery_events,
+                "harvest_trace": harvest_trace,
+                "view_title": "Planting traceability",
+            }
+        )
         return ctx

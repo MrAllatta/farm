@@ -5,8 +5,10 @@
 
 {% block content %}
 <section class="page-header">
-    <h1>Field Walk Note</h1>
+    <h1>Field walk note <span class="planting-id-badge">{{ planting_display_id }}</span></h1>
     <p>
+        {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=schedule_chip_class %}
+        <span class="muted">·</span>
         {{ planting.crop.name }} in {{ planting.block.name }} beds {{ planting.bed_start }}-{{ planting.bed_end }}
         ({{ planting.planning_year.year }})
     </p>

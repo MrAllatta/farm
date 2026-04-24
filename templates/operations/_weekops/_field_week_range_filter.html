@@ -1,0 +1,11 @@
+{# GET range for printable ops lists (planting list, seeding todo). Expects: wk_from, wk_to #}
+<div class="no-print field-week-range-filter" style="margin-bottom:1rem;">
+    <form method="get" class="field-week-range-filter__form" style="display:flex; gap:0.5rem; align-items:end; flex-wrap:wrap;">
+        <label>From week <input type="number" name="from_week" min="1" max="52" value="{{ wk_from }}" class="form-control" style="width:5rem;"></label>
+        <label>To week <input type="number" name="to_week" min="1" max="52" value="{{ wk_to }}" class="form-control" style="width:5rem;"></label>
+        <button type="submit" class="btn btn-secondary">Apply</button>
+        {% if show_print_button %}
+        <button type="button" class="btn btn-primary" onclick="window.print()">Print</button>
+        {% endif %}
+    </form>
+</div>

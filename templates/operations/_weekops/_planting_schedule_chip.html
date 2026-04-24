@@ -1,0 +1,4 @@
+{# Expects: chip_class — from planting_schedule_chip_css_class / prow.schedule_chip_class #}
+<span class="planting-schedule-chip {{ chip_class }}" title="Planned plant date vs actual (or today)">
+    {% if chip_class == "chip-plant-schedule-behind" %}Behind{% elif chip_class == "chip-plant-schedule-ahead" %}Early{% else %}On schedule{% endif %}
+</span>

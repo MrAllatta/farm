@@ -52,6 +52,8 @@
         <div class="harvest-item {% if item.has_actual %}recorded{% endif %}"
              id="item-{{ item.event.id }}">
             <div class="harvest-item-header">
+                <span class="planting-id-badge planting-id-badge--table">{{ item.prow.planting_display_id }}</span>
+                {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=item.prow.schedule_chip_class %}
                 <span class="crop-name">{{ item.crop_name }}</span>
                 <span class="location">{{ item.block }} beds {{ item.beds }}</span>
                 <span class="target">

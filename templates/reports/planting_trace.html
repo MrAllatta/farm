@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Traceability — {{ planting.crop.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ view_title }}</h1>
+    <p class="muted">
+        <strong>{{ planting.crop.name }}</strong>
+        {% if variety %}<span class="variety">— {{ variety.name }}</span>{% elif planting.variety %}<span class="variety">— {{ planting.variety }}</span>{% endif %}
+        · {{ planting.block.name }} beds {{ planting.bed_start }}–{{ planting.bed_end }}
+        · {{ planting.planning_year.year }}
+        · <a href="{% url 'operations:planting_record' pk=planting.pk %}">Planting record</a>
+        · <a href="{% url 'planning:planting_detail' pk=planting.pk %}">Planning detail</a>
+    </p>
+</div>
+
+<section class="panel" style="margin-bottom:1.5rem;">
+    <h2>Seed &amp; variety</h2>
+    <p class="muted">Planting → variety → seed order lines (same planning year).</p>
+    {% if variety %}
+    <dl class="fp-dl">
+        <dt>Variety</dt>
+        <dd>{{ variety }} {% if variety.supplier %}<span class="muted">({{ variety.supplier }})</span>{% endif %}</dd>
+    </dl>
+    {% if seed_orders %}
+    <div class="fp-table-scroll">
+        <table class="fp-table">
+            <thead>
+                <tr>
+                    <th>Planned qty</th>
+                    <th>Unit</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for so in seed_orders %}
+                <tr>
+                    <td>{{ so.planned_quantity }}</td>
+                    <td>{{ so.unit }}</td>
+                    <td>{{ so.notes|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">No seed order rows for this variety in {{ planting.planning_year.year }}.</p>
+    {% endif %}
+    {% else %}
+    <p class="muted">This planting has no linked variety record (<code>variety_obj</code>). Seed order linkage requires a variety.</p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <h2>Nursery, harvest, pack, sales</h2>
+    <p class="muted">Nursery events for this planting, then each harvest event with pack allocations and sales tied to the same pack batch.</p>
+
+    {% if nursery_events %}
+    <h3>Nursery events</h3>
+    <div class="fp-table-scroll">
+        <table class="fp-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Planned date</th>
+                    <th>Actual date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ev in nursery_events %}
+                <tr>
+                    <td>{{ ev.get_event_type_display }}</td>
+                    <td>{{ ev.planned_date }}</td>
+                    <td>{{ ev.actual_date|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">No nursery events for this planting.</p>
+    {% endif %}
+
+    <h3 style="margin-top:1.25rem;">Harvest → pack → sales</h3>
+    {% if harvest_trace %}
+    {% for row in harvest_trace %}
+    {% with he=row.harvest_event %}
+    <div class="fp-stack" style="margin-bottom:1.25rem; border-left:3px solid #cbd5e1; padding-left:1rem;">
+        <p><strong>Harvest</strong> — {{ he.planned_date }} · planned {{ he.planned_quantity }} {{ he.planned_units }}
+            {% if he.actual_date %}· actual {{ he.actual_quantity|default:"—" }} {{ he.actual_units|default:"" }}{% endif %}
+        </p>
+        {% if row.allocations %}
+        <div class="fp-table-scroll">
+            <table class="fp-table">
+                <thead>
+                    <tr>
+                        <th>Pack date</th>
+                        <th>Channel</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Sales (same batch)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ar in row.allocations %}
+                    {% with pa=ar.allocation %}
+                    <tr>
+                        <td>{{ pa.pack_date }}</td>
+                        <td>{{ pa.channel.name }}</td>
+                        <td>{{ pa.product.product_name }}</td>
+                        <td>{{ pa.quantity }} {{ pa.product.sale_unit }}</td>
+                        <td>
+                            {% if ar.sales_events %}
+                            <ul style="margin:0; padding-left:1.1rem;">
+                                {% for se in ar.sales_events %}
+                                <li>{{ se.sale_date }} — {{ se.channel.name|default:"—" }}
+                                    {% if se.actual_quantity %}qty {{ se.actual_quantity }}{% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% elif pa.pack_batch_id %}
+                            <span class="muted">No sales events linked to pack batch {{ pa.pack_batch_id }}.</span>
+                            {% else %}
+                            <span class="muted">No pack batch on this allocation.</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="muted">No pack allocations for this harvest event.</p>
+        {% endif %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+    {% else %}
+    <p class="muted">No harvest events for this planting.</p>
+    {% endif %}
+</section>
+{% endblock %}

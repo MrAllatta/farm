@@ -4,12 +4,15 @@
 {% block title %}Planting record — {{ planting.crop.name }}{% endblock %}
 {% block content %}
 <div class="page-header">
-    <h1>Planting record</h1>
+    <h1>Planting record <span class="planting-id-badge">{{ planting_display_id }}</span></h1>
     <p class="muted">
+        {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=schedule_chip_class %}
+        <span class="muted">·</span>
         <strong>{{ planting.crop.name }}</strong>
         {% if variety_display %}<span class="variety">— {{ variety_display }}</span>{% endif %}
         · {{ planting.block.name }} beds {{ planting.bed_start }}–{{ planting.bed_end }}
         · <a href="{% url 'operations:harvest_entry' pk=planting.pk %}">Harvest entry for this planting</a>
+        · <a href="{% url 'reports:planting_trace' planting_id=planting.pk %}">Traceability</a>
         · <a href="{% url 'planning:planting_detail' pk=planting.pk %}">Planning detail</a>
     </p>
 </div>

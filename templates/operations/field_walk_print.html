@@ -3,8 +3,9 @@
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
 {% block title %}Field walk print — week {{ week_num }}{% endblock %}
 {% block content %}
-<h1>Field walk · Week {{ week_num }}</h1>
-<p>{{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j, Y" }}{% if year %} · {{ year.year }}{% endif %}</p>
+{% include "operations/_weekops/_field_week_filter.html" %}
+<h1>Field walk</h1>
+<p class="muted">Field week {{ week_num }} · {{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j, Y" }}{% if year %} · {{ year.year }}{% endif %}</p>
 
 {% for group in blocks %}
 <section style="margin-bottom:1.5rem;">
@@ -12,6 +13,8 @@
     <table class="fp-table" style="width:100%; border-collapse:collapse;">
         <thead>
             <tr>
+                <th>ID</th>
+                <th>Schedule</th>
                 <th>Crop</th>
                 <th>Variety</th>
                 <th>Beds</th>
@@ -24,6 +27,8 @@
             {% for prow in group.plantings %}
             {% with p=prow.planting %}
             <tr>
+                <td>{{ prow.planting_display_id }}</td>
+                <td>{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=prow.schedule_chip_class %}</td>
                 <td>{{ p.crop.name }}</td>
                 <td>{{ prow.variety_label|default:"—" }}</td>
                 <td>{{ p.bed_start }}–{{ p.bed_end }}</td>
