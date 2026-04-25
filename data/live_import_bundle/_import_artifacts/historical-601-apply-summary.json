@@ -33,11 +33,17 @@
       }
     ],
     "models": {
+      "NurseryEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
       "PackBatch": {
-        "created": 39,
+        "created": 117,
         "error": 0,
         "skipped": 568,
-        "updated": 78
+        "updated": 0
       },
       "PackBatchComponent": {
         "created": 761,
@@ -52,16 +58,16 @@
         "updated": 3
       },
       "RotationHistory": {
-        "created": 77,
+        "created": 69,
         "error": 0,
         "skipped": 0,
         "updated": 0
       },
       "SalesEvent": {
-        "created": 746,
+        "created": 8658,
         "error": 0,
         "skipped": 0,
-        "updated": 8579
+        "updated": 667
       }
     },
     "row_errors": [
@@ -886,10 +892,10 @@
       }
     ],
     "totals": {
-      "created": 1623,
+      "created": 9605,
       "error": 0,
       "skipped": 583,
-      "updated": 8660
+      "updated": 670
     }
   },
   "run": {
@@ -897,10 +903,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/historical-601",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T19:27:22.029499Z",
-    "run_id": "20260424T192702208039",
+    "finished_at": "2026-04-24T23:07:02.655118Z",
+    "run_id": "20260424T230648712064",
     "start_year": 2024,
-    "started_at": "2026-04-24T19:27:02.208039Z",
+    "started_at": "2026-04-24T23:06:48.712064Z",
     "validate_only": false,
     "verbose": false
   },

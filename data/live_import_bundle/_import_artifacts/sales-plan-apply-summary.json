@@ -4,6 +4,12 @@
     "escalation_summary": [],
     "failure_signatures": [],
     "models": {
+      "NurseryEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
       "PlanningYear": {
         "created": 0,
         "error": 0,
@@ -11,24 +17,24 @@
         "updated": 3
       },
       "RotationHistory": {
-        "created": 77,
+        "created": 69,
         "error": 0,
         "skipped": 0,
         "updated": 0
       },
       "SalesEvent": {
-        "created": 0,
+        "created": 2086,
         "error": 0,
         "skipped": 0,
-        "updated": 2660
+        "updated": 574
       }
     },
     "row_errors": [],
     "totals": {
-      "created": 77,
+      "created": 2155,
       "error": 0,
       "skipped": 0,
-      "updated": 2663
+      "updated": 577
     }
   },
   "run": {
@@ -36,10 +42,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/sales-plan",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T19:27:01.830179Z",
-    "run_id": "20260424T192655640748",
+    "finished_at": "2026-04-24T23:06:48.362682Z",
+    "run_id": "20260424T230643449094",
     "start_year": 2024,
-    "started_at": "2026-04-24T19:26:55.640748Z",
+    "started_at": "2026-04-24T23:06:43.449094Z",
     "validate_only": false,
     "verbose": false
   },

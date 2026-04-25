@@ -5,16 +5,16 @@
     "failure_signatures": [],
     "models": {
       "FieldWalkNote": {
-        "created": 0,
+        "created": 36,
         "error": 0,
         "skipped": 2944,
-        "updated": 41
+        "updated": 5
       },
       "NurseryEvent": {
         "created": 0,
         "error": 0,
-        "skipped": 1153,
-        "updated": 223
+        "skipped": 0,
+        "updated": 0
       },
       "PlanningYear": {
         "created": 0,
@@ -23,19 +23,19 @@
         "updated": 3
       },
       "Planting": {
-        "created": 0,
+        "created": 1251,
         "error": 0,
         "skipped": 0,
-        "updated": 3123
+        "updated": 105
       },
       "PlantingFieldActuals": {
         "created": 0,
         "error": 0,
-        "skipped": 8879,
-        "updated": 76
+        "skipped": 8719,
+        "updated": 236
       },
       "RotationHistory": {
-        "created": 77,
+        "created": 69,
         "error": 0,
         "skipped": 0,
         "updated": 0
@@ -43,10 +43,10 @@
     },
     "row_errors": [],
     "totals": {
-      "created": 77,
+      "created": 1356,
       "error": 0,
-      "skipped": 12976,
-      "updated": 3466
+      "skipped": 11663,
+      "updated": 349
     }
   },
   "run": {
@@ -54,10 +54,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/crop-plan",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T19:26:55.263762Z",
-    "run_id": "20260424T192644128341",
+    "finished_at": "2026-04-24T23:06:43.086993Z",
+    "run_id": "20260424T230632045160",
     "start_year": 2024,
-    "started_at": "2026-04-24T19:26:44.128341Z",
+    "started_at": "2026-04-24T23:06:32.045160Z",
     "validate_only": false,
     "verbose": false
   },

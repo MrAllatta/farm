@@ -49,7 +49,7 @@
       "NurseryEvent": {
         "created": 0,
         "error": 0,
-        "skipped": 18,
+        "skipped": 0,
         "updated": 0
       },
       "PlanningYear": {
@@ -111,7 +111,7 @@
     "totals": {
       "created": 0,
       "error": 0,
-      "skipped": 498,
+      "skipped": 480,
       "updated": 0
     }
   },
@@ -120,10 +120,10 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-24T20:09:24.757487Z",
-    "run_id": "20260424T200924055028",
+    "finished_at": "2026-04-24T22:47:32.581773Z",
+    "run_id": "20260424T224731824124",
     "start_year": 2021,
-    "started_at": "2026-04-24T20:09:24.055028Z",
+    "started_at": "2026-04-24T22:47:31.824124Z",
     "validate_only": true,
     "verbose": false
   },
