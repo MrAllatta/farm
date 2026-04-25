@@ -8,10 +8,34 @@
     <p class="report-meta">
         Week {{ week_num }} ({{ week_date|date:"M j" }}) · Utilization {{ overall_utilization|floatformat:1 }}%
     </p>
+    <div class="crop-map-context-card" data-testid="crop-map-context">
+        <div>
+            <strong>503 field map check</strong>
+            <p>
+                Use this as the week snapshot for which planting units occupy each block and bed range.
+                Click a planting ID to inspect the planting record, or click fallow space to start a new planting in this week.
+            </p>
+        </div>
+        <dl class="crop-map-context-stats">
+            <div>
+                <dt>Planning year</dt>
+                <dd>{{ year.year }}</dd>
+            </div>
+            <div>
+                <dt>Blocks shown</dt>
+                <dd>{{ block_count }}</dd>
+            </div>
+            <div>
+                <dt>Planting units this week</dt>
+                <dd>{{ active_planting_count }}</dd>
+            </div>
+        </dl>
+    </div>
     <div class="week-nav mt-1">
         <a href="{% url 'reports:crop_map_week' prev_week_num %}" class="btn">← Week {{ prev_week_num }}</a>
         <a href="{% url 'reports:crop_map' %}" class="btn">Current Week</a>
         <a href="{% url 'reports:crop_map_week' next_week_num %}" class="btn">Week {{ next_week_num }} →</a>
+        <a href="{% url 'reports:crop_map_print' week_num %}" class="btn">Print map</a>
     </div>
 </div>
 

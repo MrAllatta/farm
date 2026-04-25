@@ -21,6 +21,38 @@
     </nav>
 </section>
 
+{% include "core/_diagnostic_hints.html" with hints=supply_diagnostic_hints only %}
+
+{% if supply_line_count == 0 and planting_count_excl_dead %}
+<p class="muted" data-weekly-supply-all-zero="1">
+    <strong>Harvest supply (~sale units) is zero for every product this week.</strong>
+    {% if plantings_missing_harvest_events %}
+    That is expected until generated <code>HarvestEvent</code> rows exist for plantings that have none yet — use <code>repair_planting_events</code> as in the staff diagnostics above (same dependency as
+    <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a>).
+    {% elif week_harvest_event_count == 0 %}
+    There are plantings for this planning year, but no harvest picks use dates in this ISO week, so zeros are correct — try another week or adjust first/last harvest windows on plantings.
+    {% elif not harvest_supply_reaches_catalog %}
+    Harvest events exist this week, but their crops do not match any active <code>CropSalesFormat</code> crop — add or activate a product for those crops.
+    {% else %}
+    Planned harvest quantities for this week still roll up to zero sale units (check per-event planned quantities and <code>harvest_qty_per_sale_unit</code> on products).
+    {% endif %}
+</p>
+{% endif %}
+
+<section class="panel sales-order-flow no-print">
+    <h2>Weekly handoff</h2>
+    <ol class="sales-order-steps">
+        <li><strong>Review context:</strong> annual plan, prior-year same-week actuals, and field-walk availability hints.</li>
+        <li><strong>Set order:</strong> adjust this channel’s quantities for weather, customer demand, and expected harvest.</li>
+        <li><strong>Send downstream:</strong> saved PLAN rows on this screen are the handoff into <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a>, pack prep, market list, and sales entry for the same ISO week.</li>
+    </ol>
+    <div class="sales-order-summary">
+        <span><strong>{{ planned_line_count }}</strong> planned lines</span>
+        <span><strong>{{ supply_line_count }}</strong> crops with harvest supply</span>
+        <span{% if shortage_count %} class="negative"{% endif %}><strong>{{ shortage_count }}</strong> shortage hints</span>
+    </div>
+</section>
+
 <section class="panel no-print">
     <h2>Downstream</h2>
     <ul class="muted" style="margin:0;">
@@ -35,7 +67,10 @@
 <section class="panel">
     <h2>Same ISO week — prior years (actual)</h2>
     {% if not has_any_historical %}
-    <p class="muted" data-historical-empty="1">No historical <code>ACTUAL</code> sales for this channel in this ISO week (prior calendar years in the database).</p>
+    <p class="muted" data-historical-empty="1">No historical <code>ACTUAL</code> sales for <strong>this channel id</strong> in this ISO week (prior calendar years in the database). If you expected prior-year cells to populate, confirm imported 601 rows point at the same <code>SalesChannel</code> as this picker, or check the diagnostics above for a same-name mismatch.</p>
+    {% endif %}
+    {% if not active_order_line_count %}
+    <p class="muted" data-weekly-order-empty="1">No planned demand or harvest supply is visible for this week yet. Check the planning year, sales plan rows, and generated harvest events before treating the week as truly empty.</p>
     {% endif %}
     <form method="post" class="no-print">
         {% csrf_token %}
@@ -46,10 +81,11 @@
                 <tr>
                     <th>Product</th>
                     {% for col in historical_year_columns %}
-                    <th class="num">{{ col.calendar_year }}{% if col.empty %} <span class="muted">· —</span>{% endif %}</th>
+                    <th class="num">{{ col.calendar_year }}{% if col.used_name_fallback %} <span class="muted" title="Actuals matched another SalesChannel row with the same name (id drift)">· alt id</span>{% endif %}{% if col.empty %} <span class="muted" title="No ACTUAL row for any product in this week">· no rows</span>{% endif %}</th>
                     {% endfor %}
                     <th class="num">All-channel demand</th>
                     <th class="num">Harvest supply (~sale units)</th>
+                    <th>Field / availability hint</th>
                     <th class="num">This week plan (channel)</th>
                 </tr>
             </thead>
@@ -65,17 +101,23 @@
                         {% if cell.actual_qty is not None %}
                             {{ cell.actual_qty|floatformat:1 }}
                             {% if cell.actual_revenue %}<div class="muted"><small>${{ cell.actual_revenue|floatformat:0 }}</small></div>{% endif %}
-                        {% else %}—{% endif %}
+                        {% else %}<span class="muted" title="No ACTUAL import for this product/week">—</span>{% endif %}
                     </td>
                     {% endfor %}
                     <td class="num">{{ row.demand_all_channels|floatformat:1 }}</td>
                     <td class="num">{{ row.supply_sale_units|floatformat:1 }}</td>
+                    <td>
+                        <small>{{ row.availability_hint }}</small>
+                        {% if row.shortage %}
+                        <div class="negative"><small>Short vs all-channel demand; confirm harvest needs before committing.</small></div>
+                        {% endif %}
+                    </td>
                     <td class="num">
                         <input type="number" step="0.01" name="qty_{{ row.product.id }}" title="Planned quantity {{ row.product.product_name }}" value="{{ row.channel_planned_qty|floatformat:2 }}" style="max-width:7rem;">
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="{{ hc|add:4 }}" class="muted">No active products — import reference <code>CropSalesFormat</code>.</td></tr>
+                <tr><td colspan="{{ hc|add:5 }}" class="muted">No active products — import reference <code>CropSalesFormat</code>.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

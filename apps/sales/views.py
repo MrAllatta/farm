@@ -18,6 +18,8 @@ from core.ui_diagnostics import market_entry_surface_hints
 from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
 from operations.models import PackAllocation
+from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
+from planning.models import Planting
 
 from .views_weekly_order import WeeklyChannelOrderView
 
@@ -83,13 +85,23 @@ class MarketSalesEntryView(TemplateView):
             pack_date=sale_date,
         ).select_related("product", "product__crop")
 
-        # If no pack list, get all active sales formats as template
+        year_obj = get_effective_planning_year(self.request)
+        # If no pack list, get active sales formats (LIVE-2: prefer crops in the active crop plan).
         if not pack_list.exists():
             products = (
                 CropSalesFormat.objects.filter(is_active=True)
                 .select_related("crop")
                 .order_by("crop__crop_type", "crop__name")
             )
+            if year_obj:
+                crop_ids = list(
+                    Planting.objects.filter(planning_year=year_obj)
+                    .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+                    .values_list("crop_id", flat=True)
+                    .distinct()
+                )
+                if crop_ids:
+                    products = products.filter(crop_id__in=crop_ids)
         else:
             products = None
 
@@ -131,7 +143,6 @@ class MarketSalesEntryView(TemplateView):
         current_week = sale_date.isocalendar()[1]
         is_active_week = channel.start_week <= current_week <= channel.end_week
 
-        year_obj = get_effective_planning_year(self.request)
         planning_year_label = str(year_obj.year) if year_obj else "the active planning year"
         has_pack = pack_list.exists()
         market_entry_diagnostic_hints = market_entry_surface_hints(

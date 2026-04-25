@@ -90,10 +90,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/reference",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T23:06:31.666992Z",
-    "run_id": "20260424T230629701272",
+    "finished_at": "2026-04-25T18:24:33.386607Z",
+    "run_id": "20260425T182431465529",
     "start_year": 2024,
-    "started_at": "2026-04-24T23:06:29.701272Z",
+    "started_at": "2026-04-25T18:24:31.465529Z",
     "validate_only": false,
     "verbose": false
   },

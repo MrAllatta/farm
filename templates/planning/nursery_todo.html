@@ -5,12 +5,15 @@
 <ul>
     {% for row in nursery_event_rows %}
     {% with ev=row.event %}
-    <li>
-        <span class="planting-id-badge planting-id-badge--table">{{ row.planting_display_id }}</span>
-        {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.schedule_chip_class %}
-        <strong>{{ ev.planned_date }}</strong> — {{ ev.get_event_type_display }} —
-        {{ ev.planting.crop.name }} ({{ ev.planting.block.name }})
-        <a href="{% url 'planning:nursery_records' %}">Record</a>
+    <li style="border:1px solid #e5e7eb; border-radius:6px; padding:0.65rem 0.75rem; margin-bottom:0.5rem;">
+        <div>
+            <span class="planting-id-badge planting-id-badge--table">{{ row.planting_display_id }}</span>
+            {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.schedule_chip_class %}
+            <strong>{{ ev.planned_date }}</strong> — {{ ev.get_event_type_display }} —
+            {{ ev.planting.crop.name }} ({{ ev.planting.block.name }})
+            <a href="{% url 'planning:nursery_records' %}">Record</a>
+        </div>
+        {% include "planning/partials/nursery_event_tray_meta.html" with event=ev only %}
     </li>
     {% endwith %}
     {% empty %}

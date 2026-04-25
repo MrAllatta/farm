@@ -10,6 +10,8 @@ operational outlet plan rows exist for the same category slice.
 
 from __future__ import annotations
 
+from datetime import date
+
 from .models import SalesCategory
 
 # Importer seeds these when ``year_*/product_week_plan.csv`` exists (legacy 301 grids).
@@ -88,3 +90,42 @@ def plan_events_without_shadowed_rollups(events):
 
         out.append(row)
     return out
+
+
+def plan_week_iso_counts(
+    events,
+    iso_week: int,
+    *,
+    week_start: date | None = None,
+    week_end: date | None = None,
+) -> tuple[int, int]:
+    """Count PLAN ``SalesEvent`` rows for the weekly-order window before vs after rollup shadowing.
+
+    When ``week_start`` and ``week_end`` are set (inclusive Monday–Sunday for the viewed week),
+    rows are counted by **calendar window** — same rule as per-channel PLAN filters and
+    all-channel demand (LIVE-3). Otherwise falls back to ``sale_date.isocalendar()[1] == iso_week``
+    for callers that only have a week index.
+    """
+
+    def in_target_week(row) -> bool:
+        sd = row.sale_date
+        if week_start is not None and week_end is not None:
+            return week_start <= sd <= week_end
+        return sd.isocalendar()[1] == iso_week
+
+    raw = 0
+    for row in events:
+        if getattr(row, "entry_kind", None) != "plan":
+            continue
+        if not in_target_week(row):
+            continue
+        raw += 1
+    filtered = plan_events_without_shadowed_rollups(events)
+    visible = 0
+    for row in filtered:
+        if getattr(row, "entry_kind", None) != "plan":
+            continue
+        if not in_target_week(row):
+            continue
+        visible += 1
+    return raw, visible

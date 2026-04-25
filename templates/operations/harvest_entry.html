@@ -57,7 +57,7 @@
                 <span class="planting-id-badge planting-id-badge--table">{{ item.prow.planting_display_id }}</span>
                 {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=item.prow.schedule_chip_class %}
                 <span class="crop-name">{{ item.crop_name }}</span>
-                <span class="location">{{ item.block }} beds {{ item.beds }}</span>
+                <span class="location">{{ item.block }} · {{ item.bed_range_label }}</span>
                 <span class="target">
                     Target: {{ item.target_qty|floatformat:0 }} {{ item.units }}
                     {% if item.target_bins %}

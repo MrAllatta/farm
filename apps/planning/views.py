@@ -160,6 +160,8 @@ class PlanningMatrixView(TemplateView):
 
         # Build the matrix: block → list of plantings with week positions
         matrix = self._build_matrix(blocks, plantings, weeks, year)
+        displayed_blocks = list(field_blocks) + list(tunnel_blocks)
+        active_block_count = sum(1 for block in displayed_blocks if matrix.get(block.id))
 
         # Extract week number range for display
         week_nums = [w['num'] for w in weeks]
@@ -179,6 +181,11 @@ class PlanningMatrixView(TemplateView):
                 "greenhouse_blocks": greenhouse_blocks,
                 "matrix": matrix,
                 "plantings": plantings,
+                "crop_planner_summary": {
+                    "visible_planting_count": plantings.count(),
+                    "active_block_count": active_block_count,
+                    "total_block_count": len(displayed_blocks),
+                },
                 "prev_date": window_start_date - timedelta(weeks=8),
                 "next_date": window_end_date + timedelta(days=1),
                 "matrix_center_date": center_date.isoformat(),
@@ -1240,6 +1247,7 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
                     "planting__block",
                     "planting__variety_obj",
                 )
+                .prefetch_related("planting__nursery_events")
                 .order_by("event_type", "planting__crop__name")
             )
 
@@ -1866,6 +1874,16 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             harvest_event_year_total=harvest_event_year_total,
             plantings_missing_harvest_events=missing_harvest_ct,
         )
+        weekly_order_channel = channel or channels.first()
+        weekly_order_week = date.today().isocalendar()[1]
+        weekly_order_url = (
+            reverse(
+                "sales:weekly_channel_order",
+                kwargs={"channel_id": weekly_order_channel.id, "week": weekly_order_week},
+            )
+            if weekly_order_channel
+            else None
+        )
 
         ctx.update(
             {
@@ -1882,6 +1900,9 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "rollup_slug": rollup_slug,
                 "rollup_tabs": rollup_tabs,
                 "sales_plan_diagnostic_hints": sales_plan_diagnostic_hints,
+                "weekly_order_channel": weekly_order_channel,
+                "weekly_order_week": weekly_order_week,
+                "weekly_order_url": weekly_order_url,
             }
         )
         return ctx
@@ -2496,6 +2517,7 @@ class NurseryRecordsView(ActivePlanningYearMixin, View):
                 "planting__block",
                 "planting__variety_obj",
             )
+            .prefetch_related("planting__nursery_events")
             .order_by("planned_date", "event_type", "planting__crop__name")
         )
         ctx = {
@@ -2569,6 +2591,7 @@ class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
             )
             .exclude(planting__status__in=["skipped", "failed", "revised"])
             .select_related("planting", "planting__crop", "planting__block")
+            .prefetch_related("planting__nursery_events")
             .order_by("planned_date", "event_type")
         )
         direct_seed_plantings = list(
@@ -2633,6 +2656,7 @@ class NurseryScheduleFullPrintView(ActivePlanningYearMixin, TemplateView):
                 "planting__block",
                 "planting__variety_obj",
             )
+            .prefetch_related("planting__nursery_events")
             .order_by("planned_date", "planting__crop__name", "event_type")
         )
         direct_seed_plantings = list(
@@ -2641,11 +2665,22 @@ class NurseryScheduleFullPrintView(ActivePlanningYearMixin, TemplateView):
             .select_related("crop", "block", "variety_obj")
             .order_by("planned_plant_date", "crop__name", "block__name", "bed_start")
         )
+        events_list = list(events)
+        planting_ids = {e.planting_id for e in events_list}
+        seed_week_by_planting = {}
+        if planting_ids:
+            for pid, pdate in NurseryEvent.objects.filter(
+                planting_id__in=planting_ids, event_type="seed"
+            ).values_list("planting_id", "planned_date"):
+                if pdate is not None:
+                    seed_week_by_planting[int(pid)] = pdate.isocalendar()[1]
+        for e in events_list:
+            e.seeding_week_iso = seed_week_by_planting.get(e.planting_id)
         ctx.update(
             {
                 "year": self.year_obj,
                 "plan_year": year,
-                "events": events,
+                "events": events_list,
                 "direct_seed_plantings": direct_seed_plantings,
             }
         )

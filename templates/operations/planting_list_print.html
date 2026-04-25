@@ -26,7 +26,7 @@
             <td style="padding:0.25rem;">{{ row.planting_display_id }}</td>
             <td style="padding:0.25rem;">{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=row.schedule_chip_class %}</td>
             <td style="padding:0.25rem;">{{ row.planting.block.name }}</td>
-            <td style="padding:0.25rem;">b{{ row.planting.bed_start }}-{{ row.planting.bed_end }}</td>
+            <td style="padding:0.25rem;">{{ row.bed_range_label }}</td>
             <td style="padding:0.25rem;">{{ row.planting.crop.name }}</td>
             <td style="padding:0.25rem;">{{ row.variety }}</td>
             <td style="padding:0.25rem;">{{ row.planting.planned_plant_date }}</td>

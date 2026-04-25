@@ -39,7 +39,7 @@
                 <td>{{ row.variety_label|default:"—" }}</td>
                 <td>{% if row.prow.last_walk_note %}{{ row.prow.last_walk_note.get_condition_display }}{% else %}—{% endif %}</td>
                 <td>{{ row.prow.yield_adjust_pct }}</td>
-                <td>b{{ p.bed_start }}-{{ p.bed_end }}</td>
+                <td>{{ row.prow.bed_range_label }}</td>
                 <td>{{ ev.planned_quantity }}</td>
                 <td>{{ ev.planned_units }}</td>
                 <td>{% if row.target_bins is not None %}{{ row.target_bins|floatformat:1 }}{% else %}—{% endif %}</td>

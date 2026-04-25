@@ -7,6 +7,14 @@
 <section class="page-header">
     <h1>Record Inventory Transaction</h1>
     <p>Add stock movement for storage crops. Outbound events reduce balance automatically.</p>
+    {% if current_planning_year %}
+    <p class="muted">
+        Working year: <strong>{{ current_planning_year.year }}</strong>. Use this form for practical opening carry-over snapshots while years overlap.
+    </p>
+    {% endif %}
+    <p class="muted">
+        For opening inventory, choose <strong>Count Adjustment</strong> and include a note like <strong>"from prior year"</strong>.
+    </p>
 </section>
 
 <section class="panel">

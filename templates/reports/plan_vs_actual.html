@@ -21,6 +21,13 @@
 {% endblock %}
 
 {% block analyze_content %}
+<div class="analyze-section muted" style="margin-bottom:1rem; font-size:0.95rem;">
+    <p style="margin:0 0 0.5rem 0;">
+        <strong>What counts as &ldquo;actual yield&rdquo; here:</strong> the sum of per-pick
+        <code>HarvestEvent.actual_quantity</code> for each planting. Market sales
+        (<code>SalesEvent</code> actuals) and sheet-level planting totals are not shown unless they are reflected on those harvest picks.
+    </p>
+</div>
 <div class="analyze-section">
     <h2>Planting Detail</h2>
     <div class="fp-table-scroll">

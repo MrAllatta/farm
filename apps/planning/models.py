@@ -121,6 +121,40 @@ class Planting(models.Model):
             int(self.planning_year_id), int(cal_year), exclude_pk=self.pk if self.pk else None
         )
 
+    def fill_missing_planned_harvest_dates(self) -> bool:
+        """Populate blank planned harvest dates from ``planned_plant_date`` + ``crop_season``.
+
+        Mirrors the harvest-date portion of ``save()`` but uses a safe week span when
+        ``harvest_weeks`` is 0 (single harvest week). If first/last are both set but
+        last precedes first, coerces ``planned_last_harvest_date`` to first.
+
+        Returns True if any in-memory field was changed (caller may persist).
+        """
+        orig_first = self.planned_first_harvest_date
+        orig_last = self.planned_last_harvest_date
+
+        if not self.planned_first_harvest_date and self.planned_plant_date:
+            self.planned_first_harvest_date = self.planned_plant_date + timedelta(
+                days=self.crop_season.dtm_days
+            )
+        if not self.planned_last_harvest_date and self.planned_first_harvest_date:
+            hw = int(self.crop_season.harvest_weeks or 0)
+            span_weeks = max(hw, 1) - 1
+            self.planned_last_harvest_date = self.planned_first_harvest_date + timedelta(
+                weeks=span_weeks
+            )
+        if (
+            self.planned_first_harvest_date
+            and self.planned_last_harvest_date
+            and self.planned_last_harvest_date < self.planned_first_harvest_date
+        ):
+            self.planned_last_harvest_date = self.planned_first_harvest_date
+
+        return (
+            self.planned_first_harvest_date != orig_first
+            or self.planned_last_harvest_date != orig_last
+        )
+
     def save(self, *args, **kwargs):
         old_actual_plant_date = None
         if self.pk:
@@ -129,14 +163,7 @@ class Planting(models.Model):
             )
         self._ensure_planting_code()
         # Auto-calculate planned fields from crop_season
-        if not self.planned_first_harvest_date and self.planned_plant_date:
-            self.planned_first_harvest_date = self.planned_plant_date + timedelta(
-                days=self.crop_season.dtm_days
-            )
-        if not self.planned_last_harvest_date and self.planned_first_harvest_date:
-            self.planned_last_harvest_date = self.planned_first_harvest_date + timedelta(
-                weeks=self.crop_season.harvest_weeks - 1
-            )
+        self.fill_missing_planned_harvest_dates()
         if not self.planned_total_yield:
             self.planned_total_yield = (
                 self.planned_bedfeet * self.crop_season.total_yield_per_bedfoot

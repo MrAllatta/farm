@@ -12,6 +12,33 @@
 
 {% include "core/_diagnostic_hints.html" with hints=sales_plan_diagnostic_hints only %}
 
+{% if weekly_order_url %}
+<section class="panel sales-flow-panel">
+    <div>
+        <h2>In-season weekly order handoff</h2>
+        <p class="muted">
+            Use the annual grid for planned demand, then build this week's channel order from history,
+            field status, and harvest availability before harvest needs and pack prep.
+        </p>
+    </div>
+    <div class="sales-flow-actions">
+        <a class="btn btn-primary" href="{{ weekly_order_url }}">
+            Build W{{ weekly_order_week }} order for {{ weekly_order_channel.name }}
+        </a>
+        {% if plan_mode == "rollup" %}
+        <a class="btn" href="{% url 'planning:sales_plan_by_channel' %}?channel={{ weekly_order_channel.id }}">
+            Review by channel
+        </a>
+        {% endif %}
+    </div>
+    <p class="muted" style="margin:0.75rem 0 0 0;">
+        Same ISO week prior-year <code>ACTUAL</code> sales (and per-year “no rows” markers) live on the
+        weekly channel order grid — use them alongside this annual plan before committing the week’s outlet lines
+        into harvest needs.
+    </p>
+</section>
+{% endif %}
+
 <form method="post">
     {% csrf_token %}
     <div style="display:flex; gap:1rem; align-items:end; margin-bottom:1rem; flex-wrap:wrap;">

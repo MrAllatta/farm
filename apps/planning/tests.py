@@ -108,6 +108,9 @@ class SalesPlanShortageTests(TestCase):
             {"channel": str(self.channel.pk)},
         )
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "In-season weekly order handoff")
+        self.assertEqual(response.context["weekly_order_channel"], self.channel)
+        self.assertIn("/sales/weekly-order/", response.context["weekly_order_url"])
         rows = response.context["product_rows"]
         row = next(r for r in rows if r["product"].id == self.product.id)
         cell20 = next(c for c in row["week_cells"] if c["week"] == 20)
@@ -244,6 +247,71 @@ class PlantingMoveViewTests(TestCase):
         self.assertEqual(self.planting.block_id, self.b2.pk)
 
 
+class CropPlannerMatrixSmokeTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.staff = User.objects.create_user("crop-planner-smoke", password="pw", is_staff=True)
+        self.year = PlanningYear.objects.create(year=2096, status="active")
+        self.active_block = Block.objects.create(
+            name="CP1",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        Block.objects.create(
+            name="CP2",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=2,
+        )
+        self.crop = CropInfo.objects.create(
+            name="Matrix Kale",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        self.crop_season = CropBySeason.objects.create(
+            crop=self.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        plant_date = Week(2096, 15).monday()
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop,
+            crop_season=self.crop_season,
+            block=self.active_block,
+            bed_start=1,
+            bed_end=2,
+            planned_bedfeet=200,
+            planned_plant_date=plant_date,
+            planned_first_harvest_date=plant_date + timedelta(days=21),
+            planned_last_harvest_date=plant_date + timedelta(days=42),
+            planned_total_yield=Decimal("200.00"),
+        )
+
+    def test_matrix_route_shows_operator_guide_and_visible_summary(self):
+        self.client.login(username="crop-planner-smoke", password="pw")
+        response = self.client.get(reverse("planning:matrix_week", kwargs={"week": 15}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Workbook anchor: 402 Crop Planner")
+        self.assertContains(response, "see everything")
+        self.assertContains(response, "Visible plantings")
+        self.assertContains(response, "1 / 2")
+
+
 class SeasonRolloverServiceTests(TestCase):
     """season_rollover.copy_skeleton: +52 weeks, events, idempotency, dry-run."""
 
@@ -321,6 +389,28 @@ class SeasonRolloverServiceTests(TestCase):
         copy_skeleton(self.source, self.target, dry_run=False)
         with self.assertRaises(ValueError):
             copy_skeleton(self.source, self.target, dry_run=False)
+
+
+class SeasonRolloverPreviewViewTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.staff = User.objects.create_user("rollover-preview", password="pw", is_staff=True)
+        self.source = PlanningYear.objects.create(year=3110, status="active")
+        PlanningYear.objects.create(year=3111, status="planning")
+
+    def test_rollover_preview_shows_year_context_and_carryover_copy(self):
+        self.client.login(username="rollover-preview", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.source.id
+        session.save()
+
+        response = self.client.get(
+            reverse("planning:season_rollover_preview"),
+            {"target_year": "3111"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Working year context:")
+        self.assertContains(response, "from prior year")
 
 
 class PlantingDeleteViewTests(TestCase):
@@ -615,6 +705,61 @@ class PlantingEventsRepairTests(TestCase):
         stats = repair_planting_events(planning_year_ids=[self.year.id])
         self.assertEqual(stats.harvest_events_created_plantings, 0)
         self.assertEqual(p.harvest_events.count(), before)
+
+    def test_fill_missing_planned_harvest_dates_derives_from_plant_date(self):
+        """LC-5: mirror import gap where planned harvest dates never ran through full ``save()``."""
+        p = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_field,
+            crop_season=self.crop_season_field,
+            block=self.block,
+            bed_start=5,
+            bed_end=5,
+            planned_bedfeet=100,
+            planned_plant_date=date(2101, 5, 1),
+            planned_first_harvest_date=date(2101, 6, 1),
+            planned_last_harvest_date=date(2101, 6, 22),
+            planned_total_yield=Decimal("100.00"),
+        )
+        p.planned_first_harvest_date = None
+        p.planned_last_harvest_date = None
+        self.assertTrue(p.fill_missing_planned_harvest_dates())
+        self.assertEqual(
+            p.planned_first_harvest_date,
+            date(2101, 5, 1) + timedelta(days=self.crop_season_field.dtm_days),
+        )
+        span = max(int(self.crop_season_field.harvest_weeks or 0), 1) - 1
+        self.assertEqual(
+            p.planned_last_harvest_date,
+            p.planned_first_harvest_date + timedelta(weeks=span),
+        )
+
+    def test_repair_fixes_inverted_harvest_window_and_creates_events(self):
+        """LC-5: invalid first/last span in DB is normalized then weekly harvest rows are generated."""
+        p = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_field,
+            crop_season=self.crop_season_field,
+            block=self.block,
+            bed_start=6,
+            bed_end=6,
+            planned_bedfeet=100,
+            planned_plant_date=date(2101, 5, 1),
+            planned_first_harvest_date=date(2101, 6, 10),
+            planned_last_harvest_date=date(2101, 6, 24),
+            planned_total_yield=Decimal("100.00"),
+        )
+        # Simulate legacy/partial DB writes that bypassed ``Planting.save()`` date normalization.
+        Planting.objects.filter(pk=p.pk).update(planned_last_harvest_date=date(2101, 6, 3))
+        p.refresh_from_db()
+        self.assertLess(p.planned_last_harvest_date, p.planned_first_harvest_date)
+        self.assertEqual(p.harvest_events.count(), 0)
+        stats = repair_planting_events(planning_year_ids=[self.year.id])
+        self.assertGreaterEqual(stats.harvest_planned_dates_filled, 1)
+        self.assertEqual(stats.harvest_events_created_plantings, 1)
+        p.refresh_from_db()
+        self.assertGreaterEqual(p.planned_last_harvest_date, p.planned_first_harvest_date)
+        self.assertGreater(p.harvest_events.count(), 0)
 
 
 class PlantingImportBedRangeTests(TestCase):

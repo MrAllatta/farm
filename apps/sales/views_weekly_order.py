@@ -16,9 +16,13 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from core.planning_year import get_effective_planning_year
-from planning.models import HarvestEvent, PlanningYear
+from core.ui_diagnostics import harvest_surface_hints, weekly_order_surface_hints
+from operations.models import FieldWalkNote
+from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES, week_bounds_for_planning_year
+from planning.models import HarvestEvent, PlanningYear, Planting
+from planning.services.planting_events_repair import count_plantings_missing_harvest_events
 from reference.models import CropSalesFormat, SalesChannel
-from reference.sales_rollups import plan_events_without_shadowed_rollups
+from reference.sales_rollups import plan_events_without_shadowed_rollups, plan_week_iso_counts
 from reports.mixins import ReportContextMixin
 
 from .models import SalesEvent
@@ -28,6 +32,41 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
     """One ISO week + channel: planned demand, harvest supply, prior-year actuals, editable plan."""
 
     template_name = "sales/weekly_channel_order.html"
+
+    def _weekly_order_crop_sales_formats(self, week_num: int):
+        """LIVE-2: limit pickers to crops in the crop plan (ISO week overlap when possible)."""
+        cal_year = self.year_obj.year
+        week_monday, week_sunday = week_bounds_for_planning_year(cal_year, week_num)
+        year_crop_ids = list(
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+            .values_list("crop_id", flat=True)
+            .distinct()
+        )
+        week_overlap_crop_ids = list(
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+            .filter(
+                planned_first_harvest_date__lte=week_sunday,
+                planned_last_harvest_date__gte=week_monday,
+            )
+            .values_list("crop_id", flat=True)
+            .distinct()
+        )
+        scope = "full_catalog"
+        products = (
+            CropSalesFormat.objects.filter(is_active=True)
+            .select_related("crop")
+            .order_by("crop__crop_type", "crop__name", "product_name")
+        )
+        if year_crop_ids:
+            if week_overlap_crop_ids:
+                products = products.filter(crop_id__in=week_overlap_crop_ids)
+                scope = "crop_plan_week"
+            else:
+                products = products.filter(crop_id__in=year_crop_ids)
+                scope = "crop_plan_inexact_week"
+        return products, week_monday, week_sunday, scope
 
     def dispatch(self, request, *args, **kwargs):
         self.year_obj = get_effective_planning_year(request)
@@ -44,8 +83,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
 
         channel = get_object_or_404(SalesChannel, pk=kwargs["channel_id"])
         week_num = self.resolve_week(kwargs.get("week"))
-        week_monday, week_sunday = self.week_window(self.year_obj.year, week_num)
-        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop")
+        products, week_monday, week_sunday, _scope = self._weekly_order_crop_sales_formats(week_num)
         updated = 0
 
         for product in products:
@@ -95,12 +133,8 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
         channel = get_object_or_404(SalesChannel, pk=kwargs["channel_id"])
         week_num = self.resolve_week(kwargs.get("week"))
         cal_year = self.year_obj.year
-        week_monday, week_sunday = self.week_window(cal_year, week_num)
-
-        products = (
-            CropSalesFormat.objects.filter(is_active=True)
-            .select_related("crop")
-            .order_by("crop__crop_type", "crop__name", "product_name")
+        products, week_monday, week_sunday, weekly_order_products_scope = (
+            self._weekly_order_crop_sales_formats(week_num)
         )
 
         all_plan = list(
@@ -111,40 +145,122 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
         )
         demand_by_product_week = defaultdict(Decimal)
         for row in plan_events_without_shadowed_rollups(all_plan):
-            wk = row.sale_date.isocalendar()[1]
-            if wk == week_num and row.product_id:
+            if (
+                row.product_id
+                and week_monday <= row.sale_date <= week_sunday
+            ):
                 demand_by_product_week[row.product_id] += row.planned_quantity or Decimal("0")
 
-        harvest_by_crop = defaultdict(Decimal)
-        for he in HarvestEvent.objects.filter(
+        plan_raw_week, plan_visible_week = plan_week_iso_counts(
+            all_plan,
+            week_num,
+            week_start=week_monday,
+            week_end=week_sunday,
+        )
+        planting_count_excl_dead = (
+            Planting.objects.filter(planning_year=self.year_obj)
+            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+            .count()
+        )
+        plantings_missing_harvest = count_plantings_missing_harvest_events(self.year_obj.id)
+        weekly_demand_row_count = sum(
+            1 for q in demand_by_product_week.values() if q and q > Decimal("0")
+        )
+
+        harvest_in_week_qs = HarvestEvent.objects.filter(
             planting__planning_year=self.year_obj,
             planned_date__gte=week_monday,
             planned_date__lte=week_sunday,
-        ).exclude(planting__status__in=["skipped", "failed", "revised"]).select_related("planting"):
-            harvest_by_crop[he.planting.crop_id] += he.planned_quantity or Decimal("0")
+        ).exclude(planting__status__in=EXCLUDED_PLANTING_STATUSES)
+
+        week_harvest_event_count = harvest_in_week_qs.count()
+
+        harvest_by_crop: dict[int, Decimal] = {}
+        for row in harvest_in_week_qs.values("planting__crop_id").annotate(
+            t=Sum("planned_quantity")
+        ):
+            cid = row["planting__crop_id"]
+            harvest_by_crop[cid] = row["t"] or Decimal("0")
+
+        harvest_crop_ids = set(harvest_by_crop.keys())
+
+        field_note_by_crop = {}
+        if harvest_crop_ids:
+            latest_notes = (
+                FieldWalkNote.objects.filter(
+                    planting__planning_year=self.year_obj,
+                    planting__crop_id__in=harvest_crop_ids,
+                    walk_date__lte=week_sunday,
+                )
+                .select_related("planting", "planting__crop")
+                .order_by("planting__crop_id", "-walk_date", "-id")
+            )
+            for note in latest_notes:
+                field_note_by_crop.setdefault(note.planting.crop_id, note)
 
         historical = []
-        prior_years = PlanningYear.objects.filter(year__lt=cal_year).order_by("-year")[:6]
+        prior_years = list(PlanningYear.objects.filter(year__lt=cal_year).order_by("-year")[:6])
         for py in prior_years:
             hm, hs = self.week_window(py.year, week_num)
-            actual_qs = SalesEvent.objects.filter(
-                entry_kind=SalesEvent.EntryKind.ACTUAL,
-                channel=channel,
-                sale_date__gte=hm,
-                sale_date__lte=hs,
-            ).select_related("product")
+            rows_strict = list(
+                SalesEvent.objects.filter(
+                    entry_kind=SalesEvent.EntryKind.ACTUAL,
+                    channel=channel,
+                    sale_date__gte=hm,
+                    sale_date__lte=hs,
+                )
+                .select_related("product")
+                .order_by("-sale_date", "-id")
+            )
+            used_name_fallback = False
             by_product: dict[int, SalesEvent] = {}
-            for row in actual_qs:
+            for row in rows_strict:
                 if row.product_id:
                     by_product[row.product_id] = row
+            if not by_product:
+                for row in (
+                    SalesEvent.objects.filter(
+                        entry_kind=SalesEvent.EntryKind.ACTUAL,
+                        channel__name=channel.name,
+                        sale_date__gte=hm,
+                        sale_date__lte=hs,
+                    )
+                    .exclude(channel_id=channel.id)
+                    .select_related("product", "channel")
+                    .order_by("-sale_date", "-id")
+                ):
+                    if row.product_id and row.product_id not in by_product:
+                        by_product[row.product_id] = row
+                if by_product:
+                    used_name_fallback = True
             historical.append(
                 {
                     "calendar_year": py.year,
                     "week_monday": hm,
                     "by_product": by_product,
                     "empty": not by_product,
+                    "used_name_fallback": used_name_fallback,
                 }
             )
+
+        has_any_historical = any(not h["empty"] for h in historical)
+        historical_name_fallback = any(h.get("used_name_fallback") for h in historical)
+        namesake_actuals_on_other_channel = False
+        if not has_any_historical:
+            for py in prior_years:
+                hm, hs = self.week_window(py.year, week_num)
+                if (
+                    SalesEvent.objects.filter(
+                        entry_kind=SalesEvent.EntryKind.ACTUAL,
+                        sale_date__gte=hm,
+                        sale_date__lte=hs,
+                        channel__name=channel.name,
+                    )
+                    .exclude(channel_id=channel.id)
+                    .exists()
+                ):
+                    namesake_actuals_on_other_channel = True
+                    break
 
         order_rows = []
         for product in products:
@@ -164,6 +280,20 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             supply_sale_units = (h_units / hq).quantize(Decimal("0.01"))
             demand_all = demand_by_product_week.get(product.id, Decimal("0"))
             shortage = demand_all > supply_sale_units + Decimal("0.0001")
+            field_note = field_note_by_crop.get(product.crop_id)
+            if field_note:
+                walk_date_label = field_note.walk_date.strftime("%b %d").replace(" 0", " ")
+                availability_hint = (
+                    f"Last field walk {walk_date_label}: "
+                    f"{field_note.get_condition_display().lower()}, "
+                    f"{field_note.yield_adjust_pct}% yield"
+                )
+            elif supply_sale_units > Decimal("0"):
+                availability_hint = "Harvest events scheduled this week; no field-walk note yet."
+            elif demand_all > Decimal("0"):
+                availability_hint = "Demand exists, but no harvest supply is scheduled for this crop/week."
+            else:
+                availability_hint = "No demand or harvest supply scheduled this week."
             hist_cells = []
             for block in historical:
                 ev = block["by_product"].get(product.id)
@@ -181,9 +311,44 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                     "demand_all_channels": demand_all,
                     "supply_sale_units": supply_sale_units,
                     "shortage": shortage,
+                    "availability_hint": availability_hint,
+                    "field_note": field_note,
                     "historical_cells": hist_cells,
                 }
             )
+
+        active_order_rows = [
+            row
+            for row in order_rows
+            if row["demand_all_channels"] > Decimal("0") or row["supply_sale_units"] > Decimal("0")
+        ]
+        shortage_count = sum(1 for row in order_rows if row["shortage"])
+        planned_line_count = sum(1 for row in order_rows if row["channel_planned_qty"] > Decimal("0"))
+        supply_line_count = sum(1 for row in order_rows if row["supply_sale_units"] > Decimal("0"))
+
+        product_crop_ids = {p.crop_id for p in products}
+        harvest_supply_reaches_catalog = bool(harvest_crop_ids & product_crop_ids)
+
+        supply_diagnostic_hints = harvest_surface_hints(
+            week_harvest_event_count=week_harvest_event_count,
+            planting_count_excl_dead=planting_count_excl_dead,
+            plantings_missing_harvest_events=plantings_missing_harvest,
+            weekly_sales_demand_count=weekly_demand_row_count,
+            planning_year_id=self.year_obj.id,
+            planning_calendar_year=cal_year,
+        )
+        supply_diagnostic_hints.extend(
+            weekly_order_surface_hints(
+                plan_raw_week=plan_raw_week,
+                plan_visible_week=plan_visible_week,
+                namesake_actuals_on_other_channel=namesake_actuals_on_other_channel,
+                channel_name=channel.name,
+                has_any_historical=has_any_historical,
+                historical_name_fallback=historical_name_fallback,
+                positive_week_demand_products=weekly_demand_row_count,
+                weekly_order_products_scope=weekly_order_products_scope,
+            )
+        )
 
         ctx.update(
             {
@@ -195,7 +360,16 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 "week_sunday": week_sunday,
                 "order_rows": order_rows,
                 "historical_year_columns": historical,
-                "has_any_historical": any(not h["empty"] for h in historical),
+                "has_any_historical": has_any_historical,
+                "supply_diagnostic_hints": supply_diagnostic_hints,
+                "active_order_line_count": len(active_order_rows),
+                "shortage_count": shortage_count,
+                "planned_line_count": planned_line_count,
+                "supply_line_count": supply_line_count,
+                "planting_count_excl_dead": planting_count_excl_dead,
+                "week_harvest_event_count": week_harvest_event_count,
+                "plantings_missing_harvest_events": plantings_missing_harvest,
+                "harvest_supply_reaches_catalog": harvest_supply_reaches_catalog,
             }
         )
         ctx.update(self.week_navigation(week_num))

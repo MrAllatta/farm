@@ -34,7 +34,7 @@
             <td style="padding:0.25rem;">{{ r.crop }}{% if r.variety_display %} — {{ r.variety_display }}{% endif %}</td>
             <td style="padding:0.25rem;">{{ r.block }} {{ r.beds }}</td>
             <td style="padding:0.25rem; text-align:right;">{{ r.event.planned_tray_count|default:"—" }}</td>
-            <td style="padding:0.25rem; text-align:right;">{{ r.event.planned_tray_size|default:"—" }}</td>
+            <td style="padding:0.25rem; text-align:right;">{% if r.event.planned_tray_size %}{{ r.event.planned_tray_size }}{% elif r.planting.crop.seeded_tray_size %}{{ r.planting.crop.seeded_tray_size }}{% else %}—{% endif %}</td>
             <td style="padding:0.25rem; text-align:right;">{{ r.planting.crop.seeded_tray_size|default:"—" }}</td>
             <td style="padding:0.25rem; text-align:right;">{{ r.planting.crop.pot_up_tray_size|default:"—" }}</td>
             <td style="padding:0.25rem; text-align:right;">{{ r.planting.crop.seeds_per_cell }}</td>
@@ -86,11 +86,11 @@
         <article class="tray-label-card">
             <div class="tray-label-planting-id">{{ r.planting_display_id }}</div>
             <div class="tray-label-title">{{ r.crop }}{% if r.variety_display %} — {{ r.variety_display }}{% endif %}</div>
-            <div class="tray-label-sub">Field wk {{ r.field_week }} · {{ r.block }} {{ r.beds }}</div>
+            <div class="tray-label-sub">Plant-by {% if r.planting.planned_plant_date %}{{ r.planting.planned_plant_date }}{% else %}—{% endif %} · field wk {{ r.field_week }} · {{ r.block }} {{ r.beds }}</div>
             <div class="tray-label-dates">Seed {{ r.date }} · ISO seed wk {{ r.event.planned_week }}</div>
             <ul class="tray-label-meta">
                 <li><span class="muted">Trays (plan)</span> {{ r.event.planned_tray_count|default:"—" }}</li>
-                <li><span class="muted">Tray size (plan)</span> {{ r.event.planned_tray_size|default:"—" }}</li>
+                <li><span class="muted">Tray size (cells)</span> {% if r.event.planned_tray_size %}{{ r.event.planned_tray_size }}{% elif r.planting.crop.seeded_tray_size %}{{ r.planting.crop.seeded_tray_size }}{% else %}—{% endif %}</li>
                 <li><span class="muted">Seeded tray</span> {{ r.planting.crop.seeded_tray_size|default:"—" }}</li>
                 <li><span class="muted">Pot-up tray</span> {{ r.planting.crop.pot_up_tray_size|default:"—" }}</li>
                 <li><span class="muted">Seeds/cell</span> {{ r.planting.crop.seeds_per_cell }}</li>

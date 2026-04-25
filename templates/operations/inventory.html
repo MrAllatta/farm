@@ -6,6 +6,15 @@
 {% block content %}
 <section class="page-header">
     <h1>Inventory (fresh + storage)</h1>
+    {% if current_planning_year %}
+    <p class="muted">
+        Working year: <strong>{{ current_planning_year.year }}</strong>. Entries you add now support this year's plan.
+    </p>
+    {% endif %}
+    <p class="muted">
+        Inventory balances are crop-level ledger totals across years. For season opening carry-over, record an adjustment note like
+        <strong>"from prior year"</strong>.
+    </p>
     <p>
         Items: {{ total_items }} |
         Critical: {{ critical_count }} |

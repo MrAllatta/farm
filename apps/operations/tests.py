@@ -12,6 +12,7 @@ from isoweek import Week
 
 from operations.models import FieldWalkNote
 from operations.planting_display import (
+    format_bed_range_label,
     format_planting_display_id,
     planting_schedule_chip_css_class,
     planting_unit_code,
@@ -19,7 +20,8 @@ from operations.planting_display import (
 from operations.services import week_ops as week_ops_service
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from planning.models import HarvestEvent, PlanningYear, Planting
-from reference.models import Block, CropBySeason, CropInfo
+from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from sales.models import SalesEvent
 
 
 class FieldWalkCascadeTests(TestCase):
@@ -303,6 +305,24 @@ class WeekOpsServiceTests(TestCase):
         self.assertEqual(prow["planting_display_id"], planting_unit_code(prow["planting"]))
         self.assertTrue(prow["schedule_chip_class"].startswith("chip-plant-schedule-"))
 
+    def test_week_context_prow_includes_bed_range_label(self):
+        ctx = week_ops_service.week_context(self.year, 20, today=date(2026, 4, 10), mode="field_walk")
+        self.assertEqual(ctx["blocks"][0]["plantings"][0]["bed_range_label"], "b1")
+        self.assertEqual(ctx["blocks"][1]["plantings"][0]["bed_range_label"], "b2")
+
+    def test_format_bed_range_single_vs_span(self):
+        class _P:
+            bed_start = 4
+            bed_end = 4
+
+        self.assertEqual(format_bed_range_label(_P()), "b4")
+
+        class _Q:
+            bed_start = 2
+            bed_end = 7
+
+        self.assertEqual(format_bed_range_label(_Q()), "b2–7")
+
 
 class WeekOpsViewTests(TestCase):
     """Smoke + POST behaviour for unified week-ops URLs."""
@@ -371,6 +391,15 @@ class WeekOpsViewTests(TestCase):
         for name in ("weekops_walk", "weekops_needs", "weekops_record"):
             r = self.client.get(reverse(f"operations:{name}", kwargs={"week": 18}))
             self.assertEqual(r.status_code, 200, name)
+
+    def test_harvest_needs_shows_trace_link_and_bed_range_label(self):
+        r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(
+            r,
+            reverse("reports:planting_trace", kwargs={"planting_id": self.planting.pk}),
+        )
+        self.assertContains(r, ">b1<")
 
     def test_harvest_needs_shows_yield_adjustment_badge(self):
         FieldWalkNote.objects.create(
@@ -478,6 +507,99 @@ class WeekOpsViewTests(TestCase):
         r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"data-empty-reason=\"missing_generated_harvests\"", r.content)
+        self.assertContains(
+            r,
+            f'make manage ARGS="repair_planting_events --planning-year-id {self.year.id}"',
+        )
+        self.assertContains(r, "Fix blank harvest lists after import")
+
+    def test_harvest_needs_explains_weekly_order_without_supply(self):
+        mon = Week(2026, 18).monday()
+        self.he.delete()
+        channel = SalesChannel.objects.create(
+            name="Saturday Market",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0.00"),
+        )
+        product = CropSalesFormat.objects.create(
+            crop=self.planting.crop,
+            product_name="VW Crop bunch",
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            is_active=True,
+        )
+        SalesEvent.objects.create(
+            planning_year=self.year,
+            channel=channel,
+            sale_date=mon,
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            product=product,
+            planned_quantity=Decimal("12.00"),
+        )
+
+        r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
+
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(
+            b'data-empty-reason="sales_demand_without_harvest_supply"',
+            r.content,
+        )
+        self.assertContains(r, "Weekly sales/order demand exists")
+
+    def test_harvest_needs_shows_iso_week_without_picks_hint(self):
+        """OP-8: plantings have harvest events but none in the viewed ISO week."""
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 1}))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"data-empty-reason=\"no_harvest_events_this_iso_week\"", r.content)
+
+
+class HarvestSurfaceHintsTests(TestCase):
+    def test_no_committed_sales_demand_hint_when_picks_exist_without_plan_lines(self):
+        from core.ui_diagnostics import harvest_surface_hints
+
+        hints = harvest_surface_hints(
+            week_harvest_event_count=2,
+            planting_count_excl_dead=3,
+            plantings_missing_harvest_events=0,
+            weekly_sales_demand_count=0,
+            planning_year_id=42,
+            planning_calendar_year=2026,
+        )
+        self.assertIn(
+            "no_committed_sales_demand_week",
+            [h["id"] for h in hints],
+        )
+
+
+class InventoryYearCarryoverCopyTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.staff = User.objects.create_user("inventory-copy", password="pw", is_staff=True)
+
+    def setUp(self):
+        self.client.login(username="inventory-copy", password="pw")
+        self.year = PlanningYear.objects.create(year=2032, status="active")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+
+    def test_inventory_dashboard_explains_cross_year_balance(self):
+        response = self.client.get(reverse("operations:inventory"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Working year:")
+        self.assertContains(response, "from prior year")
+
+    def test_inventory_transaction_guides_opening_snapshot(self):
+        response = self.client.get(reverse("operations:inventory_add"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Count Adjustment")
+        self.assertContains(response, "from prior year")
 
 
 class PlantingScheduleChipCssClassTests(TestCase):

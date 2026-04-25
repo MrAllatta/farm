@@ -9,8 +9,11 @@
     <p>
         {% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=schedule_chip_class %}
         <span class="muted">·</span>
-        {{ planting.crop.name }} in {{ planting.block.name }} beds {{ planting.bed_start }}-{{ planting.bed_end }}
+        {{ planting.crop.name }} in {{ planting.block.name }} {{ bed_range_label }}
         ({{ planting.planning_year.year }})
+    </p>
+    <p class="no-print">
+        <a href="{% url 'reports:planting_trace' planting_id=planting.pk %}">Planting trace (seed → harvest)</a>
     </p>
     <p><a href="{% url 'operations:weekops_walk' week=operations_nav_week %}" class="btn">Back to field walk</a></p>
 </section>

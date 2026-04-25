@@ -63,6 +63,31 @@
     </div>
 </div>
 
+<div class="crop-planner-guide" data-testid="crop-planner-guide">
+    <div class="crop-planner-guide__copy">
+        <span class="crop-planner-guide__eyebrow">Workbook anchor: 402 Crop Planner</span>
+        <strong>Use this as the "see everything" planning surface.</strong>
+        <p>
+            Each row is a block and bed range; each column is a field week. Click an empty week to add a planting,
+            drag an existing bar to move it, or drag across empty weeks to start a succession.
+        </p>
+    </div>
+    <dl class="crop-planner-guide__stats" aria-label="Visible matrix summary">
+        <div>
+            <dt>Visible plantings</dt>
+            <dd>{{ crop_planner_summary.visible_planting_count }}</dd>
+        </div>
+        <div>
+            <dt>Blocks in use</dt>
+            <dd>{{ crop_planner_summary.active_block_count }} / {{ crop_planner_summary.total_block_count }}</dd>
+        </div>
+        <div>
+            <dt>Week window</dt>
+            <dd>{{ week_start }}-{{ week_end }}</dd>
+        </div>
+    </dl>
+</div>
+
 {# Week header row #}
 <div class="matrix-container fp-table-scroll">
     <table class="planning-matrix">

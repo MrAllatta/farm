@@ -244,6 +244,42 @@ body {
     color: #dc2626;
 }
 
+.sales-flow-panel,
+.sales-order-flow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sales-flow-panel h2,
+.sales-order-flow h2 {
+    margin-bottom: 0.25rem;
+}
+
+.sales-flow-actions,
+.sales-order-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.sales-order-steps {
+    margin-left: 1.25rem;
+    color: var(--color-text-muted);
+}
+
+.sales-order-summary span {
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: #f8f8f5;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.85rem;
+}
+
 /* ── Reports / Analyze ── */
 
 .report-header {
@@ -458,6 +494,72 @@ body {
 }
 
 /* ── Planning Matrix ── */
+
+.crop-planner-guide {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.75rem 0 1rem;
+    padding: 0.85rem 1rem;
+    background: #f3f8ef;
+    border: 1px solid #c7d8bf;
+    border-radius: 10px;
+}
+
+.crop-planner-guide__copy {
+    max-width: 48rem;
+}
+
+.crop-planner-guide__eyebrow {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.crop-planner-guide__copy p {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+}
+
+.crop-planner-guide__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(5.5rem, 1fr));
+    gap: 0.5rem;
+    min-width: min(28rem, 100%);
+    margin: 0;
+}
+
+.crop-planner-guide__stats > div {
+    padding: 0.55rem 0.65rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.crop-planner-guide__stats dt {
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+}
+
+.crop-planner-guide__stats dd {
+    margin: 0.1rem 0 0;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .crop-planner-guide {
+        flex-direction: column;
+    }
+
+    .crop-planner-guide__stats {
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    }
+}
 
 .planning-matrix {
     width: 100%;
@@ -810,6 +912,12 @@ body {
     background: var(--color-primary-light);
 }
 
+.btn-disabled {
+    color: var(--color-text-muted);
+    background: #f8f8f5;
+    cursor: default;
+}
+
 .btn-warning {
     background: #f59e0b;
     color: white;
@@ -1149,6 +1257,67 @@ body {
     border: 1px solid rgba(0,0,0,0.1);
 }
 
+.crop-map-context-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.crop-map-context-card p {
+    max-width: 48rem;
+    margin-top: 0.25rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+.crop-map-context-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.crop-map-context-stats div {
+    min-width: 7rem;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: #fafaf7;
+}
+
+.crop-map-context-stats dt {
+    color: var(--color-text-muted);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.crop-map-context-stats dd {
+    margin: 0.1rem 0 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.crop-map-report-toolbar,
+.crop-map-range-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.crop-map-range-label {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
 /* ── Reports / Analysis ── */
 
 .report-header {
@@ -1477,6 +1646,10 @@ body {
     border-radius: 6px;
     font-size: 0.9rem;
     color: #92400e;
+}
+
+.drag-warnings:empty {
+    display: none;
 }
 
 .planting-bar[draggable="true"] {

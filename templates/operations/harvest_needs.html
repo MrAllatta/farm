@@ -4,12 +4,36 @@
 <div class="page-header no-print">
     <h1>Harvest needs</h1>
     <p class="muted">What to pick this week, in walk-route order, with field-walk context and sales demand.</p>
+    <p class="muted">
+        <strong>Bridge from sales:</strong> quantities saved on
+        <a href="{% url 'planning:sales_plan' %}">sales plan</a>{% if weekly_order_handoff_url %}
+        and on the <a href="{{ weekly_order_handoff_url }}">weekly channel order ({{ weekly_order_handoff_channel_name }})</a>{% else %}
+        and on weekly channel orders{% endif %}
+        for this ISO week surface here as committed demand. Field-walk yield notes adjust planned pick targets in this list.
+    </p>
+    <p class="muted">
+        If demand exists but no harvest rows appear, read the diagnostics below before printing — causes include
+        wrong ISO week, missing generated harvest events after import, or picks scheduled in other weeks.
+    </p>
     <p class="no-print">
         <a href="{% url 'operations:weekops_record' week=week_num %}" class="btn btn-primary">Record harvest (this week)</a>
     </p>
 </div>
 
 {% include "core/_diagnostic_hints.html" with hints=diagnostic_hints only %}
+
+{% if plantings_missing_harvest_events %}
+<div class="no-print panel" style="margin-bottom:1rem; border-color:#f59e0b; background:#fffbeb;">
+    <h2 style="margin-top:0; font-size:1.05rem;">Fix blank harvest lists after import</h2>
+    <p class="muted" style="margin-bottom:0.5rem;">
+        {{ plantings_missing_harvest_events }} planting(s) in <strong>{{ year.year }}</strong> have a harvest window
+        but no generated <code>HarvestEvent</code> rows yet. Harvest needs (and sales-plan supply) read from those events.
+    </p>
+    <p class="muted" style="margin-bottom:0.35rem;">From the <strong>farm-planning</strong> repository root (so <code>Makefile</code> loads <code>.env</code>), run:</p>
+    <pre style="margin:0 0 0.5rem 0; padding:0.65rem 0.85rem; background:#1e293b; color:#e2e8f0; border-radius:6px; font-size:0.88rem; overflow-x:auto;">make manage ARGS="repair_planting_events --planning-year-id {{ year.id }}"</pre>
+    <p class="muted" style="margin:0; font-size:0.92rem;">Alternative for several planning years in one calendar year: <code>make manage ARGS="repair_planting_events --year {{ year.year }}"</code></p>
+</div>
+{% endif %}
 
 {% if week_rollup_by_sales_category %}
 <details class="weekops-rollup no-print" style="margin-bottom:1rem;">
@@ -53,11 +77,12 @@
                     <th>Walk</th>
                     <th>Condition</th>
                     <th>Yield note</th>
-                    <th>Beds</th>
+                    <th title="Block beds for this planting unit">Beds</th>
                     <th class="num">Planned qty</th>
                     <th>Unit</th>
                     <th class="num">Target bins</th>
                     <th>Committed (sales)</th>
+                    <th class="no-print">Trace</th>
                     <th></th>
                 </tr>
             </thead>
@@ -86,13 +111,16 @@
                             <span class="muted">100%</span>
                         {% endif %}
                     </td>
-                    <td>b{{ p.bed_start }}-{{ p.bed_end }}</td>
+                    <td>{{ row.prow.bed_range_label }}</td>
                     <td class="num">{{ ev.planned_quantity }}</td>
                     <td>{{ ev.planned_units }}</td>
                     <td class="num">
                         {% if row.target_bins is not None %}{{ row.target_bins|floatformat:1 }}{% else %}—{% endif %}
                     </td>
                     <td class="muted">{{ row.sales_committed_str|default:"—" }}</td>
+                    <td class="no-print">
+                        <a href="{% url 'reports:planting_trace' planting_id=p.pk %}">Trace</a>
+                    </td>
                     <td class="no-print"><a href="{% url 'operations:harvest_entry' pk=p.pk %}">Enter</a></td>
                 </tr>
                 {% endwith %}
@@ -126,7 +154,7 @@
                     <td><span class="planting-id-badge planting-id-badge--table">{{ row.prow.planting_display_id }}</span></td>
                     <td>{{ p.crop.name }}</td>
                     <td>{{ row.variety_label|default:"—" }}</td>
-                    <td>b{{ p.bed_start }}-{{ p.bed_end }}</td>
+                    <td>{{ row.prow.bed_range_label }}</td>
                     <td class="num">{{ ev.planned_quantity }}</td>
                     <td class="num">{{ ev.actual_quantity }}</td>
                 </tr>

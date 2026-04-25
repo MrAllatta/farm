@@ -29,6 +29,7 @@ class PlantingEventsRepairStats:
     harvest_events_created_plantings: int = 0
     nursery_events_created_plantings: int = 0
     harvest_skipped_invalid_window: int = 0
+    harvest_planned_dates_filled: int = 0
 
     def as_dict(self) -> dict:
         return {
@@ -36,6 +37,7 @@ class PlantingEventsRepairStats:
             "harvest_events_created_plantings": self.harvest_events_created_plantings,
             "nursery_events_created_plantings": self.nursery_events_created_plantings,
             "harvest_skipped_invalid_window": self.harvest_skipped_invalid_window,
+            "harvest_planned_dates_filled": self.harvest_planned_dates_filled,
         }
 
 
@@ -75,6 +77,16 @@ def repair_planting_events(
         stats.plantings_scanned += 1
 
         if planting._no_harvest:
+            # Imported plantings often miss harvest dates: ``update_or_create`` updates
+            # only ``defaults`` keys, so ``Planting.save()`` auto-fill never ran. Fill from
+            # ``crop_season`` here, persist, then generate weekly events.
+            if planting.fill_missing_planned_harvest_dates() and planting.pk:
+                Planting.objects.filter(pk=planting.pk).update(
+                    planned_first_harvest_date=planting.planned_first_harvest_date,
+                    planned_last_harvest_date=planting.planned_last_harvest_date,
+                )
+                stats.harvest_planned_dates_filled += 1
+
             first_d = planting.planned_first_harvest_date
             last_d = planting.planned_last_harvest_date
             if first_d and last_d and first_d <= last_d:

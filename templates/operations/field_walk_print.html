@@ -31,7 +31,7 @@
                 <td>{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=prow.schedule_chip_class %}</td>
                 <td>{{ p.crop.name }}</td>
                 <td>{{ prow.variety_label|default:"—" }}</td>
-                <td>{{ p.bed_start }}–{{ p.bed_end }}</td>
+                <td>{{ prow.bed_range_label }}</td>
                 <td>{{ prow.expected_stage }}</td>
                 <td>{{ prow.harvest_start|date:"Y-m-d" }}</td>
                 <td>

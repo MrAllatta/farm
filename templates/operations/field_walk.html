@@ -38,6 +38,7 @@
                     <th>Yield %</th>
                     <th>Adj. 1st harvest (wk)</th>
                     <th>Notes</th>
+                    <th class="no-print">Trace</th>
                     <th></th>
                 </tr>
             </thead>
@@ -49,7 +50,7 @@
                     <td>{% include "operations/_weekops/_planting_schedule_chip.html" with chip_class=prow.schedule_chip_class %}</td>
                     <td>{{ p.crop.name }}</td>
                     <td>{{ prow.variety_label|default:"—" }}</td>
-                    <td>{{ p.bed_start }}–{{ p.bed_end }}</td>
+                    <td>{{ prow.bed_range_label }}</td>
                     <td>{{ prow.expected_stage }}</td>
                     <td>{{ prow.harvest_start|date:"Y-m-d" }}</td>
                     <td>
@@ -78,6 +79,9 @@
                     </td>
                     <td>
                         <input type="text" name="notes_{{ p.id }}" placeholder="Observations…">
+                    </td>
+                    <td class="no-print">
+                        <a href="{% url 'reports:planting_trace' planting_id=p.pk %}">Trace</a>
                     </td>
                     <td class="no-print">
                         <a href="{% url 'operations:field_walk' pk=p.pk %}" class="btn btn-secondary">History</a>

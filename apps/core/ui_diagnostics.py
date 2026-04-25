@@ -11,9 +11,23 @@ def harvest_surface_hints(
     week_harvest_event_count: int,
     planting_count_excl_dead: int,
     plantings_missing_harvest_events: int,
+    weekly_sales_demand_count: int = 0,
+    planning_year_id: int | None = None,
+    planning_calendar_year: int | None = None,
 ) -> list[dict[str, str]]:
     """Harvest needs / weekly harvest entry: explain empty or misleading weeks."""
     out: list[dict[str, str]] = []
+
+    def _repair_cmd_year() -> str:
+        if planning_calendar_year is not None:
+            return f'make manage ARGS="repair_planting_events --year {planning_calendar_year}"'
+        return 'make manage ARGS="repair_planting_events --year <calendar year>"'
+
+    def _repair_cmd_pyid() -> str:
+        if planning_year_id is not None:
+            return f'make manage ARGS="repair_planting_events --planning-year-id {planning_year_id}"'
+        return 'make manage ARGS="repair_planting_events --planning-year-id <id>"'
+
     if planting_count_excl_dead == 0:
         out.append(
             {
@@ -27,25 +41,167 @@ def harvest_surface_hints(
         )
         return out
     if plantings_missing_harvest_events > 0:
+        repair_lines = (
+            f"This list is built from generated HarvestEvent rows. After import, from the repo root run "
+            f"{_repair_cmd_pyid()} (scoped to this planning year), or {_repair_cmd_year()} "
+            "when several years need repair. The command only adds missing rows; it does not overwrite picks "
+            "that already have recorded harvest quantities."
+        )
         out.append(
             {
                 "id": "missing_generated_harvests",
                 "title": f"{plantings_missing_harvest_events} planting(s) lack harvest events",
-                "detail": (
-                    "Harvest needs and sales-plan supply use generated harvest events. "
-                    "After import, run the repair step (management command: repair_planting_events) "
-                    "so pending picks exist without duplicating recorded harvests."
-                ),
+                "detail": repair_lines,
             }
         )
     if week_harvest_event_count == 0:
+        if weekly_sales_demand_count > 0:
+            demand_detail = (
+                "Saved weekly channel orders flow here as committed demand. "
+                "This ISO week has planned sales lines, but no harvest events dated in this week, "
+                "so this screen can look empty even though the sales plan has numbers."
+            )
+            if plantings_missing_harvest_events > 0:
+                demand_detail += (
+                    " If plantings are missing generated events entirely, run the repair command above first; "
+                    "otherwise check the week selector or each planting's harvest window."
+                )
+            else:
+                demand_detail += (
+                    " Confirm the ISO week, planning year in the header, and harvest windows; "
+                    "if imports skipped event generation, use the same repair command as for missing harvest rows."
+                )
+            out.append(
+                {
+                    "id": "sales_demand_without_harvest_supply",
+                    "title": "Weekly sales/order demand exists, but no harvest supply is scheduled",
+                    "detail": demand_detail,
+                }
+            )
+        if plantings_missing_harvest_events == 0 and planting_count_excl_dead > 0:
+            out.append(
+                {
+                    "id": "no_harvest_events_this_iso_week",
+                    "title": "No harvest picks fall in this ISO week",
+                    "detail": (
+                        "Plantings have harvest events, but none use dates in this week. "
+                        "Confirm the planning year in the header matches the season you imported, "
+                        "then try another ISO week or widen each planting's first/last harvest window."
+                    ),
+                }
+            )
+    if (
+        week_harvest_event_count > 0
+        and weekly_sales_demand_count == 0
+        and planting_count_excl_dead > 0
+    ):
         out.append(
             {
-                "id": "no_events_this_week",
-                "title": "No harvest events this ISO week",
+                "id": "no_committed_sales_demand_week",
+                "title": "No weekly sales (PLAN) demand matched this ISO week for these crops",
                 "detail": (
-                    "Nothing is scheduled for this week. Try another week or check each planting's "
-                    "first/last harvest window."
+                    "Harvest picks exist, but this week’s aggregated channel plan lines are empty — "
+                    "open a weekly channel order for this ISO week, save quantities, or confirm the "
+                    "sales plan / channel mix for the active planning year."
+                ),
+            }
+        )
+    return out
+
+
+def weekly_order_surface_hints(
+    *,
+    plan_raw_week: int,
+    plan_visible_week: int,
+    namesake_actuals_on_other_channel: bool,
+    channel_name: str,
+    has_any_historical: bool,
+    historical_name_fallback: bool = False,
+    positive_week_demand_products: int = 0,
+    weekly_order_products_scope: str = "full_catalog",
+) -> list[dict[str, str]]:
+    """Weekly channel order: demand rollup, historical joins, supply (pairs with LIVE-1/3/4)."""
+    out: list[dict[str, str]] = []
+    if plan_raw_week > 0 and plan_visible_week == 0:
+        out.append(
+            {
+                "id": "all_channel_demand_shadowed",
+                "title": "All-channel demand shows zero, but plan rows exist for this week",
+                "detail": (
+                    "Outlet-level weekly plan lines are hiding duplicate annual rollup rows for the same "
+                    "product / category / ISO week. Demand totals only count the visible slice — "
+                    "confirm lines on real sales channels or adjust the sales plan import."
+                ),
+            }
+        )
+    elif plan_raw_week > plan_visible_week > 0:
+        out.append(
+            {
+                "id": "all_channel_demand_partially_shadowed",
+                "title": "Some plan rows are hidden from the all-channel demand total",
+                "detail": (
+                    f"{plan_raw_week - plan_visible_week} duplicate rollup plan row(s) for this ISO week "
+                    "were dropped because outlet-level plan lines own the same category slice."
+                ),
+            }
+        )
+    if plan_raw_week == 0 and positive_week_demand_products == 0:
+        out.append(
+            {
+                "id": "no_plan_rows_this_iso_week",
+                "title": "No saved weekly plan (PLAN) rows for this ISO week",
+                "detail": (
+                    "All-channel demand sums PLAN lines for the active planning year in this ISO week. "
+                    "If you expected totals, save quantities on weekly channel orders for this week, "
+                    "or import annual product_week_plan lines for this year."
+                ),
+            }
+        )
+    elif plan_visible_week > 0 and positive_week_demand_products == 0:
+        out.append(
+            {
+                "id": "plan_rows_zero_all_channel_demand",
+                "title": "Plan rows exist but all-channel demand is still zero",
+                "detail": (
+                    "After rollup de-duplication, PLAN rows are present for this week but every "
+                    "rolled-up quantity is zero or unset. Enter positive planned quantities on outlet "
+                    "channels, or confirm which channel owns the visible plan slice."
+                ),
+            }
+        )
+    if weekly_order_products_scope == "crop_plan_inexact_week":
+        out.append(
+            {
+                "id": "weekly_order_products_not_this_iso_week",
+                "title": "Product list is limited to the crop plan, not this ISO week’s harvest window",
+                "detail": (
+                    "No plantings have a harvest window overlapping this ISO week, so every in-plan crop "
+                    "is still shown for ordering. Switch weeks or extend harvest dates if the list "
+                    "should narrow further."
+                ),
+            }
+        )
+    if namesake_actuals_on_other_channel and not has_any_historical:
+        out.append(
+            {
+                "id": "historical_channel_id_mismatch",
+                "title": f"Prior-year actuals may exist on a different “{channel_name}” channel row",
+                "detail": (
+                    "Historical 601 imports sometimes attach ACTUAL sales to a channel record that is not "
+                    "the one in this URL. Reconcile SalesChannel ids in import data, or pick the channel "
+                    "that owns the imported history."
+                ),
+            }
+        )
+    if historical_name_fallback:
+        out.append(
+            {
+                "id": "historical_from_namesake_channel",
+                "title": f"Prior-year cells use another “{channel_name}” channel id",
+                "detail": (
+                    "At least one calendar year had no ACTUAL rows on this URL’s SalesChannel, so the grid "
+                    "fell back to same-name channel rows (typical after 601 re-import). Prefer reconciling "
+                    "channel ids in data so history attaches to the channel you use for weekly orders."
                 ),
             }
         )
@@ -73,7 +229,10 @@ def dashboard_surface_hints(
             {
                 "id": "dash_missing_harvest_events",
                 "title": f"{plantings_missing_harvest_events} planting(s) still need harvest events",
-                "detail": "Repair planting events after import so this week's harvest counts stay meaningful.",
+                "detail": (
+                    "Run make manage ARGS=\"repair_planting_events --planning-year-id <id>\" after import "
+                    "so this week's harvest counts stay meaningful."
+                ),
             }
         )
     if harvest_events_this_week == 0 and active_planting_count > 0:
@@ -129,7 +288,7 @@ def sales_plan_surface_hints(
                 "title": "No harvest events this year — supply reads as zero",
                 "detail": (
                     "Shortage marks compare demand to harvest supply. Add plantings with harvest events "
-                    "or run repair_planting_events after import."
+                    "or run make manage ARGS=\"repair_planting_events --planning-year-id <id>\" after import."
                 ),
             }
         )

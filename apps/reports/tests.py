@@ -192,6 +192,9 @@ class CropMapServiceAndViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reports/crop_map_week_by_bed.html")
         self.assertIn("rows", response.context)
+        self.assertEqual(response.context["visible_planting_count"], 1)
+        self.assertContains(response, "Bed-by-bed occupancy")
+        self.assertContains(response, "Weeks 27-52")
         self.assertContains(response, 'data-testid="fp-table-scroll"')
         self.assertContains(response, "fp-table-scroll")
 
@@ -201,12 +204,27 @@ class CropMapServiceAndViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reports/crop_map.html")
         self.assertIn("field_maps", response.context)
+        self.assertEqual(response.context["block_count"], 1)
+        self.assertContains(response, "503 field map check")
+        self.assertContains(response, "Planting units this week")
 
     def test_crop_map_week_by_block_route_renders(self):
         response = self.client.get(reverse("reports:crop_map_week_by_block"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reports/crop_map_week_by_block.html")
         self.assertIn("rows", response.context)
+        self.assertEqual(response.context["visible_planting_count"], 1)
+        self.assertContains(response, "Block-week occupancy")
+        self.assertContains(response, "End of year")
+
+    def test_crop_map_week_by_block_accepts_range_navigation(self):
+        response = self.client.get(reverse("reports:crop_map_week_by_block"), {"start": 1, "end": 26})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["week_start"], 1)
+        self.assertEqual(response.context["week_end"], 26)
+        self.assertContains(response, "Showing weeks 1-26")
+        self.assertContains(response, "Weeks 27-52")
 
     def test_crop_map_week_by_block_shows_planting_code_chips(self):
         self.active.refresh_from_db()

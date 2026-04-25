@@ -19,7 +19,11 @@ from decimal import Decimal
 
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from operations.services import week_ops as week_ops_service
-from operations.planting_display import planting_schedule_chip_css_class, planting_unit_code
+from operations.planting_display import (
+    format_bed_range_label,
+    planting_schedule_chip_css_class,
+    planting_unit_code,
+)
 from planning.services.planting_events_repair import count_plantings_missing_harvest_events
 from core.ui_diagnostics import harvest_surface_hints
 
@@ -152,6 +156,7 @@ class FieldWalkNoteView(TemplateView):
                 "latest_note": latest_note,
                 "today": today,
                 "planting_display_id": planting_unit_code(planting),
+                "bed_range_label": format_bed_range_label(planting),
                 "schedule_chip_class": planting_schedule_chip_css_class(
                     planting.planned_plant_date, planting.actual_plant_date, today
                 ),
@@ -274,7 +279,7 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
                             "prow": prow,
                             "crop_name": crop.name,
                             "block": block_name,
-                            "beds": f"{p.bed_start}-{p.bed_end}",
+                            "bed_range_label": format_bed_range_label(p),
                             "target_qty": he.planned_quantity,
                             "units": he.planned_units,
                             "bin_type": crop.harvest_bin,
@@ -326,6 +331,7 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
                     week_harvest_event_count=total_items,
                     planting_count_excl_dead=planting_count_excl_dead,
                     plantings_missing_harvest_events=missing_harvest,
+                    weekly_sales_demand_count=len(wctx["sales_demand_by_crop"]),
                 ),
             }
         )
@@ -887,6 +893,13 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
             )
 
         ctx.update(_weekops_header_context("needs", week_num, self.year_obj, wctx))
+        first_channel = SalesChannel.objects.order_by("allocation_priority", "name").first()
+        weekly_order_handoff_url = None
+        if first_channel:
+            weekly_order_handoff_url = reverse(
+                "sales:weekly_channel_order",
+                kwargs={"channel_id": first_channel.id, "week": week_num},
+            )
         week_rollup_list = sorted(
             wctx["week_rollup_by_crop"].values(),
             key=lambda r: r["crop"].name.lower(),
@@ -898,6 +911,7 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
         )
         missing_harvest = count_plantings_missing_harvest_events(self.year_obj.id)
         week_ev = wctx["progress"]["total_events"]
+        weekly_sales_demand_count = len(wctx["sales_demand_by_crop"])
         ctx.update(
             {
                 "weekops": wctx,
@@ -909,11 +923,17 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
                 "harvest_blocks": harvest_blocks,
                 "harvest_needs_week_event_count": week_ev,
                 "plantings_missing_harvest_events": missing_harvest,
+                "weekly_sales_demand_count": weekly_sales_demand_count,
                 "diagnostic_hints": harvest_surface_hints(
                     week_harvest_event_count=week_ev,
                     planting_count_excl_dead=planting_count_excl_dead,
                     plantings_missing_harvest_events=missing_harvest,
+                    weekly_sales_demand_count=weekly_sales_demand_count,
+                    planning_year_id=self.year_obj.id,
+                    planning_calendar_year=self.year_obj.year,
                 ),
+                "weekly_order_handoff_url": weekly_order_handoff_url,
+                "weekly_order_handoff_channel_name": first_channel.name if first_channel else "",
             }
         )
         return ctx
@@ -1030,6 +1050,7 @@ class PrintablePlantingListView(OperationsPlanningYearMixin, TemplateView):
                     "variety": v,
                     "harvest_wk": f"{p.planned_first_harvest_date.isocalendar()[1]}-{p.planned_last_harvest_date.isocalendar()[1]}",
                     "planting_display_id": planting_unit_code(p),
+                    "bed_range_label": format_bed_range_label(p),
                     "schedule_chip_class": planting_schedule_chip_css_class(
                         p.planned_plant_date, p.actual_plant_date, today
                     ),
@@ -1082,6 +1103,7 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
                 "planting__block",
                 "planting__variety_obj",
             )
+            .prefetch_related("planting__nursery_events")
             .order_by("planned_date", "planting__block__walk_route_order")
         ):
             pl = ev.planting

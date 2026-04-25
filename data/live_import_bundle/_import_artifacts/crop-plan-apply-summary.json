@@ -54,10 +54,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/crop-plan",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-24T23:06:43.086993Z",
-    "run_id": "20260424T230632045160",
+    "finished_at": "2026-04-25T18:24:45.748470Z",
+    "run_id": "20260425T182433763426",
     "start_year": 2024,
-    "started_at": "2026-04-24T23:06:32.045160Z",
+    "started_at": "2026-04-25T18:24:33.763426Z",
     "validate_only": false,
     "verbose": false
   },

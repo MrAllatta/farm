@@ -35,6 +35,22 @@ def planting_unit_code(planting) -> str:
     return ""
 
 
+def format_bed_range_label(planting) -> str:
+    """Bed segment for operator lists: ``b4`` when single bed, else ``b4–7`` (en dash)."""
+    bs = getattr(planting, "bed_start", None)
+    be = getattr(planting, "bed_end", None)
+    if bs is None or be is None:
+        return "—"
+    try:
+        a, b = int(bs), int(be)
+    except (TypeError, ValueError):
+        return "—"
+    if a == b:
+        return f"b{a}"
+    lo, hi = (a, b) if a <= b else (b, a)
+    return f"b{lo}–{hi}"
+
+
 def planting_unit_primary_label(planting) -> str:
     """Primary line: crop name and optional variety."""
     crop = getattr(planting, "crop", None)

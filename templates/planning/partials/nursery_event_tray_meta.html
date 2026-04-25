@@ -1,17 +1,30 @@
-{# expects: event (NurseryEvent with planting, planting.crop loaded) #}
-{% with c=event.planting.crop %}
+{# expects: event (NurseryEvent with planting, planting.crop; prefetch planting__nursery_events for seeding week) #}
+{% load planning_tags %}
+{% with p=event.planting c=event.planting.crop %}
 <dl class="nursery-tray-meta" style="margin:0.35rem 0 0; font-size:0.82rem; display:grid; grid-template-columns:auto 1fr; gap:0.12rem 0.65rem; align-items:baseline;">
-    <dt class="muted">Tray size (plan)</dt>
-    <dd style="margin:0;">{% if event.planned_tray_size %}{{ event.planned_tray_size }}{% else %}—{% endif %}</dd>
-    <dt class="muted">Seeded tray (cells)</dt>
-    <dd style="margin:0;">{% if c.seeded_tray_size %}{{ c.seeded_tray_size }}{% else %}—{% endif %}</dd>
-    <dt class="muted">Pot-up tray (cells)</dt>
-    <dd style="margin:0;">{% if c.pot_up_tray_size %}{{ c.pot_up_tray_size }}{% else %}—{% endif %}</dd>
-    <dt class="muted">Seeds / cell</dt>
-    <dd style="margin:0;">{{ c.seeds_per_cell }}</dd>
+    {% if p.planned_plant_date %}
+    <dt class="muted">Plant-by (field)</dt>
+    <dd style="margin:0;">{{ p.planned_plant_date|date:"M j" }} · field wk {{ p.planned_plant_date|week_num }}</dd>
+    {% endif %}
+    {% for ne in p.nursery_events.all %}
+    {% if ne.event_type == "seed" %}
+    <dt class="muted">Seeding week</dt>
+    <dd style="margin:0;">ISO wk {{ ne.planned_week }}{% if ne.planned_date %} · {{ ne.planned_date|date:"M j" }}{% endif %}</dd>
+    {% endif %}
+    {% endfor %}
     <dt class="muted">Trays (plan)</dt>
     <dd style="margin:0;">{% if event.planned_tray_count %}{{ event.planned_tray_count }}{% else %}—{% endif %}</dd>
-    <dt class="muted">{% if event.event_type == "seed" %}Seeding week{% else %}Event week{% endif %}</dt>
-    <dd style="margin:0;">{{ event.planned_week }}</dd>
+    <dt class="muted">Tray size (plan)</dt>
+    <dd style="margin:0;">{% if event.planned_tray_size %}{{ event.planned_tray_size }}-cell{% else %}—{% endif %}</dd>
+    {% if c.seeded_tray_size %}
+    <dt class="muted">Seeded tray (cells)</dt>
+    <dd style="margin:0;">{{ c.seeded_tray_size }}</dd>
+    {% endif %}
+    {% if c.pot_up_tray_size %}
+    <dt class="muted">Pot-up tray (cells)</dt>
+    <dd style="margin:0;">{{ c.pot_up_tray_size }}</dd>
+    {% endif %}
+    <dt class="muted">Seeds / cell</dt>
+    <dd style="margin:0;">{{ c.seeds_per_cell|default:"—" }}</dd>
 </dl>
 {% endwith %}

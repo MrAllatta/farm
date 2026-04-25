@@ -5,14 +5,51 @@
 {% block content %}
 <div class="report-header">
     <h1>503 Crop Map: Calendar Week by Bed Grid</h1>
-    <p class="report-meta">Weeks {{ week_start }}-{{ week_end }}</p>
+    <p class="report-meta">Planning year {{ year.year }} · Weeks {{ week_start }}-{{ week_end }}</p>
+    <div class="crop-map-context-card" data-testid="crop-map-context">
+        <div>
+            <strong>Bed-by-bed occupancy</strong>
+            <p>
+                Read across a bed row to see which planting unit owns that bed through the selected week range.
+                Planting ID badges link to the source planting; plus signs mark open bed-weeks.
+            </p>
+        </div>
+        <dl class="crop-map-context-stats">
+            <div>
+                <dt>Visible plantings</dt>
+                <dd>{{ visible_planting_count }}</dd>
+            </div>
+            <div>
+                <dt>Season plantings</dt>
+                <dd>{{ total_planting_count }}</dd>
+            </div>
+            <div>
+                <dt>Weeks shown</dt>
+                <dd>{{ weeks|length }}</dd>
+            </div>
+        </dl>
+    </div>
 </div>
 
-<div class="mt-1 mb-2">
+<div class="crop-map-report-toolbar mt-1 mb-2">
     <a href="{% url 'reports:crop_map' %}" class="btn">High-Level Block Map</a>
     <a href="{% url 'reports:crop_map_week_by_bed' %}" class="btn btn-primary">Calendar Week by Bed Grid</a>
     <a href="{% url 'reports:crop_map_week_by_block' %}" class="btn">Calendar Week by Block Grid</a>
     <a href="{% url 'reports:crop_map_successions' %}" class="btn">Successions by Block</a>
+</div>
+
+<div class="crop-map-range-nav mb-2" data-testid="crop-map-range-nav">
+    {% if range_nav.has_prev_range %}
+    <a href="{% url 'reports:crop_map_week_by_bed' %}?start={{ range_nav.prev_start }}&amp;end={{ range_nav.prev_end }}" class="btn">← Weeks {{ range_nav.prev_start }}-{{ range_nav.prev_end }}</a>
+    {% else %}
+    <span class="btn btn-disabled">Start of year</span>
+    {% endif %}
+    <span class="crop-map-range-label">Showing weeks {{ week_start }}-{{ week_end }}</span>
+    {% if range_nav.has_next_range %}
+    <a href="{% url 'reports:crop_map_week_by_bed' %}?start={{ range_nav.next_start }}&amp;end={{ range_nav.next_end }}" class="btn">Weeks {{ range_nav.next_start }}-{{ range_nav.next_end }} →</a>
+    {% else %}
+    <span class="btn btn-disabled">End of year</span>
+    {% endif %}
 </div>
 
 <div class="matrix-container fp-table-scroll" data-testid="fp-table-scroll">
@@ -22,7 +59,10 @@
                 <th class="block-col">Block</th>
                 <th class="beds-col">Bed</th>
                 {% for wk in weeks %}
-                <th class="week-col {% if wk.is_current %}week-current{% endif %}">{{ wk.num }}</th>
+                <th class="week-col {% if wk.is_current %}week-current{% endif %}">
+                    <span class="week-num">{{ wk.num }}</span>
+                    <span class="week-date">{{ wk.monday|date:"M j" }}</span>
+                </th>
                 {% endfor %}
             </tr>
         </thead>

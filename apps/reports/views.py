@@ -29,6 +29,33 @@ CROP_MAP_PRINT_COLORS = {
 }
 
 
+def _crop_map_range_context(week_start, week_end):
+    span = week_end - week_start + 1
+    prev_start = max(1, week_start - span)
+    prev_end = min(52, prev_start + span - 1)
+    next_start = min(52, week_start + span)
+    next_end = min(52, next_start + span - 1)
+    return {
+        "prev_start": prev_start,
+        "prev_end": prev_end,
+        "next_start": next_start,
+        "next_end": next_end,
+        "has_prev_range": week_start > 1,
+        "has_next_range": week_end < 52,
+    }
+
+
+def _visible_plantings_for_week_range(service, week_start, week_end):
+    range_start = Week(service.planning_year.year, week_start).monday()
+    range_end = Week(service.planning_year.year, week_end).monday() + timedelta(days=6)
+    return [
+        planting
+        for planting in service.plantings
+        if planting.planned_plant_date <= range_end
+        and planting.planned_last_harvest_date >= range_start
+    ]
+
+
 class WeeklySchedulePrintView(ReportContextMixin, TemplateView):
     """Weekly Schedule Print"""
 
@@ -287,9 +314,22 @@ class NurserySchedulePrintView(ReportContextMixin, TemplateView):
         nursery_events = list(
             NurseryEvent.objects.filter(planting__planning_year=year_obj)
             .exclude(planting__status__in=self.excluded_statuses)
-            .select_related("planting__crop", "planting__block")
+            .select_related(
+                "planting__crop", "planting__block", "planting__variety_obj"
+            )
+            .prefetch_related("planting__nursery_events")
             .order_by("planned_date", "event_type", "planting__crop__name")
         )
+        planting_ids = {e.planting_id for e in nursery_events}
+        seed_week_by_planting = {}
+        if planting_ids:
+            for pid, pdate in NurseryEvent.objects.filter(
+                planting_id__in=planting_ids, event_type="seed"
+            ).values_list("planting_id", "planned_date"):
+                if pdate is not None:
+                    seed_week_by_planting[int(pid)] = pdate.isocalendar()[1]
+        for event in nursery_events:
+            event.seeding_week_iso = seed_week_by_planting.get(event.planting_id)
 
         weeks = {}
         for event in nursery_events:
@@ -1195,6 +1235,7 @@ class CropMapView(ReportContextMixin, TemplateView):
         field_maps = [bm for bm in block_rows if bm["block"].block_type == "field"]
         tunnel_maps = [bm for bm in block_rows if bm["block"].block_type == "high_tunnel"]
         greenhouse_maps = [bm for bm in block_rows if bm["block"].block_type == "greenhouse"]
+        active_planting_count = sum(row["active_plantings"] for row in block_rows)
         total_bf = sum(row["block"].total_bedfeet for row in block_rows)
         used_bf = sum(
             row["block"].total_bedfeet * (row["utilization_pct"] / 100)
@@ -1209,6 +1250,8 @@ class CropMapView(ReportContextMixin, TemplateView):
                 "tunnel_maps": tunnel_maps,
                 "greenhouse_maps": greenhouse_maps,
                 "total_bf": total_bf,
+                "active_planting_count": active_planting_count,
+                "block_count": len(block_rows),
                 "overall_utilization": (used_bf / total_bf * 100) if total_bf else 0,
                 "view_links": [
                     ("High-Level Block Map", "reports:crop_map"),
@@ -1667,6 +1710,7 @@ class CropMapWeekByBedGridView(ReportContextMixin, TemplateView):
 
         service = CropMapOccupancyService(year_obj)
         grid = service.get_week_by_bed_grid(week_start=week_start, week_end=week_end)
+        visible_plantings = _visible_plantings_for_week_range(service, week_start, week_end)
         ctx.update(
             {
                 "year": year_obj,
@@ -1674,6 +1718,9 @@ class CropMapWeekByBedGridView(ReportContextMixin, TemplateView):
                 "week_end": week_end,
                 "weeks": grid["weeks"],
                 "rows": grid["rows"],
+                "range_nav": _crop_map_range_context(week_start, week_end),
+                "visible_planting_count": len(visible_plantings),
+                "total_planting_count": len(service.plantings),
             }
         )
         return ctx
@@ -1691,6 +1738,7 @@ class CropMapWeekByBlockGridView(ReportContextMixin, TemplateView):
 
         service = CropMapOccupancyService(year_obj)
         grid = service.get_week_by_block_grid(week_start=week_start, week_end=week_end)
+        visible_plantings = _visible_plantings_for_week_range(service, week_start, week_end)
         ctx.update(
             {
                 "year": year_obj,
@@ -1698,6 +1746,9 @@ class CropMapWeekByBlockGridView(ReportContextMixin, TemplateView):
                 "week_end": week_end,
                 "weeks": grid["weeks"],
                 "rows": grid["rows"],
+                "range_nav": _crop_map_range_context(week_start, week_end),
+                "visible_planting_count": len(visible_plantings),
+                "total_planting_count": len(service.plantings),
             }
         )
         return ctx

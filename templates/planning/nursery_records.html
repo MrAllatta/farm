@@ -9,7 +9,7 @@
         <strong>{{ ev.get_event_type_display }}</strong> · {{ ev.planned_date }} ·
         {% include "planning/partials/nursery_crop_variety.html" with planting=ev.planting only %}
         · {{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }}
-        <span class="muted">· Field wk {{ ev.planting.planned_plant_date|date:"W" }} · Planting #{{ ev.planting.pk }}</span>
+        <span class="muted">· Planting #{{ ev.planting.pk }}</span>
     </div>
     {% include "planning/partials/nursery_event_tray_meta.html" with event=ev only %}
     <form method="post" style="margin-top:0.5rem;">

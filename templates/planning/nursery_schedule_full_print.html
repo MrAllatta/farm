@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static planning_tags %}
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/print.css' %}">{% endblock %}
 {% block title %}Nursery schedule full print{% endblock %}
 {% block content %}
@@ -14,6 +14,7 @@
             <th style="text-align:left; padding:0.25rem;">Type</th>
             <th style="text-align:left; padding:0.25rem;">Crop · variety</th>
             <th style="text-align:left; padding:0.25rem;">Target</th>
+            <th style="text-align:left; padding:0.25rem;">Plant-by</th>
             <th style="text-align:center; padding:0.25rem;">Field wk</th>
             <th style="text-align:right; padding:0.25rem;">Trays</th>
             <th style="text-align:right; padding:0.25rem;">Tray sz</th>
@@ -31,17 +32,18 @@
             <td style="padding:0.2rem;">{{ ev.get_event_type_display }}</td>
             <td style="padding:0.2rem;">{% include "planning/partials/nursery_crop_variety.html" with planting=ev.planting only %}</td>
             <td style="padding:0.2rem;">{{ ev.planting.block.name }} b{{ ev.planting.bed_start }}-{{ ev.planting.bed_end }} <span class="muted">#{{ ev.planting.pk }}</span></td>
-            <td style="padding:0.2rem; text-align:center;">{{ ev.planting.planned_plant_date|date:"W" }}</td>
+            <td style="padding:0.2rem;">{% if ev.planting.planned_plant_date %}{{ ev.planting.planned_plant_date }}{% else %}—{% endif %}</td>
+            <td style="padding:0.2rem; text-align:center;">{% if ev.planting.planned_plant_date %}{{ ev.planting.planned_plant_date|week_num }}{% else %}—{% endif %}</td>
             <td style="padding:0.2rem; text-align:right;">{{ ev.planned_tray_count|default:"—" }}</td>
-            <td style="padding:0.2rem; text-align:right;">{{ ev.planned_tray_size|default:"—" }}</td>
+            <td style="padding:0.2rem; text-align:right;">{% if ev.planned_tray_size %}{{ ev.planned_tray_size }}{% elif ev.event_type == "seed" and ev.planting.crop.seeded_tray_size %}{{ ev.planting.crop.seeded_tray_size }}{% elif ev.event_type == "pot_up" and ev.planting.crop.pot_up_tray_size %}{{ ev.planting.crop.pot_up_tray_size }}{% else %}—{% endif %}</td>
             <td style="padding:0.2rem; text-align:right;">{{ ev.planting.crop.seeded_tray_size|default:"—" }}</td>
             <td style="padding:0.2rem; text-align:right;">{{ ev.planting.crop.pot_up_tray_size|default:"—" }}</td>
             <td style="padding:0.2rem; text-align:right;">{{ ev.planting.crop.seeds_per_cell }}</td>
-            <td style="padding:0.2rem; text-align:center;">{% if ev.event_type == "seed" %}{{ ev.planned_week }}{% else %}—{% endif %}</td>
+            <td style="padding:0.2rem; text-align:center;">{% if ev.seeding_week_iso %}{{ ev.seeding_week_iso }}{% else %}—{% endif %}</td>
             <td style="padding:0.2rem;">{% if ev.actual_date %}✓ {{ ev.actual_date }}{% else %}—{% endif %}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="12">No nursery events.</td></tr>
+        <tr><td colspan="13">No nursery events.</td></tr>
         {% endfor %}
         {% for p in direct_seed_plantings %}
         <tr style="border-bottom:1px solid #ccc;">
@@ -49,7 +51,8 @@
             <td style="padding:0.2rem;">Direct seed (field)</td>
             <td style="padding:0.2rem;">{% include "planning/partials/nursery_crop_variety.html" with planting=p only %}</td>
             <td style="padding:0.2rem;">{{ p.block.name }} b{{ p.bed_start }}-{{ p.bed_end }} <span class="muted">#{{ p.pk }}</span></td>
-            <td style="padding:0.2rem; text-align:center;">{{ p.planned_plant_date|date:"W" }}</td>
+            <td style="padding:0.2rem;">{{ p.planned_plant_date }}</td>
+            <td style="padding:0.2rem; text-align:center;">{{ p.planned_plant_date|week_num }}</td>
             <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
             <td style="padding:0.2rem; text-align:right;" class="muted">—</td>
             <td style="padding:0.2rem; text-align:right;" class="muted">—</td>

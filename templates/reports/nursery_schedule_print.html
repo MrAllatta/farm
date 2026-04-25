@@ -51,9 +51,10 @@
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 9%;">PLANTING</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 18%;">CROP</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 10%;">DEST BLOCK</th>
-                <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 7%;">TRAYS</th>
+                <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 6%;">TRAYS</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 7%;">SIZE</th>
-                <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 8%;">PLANT DATE</th>
+                <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 5%;">SEED WK</th>
+                <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 8%;">PLANT-BY</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 5%;">DONE</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 21%;">NOTES</th>
             </tr>
@@ -63,7 +64,7 @@
             {% if wk_data.events %}
             {# Week section header #}
             <tr style="background: #f0f0ec;">
-                <td colspan="11" style="padding: 2px 5px; border: 1px solid #ccc; font-weight: bold; font-size: 8pt;">
+                <td colspan="12" style="padding: 2px 5px; border: 1px solid #ccc; font-weight: bold; font-size: 8pt;">
                     WEEK {{ wk_data.week_num }} — {{ wk_data.monday|date:"F j, Y" }}
                     · {{ wk_data.bench_trays }} trays on bench
                     {% if wk_data.bench_trays > greenhouse_capacity %}
@@ -84,7 +85,6 @@
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0; font-size: 7.5pt; font-weight: bold;">
                     {{ ne.planting.planting_code }}
-                    <div class="muted" style="font-size: 7pt; font-weight: normal;">Field wk {{ ne.planting.planned_plant_date|week_num }}</div>
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0;">
                     {{ ne.planting.crop.name }}
@@ -100,12 +100,27 @@
                     {{ ne.planned_tray_count|default:"—" }}
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0; text-align: center;">
-                    {% if ne.planned_tray_size %}{{ ne.planned_tray_size }}-cell{% else %}—{% endif %}
+                    {% if ne.planned_tray_size %}
+                    {{ ne.planned_tray_size }}-cell
+                    {% elif ne.event_type == "seed" and ne.planting.crop.seeded_tray_size %}
+                    {{ ne.planting.crop.seeded_tray_size }}-cell
+                    {% elif ne.event_type == "pot_up" and ne.planting.crop.pot_up_tray_size %}
+                    {{ ne.planting.crop.pot_up_tray_size }}-cell
+                    {% else %}
+                    —
+                    {% endif %}
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0; text-align: center;">
+                    {% if ne.seeding_week_iso %}{{ ne.seeding_week_iso }}{% else %}—{% endif %}
+                </td>
+                <td style="padding: 2px 5px; border: 1px solid #e0e0e0; text-align: center;">
+                    {% if ne.planting.planned_plant_date %}
                     {{ ne.planting.planned_plant_date|date:"M j" }}
                     <br>
-                    <span style="font-size: 7.5pt; color: #666;">Wk {{ ne.planting.planned_plant_date|date:"W" }}</span>
+                    <span style="font-size: 7.5pt; color: #666;">Field wk {{ ne.planting.planned_plant_date|week_num }}</span>
+                    {% else %}
+                    —
+                    {% endif %}
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0; text-align: center;">
                     {% if ne.actual_date %}

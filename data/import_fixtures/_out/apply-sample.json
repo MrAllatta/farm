@@ -120,10 +120,10 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-24T22:47:33.865244Z",
-    "run_id": "20260424T224732964092",
+    "finished_at": "2026-04-25T23:55:17.246506Z",
+    "run_id": "20260425T235516492119",
     "start_year": 2021,
-    "started_at": "2026-04-24T22:47:32.964092Z",
+    "started_at": "2026-04-25T23:55:16.492119Z",
     "validate_only": false,
     "verbose": false
   },
