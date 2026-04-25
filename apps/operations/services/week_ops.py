@@ -12,7 +12,11 @@ from django.db.models import Prefetch
 from isoweek import Week
 
 from operations.models import FieldWalkNote, InventoryLedger
-from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
+from operations.planting_display import (
+    planting_schedule_chip_css_class,
+    planting_unit_code,
+    planting_variety_display,
+)
 from planning.models import HarvestEvent, Planting, PlantingStatus
 from reference.sales_rollups import plan_events_without_shadowed_rollups
 from sales.models import SalesEvent
@@ -41,9 +45,7 @@ def week_bounds_for_planning_year(calendar_year: int, iso_week: int) -> tuple[da
 
 
 def variety_label(planting: Planting) -> str:
-    if getattr(planting, "variety_obj_id", None) and planting.variety_obj:
-        return planting.variety_obj.name
-    return (planting.variety or "").strip()
+    return planting_variety_display(planting)
 
 
 def expected_stage(planting: Planting, today: date) -> str:
@@ -250,7 +252,7 @@ def week_context(
             "expected_stage": expected_stage(p, today),
             "target_bins_week_sum": target_bins_sum,
             "harvest_start": p.actual_first_harvest_date or p.planned_first_harvest_date,
-            "planting_display_id": format_planting_display_id(p.pk),
+            "planting_display_id": planting_unit_code(p),
             "schedule_chip_class": planting_schedule_chip_css_class(
                 p.planned_plant_date, p.actual_plant_date, today
             ),

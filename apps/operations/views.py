@@ -19,7 +19,7 @@ from decimal import Decimal
 
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from operations.services import week_ops as week_ops_service
-from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
+from operations.planting_display import planting_schedule_chip_css_class, planting_unit_code
 from planning.services.planting_events_repair import count_plantings_missing_harvest_events
 from core.ui_diagnostics import harvest_surface_hints
 
@@ -151,7 +151,7 @@ class FieldWalkNoteView(TemplateView):
                 "recent_notes": recent_notes,
                 "latest_note": latest_note,
                 "today": today,
-                "planting_display_id": format_planting_display_id(planting.pk),
+                "planting_display_id": planting_unit_code(planting),
                 "schedule_chip_class": planting_schedule_chip_css_class(
                     planting.planned_plant_date, planting.actual_plant_date, today
                 ),
@@ -793,7 +793,7 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
                 "field_walk_notes": field_notes,
                 "planting_status_choices": PlantingStatus.choices,
                 "today": today,
-                "planting_display_id": format_planting_display_id(planting.pk),
+                "planting_display_id": planting_unit_code(planting),
                 "schedule_chip_class": planting_schedule_chip_css_class(
                     planting.planned_plant_date, planting.actual_plant_date, today
                 ),
@@ -1029,7 +1029,7 @@ class PrintablePlantingListView(OperationsPlanningYearMixin, TemplateView):
                     "planting": p,
                     "variety": v,
                     "harvest_wk": f"{p.planned_first_harvest_date.isocalendar()[1]}-{p.planned_last_harvest_date.isocalendar()[1]}",
-                    "planting_display_id": format_planting_display_id(p.pk),
+                    "planting_display_id": planting_unit_code(p),
                     "schedule_chip_class": planting_schedule_chip_css_class(
                         p.planned_plant_date, p.actual_plant_date, today
                     ),
@@ -1101,7 +1101,7 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
                     "planting": pl,
                     "variety_display": vl,
                     "field_week": pl.planned_plant_date.isocalendar()[1],
-                    "planting_display_id": format_planting_display_id(pl.pk),
+                    "planting_display_id": planting_unit_code(pl),
                     "schedule_chip_class": planting_schedule_chip_css_class(
                         pl.planned_plant_date, pl.actual_plant_date, today
                     ),
@@ -1131,7 +1131,7 @@ class PrintableSeedingTodoView(OperationsPlanningYearMixin, TemplateView):
                     "seeder": cs.seeder_settings if cs else "",
                     "ds_rate": cs.ds_seed_rate if cs else None,
                     "notes": p.notes or "",
-                    "planting_display_id": format_planting_display_id(p.pk),
+                    "planting_display_id": planting_unit_code(p),
                     "schedule_chip_class": planting_schedule_chip_css_class(
                         p.planned_plant_date, p.actual_plant_date, today
                     ),

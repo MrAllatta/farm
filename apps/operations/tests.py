@@ -11,7 +11,11 @@ from django.urls import reverse
 from isoweek import Week
 
 from operations.models import FieldWalkNote
-from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
+from operations.planting_display import (
+    format_planting_display_id,
+    planting_schedule_chip_css_class,
+    planting_unit_code,
+)
 from operations.services import week_ops as week_ops_service
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from planning.models import HarvestEvent, PlanningYear, Planting
@@ -296,7 +300,7 @@ class WeekOpsServiceTests(TestCase):
     def test_week_context_prow_includes_planting_display_and_schedule_chip(self):
         ctx = week_ops_service.week_context(self.year, 20, today=date(2026, 4, 10), mode="field_walk")
         prow = ctx["blocks"][0]["plantings"][0]
-        self.assertEqual(prow["planting_display_id"], format_planting_display_id(prow["planting"].pk))
+        self.assertEqual(prow["planting_display_id"], planting_unit_code(prow["planting"]))
         self.assertTrue(prow["schedule_chip_class"].startswith("chip-plant-schedule-"))
 
 
@@ -452,7 +456,8 @@ class WeekOpsViewTests(TestCase):
     def test_weekops_needs_lists_planting_display_id(self):
         r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, format_planting_display_id(self.planting.pk))
+        self.planting.refresh_from_db()
+        self.assertContains(r, planting_unit_code(self.planting))
 
     def test_harvest_needs_shows_missing_harvest_events_diagnostic(self):
         mon = Week(2026, 18).monday()
