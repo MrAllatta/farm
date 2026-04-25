@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 from django.template.defaultfilters import slugify
 from core.context_processors import CROP_TYPE_COLORS
 from isoweek import Week as IsoWeek
+from operations.planting_display import planting_unit_full_label
 
 register = template.Library()
 
@@ -144,13 +145,7 @@ def render_planting_bar(row, weeks, planning_year=None):
 
     # The planting bar
     crop_css_class = f"crop-{slugify(planting.crop.crop_type)}"
-    title = (
-        f"{planting.crop.name} — "
-        f"b{planting.bed_start}-{planting.bed_end} "
-        f"({planting.planned_bedfeet}bf) "
-        f"Wk {planting.planned_plant_date.isocalendar()[1]}-"
-        f"{planting.planned_last_harvest_date.isocalendar()[1]}"
-    )
+    title = planting_unit_full_label(planting)
 
     cells.append(
         f'<td class="week-cell planting-bar {css} {crop_css_class}" '

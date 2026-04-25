@@ -46,6 +46,9 @@ class Planting(models.Model):
     )
     succession_group = models.CharField(max_length=50, blank=True)
 
+    #: Human-facing durable code, e.g. ``P-2026-0001`` (unique; calendar year in prefix).
+    planting_code = models.CharField(max_length=20, unique=True)
+
     crop = models.ForeignKey(CropInfo, on_delete=models.PROTECT)
     crop_season = models.ForeignKey(CropBySeason, on_delete=models.PROTECT)
     variety = models.CharField(max_length=100, blank=True)
@@ -81,12 +84,50 @@ class Planting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @classmethod
+    def allocate_next_planting_code(
+        cls, planning_year_id: int, calendar_year: int, *, exclude_pk: int | None = None
+    ) -> str:
+        """Next sequential code for a planning year: ``P-{year}-{NNNN}``."""
+        prefix = f"P-{int(calendar_year)}-"
+        qs = cls.objects.filter(planning_year_id=planning_year_id, planting_code__startswith=prefix)
+        if exclude_pk is not None:
+            qs = qs.exclude(pk=exclude_pk)
+        max_n = 0
+        for code in qs.values_list("planting_code", flat=True):
+            if not code or not str(code).startswith(prefix):
+                continue
+            tail = str(code)[len(prefix) :]
+            try:
+                max_n = max(max_n, int(tail))
+            except ValueError:
+                continue
+        return f"{prefix}{max_n + 1:04d}"
+
+    def _ensure_planting_code(self) -> None:
+        if self.planting_code:
+            return
+        if not self.planning_year_id:
+            return
+        cal_year = None
+        py = getattr(self, "planning_year", None)
+        if py is not None and getattr(py, "year", None) is not None:
+            cal_year = int(py.year)
+        else:
+            cal_year = PlanningYear.objects.filter(pk=self.planning_year_id).values_list("year", flat=True).first()
+        if cal_year is None:
+            return
+        self.planting_code = self.allocate_next_planting_code(
+            int(self.planning_year_id), int(cal_year), exclude_pk=self.pk if self.pk else None
+        )
+
     def save(self, *args, **kwargs):
         old_actual_plant_date = None
         if self.pk:
             old_actual_plant_date = (
                 Planting.objects.filter(pk=self.pk).values_list("actual_plant_date", flat=True).first()
             )
+        self._ensure_planting_code()
         # Auto-calculate planned fields from crop_season
         if not self.planned_first_harvest_date and self.planned_plant_date:
             self.planned_first_harvest_date = self.planned_plant_date + timedelta(
@@ -122,30 +163,32 @@ class Planting(models.Model):
             he.save(update_fields=["planned_date"])
 
     def generate_nursery_events(self):
-        """Create nursery events from crop info."""
+        """Create or refresh nursery events from crop info (idempotent)."""
         if self.crop.nursery_weeks == 0:
             return
 
         seed_date = self.planned_plant_date - timedelta(weeks=self.crop.nursery_weeks)
-        NurseryEvent.objects.create(
+        NurseryEvent.objects.update_or_create(
             planting=self,
             event_type="seed",
             planned_date=seed_date,
-            # tray calculations here...
+            defaults={},
         )
 
         if self.crop.weeks_until_pot_up:
             pot_up_date = seed_date + timedelta(weeks=self.crop.weeks_until_pot_up)
-            NurseryEvent.objects.create(
+            NurseryEvent.objects.update_or_create(
                 planting=self,
                 event_type="pot_up",
                 planned_date=pot_up_date,
+                defaults={},
             )
 
-        NurseryEvent.objects.create(
+        NurseryEvent.objects.update_or_create(
             planting=self,
             event_type="transplant",
             planned_date=self.planned_plant_date,
+            defaults={},
         )
 
     def generate_harvest_events(self):

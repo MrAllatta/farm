@@ -2,17 +2,25 @@
 
 from __future__ import annotations
 
+import csv
 import json
+from collections import defaultdict
 from datetime import date, timedelta
 from decimal import Decimal
+from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from isoweek import Week
 
+from operations.planting_display import planting_unit_code
+
 from planning.models import HarvestEvent, PlanningYear, Planting
-from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
+from planning.services.nursery_sheet_parity import run_nursery_parity
+from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel, Variety
 from sales.models import SalesEvent
 from planning.services.planting_events_repair import repair_planting_events
 
@@ -607,3 +615,245 @@ class PlantingEventsRepairTests(TestCase):
         stats = repair_planting_events(planning_year_ids=[self.year.id])
         self.assertEqual(stats.harvest_events_created_plantings, 0)
         self.assertEqual(p.harvest_events.count(), before)
+
+
+class PlantingImportBedRangeTests(TestCase):
+    """``import_historical_data`` plantings path: consecutive-bed consolidation."""
+
+    def setUp(self):
+        self.year_int = 3088
+        self.planning_year = PlanningYear.objects.create(year=self.year_int, status="planning")
+        self.block = Block.objects.create(
+            name="Z9",
+            block_type="field",
+            num_beds=20,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=99,
+        )
+        self.crop = CropInfo.objects.create(
+            name="Zebra Chard",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunches",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        self.crop_season = CropBySeason.objects.create(
+            crop=self.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+
+    def _make_import_command(self):
+        from core.management.commands.import_historical_data import Command
+
+        cmd = Command()
+        cmd.stdout = StringIO()
+        cmd.stderr = StringIO()
+        cmd.row_errors = []
+        cmd.stats = defaultdict(
+            lambda: {
+                "created": 0,
+                "updated": 0,
+                "skipped": 0,
+                "error": 0,
+                "processed": 0,
+                "errors": 0,
+            }
+        )
+        cmd.write_disabled = False
+        cmd.validate_only = False
+        cmd.planning_year_cache = {}
+        cmd.crop_cache = {}
+        cmd.block_cache = {}
+        cmd.planting_cache = {}
+        cmd.crop_season_cache = {}
+        cmd.planning_year_cache[self.year_int] = self.planning_year
+        return cmd
+
+    def test_consecutive_beds_merge_into_one_planting(self):
+        tmp = TemporaryDirectory()
+        year_dir = Path(tmp.name) / f"year_{self.year_int}"
+        year_dir.mkdir(parents=True)
+        csv_path = year_dir / "plantings.csv"
+        rows = [
+            {
+                "Crop": "Zebra Chard",
+                "Variety": "Bright Lights",
+                "Block": "Z9",
+                "Bed Start": "1",
+                "Bed End": "1",
+                "Planned Plant Date": "3088-05-01",
+                "Planned Bedfeet": "100",
+                "Status": "Planned",
+            },
+            {
+                "Crop": "Zebra Chard",
+                "Variety": "Bright Lights",
+                "Block": "Z9",
+                "Bed Start": "2",
+                "Bed End": "2",
+                "Planned Plant Date": "3088-05-01",
+                "Planned Bedfeet": "100",
+                "Status": "Planned",
+            },
+            {
+                "Crop": "Zebra Chard",
+                "Variety": "Bright Lights",
+                "Block": "Z9",
+                "Bed Start": "3",
+                "Bed End": "3",
+                "Planned Plant Date": "3088-05-01",
+                "Planned Bedfeet": "100",
+                "Status": "Planned",
+            },
+        ]
+        with csv_path.open("w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+            w.writeheader()
+            w.writerows(rows)
+
+        cmd = self._make_import_command()
+        cmd._import_plantings(self.year_int, str(year_dir))
+
+        plantings = list(Planting.objects.filter(planning_year=self.planning_year))
+        self.assertEqual(len(plantings), 1)
+        p = plantings[0]
+        self.assertEqual(p.bed_start, 1)
+        self.assertEqual(p.bed_end, 3)
+        self.assertEqual(p.planned_bedfeet, 300)
+        self.assertEqual(p.variety, "Bright Lights")
+        v = Variety.objects.filter(crop=self.crop, name__iexact="Bright Lights").first()
+        self.assertIsNotNone(v)
+        self.assertEqual(p.variety_obj_id, v.id)
+
+    def test_non_consecutive_beds_remain_separate(self):
+        tmp = TemporaryDirectory()
+        year_dir = Path(tmp.name) / f"year_{self.year_int}"
+        year_dir.mkdir(parents=True)
+        csv_path = year_dir / "plantings.csv"
+        rows = [
+            {
+                "Crop": "Zebra Chard",
+                "Variety": "",
+                "Block": "Z9",
+                "Bed Start": "1",
+                "Bed End": "1",
+                "Planned Plant Date": "3088-05-01",
+                "Planned Bedfeet": "100",
+                "Status": "Planned",
+            },
+            {
+                "Crop": "Zebra Chard",
+                "Variety": "",
+                "Block": "Z9",
+                "Bed Start": "4",
+                "Bed End": "4",
+                "Planned Plant Date": "3088-05-01",
+                "Planned Bedfeet": "100",
+                "Status": "Planned",
+            },
+        ]
+        with csv_path.open("w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+            w.writeheader()
+            w.writerows(rows)
+
+        cmd = self._make_import_command()
+        cmd._import_plantings(self.year_int, str(year_dir))
+        self.assertEqual(Planting.objects.filter(planning_year=self.planning_year).count(), 2)
+
+
+class NurseryParityAndDerivedOnlyTests(TestCase):
+    def test_run_nursery_parity_missing_file(self):
+        with TemporaryDirectory() as tmp:
+            r = run_nursery_parity(tmp, 2099)
+            self.assertEqual(r["status"], "skipped")
+
+    def test_import_nursery_events_ignores_csv(self):
+        from core.management.commands.import_historical_data import Command
+
+        tmp = TemporaryDirectory()
+        year_dir = Path(tmp.name) / "year_2020"
+        year_dir.mkdir(parents=True)
+        (year_dir / "nursery_events.csv").write_text(
+            "CROP & VARIETY,Nursery Seeding Year,Nursery Seeding Week,Plan Field Week\n"
+            "Kale,2020,1,20\n",
+            encoding="utf-8",
+        )
+        out = StringIO()
+        err = StringIO()
+        cmd = Command(stdout=out, stderr=err)
+        cmd._import_nursery_events(2020, str(year_dir))
+        self.assertIn("ignored", out.getvalue().lower())
+
+
+class PlantingUnitCodeTests(TestCase):
+    """Durable ``planting_code`` (e.g. P-2101-0001) on create and sequential allocation."""
+
+    def test_planting_code_assigned_on_create_and_increments(self):
+        year = PlanningYear.objects.create(year=2101, status="active")
+        block = Block.objects.create(
+            name="CodeBlock",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        crop = CropInfo.objects.create(
+            name="CodeCrop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        cs = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        d0 = date(2101, 5, 1)
+        d1 = date(2101, 5, 15)
+        p1 = Planting.objects.create(
+            planning_year=year,
+            crop=crop,
+            crop_season=cs,
+            block=block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=d0,
+            planned_first_harvest_date=d0 + timedelta(weeks=3),
+            planned_last_harvest_date=d0 + timedelta(weeks=6),
+            planned_total_yield=Decimal("50"),
+        )
+        p2 = Planting.objects.create(
+            planning_year=year,
+            crop=crop,
+            crop_season=cs,
+            block=block,
+            bed_start=2,
+            bed_end=2,
+            planned_bedfeet=50,
+            planned_plant_date=d1,
+            planned_first_harvest_date=d1 + timedelta(weeks=3),
+            planned_last_harvest_date=d1 + timedelta(weeks=6),
+            planned_total_yield=Decimal("50"),
+        )
+        self.assertEqual(p1.planting_code, "P-2101-0001")
+        self.assertEqual(p2.planting_code, "P-2101-0002")
+        self.assertEqual(planting_unit_code(p1), "P-2101-0001")
+        self.assertEqual(planting_unit_code(p2), "P-2101-0002")

@@ -28,7 +28,12 @@ from reference.sales_rollups import (
     plan_events_without_shadowed_rollups,
 )
 from planning.services.sales_plan_allocation import even_split_sale_units
-from operations.planting_display import format_planting_display_id, planting_schedule_chip_css_class
+from operations.planting_display import (
+    planting_schedule_chip_css_class,
+    planting_unit_code,
+    planting_unit_matrix_sublabel,
+    planting_variety_display,
+)
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
 from core.planning_year import get_effective_planning_year, set_session_planning_year
 from core.ui_diagnostics import nursery_surface_hints, sales_plan_surface_hints
@@ -85,15 +90,12 @@ def _matrix_row_dict_for_planting(planting: Planting, weeks: list, _year: int):
     last_visible = min(last_week, harvest_end)
     if last_visible < first_visible:
         return None
-    vpart = ""
-    if getattr(planting, "variety_obj_id", None) and planting.variety_obj:
-        vpart = f" — {planting.variety_obj.name}"
-    elif planting.variety:
-        vpart = f" — {planting.variety}"
+    vlabel = planting_variety_display(planting)
+    vpart = f" — {vlabel}" if vlabel else ""
     return {
         "planting": planting,
         "label": f"{planting.crop.name}{vpart}",
-        "sublabel": f"b{planting.bed_start}-{planting.bed_end}",
+        "sublabel": planting_unit_matrix_sublabel(planting),
         "col_start": first_visible - first_week,
         "col_span": last_visible - first_visible + 1,
         "plant_week": plant_week,
@@ -2586,7 +2588,7 @@ class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
             nursery_event_rows.append(
                 {
                     "event": ev,
-                    "planting_display_id": format_planting_display_id(p.pk),
+                    "planting_display_id": planting_unit_code(p),
                     "schedule_chip_class": planting_schedule_chip_css_class(
                         p.planned_plant_date, p.actual_plant_date, today
                     ),
@@ -2597,7 +2599,7 @@ class NurseryTodoView(ActivePlanningYearMixin, TemplateView):
             direct_seed_rows.append(
                 {
                     "planting": p,
-                    "planting_display_id": format_planting_display_id(p.pk),
+                    "planting_display_id": planting_unit_code(p),
                     "schedule_chip_class": planting_schedule_chip_css_class(
                         p.planned_plant_date, p.actual_plant_date, today
                     ),

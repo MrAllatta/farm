@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from django.db import transaction
 
-from planning.models import Planting, PlantingStatus
+from planning.models import PlanningYear, Planting, PlantingStatus
 
 SHIFT = timedelta(weeks=52)
 
