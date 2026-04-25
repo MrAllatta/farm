@@ -2132,11 +2132,19 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(comps[0].consumed_unit, "bunch")
 
     def test_nursery_plan_402_wide_row_resolves_planting_and_upserts_events(self):
-        """``Nursery Plan 502``-shaped CSV rows map to ``NurseryEvent`` seed and pot-up rows."""
-        from datetime import date
+        """Wide ``nursery_events.csv`` is ignored; nursery comes from crop rules + repair."""
+        from datetime import date, timedelta
 
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_clean_fixture(data_dir)
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,4,3,72,128,1,0,",
+                ],
+            )
             self._write_year_fixture(data_dir, year=2021)
             year_dir = Path(data_dir) / "year_2021"
             self._write_csv(
@@ -2158,16 +2166,23 @@ class ImportHistoricalDataCommandTests(TestCase):
             summary = self._run_import(data_dir, Path(output_dir) / "summary-nursery-402-wide.json")
 
         self.assertEqual(summary["status"], "ok")
+        ne = summary["results"]["models"].get("NurseryEvent", {})
+        self.assertEqual(ne.get("created", 0), 0)
+        self.assertEqual(ne.get("updated", 0), 0)
+
         planting = Planting.objects.get()
         events = {e.event_type: e for e in NurseryEvent.objects.filter(planting=planting)}
-        self.assertEqual(set(events), {"seed", "pot_up"})
-        self.assertEqual(events["seed"].planned_date, date.fromisocalendar(2021, 5, 1))
-        self.assertEqual(events["seed"].planned_tray_count, 4)
-        self.assertEqual(events["seed"].planned_tray_size, 128)
-        self.assertIn("Seeds per cell: 2", events["seed"].notes)
-        self.assertEqual(events["pot_up"].planned_date, date.fromisocalendar(2021, 8, 1))
-        self.assertEqual(events["pot_up"].planned_tray_count, 3)
-        self.assertEqual(events["pot_up"].planned_tray_size, 72)
+        self.assertIn("seed", events)
+        self.assertIn("pot_up", events)
+        self.assertIn("transplant", events)
+        self.assertEqual(
+            events["seed"].planned_date,
+            planting.planned_plant_date - timedelta(weeks=4),
+        )
+        self.assertEqual(
+            events["pot_up"].planned_date,
+            events["seed"].planned_date + timedelta(weeks=3),
+        )
 
     def test_import_seed_sources_reference_tier(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:

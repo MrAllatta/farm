@@ -18,6 +18,7 @@ import sys
 from decimal import Decimal, InvalidOperation
 from datetime import date, datetime
 from collections import defaultdict
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
@@ -56,6 +57,7 @@ from operations.models import (
 )
 from sales.models import SalesEvent, QuickSalesEntry
 from core.models import RotationHistory
+from planning.services import nursery_plan_sheet
 
 # Reference-tier ``product_recipe_components.csv`` rows without ``Planning Year`` bucket here.
 DEFAULT_PRODUCT_RECIPE_PLANNING_YEAR = 2026
@@ -1898,8 +1900,241 @@ class Command(BaseCommand):
                     self.stderr.write(f"    ERROR row {i}: {e}")
                     self.stats["PlanningYear"]["errors"] += 1
 
+    @staticmethod
+    def _normalize_planting_variety_text(raw: str) -> str:
+        return " ".join((raw or "").replace("\n", " ").split()).strip()
+
+    def _planting_variety_merge_key(self, raw: str) -> str:
+        return self._normalize_planting_variety_text(raw).casefold()
+
+    def _resolve_planting_variety_fk(self, crop, variety_text: str):
+        """Resolve or create ``Variety`` for a planting row; returns FK or None."""
+        norm = self._normalize_planting_variety_text(variety_text)
+        if not norm:
+            return None
+        existing = Variety.objects.filter(crop=crop, name__iexact=norm).order_by("id").first()
+        if existing:
+            return existing
+        if self.write_disabled:
+            return None
+        v, _ = Variety.objects.get_or_create(
+            crop=crop,
+            name=norm,
+            defaults={
+                "supplier": "",
+                "catalog_number": "",
+                "notes": "",
+            },
+        )
+        return v
+
+    def _parse_single_planting_csv_row(self, year, i, row, status_map):
+        """Return a dict describing one CSV row after FK checks, or None if skipped."""
+        planting_id = row.get("ID", "").strip()
+        crop_name = row.get("Crop Name") or row.get("Crop")
+        if crop_name:
+            crop_name = crop_name.strip()
+        block_name = row.get("Block Name") or row.get("Block")
+        if block_name:
+            block_name = block_name.strip()
+
+        if not crop_name or not block_name:
+            return None
+
+        planning_year = self._get_planning_year(year)
+        crop = self._get_crop(crop_name)
+        block = self._get_block(block_name)
+
+        if not planning_year or not crop or not block:
+            if not planning_year:
+                self._record_stale_fk(
+                    "Planting",
+                    i,
+                    "plantings.planning_year",
+                    "planning year",
+                    year,
+                )
+            if not crop:
+                self._record_stale_fk(
+                    "Planting",
+                    i,
+                    "plantings.crop",
+                    "crop",
+                    crop_name,
+                )
+            if not block:
+                self._record_stale_fk(
+                    "Planting",
+                    i,
+                    "plantings.block",
+                    "block",
+                    block_name,
+                )
+            self.stats["Planting"]["errors"] += 1
+            return None
+
+        crop_season = self._get_crop_season(crop, block.block_type)
+        if not crop_season:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"   ⚠  row {i}: no crop_season for {crop_name}/{block.block_type} — skipping planting"
+                )
+            )
+            self.stats["Planting"]["skipped"] += 1
+            return None
+
+        plant_date_str = row.get("Planned Plant Date", "").strip()
+        if not plant_date_str:
+            self.stats["Planting"]["skipped"] += 1
+            return None
+
+        plant_date = self._parse_date(plant_date_str)
+        variety_raw = row.get("Variety", "") or ""
+        variety_text = self._normalize_planting_variety_text(variety_raw)
+        variety_obj = self._resolve_planting_variety_fk(crop, variety_text)
+
+        bed_start = self._int(row.get("Bed Start", 1))
+        bed_end = self._int(row.get("Bed End", 1))
+        if bed_end < bed_start:
+            bed_start, bed_end = bed_end, bed_start
+
+        status_code = status_map.get(row.get("Status", "planned").strip(), "planned")
+        notes = (row.get("Notes") or "").strip()
+        planned_bedfeet = self._int(row.get("Planned Bedfeet", 100))
+
+        extras = {}
+        actual_plant_date_str = row.get("Actual Plant Date", "").strip()
+        if actual_plant_date_str:
+            extras["actual_plant_date"] = self._parse_date(actual_plant_date_str)
+            extras["actual_bedfeet"] = self._int_or_none(row.get("Actual Bedfeet"))
+        actual_harvest_str = row.get("Actual Total Yield", "").strip()
+        if actual_harvest_str:
+            extras["actual_total_yield"] = self._dec_or_none(actual_harvest_str)
+
+        return {
+            "source_line": i,
+            "planting_id": planting_id,
+            "planning_year": planning_year,
+            "crop": crop,
+            "block": block,
+            "crop_season": crop_season,
+            "plant_date": plant_date,
+            "variety_text": variety_text,
+            "variety_obj": variety_obj,
+            "bed_start": bed_start,
+            "bed_end": bed_end,
+            "planned_bedfeet": planned_bedfeet,
+            "status_code": status_code,
+            "notes": notes,
+            "extras": extras,
+        }
+
+    def _dedupe_and_merge_touching_segments(self, items):
+        """Within one logical group, merge identical bed intervals and touching/overlapping ranges."""
+        by_span = {}
+        for it in items:
+            key = (it["bed_start"], it["bed_end"])
+            if key not in by_span:
+                by_span[key] = {
+                    "bed_start": it["bed_start"],
+                    "bed_end": it["bed_end"],
+                    "planned_bedfeet": it["planned_bedfeet"],
+                    "source_lines": [it["source_line"]],
+                    "notes": [it["notes"]] if it["notes"] else [],
+                    "planting_ids": [it["planting_id"]] if it["planting_id"] else [],
+                    "extras": [it["extras"]] if it["extras"] else [],
+                    "meta": it,
+                }
+            else:
+                agg = by_span[key]
+                agg["planned_bedfeet"] += it["planned_bedfeet"]
+                agg["source_lines"].append(it["source_line"])
+                if it["notes"]:
+                    agg["notes"].append(it["notes"])
+                if it["planting_id"]:
+                    agg["planting_ids"].append(it["planting_id"])
+                if it["extras"]:
+                    agg["extras"].append(it["extras"])
+
+        segments = sorted(by_span.values(), key=lambda s: (s["bed_start"], s["bed_end"]))
+        if not segments:
+            return []
+
+        merged = []
+        cur = segments[0]
+        for seg in segments[1:]:
+            if seg["bed_start"] <= cur["bed_end"] + 1:
+                cur["bed_end"] = max(cur["bed_end"], seg["bed_end"])
+                cur["planned_bedfeet"] += seg["planned_bedfeet"]
+                cur["source_lines"].extend(seg["source_lines"])
+                cur["notes"].extend(seg["notes"])
+                cur["planting_ids"].extend(seg["planting_ids"])
+                cur["extras"].extend(seg["extras"])
+            else:
+                merged.append(cur)
+                cur = seg
+        merged.append(cur)
+        return merged
+
+    def _merge_notes_parts(self, parts):
+        seen = set()
+        out = []
+        for p in parts:
+            p = (p or "").strip()
+            if not p or p in seen:
+                continue
+            seen.add(p)
+            out.append(p)
+        return " | ".join(out)
+
+    def _merge_planting_extras(self, extras_list, representative_line):
+        """Pick first non-empty extras; record mismatch if conflicting non-null values differ."""
+        merged = {}
+        for field in ("actual_plant_date", "actual_bedfeet", "actual_total_yield"):
+            values = []
+            for ext in extras_list:
+                if not ext:
+                    continue
+                if field in ext and ext[field] is not None:
+                    values.append(ext[field])
+            uniq = []
+            for v in values:
+                if v not in uniq:
+                    uniq.append(v)
+            if len(uniq) > 1:
+                self._record_row_error(
+                    "Planting",
+                    representative_line,
+                    code="namespace_mismatch",
+                    field_path=f"plantings.{field}",
+                    message=f"conflicting {field} values when merging bed range rows",
+                )
+            if uniq:
+                merged[field] = uniq[0]
+        return merged
+
+    def _delete_overlapping_plantings(
+        self, planning_year, crop, block, plant_date, variety_text, status_code, bed_start, bed_end
+    ):
+        if self.write_disabled or not isinstance(planning_year, PlanningYear):
+            return
+        qs = Planting.objects.filter(
+            planning_year=planning_year,
+            crop=crop,
+            block=block,
+            planned_plant_date=plant_date,
+            status=status_code,
+            bed_start__lte=bed_end,
+            bed_end__gte=bed_start,
+        )
+        if variety_text:
+            qs = qs.filter(variety__iexact=variety_text)
+        else:
+            qs = qs.filter(variety="")
+        qs.delete()
+
     def _import_plantings(self, year, year_dir):
-        """Import plantings."""
+        """Import plantings with consecutive-bed consolidation."""
         path = os.path.join(year_dir, "plantings.csv")
         if not os.path.exists(path):
             self.stdout.write(f"  ⊘ year_{year}/plantings.csv not found\n")
@@ -1921,118 +2156,112 @@ class Command(BaseCommand):
 
         with open(path, "r") as f:
             reader = csv.DictReader(f)
-            for i, row in enumerate(reader, 1):
+            raw_rows = list(reader)
+
+        parsed = []
+        for i, row in enumerate(raw_rows, 1):
+            try:
+                rec = self._parse_single_planting_csv_row(year, i, row, status_map)
+                if rec:
+                    parsed.append(rec)
+            except (
+                ValueError,
+                KeyError,
+                InvalidOperation,
+                ValidationError,
+                IntegrityError,
+                DatabaseError,
+            ) as e:
+                self.stderr.write(f"    ERROR row {i}: {e}")
+                self.stats["Planting"]["errors"] += 1
+
+        buckets = defaultdict(list)
+        for rec in parsed:
+            key = (
+                rec["crop"].id,
+                rec["block"].id,
+                rec["plant_date"],
+                self._planting_variety_merge_key(rec["variety_text"]),
+                rec["status_code"],
+            )
+            buckets[key].append(rec)
+
+        processed_counter = 0
+        for _key, items in buckets.items():
+            meta0 = items[0]
+            segments = self._dedupe_and_merge_touching_segments(items)
+            for seg in segments:
                 try:
-                    planting_id = row.get("ID", "").strip()
-                    # Handle both "Crop Name" and "Crop" headers
-                    crop_name = row.get("Crop Name") or row.get("Crop")
-                    if crop_name:
-                        crop_name = crop_name.strip()
-                    block_name = row.get("Block Name") or row.get("Block")
-                    if block_name:
-                        block_name = block_name.strip()
-                    # Block Type may not be needed for lookup since we use block.block_type
-                    # block_type = row.get("Block Type", "").strip()
-
-                    if not crop_name or not block_name:
-                        continue
-
-                    # Get FKs
-                    planning_year = self._get_planning_year(year)
-                    crop = self._get_crop(crop_name)
-                    block = self._get_block(block_name)
-
-                    if not planning_year or not crop or not block:
-                        if not planning_year:
-                            self._record_stale_fk(
-                                "Planting",
-                                i,
-                                "plantings.planning_year",
-                                "planning year",
-                                year,
-                            )
-                        if not crop:
-                            self._record_stale_fk(
-                                "Planting",
-                                i,
-                                "plantings.crop",
-                                "crop",
-                                crop_name,
-                            )
-                        if not block:
-                            self._record_stale_fk(
-                                "Planting",
-                                i,
-                                "plantings.block",
-                                "block",
-                                block_name,
-                            )
-                        self.stats["Planting"]["errors"] += 1
-                        continue
-
-                    # Crop season is required for Planting in all modes.
-                    crop_season = self._get_crop_season(crop, block.block_type)
-                    if not crop_season:
-                        self.stdout.write(
-                            self.style.WARNING(
-                                f"   ⚠  row {i}: no crop_season for {crop_name}/{block.block_type} — skipping planting"
-                            )
+                    rep_line = min(seg["source_lines"])
+                    lead_rec = next(r for r in items if r["source_line"] == rep_line)
+                    merged_notes = self._merge_notes_parts(seg["notes"])
+                    merged_extras = self._merge_planting_extras(seg["extras"], rep_line)
+                    planting_ids = [x for x in seg["planting_ids"] if x]
+                    if len(set(planting_ids)) > 1:
+                        self._record_row_error(
+                            "Planting",
+                            rep_line,
+                            code="namespace_mismatch",
+                            field_path="plantings.id",
+                            message="multiple distinct ID values for rows merged into one bed range",
                         )
-                        self.stats["Planting"]["skipped"] += 1
-                        continue
-
-                    # Parse dates
-                    plant_date_str = row.get("Planned Plant Date", "").strip()
-                    if not plant_date_str:
-                        self.stats["Planting"]["skipped"] += 1
-                        continue
-
-                    plant_date = self._parse_date(plant_date_str)
 
                     data = {
-                        "crop_season": crop_season,
-                        "variety": row.get("Variety", "").strip(),
-                        "bed_start": self._int(row.get("Bed Start", 1)),
-                        "bed_end": self._int(row.get("Bed End", 1)),
-                        "planned_bedfeet": self._int(row.get("Planned Bedfeet", 100)),
-                        "planned_plant_date": plant_date,
-                        # Calculated fields — let model.save() handle them
-                        "status": status_map.get(row.get("Status", "planned").strip(), "planned"),
-                        "notes": row.get("Notes", "").strip(),
+                        "crop_season": meta0["crop_season"],
+                        "variety": self._normalize_planting_variety_text(lead_rec["variety_text"]),
+                        "variety_obj": lead_rec["variety_obj"],
+                        "bed_start": seg["bed_start"],
+                        "bed_end": seg["bed_end"],
+                        "planned_bedfeet": seg["planned_bedfeet"],
+                        "planned_plant_date": meta0["plant_date"],
+                        "status": meta0["status_code"],
+                        "notes": merged_notes,
                     }
+                    data.update(merged_extras)
 
-                    # Actual fields (may be null for planned-only years)
-                    actual_plant_date_str = row.get("Actual Plant Date", "").strip()
-                    if actual_plant_date_str:
-                        data["actual_plant_date"] = self._parse_date(actual_plant_date_str)
-                        data["actual_bedfeet"] = self._int_or_none(row.get("Actual Bedfeet"))
-
-                    actual_harvest_str = row.get("Actual Total Yield", "").strip()
-                    if actual_harvest_str:
-                        data["actual_total_yield"] = self._dec_or_none(actual_harvest_str)
+                    planning_year = meta0["planning_year"]
+                    crop = meta0["crop"]
+                    block = meta0["block"]
+                    plant_date = meta0["plant_date"]
 
                     if not self.write_disabled:
+                        self._delete_overlapping_plantings(
+                            planning_year,
+                            crop,
+                            block,
+                            plant_date,
+                            data["variety"],
+                            data["status"],
+                            seg["bed_start"],
+                            seg["bed_end"],
+                        )
                         obj, created = Planting.objects.update_or_create(
                             planning_year=planning_year,
                             crop=crop,
                             block=block,
-                            bed_start=data["bed_start"],
-                            bed_end=data["bed_end"],
+                            bed_start=seg["bed_start"],
+                            bed_end=seg["bed_end"],
                             planned_plant_date=plant_date,
                             defaults=data,
                         )
                         self.stats["Planting"]["created" if created else "processed"] += 1
-                        # Cache by planting_id for later lookups
-                        if planting_id:
-                            self.planting_cache[planting_id] = obj
+                        for pid in set(seg["planting_ids"]):
+                            self.planting_cache[pid] = obj
+                        if not seg["planting_ids"]:
+                            lead_line = min(seg["source_lines"])
+                            for rec in items:
+                                if rec["source_line"] == lead_line and rec.get("planting_id"):
+                                    self.planting_cache[rec["planting_id"]] = obj
+                                    break
                     else:
                         self.stats["Planting"]["processed"] += 1
 
-                    if i % self.PLANTING_PROGRESS_EVERY == 0:
+                    processed_counter += 1
+                    if processed_counter % self.PLANTING_PROGRESS_EVERY == 0:
                         created_count = self.stats["Planting"].get("created", 0)
                         updated_count = self.stats["Planting"].get("processed", 0)
                         self.stdout.write(
-                            f"  ... plantings {year}: row {i}, "
+                            f"  ... plantings {year}: merged job {processed_counter}, "
                             f"created={created_count}, updated={updated_count}, "
                             f"skipped={self.stats['Planting']['skipped']}, "
                             f"errors={self.stats['Planting']['errors']}"
@@ -2046,7 +2275,7 @@ class Command(BaseCommand):
                     IntegrityError,
                     DatabaseError,
                 ) as e:
-                    self.stderr.write(f"    ERROR row {i}: {e}")
+                    self.stderr.write(f"    ERROR merged planting: {e}")
                     self.stats["Planting"]["errors"] += 1
 
         self.stdout.write(
@@ -2404,148 +2633,36 @@ class Command(BaseCommand):
             self._import_harvest_events(year, year_dir)
 
     def _import_nursery_events(self, year, year_dir):
-        """Import nursery events."""
+        """Nursery events are derived from ``CropInfo`` + ``Planting`` (not imported from CSV)."""
         path = os.path.join(year_dir, "nursery_events.csv")
-        if not os.path.exists(path):
-            return
-
-        self.stdout.write(f"Importing nursery events {year}...")
-
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
-            for i, row in enumerate(reader, 1):
-                try:
-                    if self._nursery_row_is_workbook_402_plan_tab_shape(row):
-                        self._import_nursery_events_workbook_402_plan_tab_row(i, row, year)
-                    else:
-                        self._import_nursery_events_canonical_row(i, row)
-                except (
-                    ValueError,
-                    KeyError,
-                    InvalidOperation,
-                    ValidationError,
-                    IntegrityError,
-                    DatabaseError,
-                ) as e:
-                    self.stderr.write(f"    ERROR row {i}: {e}")
-                    self.stats["NurseryEvent"]["errors"] += 1
-
-        self.stdout.write(
-            f" {self.stats['NurseryEvent']['processed']} processed, "
-            f"{self.stats['NurseryEvent']['skipped']} skipped, "
-            f"{self.stats['NurseryEvent']['errors']} errors\n"
-        )
-
-    def _normalize_csv_header_label(self, header):
-        if header is None:
-            return ""
-        return " ".join(str(header).replace("\n", " ").strip().lower().split())
+        if os.path.exists(path):
+            self.stdout.write(
+                self.style.WARNING(
+                    f"  ⊘ year_{year}/nursery_events.csv ignored — nursery is derived-only "
+                    f"(use ``validate_nursery_sheet_parity`` to compare sheet vs derived)\n"
+                )
+            )
+        # Prime summary counters so JSON artifacts always include a ``NurseryEvent`` bucket.
+        if getattr(self, "stats", None) is not None:
+            _ = self.stats["NurseryEvent"]
 
     def _nursery_row_is_workbook_402_plan_tab_shape(self, row):
-        """True when row carries workbook 402 ``Nursery Plan 502`` week columns (wide shape)."""
-        for k in row:
-            nk = self._normalize_csv_header_label(k)
-            if nk in {"nursery seeding year", "nursery seeding week", "nursery pot up year", "nursery pot up week"}:
-                if (row.get(k) or "").strip():
-                    return True
-        return False
+        return nursery_plan_sheet.nursery_row_is_workbook_402_plan_tab_shape(row)
 
     def _nursery_sheet_crop_variety_cell(self, row):
-        for key in row:
-            nk = self._normalize_csv_header_label(key)
-            if nk in ("crop // variety", "crop & variety"):
-                raw = row.get(key) or ""
-                return " ".join(str(raw).replace("\n", " ").split()).strip()
-        return ""
+        return nursery_plan_sheet.nursery_sheet_crop_variety_cell(row)
 
     def _split_crop_variety_for_nursery_sheet(self, cell):
-        cell = " ".join(cell.replace("\n", " ").split())
-        if "//" in cell:
-            return self._split_crop_variety(cell)
-        if " & " in cell:
-            left, right = cell.split(" & ", 1)
-            return left.strip(), right.strip()
-        return cell, ""
+        return nursery_plan_sheet.split_crop_variety_for_nursery_sheet(cell)
 
     def _date_from_plan_year_week(self, year_raw, week_raw):
-        try:
-            y = int(str(year_raw).strip())
-            w = int(str(week_raw).strip())
-            if y <= 0 or w <= 0:
-                return None
-            return date.fromisocalendar(y, w, 1)
-        except (ValueError, TypeError, OverflowError):
-            return None
+        return nursery_plan_sheet.date_from_plan_year_week(year_raw, week_raw)
 
     def _int_from_tray_size_cell(self, raw):
-        """Parse a positive tray/cell count from values like ``128`` or ``128-cell``."""
-        if raw is None:
-            return None
-        s = str(raw).strip()
-        if not s or s.lower() in ("na", "n/a", "-", "—"):
-            return None
-        m = re.search(r"\d+", s)
-        if not m:
-            return None
-        try:
-            v = int(m.group(0))
-            return v if v > 0 else None
-        except ValueError:
-            return None
+        return nursery_plan_sheet.int_from_tray_size_cell(raw)
 
     def _resolve_nursery_planting_from_plan_tab(self, row, year):
-        """Resolve a planting for ``Nursery Plan 502`` rows (no ``Planting ID``).
-
-        Prefer the same natural key as ``field_walk_notes`` when ``Block``, ``Bed``,
-        ``Plan Field Year``, and ``Plan Field Week`` are all present.
-
-        Otherwise require ``Plan Field Week`` plus a crop label cell and match **uniquely**
-        on ``(Plan Field Year or import folder year, crop, optional variety, ISO week of
-        ``planned_plant_date``)**.
-        """
-        crop_variety = self._nursery_sheet_crop_variety_cell(row)
-        plan_week_raw = (row.get("Plan Field Week") or "").strip()
-        if not crop_variety or not plan_week_raw:
-            return None
-
-        plan_year_raw = (row.get("Plan Field Year") or "").strip()
-        plan_year = self._int(plan_year_raw, year) if plan_year_raw else year
-        plan_week = self._int(plan_week_raw, 0)
-        if plan_week <= 0:
-            return None
-
-        block_name = (row.get("Block") or "").strip()
-        bed_raw = (row.get("Bed") or "").strip()
-        if block_name and bed_raw:
-            synthetic = {
-                "Crop // Variety": crop_variety,
-                "Block": block_name,
-                "Bed": bed_raw,
-                "Plan Field Year": str(plan_year),
-                "Plan Field Week": str(plan_week),
-            }
-            return self._resolve_field_walk_planting_from_context(synthetic, year)
-
-        crop_name, variety = self._split_crop_variety_for_nursery_sheet(crop_variety)
-        if not crop_name:
-            return None
-        crop = self._get_crop(crop_name)
-        if not crop:
-            return None
-
-        candidates = Planting.objects.filter(planning_year__year=plan_year, crop=crop).order_by("id")
-        if variety:
-            candidates = candidates.filter(variety__iexact=variety)
-
-        matches = []
-        for planting in candidates:
-            iso_year, iso_week, _ = planting.planned_plant_date.isocalendar()
-            if iso_year == plan_year and iso_week == plan_week:
-                matches.append(planting)
-
-        if len(matches) == 1:
-            return matches[0]
-        return None
+        return nursery_plan_sheet.resolve_nursery_planting_from_plan_tab(row, year)
 
     def _nursery_upsert_event(self, planting, event_type, planned_date, save_defaults):
         """Persist one nursery event (``save_defaults`` excludes lookup key fields)."""
@@ -2926,63 +3043,8 @@ class Command(BaseCommand):
         return self._resolve_field_walk_planting_from_context(row, year)
 
     def _resolve_field_walk_planting_from_context(self, row, year):
-        """Resolve FieldWalkNote planting when Planting ID is missing.
-
-        Policy: match a unique planting by (`Crop // Variety`, `Block`, `Bed`,
-        `Plan Field Year`, `Plan Field Week`).
-        """
-        crop_variety = (row.get("Crop // Variety") or "").strip()
-        block_name = (row.get("Block") or "").strip()
-        bed_raw = (row.get("Bed") or "").strip()
-        plan_year_raw = (row.get("Plan Field Year") or "").strip()
-        plan_week_raw = (row.get("Plan Field Week") or "").strip()
-
-        if not (crop_variety and block_name and bed_raw and plan_year_raw and plan_week_raw):
-            return None
-
-        crop_name, variety = self._split_crop_variety(crop_variety)
-        if not crop_name:
-            return None
-
-        plan_year = self._int(plan_year_raw, 0)
-        plan_week = self._int(plan_week_raw, 0)
-        if plan_year <= 0 or plan_week <= 0:
-            return None
-        if plan_year != year:
-            return None
-
-        bed_number = self._int(bed_raw, 0)
-        if bed_number <= 0:
-            return None
-
-        block = self._get_block(block_name)
-        crop = self._get_crop(crop_name)
-        if not block or not crop:
-            return None
-
-        candidates = (
-            Planting.objects.filter(
-                planning_year__year=plan_year,
-                crop=crop,
-                block=block,
-                bed_start__lte=bed_number,
-                bed_end__gte=bed_number,
-            )
-            .order_by("id")
-        )
-
-        if variety:
-            candidates = candidates.filter(variety__iexact=variety)
-
-        matches = []
-        for planting in candidates:
-            iso_year, iso_week, _ = planting.planned_plant_date.isocalendar()
-            if iso_year == plan_year and iso_week == plan_week:
-                matches.append(planting)
-
-        if len(matches) == 1:
-            return matches[0]
-        return None
+        """Resolve FieldWalkNote planting when Planting ID is missing."""
+        return nursery_plan_sheet.resolve_field_walk_planting_from_context(row, year)
 
     def _import_inventory_ledger(self, year, year_dir):
         """Import inventory ledger entries."""
