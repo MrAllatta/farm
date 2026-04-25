@@ -6,6 +6,13 @@ from datetime import date, timedelta
 
 from isoweek import Week
 
+from operations.planting_display import (
+    planting_map_segment_label,
+    planting_unit_code,
+    planting_unit_full_label,
+    planting_variety_display,
+)
+
 from planning.models import Planting
 from reference.models import Block
 
@@ -43,7 +50,7 @@ class CropMapOccupancyService:
         self.plantings = list(
             Planting.objects.filter(planning_year=planning_year)
             .exclude(status__in=EXCLUDED_STATUSES)
-            .select_related("crop", "block", "crop_season")
+            .select_related("crop", "block", "crop_season", "variety_obj")
             .order_by("block__walk_route_order", "block__name", "bed_start", "planned_plant_date")
         )
 
@@ -82,12 +89,16 @@ class CropMapOccupancyService:
                 for bed in range(planting.bed_start, planting.bed_end + 1):
                     covered_beds.add(bed)
                 crop_key = planting.crop.crop_type.lower().replace("/", "-").replace(" ", "-")
+                vdisp = planting_variety_display(planting)
+                crop_label = planting.crop.name if not vdisp else f"{planting.crop.name} — {vdisp}"
                 segments.append(
                     {
                         "planting": planting,
                         "bed_start": planting.bed_start,
                         "bed_end": planting.bed_end,
-                        "label": planting.crop.name,
+                        "label": planting_map_segment_label(planting),
+                        "crop_label": crop_label,
+                        "tooltip": planting_unit_full_label(planting),
                         "status_css": _status_css_for_week(planting, week_start),
                         "crop_css": f"crop-{crop_key}",
                         "width_pct": ((planting.bed_end - planting.bed_start + 1) / block.num_beds * 100)
@@ -119,18 +130,27 @@ class CropMapOccupancyService:
             block_rows = []
             for bed in range(1, block.num_beds + 1):
                 cells = []
-                for wk in week_labels:
+                for wk_idx, wk in enumerate(week_labels):
                     week_end_date = wk.monday + timedelta(days=6)
-                    occupant = next(
-                        (
-                            p
-                            for p in plantings_by_block.get(block.id, [])
-                            if p.bed_start <= bed <= p.bed_end
-                            and p.planned_plant_date <= week_end_date
-                            and p.planned_last_harvest_date >= wk.monday
-                        ),
-                        None,
-                    )
+                    candidates = [
+                        p
+                        for p in plantings_by_block.get(block.id, [])
+                        if p.bed_start <= bed <= p.bed_end
+                        and p.planned_plant_date <= week_end_date
+                        and p.planned_last_harvest_date >= wk.monday
+                    ]
+                    candidates.sort(key=lambda p: (-(p.bed_end - p.bed_start + 1), -p.pk))
+                    occupant = candidates[0] if candidates else None
+                    prev_week_occ = cells[wk_idx - 1]["planting"] if wk_idx > 0 else None
+                    prev_bed_occ = None
+                    if bed > 1 and block_rows:
+                        prev_cells = block_rows[bed - 2]["cells"]
+                        if wk_idx < len(prev_cells):
+                            prev_bed_occ = prev_cells[wk_idx]["planting"]
+                    h_cont = occupant is not None and prev_week_occ == occupant
+                    v_cont = occupant is not None and prev_bed_occ == occupant
+                    continuation = occupant is not None and (h_cont or v_cont)
+                    show_primary = occupant is not None and not continuation
                     cells.append(
                         {
                             "week": wk.num,
@@ -138,6 +158,10 @@ class CropMapOccupancyService:
                             "planting": occupant,
                             "is_fallow": occupant is None,
                             "status_css": _status_css_for_week(occupant, wk.monday) if occupant else "fallow",
+                            "continuation": continuation,
+                            "show_primary_label": show_primary,
+                            "primary_label": planting_unit_code(occupant) if occupant else "",
+                            "tooltip": planting_unit_full_label(occupant) if occupant else "",
                         }
                     )
                 block_rows.append({"bed_num": bed, "cells": cells})
@@ -162,11 +186,23 @@ class CropMapOccupancyService:
                 for planting in active:
                     for bed in range(planting.bed_start, planting.bed_end + 1):
                         used_beds.add(bed)
+                active_sorted = sorted(active, key=lambda p: (p.bed_start, p.pk))
+                max_chips = 10
+                chips = [
+                    {
+                        "planting": p,
+                        "code": planting_unit_code(p),
+                        "crop": p.crop.name,
+                    }
+                    for p in active_sorted[:max_chips]
+                ]
                 cells.append(
                     {
                         "week": wk.num,
                         "week_monday": wk.monday,
                         "plantings": active,
+                        "chips": chips,
+                        "more_plantings": max(0, len(active_sorted) - max_chips),
                         "active_count": len(active),
                         "used_beds": len(used_beds),
                         "utilization_pct": (len(used_beds) / block.num_beds * 100) if block.num_beds else 0,
@@ -182,7 +218,8 @@ class CropMapOccupancyService:
             block_plantings = [p for p in self.plantings if p.block_id == block.id]
             grouped = defaultdict(list)
             for planting in block_plantings:
-                key = planting.succession_group or f"{planting.crop.name}-{planting.variety or 'standard'}"
+                vlabel = planting_variety_display(planting) or "standard"
+                key = planting.succession_group or f"{planting.crop.name}-{vlabel}"
                 grouped[key].append(planting)
 
             succession_rows = []
@@ -192,7 +229,7 @@ class CropMapOccupancyService:
                     {
                         "succession_key": succession_key,
                         "crop_name": sorted_items[0].crop.name,
-                        "variety": sorted_items[0].variety,
+                        "variety": planting_variety_display(sorted_items[0]),
                         "plantings": sorted_items,
                         "count": len(sorted_items),
                         "first_week": sorted_items[0].planned_plant_date.isocalendar()[1],

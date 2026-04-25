@@ -34,13 +34,15 @@
                     {% if cell.is_empty %}
                     <a href="{% url 'planning:planting_create_prefilled' block_id=row.block.id week=cell.week %}">+</a>
                     {% else %}
-                    <div>{{ cell.active_count }} planting{{ cell.active_count|pluralize }}</div>
-                    <div class="muted">{{ cell.used_beds }}/{{ row.block.num_beds }} beds</div>
-                    {% with planting=cell.plantings.0 %}
-                    {% if planting %}
-                    <a href="{% url 'planning:planting_detail' planting.id %}">{{ planting.crop.name|truncatechars:12 }}</a>
-                    {% endif %}
-                    {% endwith %}
+                    <div class="muted" style="font-size:0.75rem;">{{ cell.active_count }} · {{ cell.used_beds }}/{{ row.block.num_beds }} beds</div>
+                    <div class="crop-map-week-chips">
+                        {% for chip in cell.chips %}
+                        <a href="{% url 'planning:planting_detail' chip.planting.id %}" class="crop-map-chip" title="{{ chip.crop }}">{{ chip.code }}</a>
+                        {% endfor %}
+                        {% if cell.more_plantings %}
+                        <span class="muted">+{{ cell.more_plantings }}</span>
+                        {% endif %}
+                    </div>
                     {% endif %}
                 </td>
                 {% endfor %}

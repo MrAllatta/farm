@@ -36,14 +36,19 @@
                     <td class="beds-col">{{ bed_row.bed_num }}</td>
                     {% for cell in bed_row.cells %}
                         {% if cell.planting %}
-                        <td class="week-cell {{ cell.status_css }}">
-                            <a href="{% url 'planning:planting_detail' cell.planting.id %}">
-                                {{ cell.planting.crop.name|truncatechars:12 }}
+                        <td class="week-cell {{ cell.status_css }}{% if cell.continuation %} week-cell--planting-cont{% endif %}">
+                            {% if cell.show_primary_label %}
+                            <a href="{% url 'planning:planting_detail' cell.planting.id %}" title="{{ cell.tooltip }}">
+                                <span class="planting-id-badge planting-id-badge--table">{{ cell.primary_label }}</span>
+                                <span class="crop-map-cell-crop">{{ cell.planting.crop.name|truncatechars:10 }}</span>
                             </a>
                             <div class="muted">
                                 <a href="{% url 'planning:planting_edit' cell.planting.id %}">Edit</a> ·
                                 <a href="{% url 'planning:planting_revise' cell.planting.id %}">Revise</a>
                             </div>
+                            {% else %}
+                            <a href="{% url 'planning:planting_detail' cell.planting.id %}" class="muted crop-map-cell-cont" title="{{ cell.tooltip }}">·</a>
+                            {% endif %}
                         </td>
                         {% else %}
                         <td class="week-cell fallow">

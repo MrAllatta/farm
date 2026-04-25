@@ -1872,3 +1872,45 @@ body {
         top: auto !important;
     }
 }
+
+/* 503 week-by-block planting chips; week-by-bed continuation cells */
+.crop-map-week-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.35rem;
+    margin-top: 0.25rem;
+    align-items: center;
+}
+
+a.crop-map-chip {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    background: var(--color-surface, #f3f4f6);
+    border: 1px solid var(--color-border, #e5e7eb);
+    color: inherit;
+    text-decoration: none;
+}
+
+a.crop-map-chip:hover {
+    border-color: #94a3b8;
+}
+
+.week-cell--planting-cont {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.week-cell--planting-cont a.crop-map-cell-cont {
+    display: block;
+    padding: 0.35rem 0;
+    text-decoration: none;
+}
+
+.crop-map-cell-crop {
+    display: block;
+    font-size: 0.78rem;
+    margin-top: 0.15rem;
+}

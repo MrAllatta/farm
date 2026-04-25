@@ -178,6 +178,7 @@ class CropMapServiceAndViewTests(TestCase):
         occupied = [s for s in row["segments"] if s["label"] != "fallow"]
         self.assertEqual(len(occupied), 1)
         self.assertEqual(occupied[0]["planting"].id, self.active.id)
+        self.assertIn("P-2026-", occupied[0]["label"])
         self.assertEqual(int(row["utilization_pct"]), 50)
 
     def test_crop_map_service_groups_successions(self):
@@ -206,6 +207,21 @@ class CropMapServiceAndViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reports/crop_map_week_by_block.html")
         self.assertIn("rows", response.context)
+
+    def test_crop_map_week_by_block_shows_planting_code_chips(self):
+        self.active.refresh_from_db()
+        response = self.client.get(reverse("reports:crop_map_week_by_block"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.active.planting_code)
+        self.assertContains(response, "crop-map-chip")
+
+    def test_planting_trace_renders_planting_code(self):
+        self.active.refresh_from_db()
+        response = self.client.get(
+            reverse("reports:planting_trace", kwargs={"planting_id": self.active.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.active.planting_code)
 
     def test_crop_map_successions_route_renders(self):
         response = self.client.get(reverse("reports:crop_map_successions"))

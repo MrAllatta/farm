@@ -14,6 +14,7 @@ from planning.models import HarvestEvent, NurseryEvent, Planting, SeedOrder
 from sales.models import SalesEvent, QuickSalesEntry
 from reference.models import Block, SalesChannel, CropSalesFormat
 from operations.models import InventoryLedger, PackAllocation, PackBatch, PackBatchComponent
+from operations.planting_display import planting_unit_code
 from .mixins import AnalyzeViewMixin, ReportContextMixin
 from .services.crop_maps import CropMapOccupancyService
 
@@ -1772,6 +1773,7 @@ class PlantingTraceView(ReportContextMixin, TemplateView):
                 "nursery_events": nursery_events,
                 "harvest_trace": harvest_trace,
                 "view_title": "Planting traceability",
+                "planting_display_id": planting_unit_code(planting),
             }
         )
         return ctx

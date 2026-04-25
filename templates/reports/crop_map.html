@@ -34,8 +34,8 @@
                 <a class="bed-segment {{ segment.crop_css }} {{ segment.status_css }}"
                    style="width: {{ segment.width_pct }}%;"
                    href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}"
-                   title="{% if segment.planting %}{{ segment.label }} beds {{ segment.bed_start }}-{{ segment.bed_end }}{% else %}Fallow beds {{ segment.bed_start }}-{{ segment.bed_end }}{% endif %}">
-                    {{ segment.label }} ({{ segment.bed_start }}-{{ segment.bed_end }})
+                   title="{% if segment.planting %}{{ segment.tooltip }}{% else %}Fallow beds {{ segment.bed_start }}-{{ segment.bed_end }}{% endif %}">
+                    {% if segment.planting %}{{ segment.label }}{% else %}fallow ({{ segment.bed_start }}-{{ segment.bed_end }}){% endif %}
                 </a>
                 {% endfor %}
             </div>
@@ -54,8 +54,9 @@
                 {% for segment in map.segments %}
                 <a class="bed-segment {{ segment.crop_css }} {{ segment.status_css }}"
                    style="width: {{ segment.width_pct }}%;"
-                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}">
-                    {{ segment.label }} ({{ segment.bed_start }}-{{ segment.bed_end }})
+                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}"
+                   title="{% if segment.planting %}{{ segment.tooltip }}{% else %}Fallow beds {{ segment.bed_start }}-{{ segment.bed_end }}{% endif %}">
+                    {% if segment.planting %}{{ segment.label }}{% else %}fallow ({{ segment.bed_start }}-{{ segment.bed_end }}){% endif %}
                 </a>
                 {% endfor %}
             </div>
@@ -74,8 +75,9 @@
                 {% for segment in map.segments %}
                 <a class="bed-segment {{ segment.crop_css }} {{ segment.status_css }}"
                    style="width: {{ segment.width_pct }}%;"
-                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}">
-                    {{ segment.label }} ({{ segment.bed_start }}-{{ segment.bed_end }})
+                   href="{% if segment.planting %}{% url 'planning:planting_detail' segment.planting.id %}{% else %}{% url 'planning:planting_create_prefilled' block_id=map.block.id week=week_num %}{% endif %}"
+                   title="{% if segment.planting %}{{ segment.tooltip }}{% else %}Fallow beds {{ segment.bed_start }}-{{ segment.bed_end }}{% endif %}">
+                    {% if segment.planting %}{{ segment.label }}{% else %}fallow ({{ segment.bed_start }}-{{ segment.bed_end }}){% endif %}
                 </a>
                 {% endfor %}
             </div>

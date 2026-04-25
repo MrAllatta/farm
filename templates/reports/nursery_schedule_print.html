@@ -1,6 +1,6 @@
 {# reports/nursery_schedule_print.html #}
 {% extends "base.html" %}
-{% load static %}
+{% load static planning_tags %}
 
 {% block title %}Nursery Schedule — {{ year.year }}{% endblock %}
 
@@ -48,7 +48,8 @@
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 5%;">WK</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 10%;">DATE</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 5%;">TYPE</th>
-                <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 22%;">CROP</th>
+                <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 9%;">PLANTING</th>
+                <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 18%;">CROP</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: left; width: 10%;">DEST BLOCK</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 7%;">TRAYS</th>
                 <th style="padding: 3px 5px; border: 1px solid #333; text-align: center; width: 7%;">SIZE</th>
@@ -62,7 +63,7 @@
             {% if wk_data.events %}
             {# Week section header #}
             <tr style="background: #f0f0ec;">
-                <td colspan="10" style="padding: 2px 5px; border: 1px solid #ccc; font-weight: bold; font-size: 8pt;">
+                <td colspan="11" style="padding: 2px 5px; border: 1px solid #ccc; font-weight: bold; font-size: 8pt;">
                     WEEK {{ wk_data.week_num }} — {{ wk_data.monday|date:"F j, Y" }}
                     · {{ wk_data.bench_trays }} trays on bench
                     {% if wk_data.bench_trays > greenhouse_capacity %}
@@ -80,6 +81,10 @@
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0; font-weight: bold;">
                     {{ ne.get_event_type_display|slice:":4"|upper }}
+                </td>
+                <td style="padding: 2px 5px; border: 1px solid #e0e0e0; font-size: 7.5pt; font-weight: bold;">
+                    {{ ne.planting.planting_code }}
+                    <div class="muted" style="font-size: 7pt; font-weight: normal;">Field wk {{ ne.planting.planned_plant_date|week_num }}</div>
                 </td>
                 <td style="padding: 2px 5px; border: 1px solid #e0e0e0;">
                     {{ ne.planting.crop.name }}

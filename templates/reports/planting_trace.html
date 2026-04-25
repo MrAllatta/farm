@@ -2,7 +2,7 @@
 {% block title %}Traceability — {{ planting.crop.name }}{% endblock %}
 {% block content %}
 <div class="page-header">
-    <h1>{{ view_title }}</h1>
+    <h1>{{ view_title }} <span class="planting-id-badge">{{ planting_display_id }}</span></h1>
     <p class="muted">
         <strong>{{ planting.crop.name }}</strong>
         {% if variety %}<span class="variety">— {{ variety.name }}</span>{% elif planting.variety %}<span class="variety">— {{ planting.variety }}</span>{% endif %}
