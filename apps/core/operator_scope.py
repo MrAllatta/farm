@@ -12,7 +12,7 @@ that have non-excluded plantings in the active planning year — same rule as
 
 from __future__ import annotations
 
-from reference.models import CropSalesFormat, SalesChannel
+from reference.models import CropInfo, CropSalesFormat, SalesChannel
 from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES
 from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
 from planning.models import Planting
@@ -48,3 +48,23 @@ def active_crop_sales_formats_for_planning_year(year_obj):
     if crop_ids:
         products = products.filter(crop_id__in=crop_ids)
     return products
+
+
+def active_crop_info_for_planning_year(year_obj):
+    """LIVE-2: reference crops that have non-excluded plantings in the active year (when set).
+
+    Matches the planting-level crop scope used by ``active_crop_sales_formats_for_planning_year``
+    (weekly order / pack batch product pickers), but returns ``CropInfo`` for ledger forms.
+    """
+    qs = CropInfo.objects.all().order_by("fresh_or_storage", "crop_type", "name")
+    if not year_obj:
+        return qs
+    crop_ids = list(
+        Planting.objects.filter(planning_year=year_obj)
+        .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+        .values_list("crop_id", flat=True)
+        .distinct()
+    )
+    if crop_ids:
+        qs = qs.filter(pk__in=crop_ids)
+    return qs

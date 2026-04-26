@@ -24,10 +24,24 @@
 <div class="analyze-section muted" style="margin-bottom:1rem; font-size:0.95rem;">
     <p style="margin:0 0 0.5rem 0;">
         <strong>What counts as &ldquo;actual yield&rdquo; here:</strong> the sum of per-pick
-        <code>HarvestEvent.actual_quantity</code> for each planting. Market sales
-        (<code>SalesEvent</code> actuals) and sheet-level planting totals are not shown unless they are reflected on those harvest picks.
+        <code>HarvestEvent.actual_quantity</code> for each planting (harvest unit on the pick).
+        <strong>Not included</strong> in the Actual Yield column: market
+        <code>SalesEvent.actual_quantity</code>, pack batch totals, inventory ledger movements, and
+        <code>Planting</code> field-record bedfeet &mdash; unless that field data was copied into harvest picks when staff recorded harvests.
+    </p>
+    <p style="margin:0;">
+        <strong>Timing columns</strong> use <code>Planting</code> actual vs planned plant/harvest dates when those fields are set; they do not infer dates from sales.
     </p>
 </div>
+{% if no_harvest_pick_actuals %}
+<div class="analyze-section muted" style="margin-bottom:1rem; font-size:0.95rem;" data-empty-reason="plan_vs_actual_no_harvest_pick_actuals">
+    <p style="margin:0;">
+        There are <strong>{{ total_plantings }}</strong> plantings this year, but <strong>no</strong>
+        <code>HarvestEvent.actual_quantity</code> values yet, so Actual Yield / variance stay empty.
+        Use <strong>Record harvest</strong> (weekly ops) to log pick-level actuals; until then this table is plan-only by design.
+    </p>
+</div>
+{% endif %}
 {% if harvest_actual_rows == 0 and sales_actual_rows > 0 %}
 <div class="analyze-section muted" style="margin-bottom:1rem; font-size:0.95rem;" data-empty-reason="harvest_actuals_missing_with_sales_actuals">
     <p style="margin:0;">

@@ -5,28 +5,28 @@
     "failure_signatures": [],
     "models": {
       "Block": {
-        "created": 0,
+        "created": 4,
         "error": 0,
         "skipped": 0,
-        "updated": 4
+        "updated": 0
       },
       "CropBySeason": {
-        "created": 0,
+        "created": 14,
         "error": 0,
         "skipped": 0,
-        "updated": 21
+        "updated": 7
       },
       "CropInfo": {
-        "created": 0,
+        "created": 5,
         "error": 0,
         "skipped": 0,
-        "updated": 12
+        "updated": 7
       },
       "CropSalesFormat": {
-        "created": 0,
+        "created": 19,
         "error": 0,
         "skipped": 0,
-        "updated": 20
+        "updated": 1
       },
       "FieldWalkNote": {
         "created": 30,
@@ -41,10 +41,10 @@
         "updated": 0
       },
       "InventoryLedger": {
-        "created": 0,
+        "created": 138,
         "error": 0,
         "skipped": 0,
-        "updated": 138
+        "updated": 0
       },
       "NurseryEvent": {
         "created": 0,
@@ -77,10 +77,10 @@
         "updated": 0
       },
       "QuickSalesEntry": {
-        "created": 0,
+        "created": 9,
         "error": 0,
         "skipped": 0,
-        "updated": 9
+        "updated": 0
       },
       "RotationHistory": {
         "created": 77,
@@ -89,16 +89,16 @@
         "updated": 0
       },
       "SalesChannel": {
-        "created": 0,
+        "created": 6,
         "error": 0,
         "skipped": 0,
-        "updated": 6
+        "updated": 0
       },
       "SalesEvent": {
-        "created": 0,
+        "created": 33,
         "error": 0,
         "skipped": 0,
-        "updated": 33
+        "updated": 0
       },
       "Variety": {
         "created": 0,
@@ -110,10 +110,10 @@
     "row_errors": [],
     "row_warnings": [],
     "totals": {
-      "created": 235,
+      "created": 463,
       "error": 0,
       "skipped": 0,
-      "updated": 245
+      "updated": 17
     }
   },
   "run": {
@@ -121,10 +121,10 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-26T14:53:11.457518Z",
-    "run_id": "20260426T145310705741",
+    "finished_at": "2026-04-26T15:00:34.292810Z",
+    "run_id": "20260426T150033508740",
     "start_year": 2021,
-    "started_at": "2026-04-26T14:53:10.705741Z",
+    "started_at": "2026-04-26T15:00:33.508740Z",
     "validate_only": false,
     "verbose": false
   },

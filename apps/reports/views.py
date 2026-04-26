@@ -1454,8 +1454,11 @@ class PlanVsActualView(AnalyzeViewMixin, TemplateView):
                     "rows": [],
                     "total_plantings": 0,
                     "with_actuals": 0,
+                    "sales_actual_rows": 0,
+                    "harvest_actual_rows": 0,
                     "overperformers": [],
                     "underperformers": [],
+                    "no_harvest_pick_actuals": False,
                 }
             )
             return ctx
@@ -1540,6 +1543,7 @@ class PlanVsActualView(AnalyzeViewMixin, TemplateView):
             planning_year=year_obj,
             actual_quantity__isnull=False,
         ).count()
+        no_harvest_pick_actuals = bool(rows) and not with_actuals
 
         overperformers = [
             r for r in with_actuals if r["yield_variance_pct"] and r["yield_variance_pct"] > 10
@@ -1555,6 +1559,7 @@ class PlanVsActualView(AnalyzeViewMixin, TemplateView):
                 "with_actuals": len(with_actuals),
                 "sales_actual_rows": sales_actual_rows,
                 "harvest_actual_rows": len(with_actuals),
+                "no_harvest_pick_actuals": no_harvest_pick_actuals,
                 "overperformers": sorted(
                     overperformers, key=lambda r: r["yield_variance_pct"], reverse=True
                 )[:10],

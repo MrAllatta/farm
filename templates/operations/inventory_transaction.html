@@ -15,11 +15,30 @@
     <p class="muted">
         For opening inventory, choose <strong>Count Adjustment</strong> and include a note like <strong>"from prior year"</strong>.
     </p>
+    {% if current_planning_year %}
+    <p class="muted">
+        <strong>Crop list scope:</strong> matches crops with plantings in the active
+        <strong>{{ current_planning_year.year }}</strong> plan — the same planting-level rule as weekly order and pack batch
+        (not the full reference catalog).
+        {% if user.is_staff %}
+        For <strong>off-plan</strong> ledger work (carry-over, catalog-only crops), open this page with
+        <code>?scope=full</code> to show every <code>CropInfo</code> row.
+        {% endif %}
+    </p>
+    {% endif %}
+    {% if inventory_crop_scope_full_catalog %}
+    <p class="muted" data-staff-hint="inventory_full_crop_catalog">
+        Showing <strong>full reference crop catalog</strong> (staff carve-out). Prefer the default list when the crop is in the active plan.
+    </p>
+    {% endif %}
 </section>
 
 <section class="panel">
     <form method="post">
         {% csrf_token %}
+        {% if inventory_crop_scope_full_catalog %}
+        <input type="hidden" name="scope" value="full">
+        {% endif %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Save Transaction</button>
         <a href="{% url 'operations:inventory' %}" class="btn">Back to Inventory</a>

@@ -594,3 +594,12 @@ class PlanVsActualReportCopyTests(TestCase):
             'data-empty-reason="plan_vs_actual_no_plantings"',
             html=False,
         )
+
+    def test_plan_vs_actual_plantings_without_harvest_actuals_explains_empty_yield(self):
+        response = self.client.get(reverse("reports:plan_vs_actual"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'data-empty-reason="plan_vs_actual_no_harvest_pick_actuals"',
+            html=False,
+        )

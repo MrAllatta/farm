@@ -5,10 +5,10 @@
     "failure_signatures": [],
     "models": {
       "Block": {
-        "created": 0,
+        "created": 1,
         "error": 0,
         "skipped": 0,
-        "updated": 1
+        "updated": 0
       },
       "CropBySeason": {
         "created": 0,
@@ -23,10 +23,10 @@
         "updated": 1
       },
       "CropSalesFormat": {
-        "created": 0,
+        "created": 1,
         "error": 0,
         "skipped": 0,
-        "updated": 1
+        "updated": 0
       },
       "ProductRecipe": {
         "created": 0,
@@ -41,16 +41,16 @@
         "updated": 0
       },
       "RotationHistory": {
-        "created": 77,
+        "created": 69,
         "error": 0,
         "skipped": 0,
         "updated": 0
       },
       "SalesChannel": {
-        "created": 0,
+        "created": 1,
         "error": 0,
         "skipped": 0,
-        "updated": 1
+        "updated": 0
       },
       "Variety": {
         "created": 0,
@@ -62,10 +62,10 @@
     "row_errors": [],
     "row_warnings": [],
     "totals": {
-      "created": 77,
+      "created": 72,
       "error": 0,
       "skipped": 0,
-      "updated": 5
+      "updated": 2
     }
   },
   "run": {
@@ -73,10 +73,10 @@
     "data_dir": "farm/data/import_fixtures/clean",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-26T14:53:08.290323Z",
-    "run_id": "20260426T145308088803",
+    "finished_at": "2026-04-26T15:00:31.068724Z",
+    "run_id": "20260426T150030875933",
     "start_year": 2021,
-    "started_at": "2026-04-26T14:53:08.088803Z",
+    "started_at": "2026-04-26T15:00:30.875933Z",
     "validate_only": false,
     "verbose": false
   },

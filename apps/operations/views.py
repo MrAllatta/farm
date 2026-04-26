@@ -16,6 +16,7 @@ from operations.models import InventoryLedger, FieldWalkNote, PackAllocation, Pa
 from sales.models import SalesEvent
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlantingStatus
 from core.operator_scope import (
+    active_crop_info_for_planning_year,
     active_crop_sales_formats_for_planning_year,
     first_operator_sales_channel,
     operator_sales_channels,
@@ -597,7 +598,7 @@ class InventoryTransactionView(FormView):
 
     class TransactionForm(forms.Form):
         crop = forms.ModelChoiceField(
-            queryset=CropInfo.objects.all().order_by("fresh_or_storage", "crop_type", "name")
+            queryset=CropInfo.objects.none(),
         )
         event_type = forms.ChoiceField(
             choices=[
@@ -619,6 +620,28 @@ class InventoryTransactionView(FormView):
         )
 
     form_class = TransactionForm
+
+    def _staff_requests_full_crop_catalog(self) -> bool:
+        if not self.request.user.is_authenticated or not self.request.user.is_staff:
+            return False
+        return self.request.GET.get("scope") == "full" or self.request.POST.get("scope") == "full"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        year = get_effective_planning_year(self.request)
+        if self._staff_requests_full_crop_catalog():
+            form.fields["crop"].queryset = CropInfo.objects.all().order_by(
+                "fresh_or_storage", "crop_type", "name"
+            )
+        else:
+            form.fields["crop"].queryset = active_crop_info_for_planning_year(year)
+        return form
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["current_planning_year"] = get_effective_planning_year(self.request)
+        ctx["inventory_crop_scope_full_catalog"] = self._staff_requests_full_crop_catalog()
+        return ctx
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:

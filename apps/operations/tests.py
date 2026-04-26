@@ -813,6 +813,86 @@ class MissingPlantingsFieldClockTests(TestCase):
         self.assertContains(r, "planting_date_year_mismatch")
 
 
+class InventoryTransactionCropScopeTests(TestCase):
+    """LIVE-2: inventory add crop picker matches in-year planting scope (with staff carve-out)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.staff = User.objects.create_user("inv-scope-staff", password="pw", is_staff=True)
+        cls.year = PlanningYear.objects.create(year=2027, status="active")
+        cls.block = Block.objects.create(
+            name="Inv Scope Block",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet=Decimal("3.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        cls.crop_in_plan = CropInfo.objects.create(
+            name="In Plan Kale",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="lb",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        cls.crop_catalog_only = CropInfo.objects.create(
+            name="Catalog Only Tomato",
+            crop_type="Vegetables",
+            fresh_or_storage="fresh",
+            harvest_unit="lb",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        cs = CropBySeason.objects.create(
+            crop=cls.crop_in_plan,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.0"),
+            harvest_weeks=3,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        plant_date = date(2027, 5, 1)
+        Planting.objects.create(
+            planning_year=cls.year,
+            crop=cls.crop_in_plan,
+            crop_season=cs,
+            block=cls.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=plant_date,
+            planned_first_harvest_date=plant_date,
+            planned_last_harvest_date=plant_date + timedelta(weeks=2),
+            planned_total_yield=Decimal("40"),
+            status="planned",
+        )
+
+    def setUp(self):
+        self.client.force_login(self.staff)
+        session = self.client.session
+        session["planning_year_id"] = self.year.pk
+        session.save()
+
+    def test_inventory_add_default_hides_catalog_only_crop(self):
+        url = reverse("operations:inventory_add")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "In Plan Kale")
+        self.assertNotContains(response, "Catalog Only Tomato")
+
+    def test_inventory_add_scope_full_shows_catalog_only_crop(self):
+        url = reverse("operations:inventory_add") + "?scope=full"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "In Plan Kale")
+        self.assertContains(response, "Catalog Only Tomato")
+        self.assertContains(response, 'data-staff-hint="inventory_full_crop_catalog"')
+
+
 class PlantingScheduleChipCssClassTests(TestCase):
     def test_format_planting_display_id_zero_pads(self):
         self.assertEqual(format_planting_display_id(1), "P-00001")

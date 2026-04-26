@@ -42,6 +42,95 @@ from reference.models import (
     Variety,
 )
 from core.spreadsheet_connector import normalize_rows
+from core.operator_scope import (
+    active_crop_info_for_planning_year,
+    operator_sales_channels,
+)
+from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES
+
+
+class OperatorScopeHygieneTests(TestCase):
+    """LIVE-6 / LIVE-7: operator pickers exclude 301 rollup pseudo-channels; crop scope helpers stay aligned."""
+
+    def test_operator_sales_channels_excludes_annual_plan_rollups(self):
+        SalesChannel.objects.all().delete()
+        SalesChannel.objects.create(
+            name="Markets (annual plan)",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0"),
+            is_csa=False,
+            allocation_priority=99,
+        )
+        outlet = SalesChannel.objects.create(
+            name="Saturday Market",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0"),
+            is_csa=False,
+            allocation_priority=1,
+        )
+        names = {c.name for c in operator_sales_channels()}
+        self.assertNotIn("Markets (annual plan)", names)
+        self.assertIn("Saturday Market", names)
+        self.assertEqual(len(names), 1)
+        self.assertTrue(ROLLUP_PLAN_CHANNEL_NAMES)
+
+    def test_active_crop_info_matches_planting_scope_for_year(self):
+        year = PlanningYear.objects.create(year=2033, status="active")
+        block = Block.objects.create(
+            name="Scope Block",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet=Decimal("3.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        c1 = CropInfo.objects.create(
+            name="Scoped Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="lb",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        CropInfo.objects.create(
+            name="Other Catalog Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="lb",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        cs = CropBySeason.objects.create(
+            crop=c1,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.0"),
+            harvest_weeks=3,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        pd = date(2033, 6, 1)
+        Planting.objects.create(
+            planning_year=year,
+            crop=c1,
+            crop_season=cs,
+            block=block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=pd,
+            planned_first_harvest_date=pd,
+            planned_last_harvest_date=pd,
+            planned_total_yield=Decimal("10"),
+            status="planned",
+        )
+        qs = active_crop_info_for_planning_year(year)
+        self.assertEqual(list(qs.values_list("name", flat=True)), ["Scoped Crop"])
 
 
 class ImportHistoricalDataCommandTests(TestCase):

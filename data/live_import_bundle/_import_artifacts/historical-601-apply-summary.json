@@ -891,6 +891,7 @@
         "row": 418
       }
     ],
+    "row_warnings": [],
     "totals": {
       "created": 9605,
       "error": 0,
@@ -903,13 +904,13 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/historical-601",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-26T01:58:19.191083Z",
-    "run_id": "20260426T015804994092",
+    "finished_at": "2026-04-26T14:58:50.461800Z",
+    "run_id": "20260426T145836457051",
     "start_year": 2024,
-    "started_at": "2026-04-26T01:58:04.994092Z",
+    "started_at": "2026-04-26T14:58:36.457051Z",
     "validate_only": false,
     "verbose": false
   },
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "status": "ok"
 }
