@@ -16,6 +16,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from isoweek import Week
 
+from core.planning_year import PLANNING_YEAR_SESSION_KEY
 from operations.planting_display import planting_unit_code
 
 from planning.models import HarvestEvent, PlanningYear, Planting
@@ -27,7 +28,10 @@ from planning.services.planting_events_repair import repair_planting_events
 
 class SalesPlanShortageTests(TestCase):
     def setUp(self):
-        self.year = PlanningYear.objects.create(year=2098, status="active")
+        staff = get_user_model().objects.create_user("sales-plan-t", password="pw", is_staff=True)
+        self.client.force_login(staff)
+        # 2026/2027 is the clock window; 2026 may appear from other tests' imports — use 2027 + session.
+        self.year = PlanningYear.objects.create(year=2027, status="active")
         self.channel = SalesChannel.objects.create(
             name="Stand",
             days_of_week=["Saturday"],
@@ -79,13 +83,13 @@ class SalesPlanShortageTests(TestCase):
             bed_start=1,
             bed_end=1,
             planned_bedfeet=100,
-            planned_plant_date=date(2098, 5, 1),
-            planned_first_harvest_date=date(2098, 6, 1),
-            planned_last_harvest_date=date(2098, 6, 28),
+            planned_plant_date=date(2027, 5, 1),
+            planned_first_harvest_date=date(2027, 6, 1),
+            planned_last_harvest_date=date(2027, 6, 28),
             planned_total_yield=Decimal("100.00"),
         )
         wk = 20
-        mon = Week(2098, wk).monday()
+        mon = Week(2027, wk).monday()
         SalesEvent.objects.create(
             entry_kind=SalesEvent.EntryKind.PLAN,
             planning_year=self.year,
@@ -101,6 +105,10 @@ class SalesPlanShortageTests(TestCase):
             planned_quantity=Decimal("100.00"),
             planned_units="pounds",
         )
+        self.client.get("/healthz/")
+        s = self.client.session
+        s[PLANNING_YEAR_SESSION_KEY] = self.year.id
+        s.save()
 
     def test_shortage_magnitude_and_row_totals(self):
         response = self.client.get(
@@ -119,6 +127,102 @@ class SalesPlanShortageTests(TestCase):
         self.assertGreater(row["row_total_demand"], Decimal("0"))
         self.assertGreater(row["row_total_supply"], Decimal("0"))
         self.assertIsNotNone(row["row_ratio"])
+
+
+class SalesPlanProductScopeTests(TestCase):
+    """LIVE-2: sales plan product grid uses active_crop_sales_formats_for_planning_year."""
+
+    def setUp(self):
+        u = get_user_model().objects.create_user("sp-scope", password="pw", is_staff=True)
+        self.client.force_login(u)
+        self.year = PlanningYear.objects.create(year=2027, status="active")
+        self.channel = SalesChannel.objects.create(
+            name="Scope Channel",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target="100.00",
+            is_csa=False,
+            allocation_priority=1,
+        )
+        self.block = Block.objects.create(
+            name="S1",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("3.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        self.crop_in = CropInfo.objects.create(
+            name="In Plan Only",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("0.3"),
+            nursery_weeks=0,
+        )
+        self.crop_out = CropInfo.objects.create(
+            name="Reference Only",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("0.3"),
+            nursery_weeks=0,
+        )
+        for c in (self.crop_in, self.crop_out):
+            CropBySeason.objects.create(
+                crop=c,
+                block_type="field",
+                field_week_start=1,
+                field_week_end=50,
+                total_yield_per_bedfoot=Decimal("1.00"),
+                harvest_weeks=4,
+                dtm_days=30,
+                rows_per_bed=3,
+            )
+        self.product_in = CropSalesFormat.objects.create(
+            crop=self.crop_in,
+            product_name="In crop bunches",
+            sale_price=Decimal("2.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+        )
+        self.product_out = CropSalesFormat.objects.create(
+            crop=self.crop_out,
+            product_name="Ref catalog bunches",
+            sale_price=Decimal("2.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+        )
+        self.cs_in = CropBySeason.objects.get(crop=self.crop_in, block_type="field")
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_in,
+            crop_season=self.cs_in,
+            block=self.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=80,
+            planned_plant_date=date(2027, 5, 1),
+            planned_first_harvest_date=date(2027, 6, 1),
+            planned_last_harvest_date=date(2027, 6, 20),
+            planned_total_yield=Decimal("20.00"),
+        )
+        self.client.get("/healthz/")
+        s = self.client.session
+        s[PLANNING_YEAR_SESSION_KEY] = self.year.id
+        s.save()
+
+    def test_grid_excludes_product_when_crop_not_on_plan(self):
+        response = self.client.get(
+            reverse("planning:sales_plan_by_channel"),
+            {"channel": str(self.channel.pk)},
+        )
+        self.assertEqual(response.status_code, 200)
+        ids = {r["product"].id for r in response.context["product_rows"]}
+        self.assertIn(self.product_in.id, ids)
+        self.assertNotIn(self.product_out.id, ids)
+        self.assertContains(response, "Product rows match the active crop plan")
 
 
 class EvenSplitSaleUnitsTests(TestCase):

@@ -24,66 +24,21 @@
     "apply": {
       "status": "ok",
       "totals": {
-        "created": 31,
-        "updated": 5,
+        "created": 72,
+        "updated": 2,
         "skipped": 0,
         "error": 0
       },
       "models": {
-        "Block": {
-          "created": 0,
-          "updated": 1,
-          "skipped": 0,
-          "error": 0
-        },
-        "CropBySeason": {
-          "created": 0,
-          "updated": 1,
-          "skipped": 0,
-          "error": 0
-        },
-        "CropInfo": {
-          "created": 0,
-          "updated": 1,
-          "skipped": 0,
-          "error": 0
-        },
-        "CropSalesFormat": {
-          "created": 0,
-          "updated": 1,
-          "skipped": 0,
-          "error": 0
-        },
-        "ProductRecipe": {
-          "created": 0,
-          "updated": 0,
-          "skipped": 0,
-          "error": 0
-        },
-        "ProductRecipeComponent": {
-          "created": 0,
-          "updated": 0,
-          "skipped": 0,
-          "error": 0
-        },
-        "RotationHistory": {
-          "created": 31,
-          "updated": 0,
-          "skipped": 0,
-          "error": 0
-        },
-        "SalesChannel": {
-          "created": 0,
-          "updated": 1,
-          "skipped": 0,
-          "error": 0
-        },
-        "Variety": {
-          "created": 0,
-          "updated": 0,
-          "skipped": 0,
-          "error": 0
-        }
+        "Block": { "created": 1, "error": 0, "skipped": 0, "updated": 0 },
+        "CropBySeason": { "created": 0, "error": 0, "skipped": 0, "updated": 1 },
+        "CropInfo": { "created": 0, "error": 0, "skipped": 0, "updated": 1 },
+        "CropSalesFormat": { "created": 1, "error": 0, "skipped": 0, "updated": 0 },
+        "ProductRecipe": { "created": 0, "error": 0, "skipped": 0, "updated": 0 },
+        "ProductRecipeComponent": { "created": 0, "error": 0, "skipped": 0, "updated": 0 },
+        "RotationHistory": { "created": 69, "error": 0, "skipped": 0, "updated": 0 },
+        "SalesChannel": { "created": 1, "error": 0, "skipped": 0, "updated": 0 },
+        "Variety": { "created": 0, "error": 0, "skipped": 0, "updated": 0 }
       }
     }
   }

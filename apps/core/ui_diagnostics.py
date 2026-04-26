@@ -109,6 +109,67 @@ def harvest_surface_hints(
     return out
 
 
+def crop_plan_product_scope_hints(weekly_order_products_scope: str) -> list[dict[str, str]]:
+    """LIVE-7: shared copy for weekly order (and staff explanations elsewhere).
+
+    ``scope`` matches ``WeeklyChannelOrderView._weekly_order_crop_sales_formats``:
+    ``full_catalog`` | ``crop_plan_week`` | ``crop_plan_inexact_week``.
+    """
+    if weekly_order_products_scope == "crop_plan_inexact_week":
+        return [
+            {
+                "id": "weekly_order_products_not_this_iso_week",
+                "title": "Product list is limited to the crop plan, not this ISO week’s harvest window",
+                "detail": (
+                    "No plantings have a harvest window overlapping this ISO week, so every in-plan crop "
+                    "is still shown for ordering. This is a scope filter (off-season or shoulder week), not a "
+                    "missing-data bug — switch weeks or extend harvest dates if the list should narrow further."
+                ),
+            }
+        ]
+    return []
+
+
+def sales_plan_product_scope_explanations(*, has_in_plan_plantings: bool) -> list[dict[str, str]]:
+    """Sales plan: why the product list width differs from a single ISO week (LIVE-2 + LIVE-7)."""
+    out: list[dict[str, str]] = []
+    if has_in_plan_plantings:
+        out.append(
+            {
+                "id": "sales_plan_products_limited_to_crop_plan",
+                "title": "Product rows match the active crop plan",
+                "detail": (
+                    "Only crops with at least one in-scope planting in this planning year appear — the same product "
+                    "scope as the weekly channel order, pack prep, and inventory pickers. This grid is for the full "
+                    "calendar year; it is not ISO-week–narrowed like the weekly order screen."
+                ),
+            }
+        )
+    else:
+        out.append(
+            {
+                "id": "sales_plan_products_full_until_plantings",
+                "title": "No plantings in this year yet — full product catalog",
+                "detail": (
+                    "Once the crop plan has plantings, this grid will narrow to those crops’ products. "
+                    "Add plantings in the crop planner, or use season init / rollover if you are starting a new year."
+                ),
+            }
+        )
+    out.append(
+        {
+            "id": "sales_plan_iso_week_explanation",
+            "title": "Off-season “long” weekly lists use the same scope rule as this grid",
+            "detail": (
+                "On the weekly channel order, when no harvest window overlaps the selected ISO week, the staff "
+                "hint “Product list is limited to the crop plan, not this ISO week’s harvest window” appears — that "
+                "is expected scope, not a silent bug. This annual view always lists the year’s planned product rows."
+            ),
+        }
+    )
+    return out
+
+
 def weekly_order_surface_hints(
     *,
     plan_raw_week: int,
@@ -170,18 +231,7 @@ def weekly_order_surface_hints(
                 ),
             }
         )
-    if weekly_order_products_scope == "crop_plan_inexact_week":
-        out.append(
-            {
-                "id": "weekly_order_products_not_this_iso_week",
-                "title": "Product list is limited to the crop plan, not this ISO week’s harvest window",
-                "detail": (
-                    "No plantings have a harvest window overlapping this ISO week, so every in-plan crop "
-                    "is still shown for ordering. Switch weeks or extend harvest dates if the list "
-                    "should narrow further."
-                ),
-            }
-        )
+    out.extend(crop_plan_product_scope_hints(weekly_order_products_scope))
     if namesake_actuals_on_other_channel and not has_any_historical:
         out.append(
             {

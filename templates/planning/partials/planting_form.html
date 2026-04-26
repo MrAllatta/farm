@@ -35,6 +35,12 @@
         </div>
         {% endif %}
         
+        {% if planting_form_full_reference_catalog %}
+        <p class="muted" style="margin:0 0 0.5rem 0; font-size:0.9rem;">
+            Crop list uses the <strong>full reference catalog</strong> so you can add a first planting for any crop.
+            Weekly order, pack prep, and inventory product pickers narrow to crops on the active plan once plantings exist.
+        </p>
+        {% endif %}
         {# Crop selection — the most important field #}
         <div class="form-group">
             <label for="id_crop">Crop *</label>

@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 from django.contrib.auth import get_user_model
 from django.core.management.base import CommandError, SystemCheckError
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 from django.urls import get_resolver, reverse
@@ -46,6 +46,7 @@ from core.operator_scope import (
     active_crop_info_for_planning_year,
     operator_sales_channels,
 )
+from core.ui_diagnostics import crop_plan_product_scope_hints
 from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES
 
 
@@ -131,6 +132,48 @@ class OperatorScopeHygieneTests(TestCase):
         )
         qs = active_crop_info_for_planning_year(year)
         self.assertEqual(list(qs.values_list("name", flat=True)), ["Scoped Crop"])
+
+
+class LiveNineFrozenCleanBundleTests(TransactionTestCase):
+    """LIVE-9: repo frozen `import_fixtures/clean` rows reconcile to ORM after apply (no live Sheets)."""
+
+    def setUp(self):
+        self.clean_bundle = Path(__file__).resolve().parent.parent.parent / "data" / "import_fixtures" / "clean"
+
+    def _csv_row_count(self, name: str) -> int:
+        with (self.clean_bundle / name).open(newline="") as handle:
+            return sum(1 for _ in csv.DictReader(handle))
+
+    def test_clean_bundle_apply_reconciles_csv_and_rotation_history_to_orm(self):
+        from tempfile import NamedTemporaryFile
+
+        with NamedTemporaryFile(suffix=".json", delete=False) as tmp:
+            out_path = Path(tmp.name)
+        try:
+            call_command("import_historical_data", str(self.clean_bundle), "--summary-json", str(out_path))
+            summary = json.loads(out_path.read_text(encoding="utf-8"))
+        finally:
+            out_path.unlink(missing_ok=True)
+        self.assertEqual(summary["status"], "ok")
+        models = summary["results"]["models"]
+        self.assertEqual(Block.objects.count(), self._csv_row_count("blocks.csv"))
+        self.assertEqual(
+            Block.objects.count(),
+            models["Block"]["created"],
+            msg="Empty DB: Block rows should match importer created count",
+        )
+        self.assertEqual(CropInfo.objects.count(), self._csv_row_count("crop_info.csv"))
+        self.assertEqual(CropSalesFormat.objects.count(), self._csv_row_count("crop_sales_formats.csv"))
+        self.assertEqual(SalesChannel.objects.count(), self._csv_row_count("sales_channels.csv"))
+        self.assertEqual(
+            RotationHistory.objects.count(),
+            models["RotationHistory"]["created"],
+        )
+
+    def test_crop_plan_inexact_hint_matches_weekly_order_id(self):
+        h = crop_plan_product_scope_hints("crop_plan_inexact_week")
+        self.assertEqual(len(h), 1)
+        self.assertEqual(h[0]["id"], "weekly_order_products_not_this_iso_week")
 
 
 class ImportHistoricalDataCommandTests(TestCase):

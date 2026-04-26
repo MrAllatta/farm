@@ -45,7 +45,7 @@
                     {% include "planning/partials/nursery_event_tray_meta.html" with event=event only %}
                 </li>
                 {% empty %}
-                <li class="muted">No seedings</li>
+                <li class="muted" data-empty-reason="nursery_no_seedings_week">No tray seeding work in this week section — events come from generated <code>NurseryEvent (seed)</code> rows on the crop plan. Try another week focus or confirm plantings have nursery lead time and events after import.</li>
                 {% endfor %}
             </ul>
         </div>
@@ -59,7 +59,7 @@
                     {% include "planning/partials/nursery_event_tray_meta.html" with event=event only %}
                 </li>
                 {% empty %}
-                <li class="muted">No pot-up work</li>
+                <li class="muted" data-empty-reason="nursery_no_potup_week">No pot-up work in this week — pot-up <code>NurseryEvent</code> rows are generated from plantings. Empty can be normal for this window.</li>
                 {% endfor %}
             </ul>
         </div>

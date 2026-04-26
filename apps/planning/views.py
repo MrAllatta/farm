@@ -10,7 +10,11 @@ from django.views.generic import TemplateView
 from django.db.models import Max, Q, Sum
 from isoweek import Week
 
-from core.operator_scope import operator_sales_channels
+from core.operator_scope import (
+    active_crop_info_for_planning_year,
+    active_crop_sales_formats_for_planning_year,
+    operator_sales_channels,
+)
 from reference.models import (
     Block,
     BlockType,
@@ -37,7 +41,12 @@ from operations.planting_display import (
 )
 from .models import Planting, HarvestEvent, NurseryEvent, PlantingStatus, PlanningYear
 from core.planning_year import get_effective_planning_year, set_session_planning_year
-from core.ui_diagnostics import nursery_surface_hints, sales_plan_surface_hints
+from core.ui_diagnostics import (
+    nursery_surface_hints,
+    sales_plan_product_scope_explanations,
+    sales_plan_surface_hints,
+)
+from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
 from .services.planting_events_repair import count_plantings_missing_harvest_events
 from django.views.generic import DetailView, CreateView, UpdateView, View, FormView
 from sales.models import SalesEvent
@@ -571,7 +580,7 @@ class SuccessionsByBlockView(ActivePlanningYearMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         crop_id = self.request.GET.get("crop")
-        crops = CropInfo.objects.all().order_by("crop_type", "name")
+        crops = active_crop_info_for_planning_year(self.year_obj)
         plantings_qs = (
             Planting.objects.filter(planning_year=self.year_obj)
             .exclude(status__in=["skipped", "failed", "revised"])
@@ -700,6 +709,7 @@ class PlantingFormContextMixin:
                 "selected_block": selected_block,
                 "crop_season_choices": self._get_crop_season_choices(selected_crop, selected_block),
                 "is_htmx": bool(self.request.headers.get("HX-Request")),
+                "planting_form_full_reference_catalog": True,
             }
         )
         return ctx
@@ -1535,7 +1545,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
 
     def _save_plan_rows(self, request, channel=None, sales_category=None):
         updated = 0
-        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop")
+        products = active_crop_sales_formats_for_planning_year(self.year_obj).select_related("crop")
 
         if self.sales_plan_mode == "rollup" and sales_category is not None:
             operational = list(
@@ -1698,9 +1708,12 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             selected_channel_id = self.request.GET.get("channel")
             channel = channels.filter(id=selected_channel_id).first() if selected_channel_id else channels.first()
 
-        products = CropSalesFormat.objects.filter(is_active=True).select_related("crop").order_by(
+        products = active_crop_sales_formats_for_planning_year(self.year_obj).order_by(
             "crop__crop_type", "crop__name", "product_name"
         )
+        has_in_plan_plantings = Planting.objects.filter(planning_year=self.year_obj).exclude(
+            status__in=EXCLUDED_PLANTING_STATUSES
+        ).exists()
         weeks = list(range(1, 53))
         crop_ids = [product.crop_id for product in products]
         season_profiles = (
@@ -1876,6 +1889,9 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             harvest_event_year_total=harvest_event_year_total,
             plantings_missing_harvest_events=missing_harvest_ct,
         )
+        sales_plan_product_scope_hints = sales_plan_product_scope_explanations(
+            has_in_plan_plantings=has_in_plan_plantings,
+        )
         weekly_order_channel = channel or channels.first()
         weekly_order_week = date.today().isocalendar()[1]
         weekly_order_url = (
@@ -1902,6 +1918,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "rollup_slug": rollup_slug,
                 "rollup_tabs": rollup_tabs,
                 "sales_plan_diagnostic_hints": sales_plan_diagnostic_hints,
+                "sales_plan_product_scope_hints": sales_plan_product_scope_hints,
                 "weekly_order_channel": weekly_order_channel,
                 "weekly_order_week": weekly_order_week,
                 "weekly_order_url": weekly_order_url,

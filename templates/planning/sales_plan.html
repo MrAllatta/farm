@@ -12,6 +12,10 @@
 
 {% include "core/_diagnostic_hints.html" with hints=sales_plan_diagnostic_hints only %}
 
+{% if sales_plan_product_scope_hints %}
+{% include "core/_diagnostic_hints.html" with hints=sales_plan_product_scope_hints only %}
+{% endif %}
+
 {% if weekly_order_url %}
 <section class="panel sales-flow-panel">
     <div>

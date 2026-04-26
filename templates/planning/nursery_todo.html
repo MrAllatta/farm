@@ -20,7 +20,12 @@
     </li>
     {% endwith %}
     {% empty %}
-    <li class="muted">Nothing due in greenhouse for this planning year and 7-day window.</li>
+    <li class="muted" data-empty-reason="nursery_todo_no_events">
+        No tray seed, pot-up, or transplant work is due in the next seven days for <strong>{{ year.year }}</strong>.
+        Greenhouse <code>NurseryEvent</code> rows are generated from crop-plan plantings (nursery lead time); if the crop
+        plan is empty or events were not generated after import, run the repair or generation path from harvest/nursery
+        diagnostics, or pick another week in <a href="{% url 'planning:nursery_schedule' %}">Nursery schedule</a>.
+    </li>
     {% endfor %}
 </ul>
 <h2>Direct seed (field)</h2>
@@ -35,7 +40,12 @@
     </li>
     {% endwith %}
     {% empty %}
-    <li class="muted">No direct-seed plantings in this window.</li>
+    <li class="muted" data-empty-reason="nursery_todo_no_direct_seed">
+        No direct-seed field plantings fall in this 7-day window. Direct-seed rows here come from
+        <code>Planting</code> records with <code>nursery_weeks=0</code> and a planned plant date in range; add or
+        adjust plantings in the <a href="{% url 'planning:matrix' %}">crop planner</a> if you expected on-the-ground
+        work this week.
+    </li>
     {% endfor %}
 </ul>
 {% endblock %}
