@@ -62,6 +62,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "models",
         "totals",
         "row_errors",
+        "row_warnings",
         "failure_signatures",
         "escalation_summary",
     }
@@ -398,7 +399,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         expected_atomic_apply=None,
     ):
         self.assertEqual(set(summary.keys()), self.SUMMARY_TOP_LEVEL_KEYS)
-        self.assertEqual(summary["schema_version"], "1.4")
+        self.assertEqual(summary["schema_version"], "1.5")
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertIn("fatal_error", summary)
         self.assertEqual(set(summary["run"].keys()), self.SUMMARY_RUN_KEYS)
@@ -413,9 +414,11 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(set(summary["results"].keys()), self.SUMMARY_RESULTS_KEYS)
         self.assertEqual(set(summary["results"]["totals"].keys()), self.MODEL_TOTAL_KEYS)
         self.assertIsInstance(summary["results"]["row_errors"], list)
+        self.assertIsInstance(summary["results"]["row_warnings"], list)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
         self.assertIsInstance(summary["results"]["escalation_summary"], list)
         self._assert_row_error_payload_contract(summary["results"]["row_errors"])
+        self._assert_row_error_payload_contract(summary["results"]["row_warnings"])
         self._assert_failure_signature_payload_contract(summary["results"]["failure_signatures"])
         self._assert_escalation_summary_payload_contract(summary["results"]["escalation_summary"])
 
@@ -784,6 +787,21 @@ class ImportHistoricalDataCommandTests(TestCase):
                     },
                 ],
             )
+
+    def test_planting_date_year_mismatch_emits_row_warning(self):
+        from core.management.commands.import_historical_data import Command
+
+        command = Command(stdout=StringIO(), stderr=StringIO())
+        command.row_warnings = []
+        command._record_planting_date_year_mismatch(2026, 2, date(2019, 4, 15))
+        self.assertEqual(len(command.row_warnings), 1)
+        w = command.row_warnings[0]
+        self.assertEqual(w["model"], "Planting")
+        self.assertEqual(w["row"], 2)
+        self.assertEqual(w["code"], "planting_date_year_mismatch")
+        self.assertEqual(w["field_path"], "plantings.planned_plant_date")
+        self.assertIn("2019-04-15", w["message"])
+        self.assertIn("2026", w["message"])
 
     def test_failure_signature_unknown_code_uses_fallback_ownership_mapping(self):
         from core.management.commands.import_historical_data import Command
@@ -4470,12 +4488,14 @@ class BetaGateEvidenceTests(TestCase):
         )
 
     def _assert_summary_contract(self, summary, expected_validate_only, expected_dry_run=False):
-        self.assertIn(summary["schema_version"], {"1.1", "1.2", "1.3", "1.4"})
+        self.assertIn(summary["schema_version"], {"1.1", "1.2", "1.3", "1.4", "1.5"})
         self.assertIn(summary["status"], {"ok", "failed"})
         self.assertEqual(summary["run"]["validate_only"], expected_validate_only)
         self.assertEqual(summary["run"]["dry_run"], expected_dry_run)
         self.assertIn("atomic_apply", summary["run"])
-        self.assertTrue({"models", "totals", "row_errors"} <= set(summary["results"].keys()))
+        self.assertTrue(
+            {"models", "totals", "row_errors", "row_warnings"} <= set(summary["results"].keys())
+        )
 
     def _assert_failure_signature_payload_shape(self, failure_signatures):
         for item in failure_signatures:

@@ -2,6 +2,24 @@
 {% block title %}Missing plantings{% endblock %}
 {% block content %}
 <h1>Missing plantings</h1>
+<div class="muted" style="margin-bottom:0.75rem;" data-missing-plantings-context>
+    <p style="margin:0 0 0.4rem 0;" data-field-clock>
+        <strong>Field clock:</strong> today <strong>{{ today|date:"Y-m-d" }}</strong>
+        · this ISO week <strong>W{{ current_week }}</strong>
+        ({{ field_week_monday|date:"M j" }}–{{ field_week_sunday|date:"M j, Y" }})
+    </p>
+    <p style="margin:0 0 0.4rem 0;">
+        Rows below are <strong>planning year {{ year.year }}</strong> only, ordered by
+        <code>Planned Plant Date</code> from the crop-plan import
+        (for example <code>year_{{ year.year }}/plantings.csv</code> in the import bundle).
+    </p>
+    <p style="margin:0;">
+        If the first column shows a calendar year that does not match this planning year, that usually means
+        a misplaced export row, not a screen bug. Check <code>import_historical_data</code> preflight: it emits
+        <code>planting_date_year_mismatch</code> in summary <code>row_warnings</code> when the date is more than
+        one year from the <code>year_YYYY</code> folder.
+    </p>
+</div>
 <p class="muted">Planned plant date on or before {{ today }} but status is still <strong>planned</strong>.</p>
 <table style="width:100%; border-collapse:collapse;">
     <thead>

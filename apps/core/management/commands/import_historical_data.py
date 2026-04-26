@@ -253,6 +253,7 @@ class Command(BaseCommand):
         self.run_id = self.run_started_at.strftime("%Y%m%dT%H%M%S%f")
         self.summary_json_path = self._resolve_summary_json_path(requested_summary_path)
         self.row_errors = []
+        self.row_warnings: list[dict] = []
 
         # Track statistics (legacy keys may still be populated in row paths).
         self.stats = defaultdict(
@@ -420,6 +421,30 @@ class Command(BaseCommand):
             code="missing_required",
             field_path=field_path,
             message=message,
+        )
+
+    def _record_planting_date_year_mismatch(
+        self, folder_year: int, row_number: int, plant_date: date
+    ) -> None:
+        """LIVE-8: Planned Plant Date calendar year is far from the year_NNNN bundle directory.
+
+        Does not block import; surfaces in preflight/validate and summary row_warnings.
+        """
+        message = (
+            f"Planned Plant Date {plant_date.isoformat()} is more than one year away from "
+            f"bundle folder year {folder_year} — confirm this row belongs in year_{folder_year} "
+            f"(import binds PlanningYear to the folder year; missing-plantings and ops views can "
+            f"show unexpected calendar years if the CSV is misplaced)."
+        )
+        self.stdout.write(self.style.WARNING(f"    ⚠  row {row_number}: {message}"))
+        self.row_warnings.append(
+            {
+                "model": "Planting",
+                "row": row_number,
+                "code": "planting_date_year_mismatch",
+                "field_path": "plantings.planned_plant_date",
+                "message": message,
+            }
         )
 
     def _normalize_rollup_group_to_category(self, group_name):
@@ -1987,6 +2012,8 @@ class Command(BaseCommand):
             return None
 
         plant_date = self._parse_date(plant_date_str)
+        if abs(plant_date.year - year) > 1:
+            self._record_planting_date_year_mismatch(year, i, plant_date)
         variety_raw = row.get("Variety", "") or ""
         variety_text = self._normalize_planting_variety_text(variety_raw)
         variety_obj = self._resolve_planting_variety_fk(crop, variety_text)
@@ -4767,7 +4794,7 @@ class Command(BaseCommand):
 
         failure_signatures = self._build_failure_signatures(status, fatal_error)
         payload = {
-            "schema_version": "1.4",
+            "schema_version": "1.5",
             "status": status,
             "fatal_error": fatal_error,
             "run": {
@@ -4786,6 +4813,7 @@ class Command(BaseCommand):
                 "models": per_model,
                 "totals": totals,
                 "row_errors": self.row_errors,
+                "row_warnings": self.row_warnings,
                 "failure_signatures": failure_signatures,
                 "escalation_summary": self._build_escalation_summary(failure_signatures),
             },
