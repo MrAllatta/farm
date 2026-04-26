@@ -557,6 +557,36 @@ class WeekOpsViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"data-empty-reason=\"no_harvest_events_this_iso_week\"", r.content)
 
+    def test_harvest_needs_shows_weekly_order_handoff_line_summary(self):
+        mon = Week(2026, 18).monday()
+        channel = SalesChannel.objects.create(
+            name="Saturday Market",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0.00"),
+            allocation_priority=1,
+        )
+        product = CropSalesFormat.objects.create(
+            crop=self.planting.crop,
+            product_name="VW Crop bunch",
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            is_active=True,
+        )
+        SalesEvent.objects.create(
+            planning_year=self.year,
+            channel=channel,
+            sale_date=mon,
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            product=product,
+            planned_quantity=Decimal("7.00"),
+        )
+        r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 18}))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Current handoff from")
+        self.assertContains(r, "1 plan line(s)")
+
 
 class HarvestSurfaceHintsTests(TestCase):
     def test_no_committed_sales_demand_hint_when_picks_exist_without_plan_lines(self):
@@ -594,12 +624,53 @@ class InventoryYearCarryoverCopyTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Working year:")
         self.assertContains(response, "from prior year")
+        self.assertIn(b'data-empty-reason="inventory_no_balances"', response.content)
 
     def test_inventory_transaction_guides_opening_snapshot(self):
         response = self.client.get(reverse("operations:inventory_add"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Count Adjustment")
         self.assertContains(response, "from prior year")
+
+    def test_inventory_dashboard_surfaces_returned_carryover_candidates(self):
+        channel = SalesChannel.objects.create(
+            name="Farmers Market",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0"),
+            is_csa=False,
+            allocation_priority=10,
+        )
+        crop = CropInfo.objects.create(
+            name="Kale",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        product = CropSalesFormat.objects.create(
+            crop=crop,
+            product_name="Kale Bunch",
+            sale_price=Decimal("4.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.0"),
+            is_active=True,
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=channel,
+            sale_date=date(2032, 7, 1),
+            product=product,
+            actual_quantity=Decimal("12"),
+            returned_quantity=Decimal("3"),
+        )
+        response = self.client.get(reverse("operations:inventory"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Carry-over candidates")
+        self.assertContains(response, "Kale Bunch")
+        self.assertContains(response, "returned 3.00")
 
 
 class PlantingScheduleChipCssClassTests(TestCase):

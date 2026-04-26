@@ -9,6 +9,7 @@
         Week {{ center_week }} focus · Peak bench load {{ peak_week.trays }} trays in week {{ peak_week.week }}
     </div>
 </div>
+<p class="muted">Planning year context: <strong>{{ year.year }}</strong>.</p>
 
 <div class="nursery-tray-hero" style="margin:1rem 0; padding:1rem; background:#ecfdf5; border-radius:8px; border:1px solid #6ee7b7;">
     <div style="font-size:2rem; font-weight:700; color:#065f46;">{{ tray_highlight_window }}</div>
@@ -16,6 +17,12 @@
 </div>
 
 {% include "core/_diagnostic_hints.html" with hints=nursery_diagnostic_hints only %}
+
+{% if window_total_events == 0 %}
+<p class="muted" data-empty-reason="nursery_window_has_no_events">
+    No nursery events are scheduled in this 4-week planning-year window. Try a different week focus, or verify nursery event generation/import for this year.
+</p>
+{% endif %}
 
 <div style="margin-bottom:1rem;">
     <strong>Capacity:</strong> {{ greenhouse_capacity }} trays

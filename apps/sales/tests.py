@@ -246,7 +246,9 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Weekly handoff")
         self.assertContains(r, "data-weekly-order-empty")
+        self.assertContains(r, "Field walk notes")
         self.assertContains(r, "Harvest needs")
+        self.assertContains(r, "Record harvest")
         self.assertContains(r, "Market sales entry")
 
     def test_weekly_order_shows_field_walk_availability_hint(self):
@@ -688,6 +690,55 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"data-empty-reason=\"all_channel_demand_partially_shadowed\"", r.content)
 
+    def test_weekly_order_warns_when_duplicate_channel_names_exist(self):
+        wk = 30
+        SalesChannel.objects.create(
+            name=self.channel.name,
+            days_of_week=["Sunday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0.00"),
+            is_csa=False,
+            allocation_priority=99,
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'data-empty-reason="duplicate_channel_rows_same_name"', r.content)
+
+    def test_weekly_order_live3_all_channel_demand_uses_week_date_window_boundaries(self):
+        wk = 35
+        mon = Week(2026, wk).monday()
+        sun = mon + timedelta(days=6)
+        next_mon = mon + timedelta(days=7)
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.py_2026,
+            channel=self.channel,
+            product=self.product,
+            sale_date=sun,
+            planned_quantity=Decimal("9"),
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.py_2026,
+            channel=self.channel,
+            product=self.product,
+            sale_date=next_mon,
+            planned_quantity=Decimal("40"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, ">9.0<", html=False)
+        self.assertNotContains(r, ">49.0<", html=False)
+
 
 class MarketSalesEntryLive2Tests(TestCase):
     """LIVE-2: market entry without pack list limits products to crops in the active crop plan."""
@@ -790,6 +841,17 @@ class MarketSalesEntryLive2Tests(TestCase):
             url,
             {"channel": str(self.channel.id), "date": sale_date.isoformat()},
         )
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Kale Bunch")
+        self.assertNotContains(r, "Lettuce Head")
+
+    def test_market_list_print_without_pack_limits_to_crop_plan_crops(self):
+        week = 22
+        url = reverse(
+            "sales:market_list_print",
+            kwargs={"channel_id": self.channel.id, "week": week},
+        )
+        r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Kale Bunch")
         self.assertNotContains(r, "Lettuce Head")

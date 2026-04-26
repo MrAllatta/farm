@@ -519,6 +519,17 @@ class InventoryDashboardView(TemplateView):
 
         fresh_items = [i for i in inventory_items if i["crop"].fresh_or_storage != "storage"]
         storage_items = [i for i in inventory_items if i["crop"].fresh_or_storage == "storage"]
+        carryover_candidates = list(
+            SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                returned_quantity__gt=0,
+            )
+            .select_related("channel", "product")
+            .order_by("-sale_date", "-id")[:8]
+        )
+        carryover_qty_total = sum(
+            (row.returned_quantity or Decimal("0")) for row in carryover_candidates
+        )
 
         def _rollup(section):
             return {
@@ -541,6 +552,8 @@ class InventoryDashboardView(TemplateView):
                 "total_value": total_value,
                 "critical_count": sum(1 for i in inventory_items if i["status"] == "critical"),
                 "warning_count": sum(1 for i in inventory_items if i["status"] == "warning"),
+                "carryover_candidates": carryover_candidates,
+                "carryover_qty_total": carryover_qty_total,
             }
         )
         return ctx
@@ -895,11 +908,17 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
         ctx.update(_weekops_header_context("needs", week_num, self.year_obj, wctx))
         first_channel = SalesChannel.objects.order_by("allocation_priority", "name").first()
         weekly_order_handoff_url = None
+        weekly_order_handoff_line_count = 0
+        weekly_order_handoff_planned_qty = Decimal("0")
         if first_channel:
             weekly_order_handoff_url = reverse(
                 "sales:weekly_channel_order",
                 kwargs={"channel_id": first_channel.id, "week": week_num},
             )
+            rollup = wctx["week_rollup_by_channel"].get(first_channel.id)
+            if rollup:
+                weekly_order_handoff_line_count = len(rollup.get("rows") or [])
+                weekly_order_handoff_planned_qty = rollup.get("planned_qty") or Decimal("0")
         week_rollup_list = sorted(
             wctx["week_rollup_by_crop"].values(),
             key=lambda r: r["crop"].name.lower(),
@@ -934,6 +953,8 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
                 ),
                 "weekly_order_handoff_url": weekly_order_handoff_url,
                 "weekly_order_handoff_channel_name": first_channel.name if first_channel else "",
+                "weekly_order_handoff_line_count": weekly_order_handoff_line_count,
+                "weekly_order_handoff_planned_qty": weekly_order_handoff_planned_qty,
             }
         )
         return ctx

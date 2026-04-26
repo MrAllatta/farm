@@ -44,7 +44,7 @@
     <ol class="sales-order-steps">
         <li><strong>Review context:</strong> annual plan, prior-year same-week actuals, and field-walk availability hints.</li>
         <li><strong>Set order:</strong> adjust this channel’s quantities for weather, customer demand, and expected harvest.</li>
-        <li><strong>Send downstream:</strong> saved PLAN rows on this screen are the handoff into <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a>, pack prep, market list, and sales entry for the same ISO week.</li>
+        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen drive <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a>, then pack prep, market list, and sales entry for this ISO week.</li>
     </ol>
     <div class="sales-order-summary">
         <span><strong>{{ planned_line_count }}</strong> planned lines</span>
@@ -56,7 +56,9 @@
 <section class="panel no-print">
     <h2>Downstream</h2>
     <ul class="muted" style="margin:0;">
+        <li><a href="{% url 'operations:weekops_walk' week=week_num %}">Field walk notes (week {{ week_num }})</a></li>
         <li><a href="{% url 'operations:weekops_needs' week=week_num %}">Harvest needs (week {{ week_num }})</a></li>
+        <li><a href="{% url 'operations:weekops_record' week=week_num %}">Record harvest (week {{ week_num }})</a></li>
         <li><a href="{% url 'operations:pack_prep' %}?channel={{ channel.id }}&amp;pack_date={{ week_monday|date:'Y-m-d' }}">Pack prep ({{ week_monday|date:"M j" }})</a></li>
         <li><a href="{% url 'sales:market_list_print' channel.id week_num %}">Print market list</a></li>
         <li><a href="{% url 'sales:market_entry' %}?channel={{ channel.id }}&amp;date={{ week_monday|date:'Y-m-d' }}">Market sales entry</a></li>

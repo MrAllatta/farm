@@ -1534,6 +1534,11 @@ class PlanVsActualView(AnalyzeViewMixin, TemplateView):
 
         # Summary
         with_actuals = [r for r in rows if r["has_actuals"]]
+        sales_actual_rows = SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            planning_year=year_obj,
+            actual_quantity__isnull=False,
+        ).count()
 
         overperformers = [
             r for r in with_actuals if r["yield_variance_pct"] and r["yield_variance_pct"] > 10
@@ -1547,6 +1552,8 @@ class PlanVsActualView(AnalyzeViewMixin, TemplateView):
                 "rows": rows,
                 "total_plantings": len(rows),
                 "with_actuals": len(with_actuals),
+                "sales_actual_rows": sales_actual_rows,
+                "harvest_actual_rows": len(with_actuals),
                 "overperformers": sorted(
                     overperformers, key=lambda r: r["yield_variance_pct"], reverse=True
                 )[:10],

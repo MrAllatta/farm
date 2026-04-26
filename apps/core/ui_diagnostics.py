@@ -119,6 +119,7 @@ def weekly_order_surface_hints(
     historical_name_fallback: bool = False,
     positive_week_demand_products: int = 0,
     weekly_order_products_scope: str = "full_catalog",
+    duplicate_channel_name_detected: bool = False,
 ) -> list[dict[str, str]]:
     """Weekly channel order: demand rollup, historical joins, supply (pairs with LIVE-1/3/4)."""
     out: list[dict[str, str]] = []
@@ -202,6 +203,18 @@ def weekly_order_surface_hints(
                     "At least one calendar year had no ACTUAL rows on this URL’s SalesChannel, so the grid "
                     "fell back to same-name channel rows (typical after 601 re-import). Prefer reconciling "
                     "channel ids in data so history attaches to the channel you use for weekly orders."
+                ),
+            }
+        )
+    if duplicate_channel_name_detected:
+        out.append(
+            {
+                "id": "duplicate_channel_rows_same_name",
+                "title": f"Multiple SalesChannel rows share the name “{channel_name}”",
+                "detail": (
+                    "Weekly order joins by this URL channel id first, so duplicate same-name rows can "
+                    "split historical cells or saved lines across ids. Reconcile channel ids in import data "
+                    "to keep planning and actual history on one canonical channel row."
                 ),
             }
         )

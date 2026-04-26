@@ -27,4 +27,9 @@
     <dt class="muted">Seeds / cell</dt>
     <dd style="margin:0;">{{ c.seeds_per_cell|default:"—" }}</dd>
 </dl>
+{% if not event.planned_tray_count or not event.planned_tray_size %}
+<p class="muted" data-empty-reason="nursery_tray_meta_missing" style="margin:0.35rem 0 0; font-size:0.8rem;">
+    Tray metadata is incomplete for this event. Confirm tray count and tray size before greenhouse pull/print.
+</p>
+{% endif %}
 {% endwith %}

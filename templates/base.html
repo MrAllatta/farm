@@ -40,7 +40,7 @@
             <details class="nav-group nav-group-menu">
                 <summary class="nav-group-label">This week</summary>
                 <div class="nav-menu">
-                    <a href="{% url 'core:dashboard' %}">Dashboard</a>
+                    <a href="{% url 'core:dashboard' %}">This week dashboard</a>
                     <a href="{% url 'operations:weekops_walk' week=operations_nav_week %}">Field walk</a>
                     <a href="{% url 'operations:weekops_needs' week=operations_nav_week %}">Harvest needs</a>
                     <a href="{% url 'operations:weekops_record' week=operations_nav_week %}">Record harvest</a>
@@ -52,7 +52,7 @@
                 <summary class="nav-group-label">Sales &amp; orders</summary>
                 <div class="nav-menu">
                     {% if weekly_order_url %}
-                    <a href="{{ weekly_order_url }}">Weekly order (this week)</a>
+                    <a href="{{ weekly_order_url }}">Weekly sales order (this week)</a>
                     {% endif %}
                     <a href="{% url 'sales:market_entry' %}">Market sales entry</a>
                     <a href="{% url 'planning:sales_plan' %}">Sales plan (rollup)</a>
@@ -67,6 +67,7 @@
                     <a href="{% url 'operations:pack_batch_record' %}">Record pack batch</a>
                     <a href="{% url 'operations:inventory' %}">Inventory</a>
                     <a href="{% url 'operations:planting_list_print' %}">Print planting list</a>
+                    <a href="{% url 'operations:seeding_todo_print' %}">Print seeding list</a>
                 </div>
             </details>
 
@@ -77,15 +78,14 @@
                     <a href="{% url 'planning:nursery_records' %}">Nursery records</a>
                     <a href="{% url 'planning:nursery_todo' %}">Nursery todo</a>
                     <a href="{% url 'planning:nursery_schedule_full_print' %}">Nursery print (full)</a>
-                    <a href="{% url 'operations:seeding_todo_print' %}">Print seeding todo</a>
-                    <a href="{% url 'operations:seeding_todo_print' %}#tray-labels">Tray labels (print)</a>
+                    <a href="{% url 'operations:seeding_todo_print' %}#tray-labels">Greenhouse tray pull labels (print)</a>
                 </div>
             </details>
 
             <details class="nav-group nav-group-menu">
                 <summary class="nav-group-label">Crop plan</summary>
                 <div class="nav-menu">
-                    <a href="{% url 'planning:matrix' %}">Crop planner (matrix)</a>
+                    <a href="{% url 'planning:matrix' %}">Crop planner matrix</a>
                     <a href="{% url 'planning:harvest_calendar' %}">Harvest calendar</a>
                     <a href="{% url 'planning:successions_by_block' %}">Successions by block</a>
                     <a href="{% url 'planning:succession_create' %}">+ Succession</a>
@@ -102,10 +102,10 @@
                     <a href="{% url 'reports:crop_map_successions' %}">503 Successions</a>
                     {% if current_week %}
                         <a href="{% url 'reports:harvest_list_print' current_week %}">
-                            🖨 Harvest List
+                            🖨 Harvest needs list
                         </a>
                         <a href="{% url 'reports:weekly_schedule_print' current_week %}">
-                            🖨 Weekly Schedule
+                            🖨 Weekly field schedule
                         </a>
                     {% endif %}
                     <a href="{% url 'reports:seed_order' %}">Seed Order</a>

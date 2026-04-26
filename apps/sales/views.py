@@ -39,6 +39,26 @@ def _carryover_return_events(channel, product, sale_date, days=14):
     )
 
 
+def _active_products_for_planning_year(year_obj):
+    """Limit picker templates to products tied to planned crops for the selected year."""
+    products = (
+        CropSalesFormat.objects.filter(is_active=True)
+        .select_related("crop")
+        .order_by("crop__crop_type", "crop__name")
+    )
+    if not year_obj:
+        return products
+    crop_ids = list(
+        Planting.objects.filter(planning_year=year_obj)
+        .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+        .values_list("crop_id", flat=True)
+        .distinct()
+    )
+    if crop_ids:
+        products = products.filter(crop_id__in=crop_ids)
+    return products
+
+
 class MarketSalesEntryView(TemplateView):
     """Record sales for a market day — quick or detailed mode."""
 
@@ -88,20 +108,7 @@ class MarketSalesEntryView(TemplateView):
         year_obj = get_effective_planning_year(self.request)
         # If no pack list, get active sales formats (LIVE-2: prefer crops in the active crop plan).
         if not pack_list.exists():
-            products = (
-                CropSalesFormat.objects.filter(is_active=True)
-                .select_related("crop")
-                .order_by("crop__crop_type", "crop__name")
-            )
-            if year_obj:
-                crop_ids = list(
-                    Planting.objects.filter(planning_year=year_obj)
-                    .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
-                    .values_list("crop_id", flat=True)
-                    .distinct()
-                )
-                if crop_ids:
-                    products = products.filter(crop_id__in=crop_ids)
+            products = _active_products_for_planning_year(year_obj)
         else:
             products = None
 
@@ -370,10 +377,8 @@ class MarketListPrintView(ReportContextMixin, TemplateView):
                     }
                 )
         else:
-            products = (
-                CropSalesFormat.objects.filter(is_active=True)
-                .select_related("crop")
-                .order_by("crop__crop_type", "crop__name", "product_name")
+            products = _active_products_for_planning_year(year_obj).order_by(
+                "crop__crop_type", "crop__name", "product_name"
             )
             sections.append(
                 {

@@ -7,6 +7,7 @@
     <button type="button" onclick="window.print()">Print</button>
 </div>
 <h1>Full nursery schedule — {{ plan_year }}</h1>
+<p class="muted">Planning year context for this printout: <strong>{{ plan_year }}</strong>.</p>
 <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
     <thead>
         <tr style="background:#eee;">
@@ -43,7 +44,7 @@
             <td style="padding:0.2rem;">{% if ev.actual_date %}✓ {{ ev.actual_date }}{% else %}—{% endif %}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="13">No nursery events.</td></tr>
+        <tr><td colspan="13">No nursery events for this planning year.</td></tr>
         {% endfor %}
         {% for p in direct_seed_plantings %}
         <tr style="border-bottom:1px solid #ccc;">

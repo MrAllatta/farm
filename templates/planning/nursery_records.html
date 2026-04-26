@@ -2,6 +2,9 @@
 {% block title %}Nursery records{% endblock %}
 {% block content %}
 <h1>Nursery records</h1>
+{% if year %}
+<p class="muted">Planning year context: <strong>{{ year.year }}</strong>.</p>
+{% endif %}
 <p class="muted">Incomplete events with planned date on or before {{ today }} + 14 days.</p>
 {% for ev in events %}
 <div style="border:1px solid #ddd; padding:0.75rem; margin-bottom:0.75rem; border-radius:6px;">
@@ -23,6 +26,6 @@
     </form>
 </div>
 {% empty %}
-<p class="muted">No pending nursery events in this window.</p>
+<p class="muted">No pending nursery events in this planning-year window.</p>
 {% endfor %}
 {% endblock %}

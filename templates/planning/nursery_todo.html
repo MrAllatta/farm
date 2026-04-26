@@ -2,6 +2,9 @@
 {% block title %}Nursery todo{% endblock %}
 {% block content %}
 <h1>Nursery todo (next 7 days)</h1>
+{% if year %}
+<p class="muted">Planning year context: <strong>{{ year.year }}</strong>.</p>
+{% endif %}
 <ul>
     {% for row in nursery_event_rows %}
     {% with ev=row.event %}
@@ -17,7 +20,7 @@
     </li>
     {% endwith %}
     {% empty %}
-    <li class="muted">Nothing due in greenhouse.</li>
+    <li class="muted">Nothing due in greenhouse for this planning year and 7-day window.</li>
     {% endfor %}
 </ul>
 <h2>Direct seed (field)</h2>

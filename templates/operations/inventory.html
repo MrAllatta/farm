@@ -24,6 +24,25 @@
     <p><a class="btn" href="{% url 'operations:inventory_add' %}">Record Inventory Transaction</a></p>
 </section>
 
+{% if carryover_candidates %}
+<section class="panel">
+    <h2>Carry-over candidates (returned from market)</h2>
+    <p class="muted">
+        Recent returns marked as resellable carry-over: <strong>{{ carryover_qty_total|floatformat:2 }}</strong> total units.
+        Use market entry and inventory transactions to keep the next sale cycle aligned with this balance.
+    </p>
+    <ul class="muted">
+        {% for row in carryover_candidates %}
+        <li>
+            {{ row.sale_date|date:"Y-m-d" }} · {{ row.channel.name }} ·
+            {% if row.product %}{{ row.product.product_name }}{% else %}Unassigned product{% endif %} ·
+            returned {{ row.returned_quantity|floatformat:2 }}
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
 {% if fresh_items %}
 <section class="panel">
     <h2>Fresh (cooler / field)</h2>
@@ -131,7 +150,9 @@
 {% if not fresh_items and not storage_items %}
 <section class="panel">
     <h2>No inventory yet</h2>
-    <p>Record harvest actuals (auto ledger), use harvest-to-inventory adjustments, or add a transaction to seed balances.</p>
+    <p data-empty-reason="inventory_no_balances">
+        Record harvest actuals (auto ledger), use harvest-to-inventory adjustments, or add a transaction to seed balances.
+    </p>
 </section>
 {% endif %}
 {% endblock %}

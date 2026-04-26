@@ -11,6 +11,17 @@
         and on weekly channel orders{% endif %}
         for this ISO week surface here as committed demand. Field-walk yield notes adjust planned pick targets in this list.
     </p>
+    {% if weekly_order_handoff_url %}
+    <p class="muted" data-weekly-order-handoff-lines="{{ weekly_order_handoff_line_count }}">
+        {% if weekly_order_handoff_line_count %}
+        Current handoff from <strong>{{ weekly_order_handoff_channel_name }}</strong>: {{ weekly_order_handoff_line_count }} plan line(s),
+        {{ weekly_order_handoff_planned_qty|floatformat:1 }} total planned sale units.
+        {% else %}
+        No saved weekly order lines yet for <strong>{{ weekly_order_handoff_channel_name }}</strong> in ISO week {{ week_num }} —
+        <a href="{{ weekly_order_handoff_url }}">save weekly order quantities</a> so committed demand appears here.
+        {% endif %}
+    </p>
+    {% endif %}
     <p class="muted">
         If demand exists but no harvest rows appear, read the diagnostics below before printing — causes include
         wrong ISO week, missing generated harvest events after import, or picks scheduled in other weeks.

@@ -1874,6 +1874,53 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertIn("Multiple normalized sales channel matches for 'FARM   STAND'; using id=", stdout)
         self.assertIn("Multiple normalized product matches for 'CARROT   BUNCH'; using id=", stdout)
 
+    def test_historical_import_reconciles_duplicate_sales_channel_foreign_keys(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            canonical = SalesChannel.objects.create(
+                name="Farm Stand",
+                days_of_week=["Saturday"],
+                start_week=1,
+                end_week=52,
+                weekly_target="100.00",
+                is_csa=False,
+                allocation_priority=10,
+            )
+            duplicate = SalesChannel.objects.create(
+                name="Farm Stand",
+                days_of_week=["Sunday"],
+                start_week=1,
+                end_week=52,
+                weekly_target="50.00",
+                is_csa=False,
+                allocation_priority=11,
+            )
+            SalesEvent.objects.create(
+                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                channel=duplicate,
+                sale_date=date(2021, 6, 2),
+                actual_quantity=Decimal("3"),
+            )
+            QuickSalesEntry.objects.create(
+                channel=duplicate,
+                sale_date=date(2021, 6, 2),
+                total_cash=Decimal("20"),
+                total_card=Decimal("0"),
+            )
+
+            self._write_year_fixture(data_dir, year=2021)
+            summary, stdout, _stderr = self._run_import_with_output(
+                data_dir,
+                Path(output_dir) / "summary-channel-reconcile.json",
+            )
+
+        self.assertEqual(summary["status"], "ok")
+        self.assertIn("Reconciled duplicate sales channels 'Farm Stand'", stdout)
+        self.assertFalse(SalesEvent.objects.filter(channel=duplicate).exists())
+        self.assertFalse(QuickSalesEntry.objects.filter(channel=duplicate).exists())
+        self.assertTrue(SalesEvent.objects.filter(channel=canonical).exists())
+        self.assertTrue(QuickSalesEntry.objects.filter(channel=canonical).exists())
+
     def test_partial_year_fixture_range_skips_missing_year_directories_without_fatal_errors(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
             self._write_partial_year_fixture(data_dir, years=(2021, 2023))
@@ -7632,6 +7679,8 @@ class StaffLoginAndRuntimeConfigTests(TestCase):
 
         dash = self.client.get(reverse("core:dashboard"))
         self.assertEqual(dash.status_code, 200)
+        self.assertContains(dash, "This week dashboard")
+        self.assertContains(dash, "Print seeding list")
 
         cfg = self.client.get(reverse("core:runtime_config"))
         self.assertEqual(cfg.status_code, 200)

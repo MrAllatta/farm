@@ -1002,3 +1002,34 @@ class PlantingUnitCodeTests(TestCase):
         self.assertEqual(p2.planting_code, "P-2101-0002")
         self.assertEqual(planting_unit_code(p1), "P-2101-0001")
         self.assertEqual(planting_unit_code(p2), "P-2101-0002")
+
+
+class NurseryWave3CopyTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.staff = User.objects.create_user("nursery-wave3", password="pw", is_staff=True)
+        cls.year = PlanningYear.objects.create(year=2033, status="active")
+
+    def setUp(self):
+        self.client.login(username="nursery-wave3", password="pw")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+
+    def test_nursery_schedule_shows_window_empty_reason(self):
+        response = self.client.get(reverse("planning:nursery_schedule"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Planning year context")
+        self.assertIn(b'data-empty-reason="nursery_window_has_no_events"', response.content)
+
+    def test_nursery_records_and_todo_show_planning_year_context(self):
+        records = self.client.get(reverse("planning:nursery_records"))
+        self.assertEqual(records.status_code, 200)
+        self.assertContains(records, "Planning year context")
+        self.assertContains(records, "No pending nursery events in this planning-year window.")
+
+        todo = self.client.get(reverse("planning:nursery_todo"))
+        self.assertEqual(todo.status_code, 200)
+        self.assertContains(todo, "Planning year context")
+        self.assertContains(todo, "Nothing due in greenhouse for this planning year and 7-day window.")

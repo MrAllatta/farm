@@ -246,6 +246,9 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
         has_any_historical = any(not h["empty"] for h in historical)
         historical_name_fallback = any(h.get("used_name_fallback") for h in historical)
         namesake_actuals_on_other_channel = False
+        duplicate_channel_name_detected = SalesChannel.objects.filter(name=channel.name).exclude(
+            id=channel.id
+        ).exists()
         if not has_any_historical:
             for py in prior_years:
                 hm, hs = self.week_window(py.year, week_num)
@@ -347,6 +350,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 historical_name_fallback=historical_name_fallback,
                 positive_week_demand_products=weekly_demand_row_count,
                 weekly_order_products_scope=weekly_order_products_scope,
+                duplicate_channel_name_detected=duplicate_channel_name_detected,
             )
         )
 

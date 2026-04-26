@@ -75,7 +75,47 @@
         
         <div class="dashboard-col">
             <h2>This Week</h2>
-            
+
+            {# Weekly order handoff first: sales decisions drive harvest/pack flow #}
+            <div class="task-section">
+                <h3>🧾 Weekly sales order</h3>
+                {% if weekly_order_url %}
+                <p>
+                    Save this week’s channel quantities before harvest decisions.
+                    <a href="{{ weekly_order_url }}">Open weekly sales order →</a>
+                </p>
+                {% else %}
+                <p class="muted" data-empty-reason="dashboard_no_weekly_order_link">
+                    Weekly sales order link is unavailable because no active channel is configured.
+                </p>
+                {% endif %}
+            </div>
+
+            {# Harvest summary #}
+            <div class="task-section">
+                <h3>🥬 Harvest needs and recording</h3>
+                <p>
+                    {{ harvest_count }} crops to harvest this week.
+                    {% if week_num %}
+                    <a href="{% url 'operations:weekops_needs' week=week_num %}">Review harvest needs</a>
+                    ·
+                    <a href="{% url 'reports:harvest_list_print' week_num %}">
+                        🖨 Print harvest needs list
+                    </a>
+                    {% endif %}
+                </p>
+                {% if harvest_recorded < harvest_count %}
+                {% if week_num %}
+                <p>
+                    <a href="{% url 'operations:weekops_record' week=week_num %}"
+                       class="btn btn-primary">
+                        Record harvests ({{ harvest_recorded }}/{{ harvest_count }} done)
+                    </a>
+                </p>
+                {% endif %}
+                {% endif %}
+            </div>
+
             {# Nursery tasks #}
             {% if nursery_pending %}
             <div class="task-section">
@@ -95,7 +135,7 @@
                 {% endfor %}
             </div>
             {% endif %}
-            
+
             {# Transplants #}
             {% if transplants_this_week %}
             <div class="task-section">
@@ -112,29 +152,11 @@
                 {% endfor %}
             </div>
             {% endif %}
-            
-            {# Harvest summary #}
-            <div class="task-section">
-                <h3>🥬 Harvest</h3>
-                <p>
-                    {{ harvest_count }} crops to harvest this week.
-                    {% if week_num %}
-                    <a href="{% url 'reports:harvest_list_print' week_num %}">
-                        🖨 Print harvest list
-                    </a>
-                    {% endif %}
-                </p>
-                {% if harvest_recorded < harvest_count %}
-                {% if week_num %}
-                <p>
-                    <a href="{% url 'operations:weekops_record' week=week_num %}"
-                       class="btn btn-primary">
-                        Record harvests ({{ harvest_recorded }}/{{ harvest_count }} done)
-                    </a>
-                </p>
-                {% endif %}
-                {% endif %}
-            </div>
+            {% if not nursery_pending and not transplants_this_week %}
+            <p class="muted" data-empty-reason="dashboard_no_nursery_tasks_this_week">
+                No nursery or transplant tasks are due this week for the active planning year.
+            </p>
+            {% endif %}
             
             {# Quick links #}
             <div class="task-section">
@@ -142,16 +164,16 @@
                 <div class="print-links">
                     {% if week_num %}
                     <a href="{% url 'reports:harvest_list_print' week_num %}" class="btn">
-                        🖨 Harvest List
+                        🖨 Harvest needs list
                     </a>
                     <a href="{% url 'reports:weekly_schedule_print' week_num %}" class="btn">
-                        🖨 Weekly Schedule
+                        🖨 Weekly field schedule
                     </a>
                     <a href="{% url 'reports:crop_map_print' week_num %}" class="btn">
-                        🖨 Crop Map
+                        🖨 503 crop map
                     </a>
                     <a href="{% url 'reports:pack_list_print' week_num %}" class="btn">
-                        🖨 Pack List
+                        🖨 Pack prep list
                     </a>
                     {% endif %}
                 </div>
@@ -253,7 +275,7 @@
             </div>
             <a href="{% url 'operations:inventory' %}">Full inventory →</a>
             {% else %}
-            <p class="muted">No storage crops in inventory.</p>
+            <p class="muted" data-empty-reason="dashboard_no_storage_inventory">No storage crops in inventory.</p>
             {% endif %}
         </div>
     </div>

@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from planning.models import HarvestEvent, Planting, PlanningYear
 from operations.models import PackBatch, PackBatchComponent
@@ -497,3 +498,99 @@ class SeedOrderReportGroupingTests(TestCase):
         rows = build_seed_order_rows([p1, p2], 1.0)
         labels = sorted({r["variety_label"] for r in rows})
         self.assertEqual(labels, ["Alpha", "Beta"])
+
+
+class PlanVsActualReportCopyTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.staff = User.objects.create_user("pva-staff", password="pw", is_staff=True)
+        cls.year = PlanningYear.objects.create(year=2026, status="active")
+        cls.block = Block.objects.create(
+            name="Field PVA",
+            block_type=BlockType.FIELD,
+            num_beds=4,
+            bed_width_feet=Decimal("3.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        cls.crop = CropInfo.objects.create(
+            name="Spinach",
+            crop_type="Greens",
+            botanical_family="Amaranthaceae",
+            fresh_or_storage="fresh",
+            harvest_unit="lb",
+            avg_unit_weight=Decimal("1.0"),
+        )
+        cls.crop_season = CropBySeason.objects.create(
+            crop=cls.crop,
+            block_type=BlockType.FIELD,
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("1.2"),
+            harvest_weeks=3,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        cls.product = CropSalesFormat.objects.create(
+            crop=cls.crop,
+            product_name="Spinach Bag",
+            sale_price=Decimal("4.00"),
+            sale_unit="bag",
+            harvest_qty_per_sale_unit=Decimal("1.0"),
+            is_active=True,
+        )
+        cls.channel = SalesChannel.objects.create(
+            name="Farmers Market",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("0"),
+            is_csa=False,
+            allocation_priority=1,
+        )
+        Planting.objects.create(
+            planning_year=cls.year,
+            crop=cls.crop,
+            crop_season=cls.crop_season,
+            block=cls.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=date(2026, 4, 1),
+            planned_first_harvest_date=date(2026, 5, 1),
+            planned_last_harvest_date=date(2026, 5, 21),
+            planned_total_yield=Decimal("60.0"),
+            status="growing",
+        )
+
+    def setUp(self):
+        self.client.login(username="pva-staff", password="pw")
+
+    def test_plan_vs_actual_shows_harvest_actuals_missing_hint_when_sales_actuals_exist(self):
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            planning_year=self.year,
+            sale_date=date(2026, 5, 2),
+            product=self.product,
+            actual_quantity=Decimal("8.0"),
+            actual_revenue=Decimal("32.0"),
+        )
+        response = self.client.get(reverse("reports:plan_vs_actual"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'data-empty-reason="harvest_actuals_missing_with_sales_actuals"',
+            html=False,
+        )
+
+    def test_plan_vs_actual_no_plantings_marks_empty_reason(self):
+        Planting.objects.filter(planning_year=self.year).delete()
+        response = self.client.get(reverse("reports:plan_vs_actual"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'data-empty-reason="plan_vs_actual_no_plantings"',
+            html=False,
+        )

@@ -903,10 +903,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/historical-601",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-25T18:25:05.618851Z",
-    "run_id": "20260425T182451516138",
+    "finished_at": "2026-04-26T01:58:19.191083Z",
+    "run_id": "20260426T015804994092",
     "start_year": 2024,
-    "started_at": "2026-04-25T18:24:51.516138Z",
+    "started_at": "2026-04-26T01:58:04.994092Z",
     "validate_only": false,
     "verbose": false
   },

@@ -562,9 +562,9 @@ class Command(BaseCommand):
                     "is_csa": category_name == SalesCategory.CategoryName.CSA,
                     "allocation_priority": self.SALES_CATEGORY_PRIORITY[category_name],
                 }
-                channel_obj, _ = SalesChannel.objects.update_or_create(
-                    name=channel_name,
-                    defaults=channel_defaults,
+                channel_obj, _ = self._upsert_sales_channel_by_name(
+                    channel_name,
+                    channel_defaults,
                 )
                 self.channel_cache[channel_name] = channel_obj
         self.stdout.write(f"  loaded {len(self.channel_rollup_map)} channel rollup assignments\n")
@@ -615,9 +615,9 @@ class Command(BaseCommand):
                 "is_csa": category_name == SalesCategory.CategoryName.CSA,
                 "allocation_priority": self.SALES_CATEGORY_PRIORITY[category_name],
             }
-            channel_obj, created_flag = SalesChannel.objects.update_or_create(
-                name=channel_name,
-                defaults=channel_defaults,
+            channel_obj, created_flag = self._upsert_sales_channel_by_name(
+                channel_name,
+                channel_defaults,
             )
             self.channel_cache[channel_name] = channel_obj
             self.channel_rollup_map[channel_name] = category_name
@@ -1045,9 +1045,7 @@ class Command(BaseCommand):
                         )
                         data["category"] = category
                         data["plan_bucket"] = plan_bucket
-                        obj, created = SalesChannel.objects.update_or_create(
-                            name=name, defaults=data
-                        )
+                        obj, created = self._upsert_sales_channel_by_name(name, data)
                         self.stats["SalesChannel"]["created" if created else "processed"] += 1
                         self.channel_cache[name] = obj
                     else:
@@ -3682,6 +3680,7 @@ class Command(BaseCommand):
 
     def _import_sales_and_rotation(self):
         """Import sales events, quick entries, and rotation history."""
+        self._reconcile_duplicate_sales_channels()
         for year in range(self.start_year, self.end_year + 1):
             year_dir = os.path.join(self.data_dir, f"year_{year}")
             if not os.path.isdir(year_dir):
@@ -3691,6 +3690,128 @@ class Command(BaseCommand):
             self._import_quick_sales_entries(year, year_dir)
 
         self._import_rotation_history()
+
+    def _reconcile_duplicate_sales_channels(self):
+        """Repoint sales/ops channel FKs to one canonical row per normalized channel name.
+
+        LIVE-1: historical ACTUAL rows can be split across duplicate SalesChannel ids with the
+        same operator-facing name. Weekly order strict channel joins then miss prior-year rows.
+        During apply runs, collapse FK usage to the oldest id for each normalized name.
+        """
+        if self.write_disabled:
+            return
+
+        rows = list(SalesChannel.objects.all().only("id", "name").order_by("id"))
+        if len(rows) < 2:
+            return
+
+        by_name = defaultdict(list)
+        for row in rows:
+            key = self._normalize_lookup_value(row.name)
+            if key:
+                by_name[key].append(row)
+
+        merged_groups = 0
+        for group in by_name.values():
+            if len(group) < 2:
+                continue
+            canonical = group[0]
+            moved_sales = 0
+            moved_quick = 0
+            moved_allocations = 0
+            for duplicate in group[1:]:
+                moved_sales += self._merge_sales_events_to_canonical_channel(canonical, duplicate)
+                moved_quick += self._merge_quick_sales_to_canonical_channel(canonical, duplicate)
+                moved_allocations += PackAllocation.objects.filter(channel=duplicate).update(
+                    channel=canonical
+                )
+            merged_groups += 1
+            self.stdout.write(
+                self.style.WARNING(
+                    "   ⚙  Reconciled duplicate sales channels "
+                    f"'{canonical.name}' -> canonical id={canonical.id}; "
+                    f"moved sales_events={moved_sales}, quick_sales_entries={moved_quick}, "
+                    f"pack_allocations={moved_allocations}"
+                )
+            )
+            # Keep cache deterministic for all previously seen aliases.
+            for alias in group:
+                self.channel_cache[alias.name] = canonical
+
+        if merged_groups:
+            self.normalized_lookup_indexes.pop("reference.saleschannel:name", None)
+
+    def _merge_sales_events_to_canonical_channel(self, canonical, duplicate):
+        moved = 0
+        for event in SalesEvent.objects.filter(channel=duplicate).order_by("id"):
+            existing = SalesEvent.objects.filter(
+                entry_kind=event.entry_kind,
+                channel=canonical,
+                sale_date=event.sale_date,
+                product=event.product,
+                sales_category=event.sales_category,
+            ).exclude(id=event.id).first()
+            if existing:
+                self._merge_sales_event_values(existing, event)
+                event.delete()
+                moved += 1
+                continue
+            event.channel = canonical
+            event.save(skip_inventory_ledger_sync=True)
+            moved += 1
+        return moved
+
+    def _merge_sales_event_values(self, target, source):
+        fields = (
+            "planning_year",
+            "harvest_date",
+            "planned_quantity",
+            "planned_revenue",
+            "actual_quantity",
+            "actual_revenue",
+            "actual_price",
+            "brought_quantity",
+            "returned_quantity",
+            "notes",
+            "pack_batch",
+            "drawn_from_return",
+        )
+        changed_fields = []
+        for field in fields:
+            target_value = getattr(target, field)
+            source_value = getattr(source, field)
+            if target_value in (None, "") and source_value not in (None, ""):
+                setattr(target, field, source_value)
+                changed_fields.append(field)
+        if changed_fields:
+            target.save(skip_inventory_ledger_sync=True, update_fields=changed_fields)
+
+    def _merge_quick_sales_to_canonical_channel(self, canonical, duplicate):
+        moved = 0
+        for quick in QuickSalesEntry.objects.filter(channel=duplicate).order_by("id"):
+            existing = QuickSalesEntry.objects.filter(
+                channel=canonical,
+                sale_date=quick.sale_date,
+            ).exclude(id=quick.id).first()
+            if existing:
+                existing.total_cash = (existing.total_cash or Decimal("0")) + (
+                    quick.total_cash or Decimal("0")
+                )
+                existing.total_card = (existing.total_card or Decimal("0")) + (
+                    quick.total_card or Decimal("0")
+                )
+                if quick.notes:
+                    existing.notes = "\n".join(
+                        [piece for piece in [existing.notes, quick.notes] if piece]
+                    )
+                existing.save(update_fields=["total_cash", "total_card", "notes"])
+                quick.delete()
+                moved += 1
+                continue
+            quick.channel = canonical
+            quick.save(update_fields=["channel"])
+            moved += 1
+        return moved
 
     def _import_sales_events(self, year, year_dir):
         """Import sales events."""
@@ -4095,6 +4216,18 @@ class Command(BaseCommand):
                 label="sales channel",
             )
         return self.channel_cache[channel_name]
+
+    def _upsert_sales_channel_by_name(self, name, defaults):
+        """Upsert SalesChannel by name while tolerating pre-existing duplicate names."""
+        existing = SalesChannel.objects.filter(name=name).order_by("id").first()
+        if existing:
+            for field, value in defaults.items():
+                setattr(existing, field, value)
+            existing.save(update_fields=list(defaults.keys()))
+            created = False
+            return existing, created
+        obj = SalesChannel.objects.create(name=name, **defaults)
+        return obj, True
 
     def _get_product_by_name(self, product_name):
         """Get crop sales format by product name."""

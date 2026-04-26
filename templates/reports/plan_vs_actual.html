@@ -28,6 +28,14 @@
         (<code>SalesEvent</code> actuals) and sheet-level planting totals are not shown unless they are reflected on those harvest picks.
     </p>
 </div>
+{% if harvest_actual_rows == 0 and sales_actual_rows > 0 %}
+<div class="analyze-section muted" style="margin-bottom:1rem; font-size:0.95rem;" data-empty-reason="harvest_actuals_missing_with_sales_actuals">
+    <p style="margin:0;">
+        This report has <strong>{{ sales_actual_rows }}</strong> market sales rows with ACTUAL quantities, but no harvest-pick ACTUAL quantities yet.
+        Use record harvest to log <code>HarvestEvent.actual_quantity</code> if you want planting-level variance here.
+    </p>
+</div>
+{% endif %}
 <div class="analyze-section">
     <h2>Planting Detail</h2>
     <div class="fp-table-scroll">
@@ -60,7 +68,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="9" class="muted">No planting comparisons are available yet.</td>
+                <td colspan="9" class="muted" data-empty-reason="plan_vs_actual_no_plantings">No planting comparisons are available yet.</td>
             </tr>
             {% endfor %}
         </tbody>

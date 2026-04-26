@@ -1363,6 +1363,7 @@ class NurseryScheduleView(ActivePlanningYearMixin, TemplateView):
                 "peak_week": peak_week,
                 "tray_highlight_window": tray_highlight_window,
                 "nursery_diagnostic_hints": nursery_diagnostic_hints,
+                "window_total_events": window_total_events,
             }
         )
         return ctx

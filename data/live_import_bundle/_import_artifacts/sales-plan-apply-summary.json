@@ -42,10 +42,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/sales-plan",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-25T18:24:51.152736Z",
-    "run_id": "20260425T182446114991",
+    "finished_at": "2026-04-26T01:58:04.632669Z",
+    "run_id": "20260426T015759885556",
     "start_year": 2024,
-    "started_at": "2026-04-25T18:24:46.114991Z",
+    "started_at": "2026-04-26T01:57:59.885556Z",
     "validate_only": false,
     "verbose": false
   },

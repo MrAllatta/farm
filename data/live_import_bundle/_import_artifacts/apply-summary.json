@@ -1,5 +1,5 @@
 {
-  "run_id": "b0e26c7e-27c3-4630-b028-28e5fa01a5ee",
+  "run_id": "837a0065-ca5e-43ae-92a1-3bdc125e518e",
   "lanes": {
     "reference": {
       "fatal_error": null,
@@ -93,10 +93,10 @@
         "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/reference",
         "dry_run": false,
         "end_year": 2026,
-        "finished_at": "2026-04-25T18:24:33.386607Z",
-        "run_id": "20260425T182431465529",
+        "finished_at": "2026-04-26T01:57:47.845738Z",
+        "run_id": "20260426T015746049751",
         "start_year": 2024,
-        "started_at": "2026-04-25T18:24:31.465529Z",
+        "started_at": "2026-04-26T01:57:46.049751Z",
         "validate_only": false,
         "verbose": false
       },
@@ -159,10 +159,10 @@
         "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/crop-plan",
         "dry_run": false,
         "end_year": 2026,
-        "finished_at": "2026-04-25T18:24:45.748470Z",
-        "run_id": "20260425T182433763426",
+        "finished_at": "2026-04-26T01:57:59.538458Z",
+        "run_id": "20260426T015748198182",
         "start_year": 2024,
-        "started_at": "2026-04-25T18:24:33.763426Z",
+        "started_at": "2026-04-26T01:57:48.198182Z",
         "validate_only": false,
         "verbose": false
       },
@@ -213,10 +213,10 @@
         "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/sales-plan",
         "dry_run": false,
         "end_year": 2026,
-        "finished_at": "2026-04-25T18:24:51.152736Z",
-        "run_id": "20260425T182446114991",
+        "finished_at": "2026-04-26T01:58:04.632669Z",
+        "run_id": "20260426T015759885556",
         "start_year": 2024,
-        "started_at": "2026-04-25T18:24:46.114991Z",
+        "started_at": "2026-04-26T01:57:59.885556Z",
         "validate_only": false,
         "verbose": false
       },
@@ -1128,10 +1128,10 @@
         "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/historical-601",
         "dry_run": false,
         "end_year": 2026,
-        "finished_at": "2026-04-25T18:25:05.618851Z",
-        "run_id": "20260425T182451516138",
+        "finished_at": "2026-04-26T01:58:19.191083Z",
+        "run_id": "20260426T015804994092",
         "start_year": 2024,
-        "started_at": "2026-04-25T18:24:51.516138Z",
+        "started_at": "2026-04-26T01:58:04.994092Z",
         "validate_only": false,
         "verbose": false
       },
