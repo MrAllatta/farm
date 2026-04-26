@@ -690,6 +690,31 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"data-empty-reason=\"all_channel_demand_partially_shadowed\"", r.content)
 
+    def test_weekly_order_channel_picker_omits_301_rollup_pseudo_channels(self):
+        """LIVE-6: staff channel list excludes annual-plan rollup rows (outlets only)."""
+        cat, _ = SalesCategory.objects.update_or_create(
+            name=SalesCategory.CategoryName.MARKETS,
+            defaults={"allocation_priority": 10},
+        )
+        SalesChannel.objects.create(
+            name="Markets (annual plan)",
+            days_of_week=["Saturday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("1.00"),
+            is_csa=False,
+            allocation_priority=1,
+            category=cat,
+        )
+        wk = 30
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, "Markets (annual plan)")
+
     def test_weekly_order_warns_when_duplicate_channel_names_exist(self):
         wk = 30
         SalesChannel.objects.create(

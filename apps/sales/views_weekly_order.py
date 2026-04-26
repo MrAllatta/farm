@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 
+from core.operator_scope import first_operator_sales_channel, operator_sales_channels
 from core.planning_year import get_effective_planning_year
 from core.ui_diagnostics import harvest_surface_hints, weekly_order_surface_hints
 from operations.models import FieldWalkNote
@@ -22,7 +23,7 @@ from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES, week_bounds
 from planning.models import HarvestEvent, PlanningYear, Planting
 from planning.services.planting_events_repair import count_plantings_missing_harvest_events
 from reference.models import CropSalesFormat, SalesChannel
-from reference.sales_rollups import plan_events_without_shadowed_rollups, plan_week_iso_counts
+from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES, plan_events_without_shadowed_rollups, plan_week_iso_counts
 from reports.mixins import ReportContextMixin
 
 from .models import SalesEvent
@@ -74,6 +75,24 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             messages.error(request, "No active planning year configured.")
             return redirect("planning:matrix")
         return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """Redirect away from 301 annual-plan pseudo-channels (LIVE-6)."""
+        ch = get_object_or_404(SalesChannel, pk=kwargs["channel_id"])
+        if ch.name in ROLLUP_PLAN_CHANNEL_NAMES:
+            alt = first_operator_sales_channel()
+            if alt and alt.id != ch.id:
+                messages.info(
+                    request,
+                    "Weekly orders use outlet channels. Switched from an annual-plan rollup row.",
+                )
+                return redirect(
+                    reverse(
+                        "sales:weekly_channel_order",
+                        kwargs={"channel_id": alt.id, "week": kwargs.get("week")},
+                    )
+                )
+        return super().get(request, *args, **kwargs)
 
     def post(self, request, **kwargs):
         if not request.user.is_authenticated:
@@ -358,7 +377,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             {
                 "year": self.year_obj,
                 "channel": channel,
-                "channels": SalesChannel.objects.order_by("allocation_priority", "name"),
+                "channels": operator_sales_channels(),
                 "week_num": week_num,
                 "week_monday": week_monday,
                 "week_sunday": week_sunday,

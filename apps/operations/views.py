@@ -11,21 +11,28 @@ from datetime import date, timedelta
 from isoweek import Week
 from django import forms
 from reference.models import CropInfo, CropSalesFormat, ProductRecipe, SalesChannel
+from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES
 from operations.models import InventoryLedger, FieldWalkNote, PackAllocation, PackBatch, PackBatchComponent
 from sales.models import SalesEvent
 from planning.models import HarvestEvent, NurseryEvent, Planting, PlantingStatus
+from core.operator_scope import (
+    active_crop_sales_formats_for_planning_year,
+    first_operator_sales_channel,
+    operator_sales_channels,
+)
 from core.planning_year import get_effective_planning_year
 from decimal import Decimal
 
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from operations.services import week_ops as week_ops_service
+from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
 from operations.planting_display import (
     format_bed_range_label,
     planting_schedule_chip_css_class,
     planting_unit_code,
 )
 from planning.services.planting_events_repair import count_plantings_missing_harvest_events
-from core.ui_diagnostics import harvest_surface_hints
+from core.ui_diagnostics import harvest_surface_hints, inventory_surface_hints
 
 
 def _weekops_header_context(phase: str, iso_week: int, year_obj, wctx: dict) -> dict:
@@ -517,6 +524,28 @@ class InventoryDashboardView(TemplateView):
             else:
                 item["estimated_value"] = None
 
+        year_for_scope = get_effective_planning_year(self.request)
+        in_plan_crop_ids = set()
+        if year_for_scope:
+            in_plan_crop_ids = set(
+                Planting.objects.filter(planning_year=year_for_scope)
+                .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+                .values_list("crop_id", flat=True)
+                .distinct()
+            )
+        outside_plan_labels = []
+        for item in inventory_items:
+            cid = item["crop"].id
+            item["outside_active_crop_plan"] = bool(
+                year_for_scope and in_plan_crop_ids and cid not in in_plan_crop_ids
+            )
+            if item["outside_active_crop_plan"]:
+                outside_plan_labels.append(item["crop"].name)
+        inv_hints = inventory_surface_hints(
+            outside_plan_crop_names=sorted(set(outside_plan_labels)),
+            planning_year_label=str(year_for_scope.year) if year_for_scope else "",
+        )
+
         fresh_items = [i for i in inventory_items if i["crop"].fresh_or_storage != "storage"]
         storage_items = [i for i in inventory_items if i["crop"].fresh_or_storage == "storage"]
         carryover_candidates = list(
@@ -554,6 +583,8 @@ class InventoryDashboardView(TemplateView):
                 "warning_count": sum(1 for i in inventory_items if i["status"] == "warning"),
                 "carryover_candidates": carryover_candidates,
                 "carryover_qty_total": carryover_qty_total,
+                "current_planning_year": year_for_scope,
+                "inventory_diagnostic_hints": inv_hints,
             }
         )
         return ctx
@@ -906,7 +937,7 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
             )
 
         ctx.update(_weekops_header_context("needs", week_num, self.year_obj, wctx))
-        first_channel = SalesChannel.objects.order_by("allocation_priority", "name").first()
+        first_channel = first_operator_sales_channel()
         weekly_order_handoff_url = None
         weekly_order_handoff_line_count = 0
         weekly_order_handoff_planned_qty = Decimal("0")
@@ -1205,7 +1236,7 @@ class PackPrepView(OperationsPlanningYearMixin, TemplateView):
         channel = (
             get_object_or_404(SalesChannel, pk=channel_id)
             if channel_id
-            else SalesChannel.objects.order_by("allocation_priority", "id").first()
+            else first_operator_sales_channel()
         )
         pack_date = date.today()
         if pdate_raw:
@@ -1213,6 +1244,13 @@ class PackPrepView(OperationsPlanningYearMixin, TemplateView):
                 pack_date = date.fromisoformat(pdate_raw)
             except ValueError:
                 pass
+
+        if channel and channel.name in ROLLUP_PLAN_CHANNEL_NAMES:
+            messages.info(
+                self.request,
+                "Pack prep uses outlet channels only; switched from an annual-plan rollup row.",
+            )
+            channel = first_operator_sales_channel()
 
         rows = []
         if channel:
@@ -1257,7 +1295,7 @@ class PackPrepView(OperationsPlanningYearMixin, TemplateView):
             {
                 "year": self.year_obj,
                 "channel": channel,
-                "channels": SalesChannel.objects.order_by("allocation_priority", "name"),
+                "channels": operator_sales_channels(),
                 "pack_date": pack_date,
                 "pack_iso_week": pack_iso_week,
                 "rows": rows,
@@ -1267,14 +1305,8 @@ class PackPrepView(OperationsPlanningYearMixin, TemplateView):
 
 
 class PackBatchRecordForm(forms.Form):
-    channel = forms.ModelChoiceField(
-        queryset=SalesChannel.objects.all().order_by("allocation_priority", "name")
-    )
-    product = forms.ModelChoiceField(
-        queryset=CropSalesFormat.objects.filter(is_active=True)
-        .select_related("crop")
-        .order_by("crop__name", "product_name")
-    )
+    channel = forms.ModelChoiceField(queryset=SalesChannel.objects.none())
+    product = forms.ModelChoiceField(queryset=CropSalesFormat.objects.none())
     pack_date = forms.DateField()
     packed_quantity = forms.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal("0.01"))
     packed_unit = forms.CharField(max_length=20, required=False, help_text="Defaults to product sale unit.")
@@ -1288,6 +1320,14 @@ class PackBatchRecordForm(forms.Form):
 class PackBatchRecordView(OperationsPlanningYearMixin, FormView):
     template_name = "operations/pack_batch_record.html"
     form_class = PackBatchRecordForm
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields["channel"].queryset = operator_sales_channels()
+        form.fields["product"].queryset = active_crop_sales_formats_for_planning_year(
+            self.year_obj
+        ).order_by("crop__name", "product_name")
+        return form
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:

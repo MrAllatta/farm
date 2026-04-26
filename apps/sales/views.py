@@ -12,14 +12,16 @@ from decimal import Decimal, InvalidOperation
 
 from reports.mixins import ReportContextMixin
 
+from core.operator_scope import (
+    active_crop_sales_formats_for_planning_year,
+    operator_sales_channels,
+)
 from core.planning_year import get_effective_planning_year
 from core.ui_diagnostics import market_entry_surface_hints
 
 from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
 from operations.models import PackAllocation
-from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
-from planning.models import Planting
 
 from .views_weekly_order import WeeklyChannelOrderView
 
@@ -39,26 +41,6 @@ def _carryover_return_events(channel, product, sale_date, days=14):
     )
 
 
-def _active_products_for_planning_year(year_obj):
-    """Limit picker templates to products tied to planned crops for the selected year."""
-    products = (
-        CropSalesFormat.objects.filter(is_active=True)
-        .select_related("crop")
-        .order_by("crop__crop_type", "crop__name")
-    )
-    if not year_obj:
-        return products
-    crop_ids = list(
-        Planting.objects.filter(planning_year=year_obj)
-        .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
-        .values_list("crop_id", flat=True)
-        .distinct()
-    )
-    if crop_ids:
-        products = products.filter(crop_id__in=crop_ids)
-    return products
-
-
 class MarketSalesEntryView(TemplateView):
     """Record sales for a market day — quick or detailed mode."""
 
@@ -69,7 +51,7 @@ class MarketSalesEntryView(TemplateView):
 
         # Find the most recent or upcoming market day
         today = date.today()
-        channels = SalesChannel.objects.all()
+        channels = operator_sales_channels()
 
         # Determine which channel and date we're recording for
         channel_id = self.request.GET.get("channel")
@@ -108,7 +90,7 @@ class MarketSalesEntryView(TemplateView):
         year_obj = get_effective_planning_year(self.request)
         # If no pack list, get active sales formats (LIVE-2: prefer crops in the active crop plan).
         if not pack_list.exists():
-            products = _active_products_for_planning_year(year_obj)
+            products = active_crop_sales_formats_for_planning_year(year_obj)
         else:
             products = None
 
@@ -377,7 +359,7 @@ class MarketListPrintView(ReportContextMixin, TemplateView):
                     }
                 )
         else:
-            products = _active_products_for_planning_year(year_obj).order_by(
+            products = active_crop_sales_formats_for_planning_year(year_obj).order_by(
                 "crop__crop_type", "crop__name", "product_name"
             )
             sections.append(

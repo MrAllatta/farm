@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from isoweek import Week
 
+from core.operator_scope import operator_sales_channels
 from core.planning_year import resolve_current_planning_year
 from planning.models import HarvestEvent, NurseryEvent, Planting, SeedOrder
 from sales.models import SalesEvent, QuickSalesEntry
@@ -160,7 +161,7 @@ class PackListPrintView(ReportContextMixin, TemplateView):
         year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
         week_num = self.resolve_week(kwargs["week"])
         week_monday, week_sunday = self.week_window(year_obj.year, week_num)
-        channels = list(SalesChannel.objects.all())
+        channels = list(operator_sales_channels())
 
         projected_revenue = {}
         for channel in channels:
@@ -464,7 +465,7 @@ class RevenueProjectionView(TemplateView):
         year_obj = self.resolve_planning_year(status_priority=("active", "complete"))
         year = year_obj.year
 
-        channels = SalesChannel.objects.all()
+        channels = operator_sales_channels()
 
         # Build weekly harvest availability: week → crop → quantity
         harvest_events = (
@@ -761,7 +762,7 @@ class ChannelPerformanceView(AnalyzeViewMixin, TemplateView):
             return ctx
         year = year_obj.year
 
-        channels = SalesChannel.objects.all()
+        channels = operator_sales_channels()
 
         channel_data = []
 
@@ -1060,7 +1061,7 @@ class SeasonSummaryView(AnalyzeViewMixin, TemplateView):
 
         total_revenue = detailed_revenue + quick_only
 
-        annual_target = sum(ch.annual_target for ch in SalesChannel.objects.all())
+        annual_target = sum(ch.annual_target for ch in operator_sales_channels())
 
         # Mix reconciliation: sold mix qty versus packed qty and component drawdown.
         mix_batches = PackBatch.objects.filter(pack_date__year=year).select_related("product")

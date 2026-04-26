@@ -10,6 +10,7 @@ from django.views.generic import TemplateView
 from django.db.models import Max, Q, Sum
 from isoweek import Week
 
+from core.operator_scope import operator_sales_channels
 from reference.models import (
     Block,
     BlockType,
@@ -1672,7 +1673,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         channel = kwargs.get("channel")
-        channels = SalesChannel.objects.order_by("allocation_priority", "name")
+        channels = operator_sales_channels()
         rollup_slug = None
         rollup_tabs = None
         rollup_category = kwargs.get("rollup_category")

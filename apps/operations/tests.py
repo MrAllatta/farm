@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 from isoweek import Week
 
-from operations.models import FieldWalkNote
+from operations.models import FieldWalkNote, InventoryLedger
 from operations.planting_display import (
     format_bed_range_label,
     format_planting_display_id,
@@ -625,6 +625,8 @@ class InventoryYearCarryoverCopyTests(TestCase):
         self.assertContains(response, "Working year:")
         self.assertContains(response, "from prior year")
         self.assertIn(b'data-empty-reason="inventory_no_balances"', response.content)
+        self.assertContains(response, "data-field-clock")
+        self.assertContains(response, "Field today")
 
     def test_inventory_transaction_guides_opening_snapshot(self):
         response = self.client.get(reverse("operations:inventory_add"))
@@ -671,6 +673,144 @@ class InventoryYearCarryoverCopyTests(TestCase):
         self.assertContains(response, "Carry-over candidates")
         self.assertContains(response, "Kale Bunch")
         self.assertContains(response, "returned 3.00")
+
+    def test_inventory_dashboard_flags_balances_outside_active_crop_plan(self):
+        """LIVE-7: staff see when a positive balance is for a crop with no in-year planting."""
+        b = Block.objects.create(
+            name="B2032",
+            block_type="field",
+            num_beds=2,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        in_plan = CropInfo.objects.create(
+            name="InPlan Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        cbs = CropBySeason.objects.create(
+            crop=in_plan,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        pd = date(2032, 5, 1)
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=in_plan,
+            crop_season=cbs,
+            block=b,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=pd,
+            planned_first_harvest_date=pd,
+            planned_last_harvest_date=pd + timedelta(weeks=4),
+            planned_total_yield=Decimal("10.0"),
+            status="growing",
+        )
+        out_plan = CropInfo.objects.create(
+            name="Demo Cherry Tomato",
+            crop_type="Tomatoes",
+            fresh_or_storage="fresh",
+            harvest_unit="pound",
+            avg_unit_weight=Decimal("0.5"),
+            nursery_weeks=0,
+        )
+        for crop, bal in ((in_plan, Decimal("2")), (out_plan, Decimal("3"))):
+            InventoryLedger.objects.create(
+                crop=crop,
+                event_date=date(2032, 6, 1),
+                event_type="adjustment",
+                quantity=bal,
+                running_balance=bal,
+                notes="test seed balance",
+            )
+        r = self.client.get(reverse("operations:inventory"))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(
+            b'data-empty-reason="inventory_balance_outside_active_crop_plan"',
+            r.content,
+        )
+        self.assertContains(r, "Demo Cherry Tomato")
+        self.assertContains(
+            r,
+            "not in the active crop plan",
+        )
+
+
+class MissingPlantingsFieldClockTests(TestCase):
+    """LIVE-8: operator view explains import authority + shared field clock from context processor."""
+
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.staff = User.objects.create_user("mp_field_clock", password="pw", is_staff=True)
+
+    def setUp(self):
+        self.client.login(username="mp_field_clock", password="pw")
+        y = 2030
+        self.py = PlanningYear.objects.create(year=y, status="active")
+        session = self.client.session
+        session["planning_year_id"] = self.py.id
+        session.save()
+        b = Block.objects.create(
+            name="MP",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        crop = CropInfo.objects.create(
+            name="MP Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="pounds",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        cs = CropBySeason.objects.create(
+            crop=crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        past = date(2026, 1, 1)
+        Planting.objects.create(
+            planning_year=self.py,
+            crop=crop,
+            crop_season=cs,
+            block=b,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=past,
+            planned_first_harvest_date=past,
+            planned_last_harvest_date=past + timedelta(weeks=2),
+            planned_total_yield=Decimal("10"),
+            status="planned",
+        )
+
+    def test_missing_plantings_shows_field_clock_and_preflight_l8(self):
+        r = self.client.get(reverse("operations:missing_plantings"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "data-missing-plantings-context")
+        self.assertContains(r, "data-field-clock")
+        self.assertContains(r, "year_2030")
+        self.assertContains(r, "planting_date_year_mismatch")
 
 
 class PlantingScheduleChipCssClassTests(TestCase):

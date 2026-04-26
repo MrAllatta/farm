@@ -270,6 +270,33 @@ def dashboard_surface_hints(
     return out
 
 
+def inventory_surface_hints(
+    *,
+    outside_plan_crop_names: list[str],
+    planning_year_label: str = "",
+) -> list[dict[str, str]]:
+    """Inventory dashboard: call out demo or carry-over balances not on the active crop plan (LIVE-7)."""
+    out: list[dict[str, str]] = []
+    if not outside_plan_crop_names or not planning_year_label:
+        return out
+    preview = ", ".join(outside_plan_crop_names[:8])
+    if len(outside_plan_crop_names) > 8:
+        preview += f", +{len(outside_plan_crop_names) - 8} more"
+    out.append(
+        {
+            "id": "inventory_balance_outside_active_crop_plan",
+            "title": "Some inventory crops are not in the active crop plan",
+            "detail": (
+                f"Positive balances for: {preview}. "
+                f"They have no {planning_year_label} planting in planned/growing/harvesting — "
+                "usually prior-season carry-over, a demo product, or a ledger-only crop. "
+                "Balances are still real until you adjust them."
+            ),
+        }
+    )
+    return out
+
+
 def sales_plan_surface_hints(
     *,
     product_count: int,
