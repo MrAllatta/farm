@@ -135,6 +135,13 @@
     },
     "pack_skip_rows": [],
     "pack_skip_summary": [],
+    "post_repair_planting_events": {
+      "harvest_events_created_plantings": 0,
+      "harvest_planned_dates_filled": 0,
+      "harvest_skipped_invalid_window": 0,
+      "nursery_events_created_plantings": 0,
+      "plantings_scanned": 22
+    },
     "row_errors": [
       {
         "code": "namespace_mismatch",
@@ -259,11 +266,11 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-27T18:46:06.861428Z",
-    "run_id": "20260427T184606827969",
+    "finished_at": "2026-04-27T18:57:20.680766Z",
+    "run_id": "20260427T185720647123",
     "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
     "start_year": 2021,
-    "started_at": "2026-04-27T18:46:06.827969Z",
+    "started_at": "2026-04-27T18:57:20.647123Z",
     "validate_only": false,
     "verbose": false
   },

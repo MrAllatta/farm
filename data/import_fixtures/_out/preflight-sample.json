@@ -109,6 +109,7 @@
     },
     "pack_skip_rows": [],
     "pack_skip_summary": [],
+    "post_repair_planting_events": null,
     "row_errors": [],
     "row_warning_code_totals": {
       "import_year_range_skips_disk_year_folder": 1
@@ -119,7 +120,7 @@
         "count": 1,
         "field_path": "data_dir/year_2026",
         "model": "import_historical_data",
-        "operator_action": "Widen --start-year/--end-year (or aligned env defaults) when this disk year should be imported.",
+        "operator_action": "Widen --start-year/--end-year (or LIVE_IMPORT_ARCHIVE_YEAR / CLOUD_RUN_IMPORT_START_YEAR) when this on-disk season should be imported; otherwise the entire year_* tier is skipped.",
         "rows": [
           1
         ],
@@ -149,11 +150,11 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-27T18:46:07.740974Z",
-    "run_id": "20260427T184607226692",
+    "finished_at": "2026-04-27T18:57:21.538352Z",
+    "run_id": "20260427T185721039027",
     "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
     "start_year": 2021,
-    "started_at": "2026-04-27T18:46:07.226692Z",
+    "started_at": "2026-04-27T18:57:21.039027Z",
     "validate_only": true,
     "verbose": false
   },

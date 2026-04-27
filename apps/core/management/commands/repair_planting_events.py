@@ -9,7 +9,11 @@ from planning.services.planting_events_repair import repair_planting_events
 class Command(BaseCommand):
     help = (
         "Create missing HarvestEvent and NurseryEvent rows for plantings that have none. "
-        "Idempotent: does not modify existing events."
+        "Idempotent: does not modify existing events. "
+        "After a successful import_historical_data apply (not --validate-only / --dry-run), "
+        "the importer already runs this repair for --start-year..--end-year; rerun this command "
+        "when you used validate-only, repaired reference CSVs, or need a narrower "
+        "--planning-year-id / --year scope."
     )
 
     def add_arguments(self, parser):

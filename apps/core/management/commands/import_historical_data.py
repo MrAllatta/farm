@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """core/management/commands/import_historical_data.py
 
 Complete one-time import command for 5 years of historical farm data.
@@ -155,11 +157,18 @@ class Command(BaseCommand):
     ROW_WARNING_GUIDANCE = {
         "planting_date_year_mismatch": {
             "severity": "medium",
-            "operator_action": "Move the row to the correct year_YYYY bundle folder or correct Planned Plant Date in source.",
+            "operator_action": (
+                "PlanningYear is always the year_YYYY bundle folder (not the row date). "
+                "Move the row to the correct year_YYYY bundle folder or fix Planned Plant Date in source; "
+                "optional LIVE-17/B: --skip-plantings-when-planned-date-over-one-year-from-folder-year."
+            ),
         },
         "import_year_range_skips_disk_year_folder": {
             "severity": "medium",
-            "operator_action": "Widen --start-year/--end-year (or aligned env defaults) when this disk year should be imported.",
+            "operator_action": (
+                "Widen --start-year/--end-year (or LIVE_IMPORT_ARCHIVE_YEAR / CLOUD_RUN_IMPORT_START_YEAR) "
+                "when this on-disk season should be imported; otherwise the entire year_* tier is skipped."
+            ),
         },
     }
     SALES_CATEGORY_PRIORITY = {
@@ -313,6 +322,8 @@ class Command(BaseCommand):
         self.row_errors = []
         self.row_warnings: list[dict] = []
         self.skip_reasons: list[dict] = []
+        # LC-5: repair_planting_events stats after apply (None when repair did not run).
+        self.post_repair_planting_events: dict | None = None
 
         # Track statistics (legacy keys may still be populated in row paths).
         self.stats = defaultdict(
@@ -432,6 +443,7 @@ class Command(BaseCommand):
             from planning.services.planting_events_repair import repair_planting_events
 
             rep = repair_planting_events(min_year=self.start_year, max_year=self.end_year)
+            self.post_repair_planting_events = rep.as_dict()
             self.stdout.write(
                 self.style.SUCCESS(
                     "\nRepair generated planting events: "
@@ -517,9 +529,9 @@ class Command(BaseCommand):
         """
         message = (
             f"Planned Plant Date {plant_date.isoformat()} is more than one year away from "
-            f"bundle folder year {folder_year} — confirm this row belongs in year_{folder_year} "
-            f"(import binds PlanningYear to the folder year; missing-plantings and ops views can "
-            f"show unexpected calendar years if the CSV is misplaced)."
+            f"bundle folder year {folder_year} — confirm this row belongs in year_{folder_year}/ "
+            f"(PlanningYear is always the folder year, not the date on the row; misplaced CSVs "
+            f"drive LIVE-8 symptoms in missing-plantings and week ops)."
         )
         self.stdout.write(self.style.WARNING(f"    ⚠  row {row_number}: {message}"))
         self._record_row_warning(
@@ -5244,6 +5256,7 @@ class Command(BaseCommand):
                 "row_warning_code_totals": self._build_row_warning_code_totals(),
                 "pack_skip_rows": self.skip_reasons,
                 "pack_skip_summary": self._build_pack_skip_summary(),
+                "post_repair_planting_events": self.post_repair_planting_events,
                 "failure_signatures": failure_signatures,
                 "escalation_summary": self._build_escalation_summary(failure_signatures),
             },

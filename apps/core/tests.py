@@ -371,6 +371,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "row_warning_code_totals",
         "pack_skip_rows",
         "pack_skip_summary",
+        "post_repair_planting_events",
         "failure_signatures",
         "escalation_summary",
     }
@@ -748,6 +749,24 @@ class ImportHistoricalDataCommandTests(TestCase):
         )
         self.assertIsInstance(summary["results"]["pack_skip_rows"], list)
         self.assertIsInstance(summary["results"]["pack_skip_summary"], list)
+        pr = summary["results"]["post_repair_planting_events"]
+        if expected_validate_only or expected_dry_run:
+            self.assertIsNone(pr)
+        else:
+            self.assertIsInstance(pr, dict)
+            self.assertEqual(
+                set(pr.keys()),
+                {
+                    "plantings_scanned",
+                    "harvest_events_created_plantings",
+                    "nursery_events_created_plantings",
+                    "harvest_skipped_invalid_window",
+                    "harvest_planned_dates_filled",
+                },
+            )
+            for _k, _v in pr.items():
+                self.assertIsInstance(_v, int)
+                self.assertGreaterEqual(_v, 0)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
         self.assertIsInstance(summary["results"]["escalation_summary"], list)
         self._assert_row_error_payload_contract(summary["results"]["row_errors"])
@@ -1680,6 +1699,10 @@ class ImportHistoricalDataCommandTests(TestCase):
                     count_plantings_missing_harvest_events(year.id),
                     0,
                 )
+
+        pr = summary["results"]["post_repair_planting_events"]
+        self.assertIsNotNone(pr)
+        self.assertGreater(pr["plantings_scanned"], 0)
 
     def test_repo_mismatch_fixture_pack_apply_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
