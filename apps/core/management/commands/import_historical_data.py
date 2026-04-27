@@ -254,6 +254,7 @@ class Command(BaseCommand):
         self.summary_json_path = self._resolve_summary_json_path(requested_summary_path)
         self.row_errors = []
         self.row_warnings: list[dict] = []
+        self.skip_reasons: list[dict] = []
 
         # Track statistics (legacy keys may still be populated in row paths).
         self.stats = defaultdict(
@@ -404,6 +405,18 @@ class Command(BaseCommand):
     def _record_row_warning(self, model_name, row_number, code, field_path, message):
         """Capture structured row-level warning details for summary artifacts."""
         self.row_warnings.append(
+            {
+                "model": model_name,
+                "row": row_number,
+                "code": code,
+                "field_path": field_path,
+                "message": str(message),
+            }
+        )
+
+    def _record_skip_reason(self, model_name, row_number, code, field_path, message):
+        """Capture explicit row-level skip reason details for summary artifacts."""
+        self.skip_reasons.append(
             {
                 "model": model_name,
                 "row": row_number,
@@ -3258,6 +3271,13 @@ class Command(BaseCommand):
                     "pack_batch_components",
                     f"skipped pack batch row: missing {', '.join(missing_fields)}",
                 )
+                self._record_skip_reason(
+                    "PackBatch",
+                    line_no,
+                    "skipped_missing_required",
+                    "pack_batch_components",
+                    f"skipped pack batch row: missing {', '.join(missing_fields)}",
+                )
                 self.stats["PackBatch"]["skipped"] += 1
                 continue
             try:
@@ -3269,6 +3289,13 @@ class Command(BaseCommand):
                     code="missing_required",
                     field_path="pack_batch_components.pack_date",
                     message=f"unparseable Pack Date {pack_date_raw!r}",
+                )
+                self._record_skip_reason(
+                    "PackBatch",
+                    line_no,
+                    "missing_required",
+                    "pack_batch_components.pack_date",
+                    f"unparseable Pack Date {pack_date_raw!r}",
                 )
                 self.stats["PackBatch"]["skipped"] += 1
                 continue
@@ -3289,6 +3316,13 @@ class Command(BaseCommand):
                         field_path="pack_batch_components.pack_date",
                         message="invalid ISO week for pack batch grouping",
                     )
+                    self._record_skip_reason(
+                        "PackBatch",
+                        line_no,
+                        "namespace_mismatch",
+                        "pack_batch_components.pack_date",
+                        "invalid ISO week for pack batch grouping",
+                    )
                 self.stats["PackBatch"]["skipped"] += len(group_rows)
                 continue
 
@@ -3307,6 +3341,13 @@ class Command(BaseCommand):
                         "pack_batch_components.mix_product",
                         "product",
                         mix_name,
+                    )
+                    self._record_skip_reason(
+                        "PackBatch",
+                        line_no,
+                        "stale_fk",
+                        "pack_batch_components.mix_product",
+                        f"product not found '{mix_name}'",
                     )
                 self.stats["PackBatch"]["skipped"] += len(group_rows)
                 continue
@@ -3417,6 +3458,13 @@ class Command(BaseCommand):
                                 "pack_batch_components.component_quantity",
                                 f"skipped component row: non-positive quantity {qty_raw!r}",
                             )
+                            self._record_skip_reason(
+                                "PackBatchComponent",
+                                line_no,
+                                "skipped_non_positive_quantity",
+                                "pack_batch_components.component_quantity",
+                                f"skipped component row: non-positive quantity {qty_raw!r}",
+                            )
                             self.stats["PackBatchComponent"]["skipped"] += 1
                             continue
                         qty = qty.quantize(Decimal("0.01"))
@@ -3432,6 +3480,13 @@ class Command(BaseCommand):
                         continue
 
                 if pct is None and qty is None:
+                    self._record_skip_reason(
+                        "PackBatchComponent",
+                        line_no,
+                        "skipped_missing_component_amount",
+                        "pack_batch_components.component_percent",
+                        "skipped component row: requires positive Component Percent or Component Quantity",
+                    )
                     self.stats["PackBatchComponent"]["skipped"] += 1
                     continue
 
@@ -3461,6 +3516,13 @@ class Command(BaseCommand):
                             "pack_batch_components.component_crop",
                             "Component Crop Name",
                         )
+                        self._record_skip_reason(
+                            "PackBatchComponent",
+                            line_no,
+                            "missing_required",
+                            "pack_batch_components.component_crop",
+                            "missing required value for 'Component Crop Name'",
+                        )
                         self.stats["PackBatchComponent"]["skipped"] += 1
                         continue
                     crop_obj = self._get_crop(comp_crop_name)
@@ -3471,6 +3533,13 @@ class Command(BaseCommand):
                             "pack_batch_components.component_crop",
                             "crop",
                             comp_crop_name,
+                        )
+                        self._record_skip_reason(
+                            "PackBatchComponent",
+                            line_no,
+                            "stale_fk",
+                            "pack_batch_components.component_crop",
+                            f"crop not found '{comp_crop_name}'",
                         )
                         self.stats["PackBatchComponent"]["skipped"] += 1
                         continue
@@ -3483,6 +3552,13 @@ class Command(BaseCommand):
                             "pack_batch_components.component_product",
                             "Component Crop Name and Component Product Name",
                         )
+                        self._record_skip_reason(
+                            "PackBatchComponent",
+                            line_no,
+                            "missing_required",
+                            "pack_batch_components.component_product",
+                            "missing required value for 'Component Crop Name and Component Product Name'",
+                        )
                         self.stats["PackBatchComponent"]["skipped"] += 1
                         continue
                     c_crop = self._get_crop(comp_crop_name)
@@ -3493,6 +3569,13 @@ class Command(BaseCommand):
                             "pack_batch_components.component_crop",
                             "crop",
                             comp_crop_name,
+                        )
+                        self._record_skip_reason(
+                            "PackBatchComponent",
+                            line_no,
+                            "stale_fk",
+                            "pack_batch_components.component_crop",
+                            f"crop not found '{comp_crop_name}'",
                         )
                         self.stats["PackBatchComponent"]["skipped"] += 1
                         continue
@@ -3506,6 +3589,13 @@ class Command(BaseCommand):
                             "pack_batch_components.component_product",
                             "product",
                             f"{comp_crop_name} / {comp_product_name}",
+                        )
+                        self._record_skip_reason(
+                            "PackBatchComponent",
+                            line_no,
+                            "stale_fk",
+                            "pack_batch_components.component_product",
+                            f"product not found '{comp_crop_name} / {comp_product_name}'",
                         )
                         self.stats["PackBatchComponent"]["skipped"] += 1
                         continue
@@ -3586,6 +3676,13 @@ class Command(BaseCommand):
                                 "pack_allocations.channel",
                                 "Channel",
                             )
+                            self._record_skip_reason(
+                                "PackAllocation",
+                                i,
+                                "missing_required",
+                                "pack_allocations.channel",
+                                "missing required value for 'Channel'",
+                            )
                         if not product_name:
                             self._record_missing_required(
                                 "PackAllocation",
@@ -3593,12 +3690,26 @@ class Command(BaseCommand):
                                 "pack_allocations.product",
                                 "Product",
                             )
+                            self._record_skip_reason(
+                                "PackAllocation",
+                                i,
+                                "missing_required",
+                                "pack_allocations.product",
+                                "missing required value for 'Product'",
+                            )
                         if not pack_date_str:
                             self._record_missing_required(
                                 "PackAllocation",
                                 i,
                                 "pack_allocations.pack_date",
                                 "Pack Date",
+                            )
+                            self._record_skip_reason(
+                                "PackAllocation",
+                                i,
+                                "missing_required",
+                                "pack_allocations.pack_date",
+                                "missing required value for 'Pack Date'",
                             )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
@@ -3615,6 +3726,13 @@ class Command(BaseCommand):
                             "sales channel",
                             channel_name,
                         )
+                        self._record_skip_reason(
+                            "PackAllocation",
+                            i,
+                            "stale_fk",
+                            "pack_allocations.channel",
+                            f"sales channel not found '{channel_name}'",
+                        )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
                     if not self._has_channel_rollup_assignment(
@@ -3623,6 +3741,13 @@ class Command(BaseCommand):
                         "pack_allocations.channel_rollup",
                         channel.name,
                     ):
+                        self._record_skip_reason(
+                            "PackAllocation",
+                            i,
+                            "channel_rollup_mismatch",
+                            "pack_allocations.channel_rollup",
+                            f"channel '{channel.name}' is missing a sales category rollup assignment",
+                        )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
                     if not product:
@@ -3632,6 +3757,13 @@ class Command(BaseCommand):
                             "pack_allocations.product",
                             "product",
                             product_name,
+                        )
+                        self._record_skip_reason(
+                            "PackAllocation",
+                            i,
+                            "stale_fk",
+                            "pack_allocations.product",
+                            f"product not found '{product_name}'",
                         )
                         self.stats["PackAllocation"]["skipped"] += 1
                         continue
@@ -3664,6 +3796,13 @@ class Command(BaseCommand):
                                 "mix recipe",
                                 recipe_name,
                             )
+                            self._record_skip_reason(
+                                "PackAllocation",
+                                i,
+                                "stale_fk",
+                                "pack_allocations.recipe",
+                                f"mix recipe not found '{recipe_name}'",
+                            )
                             self.stats["PackAllocation"]["skipped"] += 1
                             continue
                         if (
@@ -3686,6 +3825,13 @@ class Command(BaseCommand):
                                 i,
                                 "pack_allocations.packed_quantity",
                                 "Packed Quantity",
+                            )
+                            self._record_skip_reason(
+                                "PackAllocation",
+                                i,
+                                "missing_required",
+                                "pack_allocations.packed_quantity",
+                                "missing required value for 'Packed Quantity'",
                             )
                             self.stats["PackAllocation"]["skipped"] += 1
                             continue
@@ -4846,6 +4992,40 @@ class Command(BaseCommand):
             row["recovery_steps"] = sorted(set(row["recovery_steps"]))
         return escalation_summary
 
+    def _build_pack_skip_summary(self):
+        """Group pack-scope skipped rows by model/code/field for operator triage."""
+        grouped = {}
+        for item in self.skip_reasons:
+            key = (
+                item.get("model"),
+                item.get("code"),
+                item.get("field_path"),
+                item.get("message"),
+            )
+            if key not in grouped:
+                grouped[key] = {
+                    "model": item.get("model"),
+                    "code": item.get("code"),
+                    "field_path": item.get("field_path"),
+                    "message": item.get("message"),
+                    "count": 0,
+                    "rows": [],
+                }
+            grouped[key]["count"] += 1
+            grouped[key]["rows"].append(item.get("row"))
+        summary = sorted(
+            grouped.values(),
+            key=lambda row: (
+                row["model"] or "",
+                row["code"] or "",
+                row["field_path"] or "",
+                row["message"] or "",
+            ),
+        )
+        for row in summary:
+            row["rows"] = sorted(set(row["rows"]))
+        return summary
+
     def _aggregate_import_totals(self):
         """Roll up per-model counters into aggregate totals (canonical summary.totals)."""
         totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
@@ -4914,6 +5094,8 @@ class Command(BaseCommand):
                 "totals": totals,
                 "row_errors": self.row_errors,
                 "row_warnings": self.row_warnings,
+                "pack_skip_rows": self.skip_reasons,
+                "pack_skip_summary": self._build_pack_skip_summary(),
                 "failure_signatures": failure_signatures,
                 "escalation_summary": self._build_escalation_summary(failure_signatures),
             },

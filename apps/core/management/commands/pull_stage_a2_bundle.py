@@ -15,7 +15,7 @@ from core.google_sheets_connector import (
     resolve_spreadsheet,
 )
 from core.management.commands.import_historical_data import Command as HistoricalImportCommand
-from core.spreadsheet_connector import normalize_rows
+from core.spreadsheet_connector import normalize_rows, summarize_header_detection_failure
 
 YEAR_TOKEN = "${YEAR}"
 
@@ -267,6 +267,46 @@ def _prepare_tab_for_year(tab, year):
     return t
 
 
+def _format_header_contract_error(tab_run, resolved, year, exc, diagnostics):
+    tab_identity = (
+        f"{resolved.get('spreadsheet_name', '<unknown spreadsheet>')}:{tab_run.get('worksheet_title')}"
+    )
+    if year is not None:
+        tab_identity = f"{tab_identity} (year {year})"
+    lines = [
+        f"header contract mismatch for {tab_identity}",
+        f"output_path={tab_run.get('output_path')}",
+        f"error={exc}",
+        (
+            "detection_hints="
+            f"header_row_index={tab_run.get('header_row_index')}, "
+            f"anchor_token={tab_run.get('anchor_token')!r}, "
+            f"max_scan_rows={tab_run.get('max_scan_rows')}"
+        ),
+        f"required_headers={diagnostics['required_headers']}",
+    ]
+    if diagnostics.get("top_candidates"):
+        lines.append("top_header_candidates:")
+        for candidate in diagnostics["top_candidates"]:
+            lines.append(
+                "  - "
+                f"row={candidate['row_index']} "
+                f"match={candidate['match_count']}/{candidate['required_count']} "
+                f"missing={candidate['missing_required_headers']} "
+                f"preview={candidate['header_preview']}"
+            )
+    if diagnostics.get("anchor_candidates"):
+        lines.append("anchor_candidates:")
+        for anchor in diagnostics["anchor_candidates"]:
+            lines.append(
+                "  - "
+                f"anchor_row={anchor['anchor_row_index']} "
+                f"candidate_row={anchor['candidate_header_row_index']} "
+                f"preview={anchor['candidate_preview']}"
+            )
+    return "\n".join(lines)
+
+
 class Command(BaseCommand):
     help = "Fetch Google Sheets tabs and normalize them into a Stage A2 bundle"
 
@@ -290,6 +330,11 @@ class Command(BaseCommand):
             default=None,
             help="Inclusive range end when expanding ${YEAR} (use with --start-year).",
         )
+        parser.add_argument(
+            "--validate-only",
+            action="store_true",
+            help="Fetch and validate header contracts without writing output CSVs.",
+        )
 
     def handle(self, *args, **options):
         config_path = Path(options["config"]).resolve()
@@ -312,6 +357,7 @@ class Command(BaseCommand):
         )
         multi_year_pass = not (len(years) == 1 and years[0] is None)
         first_year = years[0]
+        validate_only = bool(options.get("validate_only"))
 
         folder_id = extract_drive_folder_id(config.get("drive_folder_id") or config.get("drive_folder_url"))
         search_descendants = bool(config.get("drive_search_subfolders"))
@@ -329,6 +375,8 @@ class Command(BaseCommand):
             "drive_folder_id": folder_id,
             "tabs": [],
         }
+        if validate_only:
+            manifest["validate_only"] = True
         if multi_year_pass:
             manifest["years"] = [y for y in years if y is not None]
 
@@ -382,25 +430,39 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(f"skip tab (no rows): {label}"))
                     continue
 
-                normalized = normalize_rows(
-                    rows,
-                    required_headers=tab_run["required_headers"],
-                    aliases=tab_run.get("aliases"),
-                    max_scan_rows=tab_run.get("max_scan_rows", default_scan_rows),
-                    anchor_token=tab_run.get("anchor_token"),
-                    header_row_index=tab_run.get("header_row_index"),
-                    output_headers=tab_run.get("output_headers"),
-                    column_map=tab_run.get("column_map"),
-                    default_values=tab_run.get("default_values"),
-                    row_transforms=tab_run.get("row_transforms"),
-                    source_regions=tab_run.get("source_regions"),
-                    stop_on_blank_in=tab_run.get("stop_on_blank_in"),
-                    prefer_anchor_token=tab_run.get("prefer_anchor_token", False),
-                    grid_unpivot=tab_run.get("grid_unpivot"),
-                    fold_into_notes=tab_run.get("fold_into_notes"),
-                    constant_columns=tab_run.get("constant_columns"),
-                    skip_rows_missing=tab_run.get("skip_rows_missing"),
-                )
+                try:
+                    normalized = normalize_rows(
+                        rows,
+                        required_headers=tab_run["required_headers"],
+                        aliases=tab_run.get("aliases"),
+                        max_scan_rows=tab_run.get("max_scan_rows", default_scan_rows),
+                        anchor_token=tab_run.get("anchor_token"),
+                        header_row_index=tab_run.get("header_row_index"),
+                        output_headers=tab_run.get("output_headers"),
+                        column_map=tab_run.get("column_map"),
+                        default_values=tab_run.get("default_values"),
+                        row_transforms=tab_run.get("row_transforms"),
+                        source_regions=tab_run.get("source_regions"),
+                        stop_on_blank_in=tab_run.get("stop_on_blank_in"),
+                        prefer_anchor_token=tab_run.get("prefer_anchor_token", False),
+                        grid_unpivot=tab_run.get("grid_unpivot"),
+                        fold_into_notes=tab_run.get("fold_into_notes"),
+                        constant_columns=tab_run.get("constant_columns"),
+                        skip_rows_missing=tab_run.get("skip_rows_missing"),
+                    )
+                except ValueError as exc:
+                    diagnostics = summarize_header_detection_failure(
+                        rows,
+                        required_headers=tab_run.get("required_headers", []),
+                        aliases=tab_run.get("aliases"),
+                        max_scan_rows=tab_run.get("max_scan_rows", default_scan_rows),
+                        anchor_token=tab_run.get("anchor_token"),
+                        header_row_index=tab_run.get("header_row_index"),
+                        prefer_anchor_token=tab_run.get("prefer_anchor_token", False),
+                    )
+                    raise CommandError(
+                        _format_header_contract_error(tab_run, resolved, year, exc, diagnostics)
+                    ) from exc
 
                 rel_output = tab_run["output_path"]
                 rows_matrix = normalized["rows"]
@@ -464,19 +526,19 @@ class Command(BaseCommand):
                             )
 
                         group_rel_path = _substitute_year(original_path_template, row_year_int)
-                        group_abs_path = output_dir / group_rel_path
-                        group_abs_path.parent.mkdir(parents=True, exist_ok=True)
-
                         data_rows_group = group_rows[1:]
-                        appended_group = append_without_header and group_abs_path.exists()
-                        if appended_group:
-                            with group_abs_path.open("a", encoding="utf-8", newline="") as fh:
-                                writer = csv.writer(fh)
-                                writer.writerows(data_rows_group)
-                        else:
-                            with group_abs_path.open("w", encoding="utf-8", newline="") as fh:
-                                writer = csv.writer(fh)
-                                writer.writerows(group_rows)
+                        if not validate_only:
+                            group_abs_path = output_dir / group_rel_path
+                            group_abs_path.parent.mkdir(parents=True, exist_ok=True)
+                            appended_group = append_without_header and group_abs_path.exists()
+                            if appended_group:
+                                with group_abs_path.open("a", encoding="utf-8", newline="") as fh:
+                                    writer = csv.writer(fh)
+                                    writer.writerows(data_rows_group)
+                            else:
+                                with group_abs_path.open("w", encoding="utf-8", newline="") as fh:
+                                    writer = csv.writer(fh)
+                                    writer.writerows(group_rows)
                         group_rows_written = len(data_rows_group)
 
                         group_manifest = {
@@ -502,25 +564,29 @@ class Command(BaseCommand):
                             _ensure_planning_year_csv(output_dir, row_year_int)
 
                     self.stdout.write(
-                        f"pulled {resolved['spreadsheet_name']}:{worksheet_title_run} "
+                        f"{'validated' if validate_only else 'pulled'} "
+                        f"{resolved['spreadsheet_name']}:{worksheet_title_run} "
                         f"-> {len(year_groups)} year bucket(s) via row_year_routing "
                         f"({year_col!r})"
                     )
 
                 else:
-                    output_path = output_dir / rel_output
-                    output_path.parent.mkdir(parents=True, exist_ok=True)
                     data_rows = normalized["rows"][1:]
-                    appended_data_only = append_without_header and output_path.exists()
-                    if appended_data_only:
-                        with output_path.open("a", encoding="utf-8", newline="") as fh:
-                            writer = csv.writer(fh)
-                            writer.writerows(data_rows)
-                        rows_written = len(data_rows)
+                    if not validate_only:
+                        output_path = output_dir / rel_output
+                        output_path.parent.mkdir(parents=True, exist_ok=True)
+                        appended_data_only = append_without_header and output_path.exists()
+                        if appended_data_only:
+                            with output_path.open("a", encoding="utf-8", newline="") as fh:
+                                writer = csv.writer(fh)
+                                writer.writerows(data_rows)
+                            rows_written = len(data_rows)
+                        else:
+                            with output_path.open("w", encoding="utf-8", newline="") as fh:
+                                writer = csv.writer(fh)
+                                writer.writerows(normalized["rows"])
+                            rows_written = max(len(normalized["rows"]) - 1, 0)
                     else:
-                        with output_path.open("w", encoding="utf-8", newline="") as fh:
-                            writer = csv.writer(fh)
-                            writer.writerows(normalized["rows"])
                         rows_written = max(len(normalized["rows"]) - 1, 0)
 
                     tab_manifest = {
@@ -541,7 +607,8 @@ class Command(BaseCommand):
                         tab_manifest["grid_unpivot"] = True
                     manifest["tabs"].append(tab_manifest)
                     self.stdout.write(
-                        f"pulled {resolved['spreadsheet_name']}:{worksheet_title_run} -> {rel_output}"
+                        f"{'validated' if validate_only else 'pulled'} "
+                        f"{resolved['spreadsheet_name']}:{worksheet_title_run} -> {rel_output}"
                     )
 
             if multi_year_pass and year is not None:
@@ -549,4 +616,8 @@ class Command(BaseCommand):
 
         manifest_path = output_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
-        self.stdout.write(self.style.SUCCESS(f"wrote Stage A2 bundle manifest: {manifest_path}"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"{'validated' if validate_only else 'wrote'} Stage A2 bundle manifest: {manifest_path}"
+            )
+        )

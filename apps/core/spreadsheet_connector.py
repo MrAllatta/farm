@@ -18,6 +18,83 @@ def canonicalize_header_row(header_row, aliases=None):
     return canonical
 
 
+def summarize_header_detection_failure(
+    rows,
+    required_headers,
+    aliases=None,
+    max_scan_rows=200,
+    anchor_token=None,
+    header_row_index=None,
+    prefer_anchor_token=False,
+    preview_limit=5,
+):
+    """Return compact diagnostics for header-contract misses.
+
+    This helper is intentionally read-only: it explains why detection failed
+    without changing matching behavior.
+    """
+    normalized_required = {_normalize_text(value) for value in required_headers}
+    scan_limit = min(len(rows), max_scan_rows)
+    alias_map = {_normalize_text(key): value for key, value in (aliases or {}).items()}
+
+    def _row_score(row):
+        canonical = canonicalize_header_row(row, aliases=aliases)
+        normalized = {_normalize_text(value) for value in canonical}
+        match_count = len(normalized_required & normalized)
+        missing = [
+            value
+            for value in required_headers
+            if _normalize_text(value) not in normalized
+        ]
+        return canonical, match_count, missing
+
+    candidates = []
+    for index in range(scan_limit):
+        row = rows[index] if index < len(rows) else []
+        if not row or all(str(cell).strip() == "" for cell in row):
+            continue
+        canonical, match_count, missing = _row_score(row)
+        candidates.append(
+            {
+                "row_index": index,
+                "match_count": match_count,
+                "required_count": len(normalized_required),
+                "missing_required_headers": missing[:8],
+                "header_preview": canonical[:12],
+            }
+        )
+
+    candidates.sort(key=lambda item: (-item["match_count"], item["row_index"]))
+
+    anchor_rows = []
+    if anchor_token:
+        normalized_anchor = _normalize_text(anchor_token)
+        for index in range(scan_limit):
+            first_cell = rows[index][0] if rows[index] else ""
+            if normalized_anchor in _normalize_text(first_cell):
+                candidate_index = index + 1
+                preview = rows[candidate_index] if candidate_index < len(rows) else []
+                anchor_rows.append(
+                    {
+                        "anchor_row_index": index,
+                        "candidate_header_row_index": candidate_index,
+                        "candidate_preview": canonicalize_header_row(preview, aliases=aliases)[:12],
+                    }
+                )
+
+    return {
+        "scan_limit": scan_limit,
+        "required_headers": list(required_headers),
+        "required_header_count": len(normalized_required),
+        "anchor_token": anchor_token,
+        "header_row_index": header_row_index,
+        "prefer_anchor_token": prefer_anchor_token,
+        "alias_keys": list(alias_map.keys())[:20],
+        "top_candidates": candidates[:preview_limit],
+        "anchor_candidates": anchor_rows[:preview_limit],
+    }
+
+
 def _project_rows(rows, output_headers=None, column_map=None, default_values=None):
     if not output_headers:
         return rows

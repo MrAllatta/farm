@@ -41,7 +41,7 @@ from reference.models import (
     SalesChannel,
     Variety,
 )
-from core.spreadsheet_connector import normalize_rows
+from core.spreadsheet_connector import normalize_rows, summarize_header_detection_failure
 from core.operator_scope import (
     active_crop_info_for_planning_year,
     operator_sales_channels,
@@ -195,11 +195,14 @@ class ImportHistoricalDataCommandTests(TestCase):
         "totals",
         "row_errors",
         "row_warnings",
+        "pack_skip_rows",
+        "pack_skip_summary",
         "failure_signatures",
         "escalation_summary",
     }
     MODEL_TOTAL_KEYS = {"created", "updated", "skipped", "error"}
     ROW_ERROR_KEYS = {"model", "row", "code", "field_path", "message"}
+    PACK_SKIP_SUMMARY_KEYS = {"model", "code", "field_path", "message", "count", "rows"}
     FAILURE_SIGNATURE_KEYS = {
         "signature",
         "count",
@@ -547,10 +550,14 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(set(summary["results"]["totals"].keys()), self.MODEL_TOTAL_KEYS)
         self.assertIsInstance(summary["results"]["row_errors"], list)
         self.assertIsInstance(summary["results"]["row_warnings"], list)
+        self.assertIsInstance(summary["results"]["pack_skip_rows"], list)
+        self.assertIsInstance(summary["results"]["pack_skip_summary"], list)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
         self.assertIsInstance(summary["results"]["escalation_summary"], list)
         self._assert_row_error_payload_contract(summary["results"]["row_errors"])
         self._assert_row_error_payload_contract(summary["results"]["row_warnings"])
+        self._assert_row_error_payload_contract(summary["results"]["pack_skip_rows"])
+        self._assert_pack_skip_summary_payload_contract(summary["results"]["pack_skip_summary"])
         self._assert_failure_signature_payload_contract(summary["results"]["failure_signatures"])
         self._assert_escalation_summary_payload_contract(summary["results"]["escalation_summary"])
 
@@ -630,6 +637,22 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(item["recovery_steps"], sorted(item["recovery_steps"]))
             for recovery_step in item["recovery_steps"]:
                 self.assertTrue(isinstance(recovery_step, str) and recovery_step)
+
+    def _assert_pack_skip_summary_payload_contract(self, pack_skip_summary):
+        for item in pack_skip_summary:
+            self.assertEqual(set(item.keys()), self.PACK_SKIP_SUMMARY_KEYS)
+            self.assertTrue(isinstance(item["model"], str) and item["model"])
+            self.assertTrue(isinstance(item["code"], str) and item["code"])
+            self.assertTrue(isinstance(item["field_path"], str) and item["field_path"])
+            self.assertTrue(isinstance(item["message"], str) and item["message"])
+            self.assertIsInstance(item["count"], int)
+            self.assertGreater(item["count"], 0)
+            self.assertIsInstance(item["rows"], list)
+            self.assertTrue(item["rows"])
+            self.assertEqual(item["rows"], sorted(item["rows"]))
+            for row in item["rows"]:
+                self.assertIsInstance(row, int)
+                self.assertGreater(row, 0)
 
     def test_clean_fixture_validate_only_has_no_writes_and_canonical_outcomes(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -2847,6 +2870,46 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(len(qty_warnings), 1)
         self.assertIn("non-positive quantity", qty_warnings[0]["message"])
 
+    def test_601_h1b_pack_skip_summary_includes_component_and_batch_skip_reasons(self):
+        """LIVE-14: summary includes row-level and grouped skip reasons for pack lanes."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_601_year_dir(
+                data_dir,
+                2021,
+                "pack_batch_components.csv",
+                [
+                    "Mix Product Name,Pack Date,Component Source Type,Component Crop Name,Component Quantity,Component Unit",
+                    ",2021-06-07,crop,Carrot,1,bunch",
+                    "Carrot Bunch,2021-06-07,crop,Carrot,0,bunch",
+                ],
+            )
+            summary = self._run_import(data_dir, Path(out_dir) / "s-pack-skip-summary.json")
+
+        skip_rows = summary["results"]["pack_skip_rows"]
+        self.assertTrue(skip_rows)
+        self.assertTrue(
+            [
+                row
+                for row in skip_rows
+                if row["model"] == "PackBatch" and row["code"] == "skipped_missing_required"
+            ]
+        )
+        self.assertTrue(
+            [
+                row
+                for row in skip_rows
+                if row["model"] == "PackBatchComponent"
+                and row["code"] == "skipped_non_positive_quantity"
+            ]
+        )
+
+        skip_summary = summary["results"]["pack_skip_summary"]
+        self.assertTrue(skip_summary)
+        codes = {(row["model"], row["code"]) for row in skip_summary}
+        self.assertIn(("PackBatch", "skipped_missing_required"), codes)
+        self.assertIn(("PackBatchComponent", "skipped_non_positive_quantity"), codes)
+
 
 class LiveImportValidateCommandTests(TestCase):
     def _write_json(self, directory, name, payload):
@@ -3089,6 +3152,45 @@ class StageA2OfflineConnectorTests(TestCase):
         self.assertEqual(normalized["header_row_index"], 2)
         self.assertEqual(normalized["strategy"], "anchor_token")
         self.assertEqual(normalized["rows"][1], ["Field 9", "4", "150"])
+
+    def test_header_drift_diagnostics_include_missing_headers_and_candidates(self):
+        rows = [
+            ["Welcome"],
+            ["Crop", "Product Type", "Family", "Fresh/Storage"],
+            ["Carrot", "Root", "Apiaceae", "Fresh"],
+        ]
+        diagnostics = summarize_header_detection_failure(
+            rows,
+            required_headers=["Crop", "PRODUCT Type", "Botanical Family"],
+            max_scan_rows=10,
+        )
+        self.assertEqual(diagnostics["scan_limit"], 3)
+        self.assertEqual(diagnostics["required_header_count"], 3)
+        self.assertTrue(diagnostics["top_candidates"])
+        best = diagnostics["top_candidates"][0]
+        self.assertEqual(best["row_index"], 1)
+        self.assertIn("PRODUCT Type", best["missing_required_headers"])
+        self.assertIn("Botanical Family", best["missing_required_headers"])
+
+    def test_header_drift_diagnostics_include_anchor_candidate_preview(self):
+        rows = [
+            ["Instructions"],
+            ["DATA START"],
+            ["Wrong Header A", "Wrong Header B"],
+            ["value1", "value2"],
+        ]
+        diagnostics = summarize_header_detection_failure(
+            rows,
+            required_headers=["Crop", "PRODUCT Type"],
+            anchor_token="DATA START",
+            prefer_anchor_token=True,
+            max_scan_rows=10,
+        )
+        self.assertTrue(diagnostics["anchor_candidates"])
+        anchor = diagnostics["anchor_candidates"][0]
+        self.assertEqual(anchor["anchor_row_index"], 1)
+        self.assertEqual(anchor["candidate_header_row_index"], 2)
+        self.assertIn("Wrong Header A", anchor["candidate_preview"])
 
     def test_normalizer_can_project_live_tab_columns_into_importer_contract(self):
         rows = [
@@ -6613,6 +6715,134 @@ class PullStageA2SalesPlanFilterTest(TestCase):
         )
         self.assertEqual(len(normalized["rows"]), 2)
         self.assertEqual(normalized["rows"][1][2], "Carrot - lb")
+
+
+class PullStageA2BundleValidationModeTests(TestCase):
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_header_drift_error_has_tab_context(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-drift",
+            "spreadsheet_name": "Reference Workbook",
+            "modified_time": None,
+        }
+        fetch_tab_rows_mock.return_value = [
+            ["Crop", "Product Type", "Family"],
+            ["Carrot", "Vegetable", "Apiaceae"],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "lane.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "drift-test",
+                        "drive_folder_id": "fake-folder-id",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Reference Workbook",
+                                "worksheet_title": "Crop Info",
+                                "output_path": "reference/crop_info.csv",
+                                "required_headers": [
+                                    "Crop",
+                                    "PRODUCT Type",
+                                    "Botanical Family",
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(CommandError) as exc:
+                call_command(
+                    "pull_stage_a2_bundle",
+                    "--config",
+                    str(config_path),
+                    "--output-dir",
+                    str(output_dir),
+                )
+
+            err = str(exc.exception)
+            self.assertIn("header contract mismatch", err)
+            self.assertIn("Reference Workbook:Crop Info", err)
+            self.assertIn("output_path=reference/crop_info.csv", err)
+            self.assertIn("Botanical Family", err)
+            self.assertIn("top_header_candidates", err)
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_validate_only_checks_headers_without_writing_csv(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-ok",
+            "spreadsheet_name": "Reference Workbook",
+            "modified_time": "2026-04-27T12:00:00Z",
+        }
+        fetch_tab_rows_mock.return_value = [
+            ["Crop", "PRODUCT Type", "Botanical Family"],
+            ["Carrot", "Vegetable", "Apiaceae"],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "lane.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "validate-only-test",
+                        "drive_folder_id": "fake-folder-id",
+                        "tabs": [
+                            {
+                                "spreadsheet_name": "Reference Workbook",
+                                "worksheet_title": "Crop Info",
+                                "output_path": "reference/crop_info.csv",
+                                "required_headers": [
+                                    "Crop",
+                                    "PRODUCT Type",
+                                    "Botanical Family",
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stdout = StringIO()
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+                "--validate-only",
+                stdout=stdout,
+            )
+
+            self.assertFalse((output_dir / "reference" / "crop_info.csv").exists())
+            manifest_path = output_dir / "manifest.json"
+            self.assertTrue(manifest_path.exists())
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertTrue(manifest.get("validate_only"))
+            self.assertEqual(len(manifest["tabs"]), 1)
+            self.assertIn("validated", stdout.getvalue())
 
 
 class PullStageA2BundleRowYearRoutingTest(TestCase):
