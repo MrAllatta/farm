@@ -401,6 +401,18 @@ class Command(BaseCommand):
             }
         )
 
+    def _record_row_warning(self, model_name, row_number, code, field_path, message):
+        """Capture structured row-level warning details for summary artifacts."""
+        self.row_warnings.append(
+            {
+                "model": model_name,
+                "row": row_number,
+                "code": code,
+                "field_path": field_path,
+                "message": str(message),
+            }
+        )
+
     def _record_stale_fk(self, model_name, row_number, field_path, missing_label, raw_value):
         """Record a stale FK row error with a consistent message shape."""
         message = f"{missing_label} not found '{raw_value}'"
@@ -439,14 +451,12 @@ class Command(BaseCommand):
             f"show unexpected calendar years if the CSV is misplaced)."
         )
         self.stdout.write(self.style.WARNING(f"    ⚠  row {row_number}: {message}"))
-        self.row_warnings.append(
-            {
-                "model": "Planting",
-                "row": row_number,
-                "code": "planting_date_year_mismatch",
-                "field_path": "plantings.planned_plant_date",
-                "message": message,
-            }
+        self._record_row_warning(
+            "Planting",
+            row_number,
+            "planting_date_year_mismatch",
+            "plantings.planned_plant_date",
+            message,
         )
 
     def _normalize_rollup_group_to_category(self, group_name):
@@ -3236,6 +3246,18 @@ class Command(BaseCommand):
             mix_name = (row.get("Mix Product Name") or row.get("Mix Product") or "").strip()
             pack_date_raw = (row.get("Pack Date") or "").strip()
             if not mix_name or not pack_date_raw:
+                missing_fields = []
+                if not mix_name:
+                    missing_fields.append("Mix Product Name")
+                if not pack_date_raw:
+                    missing_fields.append("Pack Date")
+                self._record_row_warning(
+                    "PackBatch",
+                    line_no,
+                    "skipped_missing_required",
+                    "pack_batch_components",
+                    f"skipped pack batch row: missing {', '.join(missing_fields)}",
+                )
                 self.stats["PackBatch"]["skipped"] += 1
                 continue
             try:
@@ -3388,6 +3410,13 @@ class Command(BaseCommand):
                     try:
                         qty = self._dec(qty_raw)
                         if qty <= 0:
+                            self._record_row_warning(
+                                "PackBatchComponent",
+                                line_no,
+                                "skipped_non_positive_quantity",
+                                "pack_batch_components.component_quantity",
+                                f"skipped component row: non-positive quantity {qty_raw!r}",
+                            )
                             self.stats["PackBatchComponent"]["skipped"] += 1
                             continue
                         qty = qty.quantize(Decimal("0.01"))

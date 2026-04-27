@@ -2815,7 +2815,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(PackBatchComponent.objects.count(), 1)
 
     def test_601_h1b_zero_component_percent_and_quantity_skips_template_row(self):
-        """Zero percent + zero quantity rows from formulas are skipped without component errors."""
+        """Zero percent + zero quantity rows are skipped with explicit row warning details."""
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as out_dir:
             self._write_clean_fixture(data_dir)
             self._write_601_year_dir(
@@ -2838,6 +2838,14 @@ class ImportHistoricalDataCommandTests(TestCase):
                 if e["field_path"] == "pack_batch_components.component_percent"
             ]
         )
+        qty_warnings = [
+            w
+            for w in summary["results"]["row_warnings"]
+            if w["code"] == "skipped_non_positive_quantity"
+            and w["field_path"] == "pack_batch_components.component_quantity"
+        ]
+        self.assertEqual(len(qty_warnings), 1)
+        self.assertIn("non-positive quantity", qty_warnings[0]["message"])
 
 
 class LiveImportValidateCommandTests(TestCase):
