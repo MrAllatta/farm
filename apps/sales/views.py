@@ -23,7 +23,7 @@ from .models import SalesEvent, QuickSalesEntry
 from reference.models import SalesChannel, CropSalesFormat
 from operations.models import PackAllocation
 
-from .views_weekly_order import WeeklyChannelOrderView
+from .views_weekly_order import ProductPriorYearNeighborsView, WeeklyChannelOrderView
 
 
 def _carryover_return_events(channel, product, sale_date, days=14):

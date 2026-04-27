@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Prior-year weeks — {{ product.product_name }} · {{ channel.name }}{% endblock %}
+{% block content %}
+<section class="page-header">
+    <h1>Prior-year actuals — adjacent ISO weeks</h1>
+    <p class="muted">
+        {{ product.product_name }} · {{ product.crop.name }} · {{ channel.name }}
+        · center <strong>W{{ week_num }}</strong> (±1 week in each prior calendar year)
+        · planning year {{ year.year }}
+    </p>
+    <p class="no-print">
+        <a href="{% url 'sales:weekly_channel_order' channel.id week_num %}">← Back to weekly channel order</a>
+    </p>
+</section>
+
+<section class="panel">
+    <p class="muted" style="margin-top:0;">
+        Imported <code>ACTUAL</code> quantities for the same channel/product keys as the weekly order grid.
+        Use this when the center week is “—” but you want to see if sales moved to the previous or next ISO week.
+    </p>
+    <div class="fp-table-scroll">
+        <table class="fp-table">
+            <thead>
+                <tr>
+                    <th>Calendar year</th>
+                    <th class="num">W{{ prev_week_num }} qty</th>
+                    <th class="num">W{{ week_num }} qty</th>
+                    <th class="num">W{{ next_week_num }} qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in neighbor_rows %}
+                <tr>
+                    <td>{{ row.calendar_year }}</td>
+                    <td class="num">{% if row.qty_prev is not None %}{{ row.qty_prev|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td class="num">{% if row.qty_center is not None %}{{ row.qty_center|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td class="num">{% if row.qty_next is not None %}{{ row.qty_next|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="muted">No prior calendar years in scope for this planning year.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -94,8 +94,9 @@
             </details>
             
             <details class="nav-group nav-group-menu">
-                <summary class="nav-group-label">503 map</summary>
+                <summary class="nav-group-label">More</summary>
                 <div class="nav-menu">
+                    <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.15rem 0 0.25rem 0;">503 map</span>
                     <a href="{% url 'reports:crop_map' %}">Crop Map</a>
                     <a href="{% url 'reports:crop_map_week_by_bed' %}">503 Week by Bed</a>
                     <a href="{% url 'reports:crop_map_week_by_block' %}">503 Week by Block</a>
@@ -109,13 +110,7 @@
                         </a>
                     {% endif %}
                     <a href="{% url 'reports:seed_order' %}">Seed Order</a>
-                </div>
-            </details>
-            
-            <details class="nav-group nav-group-menu">
-                <summary class="nav-group-label">More</summary>
-                <div class="nav-menu">
-                    <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.15rem 0 0.25rem 0;">Analyze</span>
+                    <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.6rem 0 0.25rem 0;">Analyze</span>
                     <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
                     <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
                     <a href="{% url 'reports:channel_performance' %}">Channel Performance</a>

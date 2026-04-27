@@ -38,7 +38,7 @@
     <h2 style="margin-top:0; font-size:1.05rem;">Fix blank harvest lists after import</h2>
     <p class="muted" style="margin-bottom:0.5rem;">
         {{ plantings_missing_harvest_events }} planting(s) in <strong>{{ year.year }}</strong> have a harvest window
-        but no generated <code>HarvestEvent</code> rows yet. Harvest needs (and sales-plan supply) read from those events.
+        but no generated <code>HarvestEvent</code> rows yet. Harvest needs, sales-plan supply, and weekly-order harvest columns all read from those events until repair runs.
     </p>
     <p class="muted" style="margin-bottom:0.35rem;">From the <strong>farm-planning</strong> repository root (so <code>Makefile</code> loads <code>.env</code>), run:</p>
     <pre style="margin:0 0 0.5rem 0; padding:0.65rem 0.85rem; background:#1e293b; color:#e2e8f0; border-radius:6px; font-size:0.88rem; overflow-x:auto;">make manage ARGS="repair_planting_events --planning-year-id {{ year.id }}"</pre>

@@ -586,6 +586,65 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, "7.0")
         self.assertIn(b"data-empty-reason=\"historical_from_namesake_channel\"", r.content)
 
+    def test_weekly_order_merges_duplicate_actual_rows_same_product_week(self):
+        """LIVE-1: multiple ACTUAL rows same channel/product/week window sum in the grid."""
+        wk = 25
+        mon = Week(2024, wk).monday()
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon,
+            product=self.product,
+            actual_quantity=Decimal("3"),
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon + timedelta(days=1),
+            product=self.product,
+            actual_quantity=Decimal("5"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "8.0")
+
+    def test_product_prior_year_neighbors_shows_adjacent_weeks(self):
+        """LIVE-11: prior-context route shows W−1 and W+1 actuals for a product."""
+        wk = 20
+        mon_prev = Week(2024, 19).monday()
+        mon_next = Week(2024, 21).monday()
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_prev,
+            product=self.product,
+            actual_quantity=Decimal("2"),
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_next,
+            product=self.product,
+            actual_quantity=Decimal("4"),
+        )
+        url = reverse(
+            "sales:product_prior_year_neighbors",
+            kwargs={
+                "channel_id": self.channel.id,
+                "product_id": self.product.id,
+                "week": wk,
+            },
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "2.0")
+        self.assertContains(r, "4.0")
+        self.assertContains(r, "Prior-year actuals")
+
     def test_weekly_order_historical_matches_when_crop_sales_format_id_drifted(self):
         """LIVE-1: ACTUAL rows use a superseded CropSalesFormat id; same crop + name still fills cells."""
         wk = 22

@@ -44,7 +44,7 @@
     <ol class="sales-order-steps">
         <li><strong>Start here for the week:</strong> this screen is the single ISO-week, single-channel builder — planned demand, prior-year same-week actuals, harvest supply, and field-walk hints in one grid.</li>
         <li><strong>Set order:</strong> adjust this channel’s quantities for weather, customer demand, and expected harvest.</li>
-        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen (this ISO week) are the bridge to operations — they feed the demand hints on <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a> for the same week, then pack prep, market list, and sales entry.</li>
+        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen (this ISO week) are the bridge to operations — they are the demand hints on <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a> for the same ISO week, then pack prep, market list, and sales entry.</li>
     </ol>
     <div class="sales-order-summary">
         <span><strong>{{ planned_line_count }}</strong> planned lines</span>
@@ -100,7 +100,7 @@
                 <tr{% if row.shortage %} style="background:#fff7ed;"{% endif %}>
                     <td>
                         <strong>{{ row.product.product_name }}</strong>
-                        <div class="muted no-print"><small><a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}&amp;focus_product={{ row.product.id }}">Annual plan row</a> · {{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
+                        <div class="muted no-print"><small><a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}&amp;focus_product={{ row.product.id }}">Annual plan row</a> · <a href="{% url 'sales:product_prior_year_neighbors' channel.id row.product.id week_num %}" data-live11-prior-context="1">Prior-year ±1 week</a> · {{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
                     </td>
                     {% for cell in row.historical_cells %}
                     <td class="num">

@@ -133,6 +133,12 @@
                         {% endif %}
                     </td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{{ weeks|length|add:3 }}">
+                        {% include "core/_empty_state_panel.html" with title="No products in this sales plan view" body="Import reference products and plan rows, choose a channel for outlet mode, or confirm rollup sales categories exist. The weekly channel order and harvest needs only see demand after plan lines exist for active crops." empty_reason="sales_plan_no_product_rows" only %}
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
