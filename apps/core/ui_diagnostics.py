@@ -273,7 +273,12 @@ def weekly_order_surface_hints(
                 "detail": (
                     "Archive years come from completed `PlanningYear` rows and from calendar years present in "
                     "imported `SalesEvent` actuals. Add planning years for past seasons and import historical "
-                    "601 bundles (`year_*` folders) so same-ISO-week prior actuals can appear."
+                    "601 bundles (`year_*` folders) so same-ISO-week prior actuals can appear. "
+                    "If CSVs exist on disk but `import_historical_data` used a narrow `--start-year`/"
+                    "`--end-year`, entire `year_YYYY` trees outside that window are skipped (warning "
+                    "`import_year_range_skips_disk_year_folder`; summary `run.bundle_disk_year_folder_min`/"
+                    "`max`). Widen the window and re-apply, or raise `LIVE_IMPORT_ARCHIVE_YEAR` / "
+                    "`CLOUD_RUN_IMPORT_START_YEAR` when appropriate."
                 ),
             }
         )

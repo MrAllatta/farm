@@ -176,13 +176,20 @@ class Command(BaseCommand):
             "--start-year",
             type=int,
             default=2021,
-            help="First year to import (default: 2021)",
+            help=(
+                "First calendar year (inclusive) whose year_<Y>/ subtree is processed per tier "
+                "(same window for --validate-only and apply). Folders outside start..end are "
+                "skipped with import_year_range_skips_disk_year_folder warnings."
+            ),
         )
         parser.add_argument(
             "--end-year",
             type=int,
             default=2025,
-            help="Last year to import (default: 2025)",
+            help=(
+                "Last calendar year (inclusive) whose year_<Y>/ subtree is processed per tier "
+                "(same window for --validate-only and apply)."
+            ),
         )
         parser.add_argument(
             "--dry-run",
@@ -197,7 +204,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "--validate-only",
             action="store_true",
-            help="Run full validation preflight without writing data",
+            help=(
+                "Full validation preflight in a rollback transaction (no persistent writes). "
+                "Uses the same --start-year/--end-year window as apply: year_* directories "
+                "outside that range are not parsed—only warned. Widen the window to validate "
+                "those tiers."
+            ),
         )
         parser.add_argument(
             "--preflight",
