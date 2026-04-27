@@ -187,6 +187,15 @@
         "Total Yield Per Bedfoot": "Plan On Total Yield Per Bedfoot",
         "DS Seed Rate (seeds/ rowfoot)": "Seeds/ft (DS)",
         "TP Inrow Spacing (ft)": "Inrow Spacing Feet (TP)"
+      },
+      "aliases": {
+        "DS Seed Rate (seeds/ rowfoot)": "Seeds/ft (DS)",
+        "DS Seed Rate Seeds Rowfoot": "Seeds/ft (DS)",
+        "TP Inrow Spacing (ft)": "Inrow Spacing Feet (TP)",
+        "TP Inrow Spacing Ft": "Inrow Spacing Feet (TP)",
+        "WTM Weeks To Maturity": "Planned WTM",
+        "Plan On Weekly Yield Per Bedfoot": "Actual or Planned Weekly Yield per Bedfoot",
+        "Weekly Yield Per Bedfoot": "Weekly Yield Forecast"
       }
     },
     {

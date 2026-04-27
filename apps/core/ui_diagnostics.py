@@ -211,9 +211,12 @@ def weekly_order_surface_hints(
     positive_week_demand_products: int = 0,
     weekly_order_products_scope: str = "full_catalog",
     duplicate_channel_name_detected: bool = False,
+    prior_year_calendar_years: list[int] | None = None,
+    iso_week_has_prior_actuals_any_channel: bool = False,
 ) -> list[dict[str, str]]:
-    """Weekly channel order: demand rollup, historical joins, supply (pairs with LIVE-1/3/4)."""
+    """Weekly channel order: demand rollup, historical joins, supply (pairs with LIVE-1/3/4/LIVE-10)."""
     out: list[dict[str, str]] = []
+    year_cols = prior_year_calendar_years or []
     if plan_raw_week > 0 and plan_visible_week == 0:
         out.append(
             {
@@ -262,6 +265,35 @@ def weekly_order_surface_hints(
             }
         )
     out.extend(crop_plan_product_scope_hints(weekly_order_products_scope))
+    if not year_cols:
+        out.append(
+            {
+                "id": "no_prior_year_columns_configured",
+                "title": "No prior-year comparison columns yet",
+                "detail": (
+                    "Archive years come from completed `PlanningYear` rows and from calendar years present in "
+                    "imported `SalesEvent` actuals. Add planning years for past seasons and import historical "
+                    "601 bundles (`year_*` folders) so same-ISO-week prior actuals can appear."
+                ),
+            }
+        )
+    elif (
+        not has_any_historical
+        and iso_week_has_prior_actuals_any_channel
+        and not namesake_actuals_on_other_channel
+    ):
+        out.append(
+            {
+                "id": "historical_iso_week_imported_but_this_channel_empty",
+                "title": "Imported history exists for this ISO week, but not on this outlet channel",
+                "detail": (
+                    "At least one prior calendar year has actual sales in this ISO week window, but none attach "
+                    f"to this URL’s channel for the products in this grid. Compare another outlet, reconcile "
+                    f"601 `SalesChannel` ids vs this “{channel_name}” row, or check product / `CropSalesFormat` "
+                    "drift — see also LIVE-1 / LIVE-10."
+                ),
+            }
+        )
     if namesake_actuals_on_other_channel and not has_any_historical:
         out.append(
             {

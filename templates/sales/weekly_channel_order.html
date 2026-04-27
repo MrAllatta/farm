@@ -111,10 +111,10 @@
                 <tr{% if row.shortage %} style="background:#fff7ed;"{% endif %}>
                     <td>
                         <strong>{{ row.product.product_name }}</strong>
-                        <div class="muted no-print"><small><a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}&amp;focus_product={{ row.product.id }}">Annual plan row</a> · <a href="{% url 'sales:product_prior_year_neighbors' channel.id row.product.id week_num %}" data-live11-prior-context="1">Prior-year ±1 week</a> · {{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
+                        <div class="muted no-print"><small><a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}&amp;focus_product={{ row.product.id }}">Annual plan row</a> · <a href="{% url 'sales:product_prior_year_neighbors' channel.id row.product.id week_num %}" data-live11-prior-context="1">Prior-year ±1 week</a> · <a href="{% url 'sales:product_yearly_actuals_summary' channel.id row.product.id %}?highlight_week={{ week_num }}&amp;from_week={{ week_num }}">Full-year ACTUAL weeks</a> · {{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
                     </td>
                     {% for cell in row.historical_cells %}
-                    <td class="num">
+                    <td class="num"{% if cell.empty_reason %} data-empty-reason="{{ cell.empty_reason }}"{% endif %}>
                         {% if cell.actual_qty is not None %}
                             {{ cell.actual_qty|floatformat:1 }}
                             {% if cell.actual_revenue %}<div class="muted"><small>${{ cell.actual_revenue|floatformat:0 }}</small></div>{% endif %}

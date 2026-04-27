@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Prior-year ACTUAL weeks — {{ product.product_name }} · {{ channel.name }}{% endblock %}
+{% block content %}
+<section class="page-header">
+    <h1>Prior-year ACTUAL weeks (imported)</h1>
+    <p class="muted">
+        {{ product.product_name }} · {{ product.crop.name }} · {{ channel.name }}
+        · planning year {{ year.year }}
+        {% if pool_bounds %}
+        · scanned {{ pool_bounds.0 }}–{{ pool_bounds.1 }}
+        {% endif %}
+    </p>
+    <p class="no-print">
+        <a href="{% url 'sales:weekly_channel_order' channel.id weekly_order_back_week %}">← Weekly channel order</a>
+        {% if highlight_week %}
+        · <span class="muted">Highlight: W{{ highlight_week }}</span>
+        {% endif %}
+    </p>
+</section>
+
+<section class="panel">
+    <p class="muted" style="margin-top:0;">
+        ISO weeks with non-zero <code>ACTUAL</code> quantity for this channel/product (same merge rules as the weekly grid: strict channel, namesake channel, product-key remap).
+        Weeks with no sales or zero quantity are omitted.
+    </p>
+    {% for section in year_sections %}
+    <h2 style="margin-top:1.25rem;">{{ section.calendar_year }}</h2>
+    {% if section.used_name_fallback %}
+    <p class="muted"><small>Includes rows matched via same channel name on a different channel id.</small></p>
+    {% endif %}
+    {% if section.used_product_key_fallback %}
+    <p class="muted"><small>Includes rows matched via crop + product name remap.</small></p>
+    {% endif %}
+    <div class="fp-table-scroll">
+        <table class="fp-table">
+            <thead>
+                <tr>
+                    <th>ISO week</th>
+                    <th class="num">ACTUAL qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in section.weeks %}
+                <tr{% if w.highlight %} style="font-weight:600;"{% endif %}>
+                    <td>W{{ w.iso_week }}{% if w.highlight %} · current view{% endif %}</td>
+                    <td class="num">{{ w.qty|floatformat:1 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" class="muted">No non-zero ACTUAL rows in this calendar year for this product.</td></tr>
+                {% endfor %}
+            </tbody>
+            {% if section.weeks %}
+            <tfoot>
+                <tr>
+                    <th>Year total (listed weeks)</th>
+                    <th class="num">{{ section.year_total|floatformat:1 }}</th>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+    {% empty %}
+    <p class="muted">No prior calendar years in scope.</p>
+    {% endfor %}
+</section>
+{% endblock %}

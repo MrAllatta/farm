@@ -260,6 +260,46 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertIn(b"7.0", r.content)
         self.assertNotIn(b"data-historical-empty", r.content)
 
+    def test_weekly_order_hint_when_iso_week_has_actuals_elsewhere_not_this_channel(self):
+        """LIVE-10: distinguish channel join issues from truly empty ISO weeks."""
+        wk = 20
+        mon_2023 = Week(2023, wk).monday()
+        other = SalesChannel.objects.create(
+            name="Other Outlet",
+            days_of_week=["Sunday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("100.00"),
+            is_csa=False,
+            allocation_priority=2,
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=other,
+            sale_date=mon_2023,
+            product=self.product,
+            actual_quantity=Decimal("5"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'data-empty-reason="historical_iso_week_imported_but_this_channel_empty"')
+
+    def test_weekly_order_hint_when_no_prior_year_columns_available(self):
+        """LIVE-10: staff guidance when archive years are not configured or imported."""
+        PlanningYear.objects.filter(year__lt=self.py_2026.year).delete()
+        SalesEvent.objects.filter(entry_kind=SalesEvent.EntryKind.ACTUAL).delete()
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": 21},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'data-empty-reason="no_prior_year_columns_configured"')
+
     def test_weekly_order_smoke_shows_handoff_and_empty_state_copy(self):
         wk = 21
         url = reverse(
@@ -675,6 +715,18 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, 'data-live11-neighbor-snippet="1"')
         self.assertContains(r, "W19 2.0")
         self.assertContains(r, "W21 4.0")
+        self.assertContains(r, 'data-empty-reason="prior_year_cell_empty_neighbors_both_weeks"')
+
+    def test_weekly_order_prior_year_empty_cell_reason_no_neighbor_sales(self):
+        """LIVE-11: prior-year column exists but this product has no ACTUAL rows on W−1 / W / W+1."""
+        wk = 20
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'data-empty-reason="prior_year_cell_empty_no_neighbor_week_sales"')
 
     def test_weekly_order_historical_matches_when_crop_sales_format_id_drifted(self):
         """LIVE-1: ACTUAL rows use a superseded CropSalesFormat id; same crop + name still fills cells."""
@@ -733,6 +785,34 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "alt channel id")
         self.assertContains(r, "6.0")
+
+    def test_product_yearly_actuals_summary_lists_nonzero_weeks(self):
+        """LIVE-11: year-summary route lists ISO weeks with ACTUAL qty for prior calendar years."""
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=Week(2024, 15).monday(),
+            product=self.product,
+            actual_quantity=Decimal("9"),
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=Week(2024, 15).monday() + timedelta(days=2),
+            product=self.product,
+            actual_quantity=Decimal("1"),
+        )
+        url = reverse(
+            "sales:product_yearly_actuals_summary",
+            kwargs={"channel_id": self.channel.id, "product_id": self.product.id},
+        )
+        r = self.client.get(f"{url}?highlight_week=15&from_week=20")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Prior-year ACTUAL weeks")
+        self.assertContains(r, "2024")
+        self.assertContains(r, "W15")
+        self.assertContains(r, "10.0")
+        self.assertContains(r, "Year total")
 
     def test_weekly_order_shows_harvest_supply_mismatch_diagnostic(self):
         """LIVE-4: harvest events exist for a crop with no active product row in this grid."""

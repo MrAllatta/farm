@@ -6,11 +6,12 @@ Kept in a submodule to keep ``sales.views`` smaller; imported from ``sales.views
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from types import SimpleNamespace
 
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.db.models.functions import ExtractYear
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -22,6 +23,8 @@ from core.planning_year import get_effective_planning_year
 from core.ui_diagnostics import harvest_surface_hints, weekly_order_surface_hints
 from operations.models import FieldWalkNote
 from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES, week_bounds_for_planning_year
+from isoweek import Week
+
 from planning.models import HarvestEvent, PlanningYear, Planting
 from planning.services.planting_events_repair import count_plantings_missing_harvest_events
 from reference.models import CropSalesFormat, SalesChannel
@@ -47,41 +50,19 @@ def _add_actual_row(by_product: dict[int, SimpleNamespace], product_id: int, row
         cur.actual_revenue = base_r + rr
 
 
-def historical_by_product_for_window(
+def _merge_historical_from_strict_and_namesake(
+    rows_strict: list[SalesEvent],
+    namesake_rows: list[SalesEvent],
     channel: SalesChannel,
     products,
-    week_start,
-    week_end,
 ) -> dict:
-    """LIVE-1 / LIVE-11: ACTUAL rows in [week_start, week_end] keyed to current-grid product ids."""
-    rows_strict = list(
-        SalesEvent.objects.filter(
-            entry_kind=SalesEvent.EntryKind.ACTUAL,
-            channel=channel,
-            sale_date__gte=week_start,
-            sale_date__lte=week_end,
-        )
-        .select_related("product", "product__crop")
-        .order_by("-sale_date", "-id")
-    )
+    """Shared LIVE-1 / LIVE-11 merge: strict channel rows, optional namesake, product-key remap."""
     by_product: dict[int, SimpleNamespace] = {}
     for row in rows_strict:
         if row.product_id:
             _add_actual_row(by_product, row.product_id, row)
     used_name_fallback = False
-    namesake_rows: list[SalesEvent] = []
     if not by_product:
-        namesake_rows = list(
-            SalesEvent.objects.filter(
-                entry_kind=SalesEvent.EntryKind.ACTUAL,
-                channel__name=channel.name,
-                sale_date__gte=week_start,
-                sale_date__lte=week_end,
-            )
-            .exclude(channel_id=channel.id)
-            .select_related("product", "product__crop", "channel")
-            .order_by("-sale_date", "-id")
-        )
         for row in namesake_rows:
             if row.product_id:
                 _add_actual_row(by_product, row.product_id, row)
@@ -109,6 +90,47 @@ def historical_by_product_for_window(
         "used_name_fallback": used_name_fallback,
         "used_product_key_fallback": used_product_key_fallback,
     }
+
+
+def historical_by_product_for_window_from_pool(
+    pool: list[SalesEvent],
+    channel: SalesChannel,
+    products,
+    week_start,
+    week_end,
+) -> dict:
+    """Same semantics as ``historical_by_product_for_window`` using pre-fetched ACTUAL rows."""
+    rows_in = [r for r in pool if week_start <= r.sale_date <= week_end]
+    rows_strict = [r for r in rows_in if r.channel_id == channel.id]
+    by_from_strict: dict[int, SimpleNamespace] = {}
+    for row in rows_strict:
+        if row.product_id:
+            _add_actual_row(by_from_strict, row.product_id, row)
+    namesake_rows: list[SalesEvent] = []
+    if not by_from_strict:
+        namesake_rows = [
+            r for r in rows_in if r.channel_id != channel.id and r.channel.name == channel.name
+        ]
+    return _merge_historical_from_strict_and_namesake(rows_strict, namesake_rows, channel, products)
+
+
+def historical_by_product_for_window(
+    channel: SalesChannel,
+    products,
+    week_start,
+    week_end,
+) -> dict:
+    """LIVE-1 / LIVE-11: ACTUAL rows in [week_start, week_end] keyed to current-grid product ids."""
+    pool = list(
+        SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            sale_date__gte=week_start,
+            sale_date__lte=week_end,
+        )
+        .filter(Q(channel_id=channel.id) | Q(channel__name=channel.name))
+        .select_related("product", "product__crop", "channel")
+    )
+    return historical_by_product_for_window_from_pool(pool, channel, products, week_start, week_end)
 
 
 class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
@@ -321,6 +343,16 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
         )
         prior_year_set = in_planning_table | actual_years
         prior_year_ints = sorted(prior_year_set, reverse=True)[:6]
+        iso_week_has_prior_actuals_any_channel = False
+        for y in prior_year_ints:
+            hm_iso, hs_iso = self.week_window(y, week_num)
+            if SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                sale_date__gte=hm_iso,
+                sale_date__lte=hs_iso,
+            ).exists():
+                iso_week_has_prior_actuals_any_channel = True
+                break
         prev_week_num = self.week_navigation(week_num)["prev_week_num"]
         next_week_num = self.week_navigation(week_num)["next_week_num"]
         historical_prev_by_year = {}
@@ -412,13 +444,26 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 y = block["calendar_year"]
                 ev_prev = historical_prev_by_year[y]["by_product"].get(product.id)
                 ev_next = historical_next_by_year[y]["by_product"].get(product.id)
+                prev_qty = ev_prev.actual_quantity if ev_prev else None
+                next_qty = ev_next.actual_quantity if ev_next else None
+                empty_reason = None
+                if ev is None:
+                    if prev_qty is not None and next_qty is not None:
+                        empty_reason = "prior_year_cell_empty_neighbors_both_weeks"
+                    elif prev_qty is not None:
+                        empty_reason = "prior_year_cell_empty_neighbor_prev_week_only"
+                    elif next_qty is not None:
+                        empty_reason = "prior_year_cell_empty_neighbor_next_week_only"
+                    else:
+                        empty_reason = "prior_year_cell_empty_no_neighbor_week_sales"
                 hist_cells.append(
                     {
                         "calendar_year": block["calendar_year"],
                         "actual_qty": ev.actual_quantity if ev else None,
                         "actual_revenue": ev.actual_revenue if ev else None,
-                        "neighbor_prev_qty": ev_prev.actual_quantity if ev_prev else None,
-                        "neighbor_next_qty": ev_next.actual_quantity if ev_next else None,
+                        "neighbor_prev_qty": prev_qty,
+                        "neighbor_next_qty": next_qty,
+                        "empty_reason": empty_reason,
                     }
                 )
             order_rows.append(
@@ -467,6 +512,8 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 positive_week_demand_products=weekly_demand_row_count,
                 weekly_order_products_scope=weekly_order_products_scope,
                 duplicate_channel_name_detected=duplicate_channel_name_detected,
+                prior_year_calendar_years=list(prior_year_ints),
+                iso_week_has_prior_actuals_any_channel=iso_week_has_prior_actuals_any_channel,
             )
         )
 
@@ -584,4 +631,119 @@ class ProductPriorYearNeighborsView(ReportContextMixin, TemplateView):
             }
         )
         ctx.update(nav)
+        return ctx
+
+
+def _actual_pool_for_prior_calendar_years(
+    channel: SalesChannel,
+    prior_year_ints: list[int],
+) -> tuple[list[SalesEvent], tuple[date, date] | None]:
+    """Fetch ACTUAL rows for strict or same-name channels across ISO-week columns in prior years."""
+    if not prior_year_ints:
+        return [], None
+    d0 = min(Week(y, 1).monday() for y in prior_year_ints)
+    d1 = max(Week(y, 52).monday() + timedelta(days=6) for y in prior_year_ints)
+    pool = list(
+        SalesEvent.objects.filter(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            sale_date__gte=d0,
+            sale_date__lte=d1,
+        )
+        .filter(Q(channel_id=channel.id) | Q(channel__name=channel.name))
+        .select_related("product", "product__crop", "channel")
+    )
+    return pool, (d0, d1)
+
+
+class ProductYearlyActualsSummaryView(ReportContextMixin, TemplateView):
+    """LIVE-11: per prior calendar year, list ISO weeks with non-zero imported ACTUAL qty for one product."""
+
+    template_name = "sales/product_yearly_actuals_summary.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.year_obj = get_effective_planning_year(request)
+        if not self.year_obj:
+            messages.error(request, "No active planning year configured.")
+            return redirect("planning:matrix")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        channel = get_object_or_404(SalesChannel, pk=kwargs["channel_id"])
+        product = get_object_or_404(CropSalesFormat, pk=kwargs["product_id"])
+        cal_year = self.year_obj.year
+
+        in_planning_table = set(
+            PlanningYear.objects.filter(year__lt=cal_year).values_list("year", flat=True)
+        )
+        actual_years = set(
+            SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                sale_date__year__lt=cal_year,
+            )
+            .annotate(sale_year=ExtractYear("sale_date"))
+            .values_list("sale_year", flat=True)
+        )
+        prior_year_ints = sorted(in_planning_table | actual_years, reverse=True)[:6]
+
+        pool, bounds = _actual_pool_for_prior_calendar_years(channel, prior_year_ints)
+
+        highlight_raw = (self.request.GET.get("highlight_week") or "").strip()
+        highlight_week = None
+        if highlight_raw.isdigit():
+            highlight_week = self.normalize_week(int(highlight_raw))
+
+        from_week_raw = (self.request.GET.get("from_week") or "").strip()
+        if from_week_raw.isdigit():
+            weekly_order_back_week = self.normalize_week(int(from_week_raw))
+        else:
+            weekly_order_back_week = self.resolve_week(None)
+
+        year_sections = []
+        for y in prior_year_ints:
+            weeks_out = []
+            year_total = Decimal("0")
+            flags = {"name": False, "remap": False}
+            for w in range(1, 53):
+                week_start, week_end = self.week_window(y, w)
+                block = historical_by_product_for_window_from_pool(
+                    pool, channel, [product], week_start, week_end
+                )
+                if block.get("used_name_fallback"):
+                    flags["name"] = True
+                if block.get("used_product_key_fallback"):
+                    flags["remap"] = True
+                ev = block["by_product"].get(product.id)
+                qty = ev.actual_quantity if ev else None
+                if qty is not None and qty != 0:
+                    weeks_out.append(
+                        {
+                            "iso_week": w,
+                            "qty": qty,
+                            "highlight": highlight_week == w,
+                        }
+                    )
+                    year_total += qty
+            year_sections.append(
+                {
+                    "calendar_year": y,
+                    "weeks": weeks_out,
+                    "year_total": year_total,
+                    "used_name_fallback": flags["name"],
+                    "used_product_key_fallback": flags["remap"],
+                }
+            )
+
+        ctx.update(
+            {
+                "year": self.year_obj,
+                "channel": channel,
+                "product": product,
+                "prior_year_ints": prior_year_ints,
+                "year_sections": year_sections,
+                "pool_bounds": bounds,
+                "highlight_week": highlight_week,
+                "weekly_order_back_week": weekly_order_back_week,
+            }
+        )
         return ctx

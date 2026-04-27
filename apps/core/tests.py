@@ -185,6 +185,8 @@ class ImportHistoricalDataCommandTests(TestCase):
         "data_dir",
         "start_year",
         "end_year",
+        "bundle_disk_year_folder_min",
+        "bundle_disk_year_folder_max",
         "validate_only",
         "dry_run",
         "atomic_apply",
@@ -993,6 +995,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         from core.management.commands import import_historical_data as ihd
 
         with TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, "year_2022"), exist_ok=True)
             os.makedirs(os.path.join(d, "year_2023"), exist_ok=True)
             command = ihd.Command(stdout=StringIO(), stderr=StringIO())
             command.data_dir = d
@@ -1006,6 +1009,9 @@ class ImportHistoricalDataCommandTests(TestCase):
                 w.get("code") == "import_year_range_skips_disk_year_folder" for w in command.row_warnings
             )
         )
+        w0 = next(w for w in command.row_warnings if w.get("code") == "import_year_range_skips_disk_year_folder")
+        self.assertIn("On-disk year_* folders span 2022\u20132023", w0["message"])
+        self.assertIn("import window 2024\u20132025", w0["message"])
 
     def test_row_warning_summary_groups_codes_with_operator_guidance(self):
         from core.management.commands.import_historical_data import Command
@@ -3001,6 +3007,12 @@ class LiveImportValidateCommandTests(TestCase):
             )
             call_command("live_import_validate", config_dir)
 
+    def test_live_import_validate_accepts_shipped_live_import_configs(self):
+        inner_farm = Path(__file__).resolve().parents[2]
+        config_dir = inner_farm / "data" / "live_import"
+        self.assertTrue(config_dir.is_dir(), msg=str(config_dir))
+        call_command("live_import_validate", str(config_dir))
+
     def test_live_import_validate_rejects_unknown_transform(self):
         with TemporaryDirectory() as config_dir:
             self._write_json(
@@ -4119,6 +4131,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
         ("sales:weekly_channel_order", {"channel_id": 1, "week": 12}),
+        ("sales:product_yearly_actuals_summary", {"channel_id": 1, "product_id": 1}),
         ("reports:crop_map", {}),
         ("reports:crop_performance", {}),
         ("reports:seed_order", {}),
@@ -4166,6 +4179,7 @@ class PrimaryRouteSmokeTests(TestCase):
         ("sales:market_entry_channel", {"channel_id": 1}),
         ("sales:market_entry_date", {"channel_id": 1, "sale_date": "2026-03-15"}),
         ("sales:weekly_channel_order", {"channel_id": 1, "week": 12}),
+        ("sales:product_yearly_actuals_summary", {"channel_id": 1, "product_id": 1}),
         ("reports:crop_map", {}),
         ("reports:crop_map_week", {"week": 12}),
         ("reports:harvest_list_print", {"week": 12}),
@@ -4188,7 +4202,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "reference": 1,
         "planning": 14,
         "operations": 11,
-        "sales": 4,
+        "sales": 5,
         "reports": 16,
     }
     EXPECTED_PRIMARY_SMOKE_ROUTES_BY_NAMESPACE = {
@@ -4196,7 +4210,7 @@ class PrimaryRouteSmokeTests(TestCase):
         "reference": 1,
         "planning": 15,
         "operations": 11,
-        "sales": 4,
+        "sales": 5,
         "reports": 16,
     }
 
@@ -4268,6 +4282,16 @@ class PrimaryRouteSmokeTests(TestCase):
             planned_date=first_h,
             planned_quantity=Decimal("25.00"),
             planned_units="pounds",
+        )
+        CropSalesFormat.objects.create(
+            pk=1,
+            crop=crop,
+            product_name="Smoke Greens Bunch",
+            sale_price=Decimal("3.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            sku="SMOKE-PR",
+            is_active=True,
         )
 
     def setUp(self):
@@ -6525,6 +6549,166 @@ class GoogleSheetsStageA2ConnectorTests(TestCase):
 
 class PullStageA2BundleYearRangeTest(TestCase):
     """Year expansion for live-import lane configs (output_path / tab names with ${YEAR})."""
+
+    @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
+    @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")
+    @patch("core.management.commands.pull_stage_a2_bundle.build_google_service")
+    def test_pull_stage_a2_bundle_crop_by_season_legacy_headers_normalize(
+        self,
+        build_google_service_mock,
+        resolve_spreadsheet_mock,
+        fetch_tab_rows_mock,
+    ):
+        """Legacy workbook labels (WTM / weekly yield / DS rate) map to canonical contract columns."""
+        build_google_service_mock.side_effect = [object(), object()]
+        resolve_spreadsheet_mock.return_value = {
+            "spreadsheet_id": "sheet-1290",
+            "spreadsheet_name": "Define Your Farm 2026",
+            "modified_time": None,
+        }
+        fetch_tab_rows_mock.return_value = [
+            ["Crop Reference Information"],
+            ["(by Season & Space)"],
+            [],
+            ["Warning row"],
+            [],
+            [
+                "Crop",
+                "Block Type",
+                "Field Week Start",
+                "Field Week End",
+                "HARVEST INFO",
+                "Harvest Units",
+                "Plan On Total Yield Per Bedfoot",
+                "Plan On Weekly Yield Per Bedfoot",
+                "Harvest Weeks",
+                "Weekly Yield Per Bedfoot",
+                "DTM Days To Maturity",
+                "WTM Weeks To Maturity",
+                "Rows Per Bed",
+                "DS Seed Rate (seeds/ rowfoot)",
+                "TP Inrow Spacing (ft)",
+                "Seeder Settings",
+                "Trellis System",
+                "Mulch",
+                "Row Cover",
+                "Irrigation",
+            ],
+            [
+                "Tomato",
+                "Field",
+                "10",
+                "40",
+                "",
+                "pounds",
+                "1.0",
+                "0.5",
+                "6",
+                "0.2",
+                "75",
+                "9",
+                "2",
+                "30",
+                "12",
+                "Earthway",
+                "None",
+                "Plastic",
+                "Ag",
+                "Drip",
+            ],
+        ]
+
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            config_path = temp_path / "reference.json"
+            output_dir = temp_path / "bundle"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "source_id": "crop-by-season-legacy-test",
+                        "drive_folder_id": "1L_khaFUYinodAHg4r2_UelEp1_eA9QRJ",
+                        "tabs": [
+                            {
+                                "spreadsheet_id": "sheet-1290",
+                                "worksheet_title": "Crop By Season",
+                                "output_path": "reference/crop_by_season.csv",
+                                "required_headers": [
+                                    "Crop",
+                                    "Block Type",
+                                    "Field Week Start",
+                                    "Field Week End",
+                                    "Plan On Total Yield Per Bedfoot",
+                                    "Harvest Weeks",
+                                    "DTM Days To Maturity",
+                                    "Rows Per Bed",
+                                    "Seeds/ft (DS)",
+                                    "Inrow Spacing Feet (TP)",
+                                    "Seeder Settings",
+                                    "Trellis System",
+                                    "Mulch",
+                                    "Row Cover",
+                                    "Irrigation",
+                                    "Planned WTM",
+                                    "Actual or Planned Weekly Yield per Bedfoot",
+                                    "Weekly Yield Forecast",
+                                ],
+                                "output_headers": [
+                                    "Crop",
+                                    "Block Type",
+                                    "Field Week Start",
+                                    "Field Week End",
+                                    "Total Yield Per Bedfoot",
+                                    "Harvest Weeks",
+                                    "DTM Days To Maturity",
+                                    "Rows Per Bed",
+                                    "DS Seed Rate (seeds/ rowfoot)",
+                                    "TP Inrow Spacing (ft)",
+                                    "Seeder Settings",
+                                    "Trellis System",
+                                    "Mulch",
+                                    "Row Cover",
+                                    "Irrigation",
+                                    "Planned WTM",
+                                    "Actual or Planned Weekly Yield per Bedfoot",
+                                    "Weekly Yield Forecast",
+                                ],
+                                "column_map": {
+                                    "Total Yield Per Bedfoot": "Plan On Total Yield Per Bedfoot",
+                                    "DS Seed Rate (seeds/ rowfoot)": "Seeds/ft (DS)",
+                                    "TP Inrow Spacing (ft)": "Inrow Spacing Feet (TP)",
+                                },
+                                "aliases": {
+                                    "DS Seed Rate (seeds/ rowfoot)": "Seeds/ft (DS)",
+                                    "DS Seed Rate Seeds Rowfoot": "Seeds/ft (DS)",
+                                    "TP Inrow Spacing (ft)": "Inrow Spacing Feet (TP)",
+                                    "TP Inrow Spacing Ft": "Inrow Spacing Feet (TP)",
+                                    "WTM Weeks To Maturity": "Planned WTM",
+                                    "Plan On Weekly Yield Per Bedfoot": "Actual or Planned Weekly Yield per Bedfoot",
+                                    "Weekly Yield Per Bedfoot": "Weekly Yield Forecast",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            call_command(
+                "pull_stage_a2_bundle",
+                "--config",
+                str(config_path),
+                "--output-dir",
+                str(output_dir),
+            )
+
+            out_lines = (output_dir / "reference" / "crop_by_season.csv").read_text(encoding="utf-8").splitlines()
+            self.assertEqual(
+                out_lines,
+                [
+                    "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation,Planned WTM,Actual or Planned Weekly Yield per Bedfoot,Weekly Yield Forecast",
+                    "Tomato,Field,10,40,1.0,6,75,2,30,12,Earthway,None,Plastic,Ag,Drip,9,0.5,0.2",
+                ],
+            )
 
     @patch("core.management.commands.pull_stage_a2_bundle.fetch_tab_rows")
     @patch("core.management.commands.pull_stage_a2_bundle.resolve_spreadsheet")

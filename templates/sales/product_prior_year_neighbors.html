@@ -10,6 +10,7 @@
     </p>
     <p class="no-print">
         <a href="{% url 'sales:weekly_channel_order' channel.id week_num %}">← Back to weekly channel order</a>
+        · <a href="{% url 'sales:product_yearly_actuals_summary' channel.id product.id %}?highlight_week={{ week_num }}&amp;from_week={{ week_num }}">Full-year ACTUAL weeks</a>
     </p>
 </section>
 

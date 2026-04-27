@@ -3937,18 +3937,32 @@ class Command(BaseCommand):
 
         self._import_rotation_history()
 
-    def _warn_year_folders_outside_import_range(self) -> None:
-        """LIVE-10: on-disk ``year_YYYY/`` is skipped entirely when YYYY is outside start/end (e.g. 2023 601)."""
+    def _disk_bundle_year_ints(self) -> list[int]:
+        """Sorted calendar years ``N`` for existing ``year_NNNN/`` directories (LIVE-10 bundle discovery)."""
         try:
             names = os.listdir(self.data_dir)
         except OSError:
-            return
-        skipped: list[int] = []
+            return []
+        found: list[int] = []
         for name in names:
             m = re.match(r"^year_(\d{4})$", name)
             if not m or not os.path.isdir(os.path.join(self.data_dir, name)):
                 continue
-            y = int(m.group(1))
+            found.append(int(m.group(1)))
+        found.sort()
+        return found
+
+    def _warn_year_folders_outside_import_range(self) -> None:
+        """LIVE-10: on-disk ``year_YYYY/`` is skipped entirely when YYYY is outside start/end (e.g. 2023 601)."""
+        disk_years = self._disk_bundle_year_ints()
+        span_hint = ""
+        if disk_years:
+            span_hint = (
+                f" On-disk year_* folders span {disk_years[0]}–{disk_years[-1]} "
+                f"(import window {self.start_year}–{self.end_year})."
+            )
+        skipped: list[int] = []
+        for y in disk_years:
             if y < self.start_year or y > self.end_year:
                 skipped.append(y)
         for y in sorted(skipped):
@@ -3957,6 +3971,7 @@ class Command(BaseCommand):
                 f"--start-year {self.start_year} --end-year {self.end_year}; "
                 "this tier (including year_<Y>/sales_events.csv) is not processed. "
                 "Widen the import year range to pick up 601 / historical sales for that season."
+                f"{span_hint}"
             )
             self.stdout.write(self.style.WARNING(f"  ⚠  {message}"))
             self.row_warnings.append(
@@ -5127,6 +5142,9 @@ class Command(BaseCommand):
         totals = self._aggregate_import_totals()
 
         failure_signatures = self._build_failure_signatures(status, fatal_error)
+        disk_bundle_years = self._disk_bundle_year_ints()
+        bundle_disk_min = disk_bundle_years[0] if disk_bundle_years else None
+        bundle_disk_max = disk_bundle_years[-1] if disk_bundle_years else None
         payload = {
             "schema_version": "1.5",
             "status": status,
@@ -5138,6 +5156,8 @@ class Command(BaseCommand):
                 "data_dir": self.data_dir,
                 "start_year": self.start_year,
                 "end_year": self.end_year,
+                "bundle_disk_year_folder_min": bundle_disk_min,
+                "bundle_disk_year_folder_max": bundle_disk_max,
                 "validate_only": self.validate_only,
                 "dry_run": self.dry_run,
                 "atomic_apply": self.atomic_apply,

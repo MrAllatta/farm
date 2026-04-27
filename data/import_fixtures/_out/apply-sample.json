@@ -127,7 +127,7 @@
       {
         "code": "import_year_range_skips_disk_year_folder",
         "field_path": "data_dir/year_2026",
-        "message": "Directory year_2026/ exists under the bundle root but is outside --start-year 2021 --end-year 2025; this tier (including year_<Y>/sales_events.csv) is not processed. Widen the import year range to pick up 601 / historical sales for that season.",
+        "message": "Directory year_2026/ exists under the bundle root but is outside --start-year 2021 --end-year 2025; this tier (including year_<Y>/sales_events.csv) is not processed. Widen the import year range to pick up 601 / historical sales for that season. On-disk year_* folders span 2023\u20132026 (import window 2021\u20132025).",
         "model": "import_historical_data",
         "row": 1
       }
@@ -141,13 +141,15 @@
   },
   "run": {
     "atomic_apply": true,
+    "bundle_disk_year_folder_max": 2026,
+    "bundle_disk_year_folder_min": 2023,
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-27T16:11:46.131342Z",
-    "run_id": "20260427T161145578945",
+    "finished_at": "2026-04-27T17:38:52.716036Z",
+    "run_id": "20260427T173852132150",
     "start_year": 2021,
-    "started_at": "2026-04-27T16:11:45.578945Z",
+    "started_at": "2026-04-27T17:38:52.132150Z",
     "validate_only": false,
     "verbose": false
   },

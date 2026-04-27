@@ -7,6 +7,11 @@ app_name = "sales"
 
 urlpatterns = [
     path(
+        "weekly-order/channel/<int:channel_id>/product/<int:product_id>/year-summary/",
+        views.ProductYearlyActualsSummaryView.as_view(),
+        name="product_yearly_actuals_summary",
+    ),
+    path(
         "weekly-order/channel/<int:channel_id>/product/<int:product_id>/week/<int:week>/prior-context/",
         views.ProductPriorYearNeighborsView.as_view(),
         name="product_prior_year_neighbors",
