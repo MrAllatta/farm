@@ -1025,3 +1025,81 @@ class PlantingScheduleChipCssClassTests(TestCase):
             planting_schedule_chip_css_class(planned, date(2026, 6, 12), date(2026, 6, 20)),
             "chip-plant-schedule-behind",
         )
+
+
+class PlantingRecordSnapshotMetadataTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.staff = user_model.objects.create_user(
+            username="planting-record-staff",
+            password="pw",
+            is_staff=True,
+        )
+        self.client.force_login(self.staff)
+        self.year = PlanningYear.objects.create(year=2031, status="active")
+        session = self.client.session
+        session["planning_year_id"] = self.year.id
+        session.save()
+        self.block = Block.objects.create(
+            name="Snapshot Block",
+            block_type="field",
+            num_beds=8,
+            bed_width_feet=Decimal("3.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        self.crop = CropInfo.objects.create(
+            name="Snapshot Carrot",
+            crop_type="Roots",
+            fresh_or_storage="fresh",
+            harvest_unit="lb",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        self.crop_season = CropBySeason.objects.create(
+            crop=self.crop,
+            block_type="field",
+            field_week_start=10,
+            field_week_end=40,
+            total_yield_per_bedfoot=Decimal("1.20"),
+            harvest_weeks=6,
+            dtm_days=65,
+            rows_per_bed=3,
+            ds_seed_rate=30,
+            tp_inrow_spacing=Decimal("0.25"),
+            seeder_settings="Jang JP-1",
+            row_cover="Lightweight",
+            irrigation="Drip",
+        )
+        plant_date = date(2031, 5, 1)
+        self.planting = Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop,
+            crop_season=self.crop_season,
+            block=self.block,
+            bed_start=1,
+            bed_end=2,
+            planned_bedfeet=100,
+            planned_plant_date=plant_date,
+            planned_first_harvest_date=plant_date + timedelta(days=65),
+            planned_last_harvest_date=plant_date + timedelta(days=65 + 35),
+            planned_total_yield=Decimal("120"),
+            status="planned",
+        )
+
+    def test_planting_record_plan_snapshot_shows_crop_metadata(self):
+        response = self.client.get(
+            reverse("operations:planting_record", kwargs={"pk": self.planting.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Seeds/ft (DS)")
+        self.assertContains(response, "Inrow Spacing Feet (TP)")
+        self.assertContains(response, "Seeder Settings")
+        self.assertContains(response, "Row Cover")
+        self.assertContains(response, "Irrigation")
+        self.assertContains(response, "Planned WTM")
+        self.assertContains(response, "Actual or Planned Weekly Yield per Bedfoot")
+        self.assertContains(response, "Weekly Yield Forecast")
+        self.assertContains(response, "Jang JP-1")
+        self.assertContains(response, "Lightweight")
+        self.assertContains(response, "Drip")

@@ -5810,9 +5810,9 @@ class ImportReferenceDataCommandTests(TestCase):
             data_dir,
             "crop_by_season.csv",
             [
-                "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
-                "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,",
-                "choose crop,Field,10,40,1.2,6,65,3,30,na,,,,,",
+                "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation,Planned WTM,Actual or Planned Weekly Yield per Bedfoot,Weekly Yield Forecast",
+                "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,,9.3,0.2,12",
+                "choose crop,Field,10,40,1.2,6,65,3,30,na,,,,,,9.3,0.2,12",
             ],
         )
         self._write_csv(
@@ -5937,8 +5937,8 @@ class ImportReferenceDataCommandTests(TestCase):
                 [
                     "Instructions,Pick one row per crop profile",
                     "",
-                    "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
-                    "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,",
+                    "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation,Planned WTM,Actual or Planned Weekly Yield per Bedfoot,Weekly Yield Forecast",
+                    "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,,9.3,0.2,12",
                 ],
             )
             self._write_csv(
@@ -5980,8 +5980,8 @@ class ImportReferenceDataCommandTests(TestCase):
                 data_dir,
                 "crop_by_season.csv",
                 [
-                    "Crop Name,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM,Rows Per Bed,DS Seed Rate Seeds Rowfoot,TP Inrow Spacing Ft,Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
-                    "Carrot,High Tunnel,10,40,1.2,6,65,3,30,na,,,,,",
+                    "Crop Name,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM,Rows Per Bed,Seeds/ft (DS),Inrow Spacing Feet (TP),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation,Planned WTM,Actual or Planned Weekly Yield per Bedfoot,Weekly Yield Forecast",
+                    "Carrot,High Tunnel,10,40,1.2,6,65,3,30,na,,,,,,9.3,0.2,12",
                 ],
             )
             self._write_csv(
@@ -5998,6 +5998,27 @@ class ImportReferenceDataCommandTests(TestCase):
             season = CropBySeason.objects.get()
             self.assertEqual(season.block_type, "high_tunnel")
             self.assertEqual(SalesChannel.objects.get().days_of_week, ["Saturday", "Sunday"])
+
+    def test_reference_import_requires_crop_by_season_superset_metadata_headers(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "crop_by_season.csv",
+                [
+                    "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                    "Carrot,Field,10,40,1.2,6,65,3,30,na,,,,,",
+                ],
+            )
+            self._write_csv(
+                data_dir,
+                "crop_info.csv",
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Carrot,Vegetables,Apiaceae,Fresh,0,FALSE,pounds,1,,,,,0,0,,,1,0,",
+                ],
+            )
+            with self.assertRaises(KeyError):
+                call_command("import_reference_data", data_dir)
 
     def test_import_crop_info_derives_fresh_holds_from_weeks_and_field_hold(self):
         with TemporaryDirectory() as data_dir:
