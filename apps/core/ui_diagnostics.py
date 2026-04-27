@@ -235,7 +235,8 @@ def crop_plan_product_scope_hints(weekly_order_products_scope: str) -> list[dict
                 "title": "Product list is limited to the crop plan, not this ISO week’s harvest window",
                 "detail": (
                     "No plantings have a harvest window overlapping this ISO week, so every in-plan crop "
-                    "is still shown for ordering. This is a scope filter (off-season or shoulder week), not a "
+                    "is still shown for ordering (same LIVE-2 rule as pack prep when a pack date falls in a "
+                    "shoulder week). This is a scope filter (off-season or shoulder week), not a "
                     "missing-data bug — switch weeks or extend harvest dates if the list should narrow further."
                 ),
             }

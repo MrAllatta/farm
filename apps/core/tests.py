@@ -44,7 +44,9 @@ from reference.models import (
 from core.spreadsheet_connector import normalize_rows, summarize_header_detection_failure
 from core.operator_scope import (
     active_crop_info_for_planning_year,
+    active_crop_sales_formats_for_planning_year,
     operator_sales_channels,
+    resolve_live2_scope,
 )
 from core.import_sample_guard import live12_block_message_for_sample_into_dev_sqlite
 from core.ui_diagnostics import crop_plan_product_scope_hints, weekly_order_surface_hints
@@ -133,6 +135,133 @@ class OperatorScopeHygieneTests(TestCase):
         )
         qs = active_crop_info_for_planning_year(year)
         self.assertEqual(list(qs.values_list("name", flat=True)), ["Scoped Crop"])
+
+
+class OperatorScopeLive2ResolveTests(TestCase):
+    """LIVE-2: shared resolve_live2_scope matches weekly order / active_crop_sales_formats."""
+
+    def setUp(self):
+        from operations.services.week_ops import week_bounds_for_planning_year
+
+        self.year = PlanningYear.objects.create(year=2040, status="active")
+        self.block = Block.objects.create(
+            name="L2 Block",
+            block_type="field",
+            num_beds=4,
+            bed_width_feet=Decimal("3.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        self.crop_overlap = CropInfo.objects.create(
+            name="Overlap Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("0.3"),
+            nursery_weeks=0,
+        )
+        self.crop_shoulder = CropInfo.objects.create(
+            name="Shoulder Crop",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("0.3"),
+            nursery_weeks=0,
+        )
+        self.cs_o = CropBySeason.objects.create(
+            crop=self.crop_overlap,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=3,
+        )
+        self.cs_s = CropBySeason.objects.create(
+            crop=self.crop_shoulder,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=3,
+        )
+        CropSalesFormat.objects.create(
+            crop=self.crop_overlap,
+            product_name="Overlap SKU",
+            sale_price=Decimal("2.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1"),
+            sku="OVR",
+            is_active=True,
+        )
+        CropSalesFormat.objects.create(
+            crop=self.crop_shoulder,
+            product_name="Shoulder SKU",
+            sale_price=Decimal("2.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1"),
+            sku="SHD",
+            is_active=True,
+        )
+        self.iso_week = 20
+        m20, s20 = week_bounds_for_planning_year(2040, self.iso_week)
+        m5, _ = week_bounds_for_planning_year(2040, 5)
+        _, s8 = week_bounds_for_planning_year(2040, 8)
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_overlap,
+            crop_season=self.cs_o,
+            block=self.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=m20 - timedelta(days=14),
+            planned_first_harvest_date=m20,
+            planned_last_harvest_date=s20,
+            planned_total_yield=Decimal("10"),
+            status="planned",
+        )
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=self.crop_shoulder,
+            crop_season=self.cs_s,
+            block=self.block,
+            bed_start=2,
+            bed_end=2,
+            planned_bedfeet=50,
+            planned_plant_date=m5 - timedelta(days=30),
+            planned_first_harvest_date=m5,
+            planned_last_harvest_date=s8,
+            planned_total_yield=Decimal("10"),
+            status="planned",
+        )
+
+    def test_resolve_crop_plan_week_when_harvest_window_overlaps(self):
+        meta = resolve_live2_scope(self.year, self.iso_week)
+        self.assertEqual(meta.scope, "crop_plan_week")
+        self.assertIn(self.crop_overlap.id, meta.week_overlap_crop_ids)
+        qs = active_crop_sales_formats_for_planning_year(
+            self.year, iso_week=self.iso_week, live2_scope=meta
+        )
+        self.assertEqual({p.crop_id for p in qs}, {self.crop_overlap.id})
+
+    def test_resolve_crop_plan_inexact_when_no_harvest_overlap_this_week(self):
+        far_week = 10
+        meta = resolve_live2_scope(self.year, far_week)
+        self.assertEqual(meta.scope, "crop_plan_inexact_week")
+        self.assertFalse(meta.week_overlap_crop_ids)
+        qs = active_crop_sales_formats_for_planning_year(self.year, iso_week=far_week, live2_scope=meta)
+        self.assertEqual({p.crop_id for p in qs}, {self.crop_overlap.id, self.crop_shoulder.id})
+
+    def test_resolve_full_catalog_without_plantings(self):
+        empty_year = PlanningYear.objects.create(year=2041, status="active")
+        meta = resolve_live2_scope(empty_year, 20)
+        self.assertEqual(meta.scope, "full_catalog")
+        qs = active_crop_sales_formats_for_planning_year(empty_year, iso_week=20, live2_scope=meta)
+        self.assertGreaterEqual(qs.count(), 1)
 
 
 class LiveNineFrozenCleanBundleTests(TransactionTestCase):

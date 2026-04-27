@@ -18,7 +18,12 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 
-from core.operator_scope import first_operator_sales_channel, operator_sales_channels
+from core.operator_scope import (
+    active_crop_sales_formats_for_planning_year,
+    first_operator_sales_channel,
+    operator_sales_channels,
+    resolve_live2_scope,
+)
 from core.planning_year import get_effective_planning_year
 from core.ui_diagnostics import harvest_surface_hints, weekly_order_surface_hints
 from operations.models import FieldWalkNote
@@ -166,38 +171,13 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
 
     def _weekly_order_crop_sales_formats(self, week_num: int):
         """LIVE-2: limit pickers to crops in the crop plan (ISO week overlap when possible)."""
-        cal_year = self.year_obj.year
-        week_monday, week_sunday = week_bounds_for_planning_year(cal_year, week_num)
-        year_crop_ids = list(
-            Planting.objects.filter(planning_year=self.year_obj)
-            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
-            .values_list("crop_id", flat=True)
-            .distinct()
+        wn = max(1, min(52, int(week_num)))
+        week_monday, week_sunday = week_bounds_for_planning_year(self.year_obj.year, wn)
+        meta = resolve_live2_scope(self.year_obj, wn)
+        products = active_crop_sales_formats_for_planning_year(
+            self.year_obj, iso_week=wn, live2_scope=meta
         )
-        week_overlap_crop_ids = list(
-            Planting.objects.filter(planning_year=self.year_obj)
-            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
-            .filter(
-                planned_first_harvest_date__lte=week_sunday,
-                planned_last_harvest_date__gte=week_monday,
-            )
-            .values_list("crop_id", flat=True)
-            .distinct()
-        )
-        scope = "full_catalog"
-        products = (
-            CropSalesFormat.objects.filter(is_active=True)
-            .select_related("crop")
-            .order_by("crop__crop_type", "crop__name", "product_name")
-        )
-        if year_crop_ids:
-            if week_overlap_crop_ids:
-                products = products.filter(crop_id__in=week_overlap_crop_ids)
-                scope = "crop_plan_week"
-            else:
-                products = products.filter(crop_id__in=year_crop_ids)
-                scope = "crop_plan_inexact_week"
-        return products, week_monday, week_sunday, scope
+        return products, week_monday, week_sunday, meta.scope
 
     def dispatch(self, request, *args, **kwargs):
         self.year_obj = get_effective_planning_year(request)

@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from isoweek import Week
 
-from core.operator_scope import operator_sales_channels
+from core.operator_scope import active_crop_sales_formats_for_planning_year, operator_sales_channels
 from core.planning_year import resolve_current_planning_year
 from planning.models import HarvestEvent, NurseryEvent, Planting, SeedOrder
 from sales.models import SalesEvent, QuickSalesEntry
@@ -488,8 +488,8 @@ class RevenueProjectionView(TemplateView):
             qty = float(he.actual_quantity or he.planned_quantity or 0)
             weekly_supply[wk][crop_id] = weekly_supply[wk].get(crop_id, 0) + qty
 
-        # Get all active sales formats with their prices
-        formats = CropSalesFormat.objects.filter(is_active=True).select_related("crop")
+        # Price lookup: prefer LIVE-2 in-plan crop products (same scope as weekly order / pack prep).
+        formats = active_crop_sales_formats_for_planning_year(year_obj).select_related("crop")
 
         # Build format lookup: crop_id → best format (highest price)
         crop_formats = {}
