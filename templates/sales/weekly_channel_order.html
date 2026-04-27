@@ -78,6 +78,10 @@
     {% if not active_order_line_count %}
     <p class="muted" data-weekly-order-empty="1">No planned demand or harvest supply is visible for this week yet. Check the planning year, sales plan rows, and generated harvest events before treating the week as truly empty.</p>
     {% endif %}
+    {% if not order_rows %}
+    {% url 'planning:sales_plan' as sales_plan_url %}
+    {% include "core/_empty_state_panel.html" with title="No active sales products for weekly order" body="Weekly order rows come from active CropSalesFormat products. Import/activate products, then return to this week and channel to set PLAN quantities." cta_label="Open annual sales plan" cta_href=sales_plan_url only %}
+    {% endif %}
     <form method="post" class="no-print">
         {% csrf_token %}
         {% with hc=historical_year_columns|length %}
@@ -107,7 +111,17 @@
                         {% if cell.actual_qty is not None %}
                             {{ cell.actual_qty|floatformat:1 }}
                             {% if cell.actual_revenue %}<div class="muted"><small>${{ cell.actual_revenue|floatformat:0 }}</small></div>{% endif %}
-                        {% else %}<span class="muted" title="No ACTUAL import for this product/week">—</span>{% endif %}
+                        {% else %}
+                            <span class="muted" title="No ACTUAL import for this product/week">—</span>
+                            {% if cell.neighbor_prev_qty is not None or cell.neighbor_next_qty is not None %}
+                            <div class="muted" data-live11-neighbor-snippet="1">
+                                <small>
+                                    W{{ prior_week_num }} {% if cell.neighbor_prev_qty is not None %}{{ cell.neighbor_prev_qty|floatformat:1 }}{% else %}—{% endif %}
+                                    · W{{ next_week_num }} {% if cell.neighbor_next_qty is not None %}{{ cell.neighbor_next_qty|floatformat:1 }}{% else %}—{% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     </td>
                     {% endfor %}
                     <td class="num">{{ row.demand_all_channels|floatformat:1 }}</td>

@@ -321,12 +321,24 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
         )
         prior_year_set = in_planning_table | actual_years
         prior_year_ints = sorted(prior_year_set, reverse=True)[:6]
+        prev_week_num = self.week_navigation(week_num)["prev_week_num"]
+        next_week_num = self.week_navigation(week_num)["next_week_num"]
+        historical_prev_by_year = {}
+        historical_next_by_year = {}
         for y in prior_year_ints:
             hm, hs = self.week_window(y, week_num)
             block = historical_by_product_for_window(channel, products, hm, hs)
             block["calendar_year"] = y
             block["week_monday"] = hm
             historical.append(block)
+            hp_monday, hp_sunday = self.week_window(y, prev_week_num)
+            hn_monday, hn_sunday = self.week_window(y, next_week_num)
+            historical_prev_by_year[y] = historical_by_product_for_window(
+                channel, products, hp_monday, hp_sunday
+            )
+            historical_next_by_year[y] = historical_by_product_for_window(
+                channel, products, hn_monday, hn_sunday
+            )
 
         has_any_historical = any(not h["empty"] for h in historical)
         historical_name_fallback = any(h.get("used_name_fallback") for h in historical)
@@ -397,11 +409,16 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             hist_cells = []
             for block in historical:
                 ev = block["by_product"].get(product.id)
+                y = block["calendar_year"]
+                ev_prev = historical_prev_by_year[y]["by_product"].get(product.id)
+                ev_next = historical_next_by_year[y]["by_product"].get(product.id)
                 hist_cells.append(
                     {
                         "calendar_year": block["calendar_year"],
                         "actual_qty": ev.actual_quantity if ev else None,
                         "actual_revenue": ev.actual_revenue if ev else None,
+                        "neighbor_prev_qty": ev_prev.actual_quantity if ev_prev else None,
+                        "neighbor_next_qty": ev_next.actual_quantity if ev_next else None,
                     }
                 )
             order_rows.append(
@@ -463,6 +480,8 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 "week_sunday": week_sunday,
                 "order_rows": order_rows,
                 "historical_year_columns": historical,
+                "prior_week_num": prev_week_num,
+                "next_week_num": next_week_num,
                 "has_any_historical": has_any_historical,
                 "supply_diagnostic_hints": supply_diagnostic_hints,
                 "active_order_line_count": len(active_order_rows),
@@ -533,6 +552,20 @@ class ProductPriorYearNeighborsView(ReportContextMixin, TemplateView):
                     "qty_prev": pick_qty(b_prev),
                     "qty_center": pick_qty(b_cur),
                     "qty_next": pick_qty(b_next),
+                    "used_name_fallback": any(
+                        (
+                            b_prev.get("used_name_fallback"),
+                            b_cur.get("used_name_fallback"),
+                            b_next.get("used_name_fallback"),
+                        )
+                    ),
+                    "used_product_key_fallback": any(
+                        (
+                            b_prev.get("used_product_key_fallback"),
+                            b_cur.get("used_product_key_fallback"),
+                            b_next.get("used_product_key_fallback"),
+                        )
+                    ),
                 }
             )
 

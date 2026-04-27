@@ -31,7 +31,15 @@
             <tbody>
                 {% for row in neighbor_rows %}
                 <tr>
-                    <td>{{ row.calendar_year }}</td>
+                    <td>
+                        {{ row.calendar_year }}
+                        {% if row.used_name_fallback %}
+                        <div class="muted"><small>alt channel id</small></div>
+                        {% endif %}
+                        {% if row.used_product_key_fallback %}
+                        <div class="muted"><small>product-key remap</small></div>
+                        {% endif %}
+                    </td>
                     <td class="num">{% if row.qty_prev is not None %}{{ row.qty_prev|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
                     <td class="num">{% if row.qty_center is not None %}{{ row.qty_center|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
                     <td class="num">{% if row.qty_next is not None %}{{ row.qty_next|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>

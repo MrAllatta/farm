@@ -645,6 +645,35 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, "4.0")
         self.assertContains(r, "Prior-year actuals")
 
+    def test_weekly_order_shows_in_grid_neighbor_snippet_when_center_week_empty(self):
+        """LIVE-11 follow-up: weekly grid hints adjacent-week quantities inline when center is empty."""
+        wk = 20
+        mon_prev = Week(2024, 19).monday()
+        mon_next = Week(2024, 21).monday()
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_prev,
+            product=self.product,
+            actual_quantity=Decimal("2"),
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_next,
+            product=self.product,
+            actual_quantity=Decimal("4"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'data-live11-neighbor-snippet="1"')
+        self.assertContains(r, "W19 2.0")
+        self.assertContains(r, "W21 4.0")
+
     def test_weekly_order_historical_matches_when_crop_sales_format_id_drifted(self):
         """LIVE-1: ACTUAL rows use a superseded CropSalesFormat id; same crop + name still fills cells."""
         wk = 22
@@ -674,6 +703,34 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "15.0")
         self.assertIn(b"data-empty-reason=\"historical_from_product_key_remap\"", r.content)
+
+    def test_product_prior_year_neighbors_marks_namesake_channel_fallback(self):
+        wk = 24
+        mon_center = Week(2024, wk).monday()
+        alt = SalesChannel.objects.create(
+            name=self.channel.name,
+            days_of_week=["Sunday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("1.00"),
+            is_csa=False,
+            allocation_priority=9,
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=alt,
+            sale_date=mon_center,
+            product=self.product,
+            actual_quantity=Decimal("6"),
+        )
+        url = reverse(
+            "sales:product_prior_year_neighbors",
+            kwargs={"channel_id": self.channel.id, "product_id": self.product.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "alt channel id")
+        self.assertContains(r, "6.0")
 
     def test_weekly_order_shows_harvest_supply_mismatch_diagnostic(self):
         """LIVE-4: harvest events exist for a crop with no active product row in this grid."""
@@ -847,6 +904,19 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Kale Bunch")
         self.assertNotContains(r, "Lettuce Head")
+
+    def test_weekly_order_shows_empty_state_panel_when_no_active_products(self):
+        wk = 37
+        self.product.is_active = False
+        self.product.save(update_fields=["is_active"])
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "No active sales products for weekly order")
+        self.assertContains(r, "Open annual sales plan")
 
     def test_weekly_order_shows_partial_demand_shadow_hint(self):
         wk = 29
