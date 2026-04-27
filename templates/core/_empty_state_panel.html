@@ -1,0 +1,12 @@
+{# Reusable title + body + optional primary CTA (UI-3 / S-4). #}
+<div class="empty-state"{% if empty_reason %} data-empty-reason="{{ empty_reason }}"{% endif %}>
+    <p class="empty-state__title" style="margin:0;"><strong>{{ title }}</strong></p>
+    {% if body %}
+    <p class="muted" style="margin:0.35rem 0 0 0;">{{ body }}</p>
+    {% endif %}
+    {% if action_url and action_label %}
+    <p class="no-print" style="margin:0.5rem 0 0 0;">
+        <a href="{{ action_url }}" class="btn btn-primary">{{ action_label }}</a>
+    </p>
+    {% endif %}
+</div>

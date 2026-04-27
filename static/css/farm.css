@@ -1491,6 +1491,11 @@ body {
     line-height: 1.12;
 }
 
+.sales-plan-matrix tbody tr.sales-plan-row--focus {
+    background: #eff6ff;
+    box-shadow: inset 0 0 0 2px #3b82f6;
+}
+
 .sales-plan-sticky-col {
     position: sticky;
     background: #fff;
@@ -1991,6 +1996,16 @@ body {
 .fp-table .cond-poor,
 .fp-table .cond-failed {
     color: #b91c1c;
+    font-weight: 600;
+}
+
+.fp-table .cond-ahead {
+    color: #15803d;
+    font-weight: 600;
+}
+
+.fp-table .cond-behind {
+    color: #a16207;
     font-weight: 600;
 }
 

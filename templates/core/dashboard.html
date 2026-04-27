@@ -15,11 +15,15 @@
     <div class="dashboard-header">
         {% if week_num %}
         <h1>Week {{ week_num }} — {{ week_monday|date:"F j, Y" }}</h1>
+        <p class="muted no-print" style="margin:0.35rem 0 0 0; max-width:42rem;">
+            Use <strong>This week</strong> in the top nav for the same shortcuts, or the path below for the current ISO week.
+        </p>
         {% else %}
         <h1>Dashboard</h1>
         {% endif %}
     </div>
     {% include "core/_active_planning_year_context_strip.html" %}
+    {% include "core/_this_week_operator_path.html" %}
     
     {# ── Row 1: Key Metrics ── #}
     <div class="metric-cards">

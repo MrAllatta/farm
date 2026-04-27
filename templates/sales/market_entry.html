@@ -88,7 +88,12 @@
                     <td><input type="text" name="notes_{{ row.product.id }}" placeholder="notes" style="width:8rem;"></td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6">No products. Add pack allocations or active crop products.</td></tr>
+                <tr>
+                    <td colspan="6">
+                        {% url 'sales:weekly_channel_order' channel.id sale_iso_week as market_empty_weekly_order_url %}
+                        {% include "core/_empty_state_panel.html" with title="No product lines for detailed entry" body="When pack prep lists allocations for this market date, those products appear here. Otherwise rows follow active crop products for the planning year—if both are empty, build plan rows or pack allocations for this week first." action_url=market_empty_weekly_order_url action_label="Open weekly sales order" empty_reason="market_entry_no_products" only %}
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

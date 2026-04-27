@@ -113,22 +113,24 @@
             </details>
             
             <details class="nav-group nav-group-menu">
-                <summary class="nav-group-label">Analyze</summary>
+                <summary class="nav-group-label">More</summary>
                 <div class="nav-menu">
+                    <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.15rem 0 0.25rem 0;">Analyze</span>
                     <a href="{% url 'reports:plan_vs_actual' %}">Plan vs Actual</a>
                     <a href="{% url 'reports:crop_performance' %}">Crop Performance</a>
                     <a href="{% url 'reports:channel_performance' %}">Channel Performance</a>
                     <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
                     <a href="{% url 'reports:season_summary' %}">Season Summary</a>
+                    <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.6rem 0 0.25rem 0;">Data &amp; admin</span>
+                    <a href="{% url 'reports:export_csv' %}">📤 Export</a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'core:runtime_config' %}">⚙ Runtime config</a>
+                    {% endif %}
+                    <a href="{% url 'admin:index' %}">⚙ Admin</a>
                 </div>
             </details>
-            
+
             <div class="nav-group">
-                <a href="{% url 'reports:export_csv' %}">📤 Export</a>
-                {% if user.is_staff %}
-                <a href="{% url 'core:runtime_config' %}">⚙ Runtime config</a>
-                {% endif %}
-                <a href="{% url 'admin:index' %}">⚙ Admin</a>
                 {% if user.is_authenticated %}
                 <form method="post" action="{% url 'core:logout' %}" style="display: inline;">
                     {% csrf_token %}

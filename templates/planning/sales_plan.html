@@ -36,6 +36,7 @@
         </a>
         {% endif %}
     </div>
+    {% include "core/_weekly_order_prior_year_empty_help.html" with channel=weekly_order_channel week_num=weekly_order_week prior_year_help_from_sales_plan=1 only %}
     <p class="muted" style="margin:0.75rem 0 0 0;">
         Same ISO week prior-year <code>ACTUAL</code> sales (and per-year “no rows” markers) live on the
         weekly channel order grid — use them alongside this annual plan before committing the week’s outlet lines
@@ -46,6 +47,9 @@
 
 <form method="post">
     {% csrf_token %}
+    {% if sales_plan_focus_product_id %}
+    <input type="hidden" name="focus_product" value="{{ sales_plan_focus_product_id }}">
+    {% endif %}
     <div style="display:flex; gap:1rem; align-items:end; margin-bottom:1rem; flex-wrap:wrap;">
         {% if plan_mode == "rollup" %}
         <input type="hidden" name="rollup" value="{{ rollup_slug }}">
@@ -59,7 +63,7 @@
         <input type="hidden" name="channel" value="{% if channel %}{{ channel.id }}{% endif %}">
         <label>
             Sales channel
-            <select name="_channel_nav" onchange="window.location='{% url 'planning:sales_plan_by_channel' %}?channel=' + this.value;">
+            <select name="_channel_nav" onchange="window.location='{% url 'planning:sales_plan_by_channel' %}?channel=' + this.value{% if sales_plan_focus_product_id %} + '&focus_product={{ sales_plan_focus_product_id }}'{% endif %};">
                 {% for item in channels %}
                 <option value="{{ item.id }}" {% if channel and item.id == channel.id %}selected{% endif %}>{{ item.name }}</option>
                 {% endfor %}
@@ -94,7 +98,7 @@
             </thead>
             <tbody>
                 {% for row in product_rows %}
-                <tr>
+                <tr id="sales-plan-product-{{ row.product.id }}"{% if sales_plan_focus_product_id == row.product.id %} class="sales-plan-row--focus"{% endif %}>
                     <td class="sales-plan-sticky-col sales-plan-product-col">
                         {% if row.product.sales_plan_product_cell_one_line %}
                         <span class="sales-plan-product-primary">{{ row.product.product_name }}</span><span class="sales-plan-product-sep"> · </span><span class="sales-plan-product-sub">{{ row.product.sales_plan_row_subtitle }}</span>
@@ -184,5 +188,15 @@
     </ul>
     {% endif %}
 </section>
+{% endif %}
+{% if sales_plan_focus_product_id %}
+<script>
+(function () {
+  var el = document.getElementById("sales-plan-product-{{ sales_plan_focus_product_id }}");
+  if (el) {
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+})();
+</script>
 {% endif %}
 {% endblock %}

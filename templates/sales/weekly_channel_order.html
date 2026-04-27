@@ -42,9 +42,9 @@
 <section class="panel sales-order-flow no-print">
     <h2>Weekly handoff</h2>
     <ol class="sales-order-steps">
-        <li><strong>Review context:</strong> annual plan, prior-year same-week actuals, and field-walk availability hints.</li>
+        <li><strong>Start here for the week:</strong> this screen is the single ISO-week, single-channel builder — planned demand, prior-year same-week actuals, harvest supply, and field-walk hints in one grid.</li>
         <li><strong>Set order:</strong> adjust this channel’s quantities for weather, customer demand, and expected harvest.</li>
-        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen drive <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a>, then pack prep, market list, and sales entry for this ISO week.</li>
+        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen (this ISO week) are the bridge to operations — they feed the demand hints on <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a> for the same week, then pack prep, market list, and sales entry.</li>
     </ol>
     <div class="sales-order-summary">
         <span><strong>{{ planned_line_count }}</strong> planned lines</span>
@@ -68,6 +68,10 @@
 
 <section class="panel">
     <h2>Same ISO week — prior years (actual)</h2>
+    <p class="muted no-print" style="margin:0 0 0.65rem 0; font-size:0.92rem;" data-sp6-prior-year-context="1">
+        Prior-year columns show imported <code>ACTUAL</code> sales for <strong>this same ISO week</strong> in each calendar year that exists in the database — that is the <strong>same-week historical context</strong> operators use when planning the current week (see also <a href="{% url 'planning:sales_plan' %}">annual sales plan</a>). “—” cells are common when nothing was sold that week or history has not been imported for that year.
+    </p>
+    {% include "core/_weekly_order_prior_year_empty_help.html" with week_num=week_num channel=channel only %}
     {% if not has_any_historical %}
     <p class="muted" data-historical-empty="1">No historical <code>ACTUAL</code> sales for <strong>this channel id</strong> in this ISO week (prior calendar years in the database). If you expected prior-year cells to populate, confirm imported 601 rows point at the same <code>SalesChannel</code> as this picker, or check the diagnostics above for a same-name mismatch.</p>
     {% endif %}
@@ -96,7 +100,7 @@
                 <tr{% if row.shortage %} style="background:#fff7ed;"{% endif %}>
                     <td>
                         <strong>{{ row.product.product_name }}</strong>
-                        <div class="muted"><small>{{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
+                        <div class="muted no-print"><small><a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}&amp;focus_product={{ row.product.id }}">Annual plan row</a> · {{ row.product.crop.name }}{% if row.shortage %} · short vs harvest{% endif %}</small></div>
                     </td>
                     {% for cell in row.historical_cells %}
                     <td class="num">

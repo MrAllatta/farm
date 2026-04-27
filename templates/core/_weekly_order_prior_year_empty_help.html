@@ -1,0 +1,24 @@
+{# Explains "—" cells in prior-year actual columns on weekly channel order. LIVE-11 partial. #}
+<details class="panel muted no-print" style="margin-bottom:0.75rem;" data-live11-prior-year-help="1">
+    <summary>Why a prior-year cell shows “—” (no number)</summary>
+    <ul style="margin:0.5rem 0 0 1.25rem;">
+        <li><strong>Not sold that week</strong> — usual for off-season or low-volume products; imported 601 <code>ACTUAL</code> rows may simply have no line for this ISO week.</li>
+        <li><strong>That calendar year was not imported</strong> — <code>year_YYYY</code> sales tiers outside the import run’s year range are skipped (see preflight and operator import-floor notes).</li>
+        <li><strong>Channel or product does not line up with history</strong> — rows must share the same <code>SalesChannel</code> and <code>Product</code> keys as 601 data; renames, duplicate channels, or id drift can leave cells empty — use staff diagnostics at the top of this page.</li>
+        <li><strong>Product id changed but label stayed the same</strong> — reference re-import can replace a <code>CropSalesFormat</code> row; the app can still match older <code>ACTUAL</code> rows by crop + name when the staff panel says so.</li>
+    </ul>
+    {% if week_num and prior_year_help_from_sales_plan %}
+    <p class="muted" style="margin:0.75rem 0 0 0;">
+        The in-season handoff button opens the weekly channel order on <strong>W{{ week_num }}</strong> &mdash; prior-year
+        <code>ACTUAL</code> cells there use the same ISO week for this channel.
+    </p>
+    {% endif %}
+    <p class="muted" style="margin:0.75rem 0 0 0;">
+        <strong>Nearby weeks:</strong> use the week links in the header to compare adjacent ISO weeks. Denser in-table neighbor-week rollups stay on the backlog until promoted.
+    </p>
+    <p style="margin:0.5rem 0 0 0;">
+        <a href="{% url 'planning:sales_plan' %}">Annual sales plan (rollup)</a>
+        <span> · </span>
+        <a href="{% url 'planning:sales_plan_by_channel' %}?channel={{ channel.id }}">This channel’s full-year plan</a>
+    </p>
+</details>

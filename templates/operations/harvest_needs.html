@@ -70,6 +70,18 @@
 
 {% include "operations/_weekops/_per_crop_rollup.html" %}
 
+{% if harvest_needs_week_event_count == 0 %}
+<section class="panel no-print" style="margin-bottom:1rem;">
+    {% url 'operations:weekops_walk' week=week_num as hn_walk_url %}
+    {% if weekly_order_handoff_url %}
+    {% include "core/_empty_state_panel.html" with title="No harvest picks fall in this ISO week" body="The diagnostic cards above explain the usual causes: wrong week, planning-year header mismatch, plantings without generated HarvestEvent rows after import, or harvest windows that do not include this week. If you already saved a weekly channel order for this week, demand can still show in the rollups while this list stays empty until picks are dated here." action_url=weekly_order_handoff_url action_label="Open weekly channel order" empty_reason="harvest_needs_zero_events_week" only %}
+    {% else %}
+    {% include "core/_empty_state_panel.html" with title="No harvest picks fall in this ISO week" body="The diagnostic cards above explain the usual causes: wrong week, planning-year header mismatch, plantings without generated HarvestEvent rows after import, or harvest windows that do not include this week. Configure a default sales channel to link a weekly order from this panel." action_url=hn_walk_url action_label="Field walk (this week)" empty_reason="harvest_needs_zero_events_week" only %}
+    {% endif %}
+</section>
+{% endif %}
+
+{% if harvest_needs_week_event_count > 0 %}
 {% for group in harvest_blocks %}
 <section class="panel" style="margin-bottom:1rem;">
     {% include "operations/_weekops/_block_header.html" with group=group %}
@@ -86,7 +98,7 @@
                     <th>Crop</th>
                     <th>Variety</th>
                     <th>Walk</th>
-                    <th>Condition</th>
+                    <th>Walk status</th>
                     <th>Yield note</th>
                     <th title="Block beds for this planting unit">Beds</th>
                     <th class="num">Planned qty</th>
@@ -109,7 +121,7 @@
                     <td>{% include "operations/_weekops/_planting_status_chip.html" with prow=row.prow %}</td>
                     <td>
                         {% if row.prow.last_walk_note %}
-                            <span class="{% if row.prow.last_walk_note.condition == 'poor' or row.prow.last_walk_note.condition == 'failed' %}cond-poor{% endif %}">
+                            <span class="{% if row.prow.last_walk_note.condition == 'poor' or row.prow.last_walk_note.condition == 'failed' %}cond-poor{% elif row.prow.last_walk_note.condition == 'behind' %}cond-behind{% elif row.prow.last_walk_note.condition == 'ahead' %}cond-ahead{% endif %}">
                                 {{ row.prow.last_walk_note.get_condition_display }}
                             </span>
                         {% else %}—{% endif %}
@@ -182,7 +194,10 @@
 </section>
 {% empty %}
 <section class="panel">
-    <p class="muted">No harvest events scheduled this week.</p>
+    <p class="muted">No blocks to show for this week.</p>
 </section>
 {% endfor %}
+{% else %}
+{# week_ev == 0: per-block panels omitted; see consolidated empty state above #}
+{% endif %}
 {% endblock %}
