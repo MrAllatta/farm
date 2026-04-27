@@ -102,10 +102,17 @@ if DB_ENGINE == "postgres":
         _pg_default["TEST"] = {"NAME": _test_db_name}
     DATABASES = {"default": _pg_default}
 else:
+    # LIVE-12: optional path so Makefile importer-gate can mutate a throwaway file instead of
+    # the developer's farm/db.sqlite3 (sample_import apply was polluting operator DBs).
+    _sqlite_override = os.environ.get("FARM_SQLITE_PATH", "").strip()
+    if _sqlite_override:
+        _sqlite_file = Path(_sqlite_override).expanduser().resolve()
+    else:
+        _sqlite_file = BASE_DIR / "db.sqlite3"
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": _sqlite_file,
         }
     }
 
