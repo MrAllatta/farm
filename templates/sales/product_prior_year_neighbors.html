@@ -41,9 +41,9 @@
                         <div class="muted"><small>product-key remap</small></div>
                         {% endif %}
                     </td>
-                    <td class="num">{% if row.qty_prev is not None %}{{ row.qty_prev|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
-                    <td class="num">{% if row.qty_center is not None %}{{ row.qty_center|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
-                    <td class="num">{% if row.qty_next is not None %}{{ row.qty_next|floatformat:1 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td class="num">{% if row.qty_prev is not None %}{{ row.qty_prev|floatformat:1 }}{% else %}<span class="muted" title="No imported ACTUAL for this channel/product in that ISO week (calendar {{ row.calendar_year }})">—</span>{% endif %}</td>
+                    <td class="num">{% if row.qty_center is not None %}{{ row.qty_center|floatformat:1 }}{% else %}<span class="muted" title="No imported ACTUAL for this channel/product in W{{ week_num }} (calendar {{ row.calendar_year }})">—</span>{% endif %}</td>
+                    <td class="num">{% if row.qty_next is not None %}{{ row.qty_next|floatformat:1 }}{% else %}<span class="muted" title="No imported ACTUAL for this channel/product in that ISO week (calendar {{ row.calendar_year }})">—</span>{% endif %}</td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="4" class="muted">No prior calendar years in scope for this planning year.</td></tr>

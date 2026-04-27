@@ -158,10 +158,8 @@
 
 {% if not fresh_items and not storage_items %}
 <section class="panel">
-    <h2>No inventory yet</h2>
-    <p data-empty-reason="inventory_no_balances">
-        Record harvest actuals (auto ledger), use harvest-to-inventory adjustments, or add a transaction to seed balances.
-    </p>
+    {% url 'operations:inventory_add' as inventory_add_url %}
+    {% include "core/_empty_state_panel.html" with title="No inventory balances yet" body="Fresh and storage tables stay empty until the ledger has crop-level balances—record harvest actuals (auto ledger), post harvest-to-inventory moves, or add an opening transaction to seed counts." action_label="Record inventory transaction" action_url=inventory_add_url empty_reason="inventory_no_balances" only %}
 </section>
 {% endif %}
 {% endblock %}

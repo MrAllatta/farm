@@ -12,7 +12,7 @@
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     
-    <nav class="main-nav">
+    <nav class="main-nav" aria-label="Primary navigation — weekly operator workflow">
         <div class="nav-brand">
             <a href="{% url 'core:dashboard' %}">🌱 Farm</a>
             {% if planning_year_scope_choices %}
@@ -53,6 +53,8 @@
                 <div class="nav-menu">
                     {% if weekly_order_url %}
                     <a href="{{ weekly_order_url }}">Weekly sales order (this week)</a>
+                    {% else %}
+                    <a href="{% url 'planning:sales_plan_by_channel' %}">Weekly sales order (pick channel)</a>
                     {% endif %}
                     <a href="{% url 'sales:market_entry' %}">Market sales entry</a>
                     <a href="{% url 'planning:sales_plan' %}">Sales plan (rollup)</a>

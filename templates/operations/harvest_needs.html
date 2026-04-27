@@ -9,7 +9,7 @@
         <a href="{% url 'planning:sales_plan' %}">sales plan</a>{% if weekly_order_handoff_url %}
         and on the <a href="{{ weekly_order_handoff_url }}">weekly channel order ({{ weekly_order_handoff_channel_name }})</a>{% else %}
         and on weekly channel orders{% endif %}
-        for this ISO week surface here as committed demand hints. Field-walk yield notes then adjust planned pick targets in this list before harvest is recorded.
+        for this ISO week surface here as committed demand hints (same <strong>Monday–Sunday</strong> window as the weekly channel order grid for that week). Field-walk yield notes then adjust planned pick targets in this list before harvest is recorded.
     </p>
     {% if weekly_order_handoff_url %}
     <p class="muted" data-weekly-order-handoff-lines="{{ weekly_order_handoff_line_count }}">

@@ -250,6 +250,25 @@ class Live12ImportSampleGuardTests(TestCase):
             self.assertIsNone(msg)
 
 
+class WeeklyOrderSurfaceHintsLive3RollupTests(TestCase):
+    def test_sibling_crop_rollup_hint_when_visible_demand_without_per_product_total(self):
+        from core.ui_diagnostics import weekly_order_surface_hints
+
+        hints = weekly_order_surface_hints(
+            plan_raw_week=1,
+            plan_visible_week=1,
+            namesake_actuals_on_other_channel=False,
+            channel_name="Farmers Market",
+            has_any_historical=False,
+            positive_week_demand_products=0,
+            weekly_demand_visible_count=1,
+            prior_year_calendar_years=[2024],
+        )
+        self.assertTrue(
+            any(h["id"] == "all_channel_demand_sibling_crop_rollup" for h in hints)
+        )
+
+
 class Live7WeeklyOrderHarvestScopeHintTests(TestCase):
     def test_surface_hint_when_listed_crops_miss_harvest_pick(self):
         hints = weekly_order_surface_hints(

@@ -46,7 +46,7 @@
     <ol class="sales-order-steps">
         <li><strong>Start here for the week:</strong> this screen is the single ISO-week, single-channel builder — planned demand, prior-year same-week actuals, harvest supply, and field-walk hints in one grid.</li>
         <li><strong>Set order:</strong> adjust this channel’s quantities for weather, customer demand, and expected harvest.</li>
-        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen (this ISO week, this channel) are the bridge to operations — they become demand hints on <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a> for the same ISO week, then drive pack prep, market list, and sales entry.</li>
+        <li><strong>Save and hand off:</strong> saved PLAN rows on this screen (this ISO week, this channel) are the bridge to operations — they become demand hints on <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a> for the <strong>same ISO week and the same Monday–Sunday date window</strong> as this grid, then drive pack prep, market list, and sales entry.</li>
     </ol>
     <div class="sales-order-summary">
         <span><strong>{{ planned_line_count }}</strong> planned lines</span>
@@ -102,8 +102,8 @@
                     {% for col in historical_year_columns %}
                     <th class="num">{{ col.calendar_year }}{% if col.used_name_fallback %} <span class="muted" title="Actuals matched another SalesChannel row with the same name (id drift)">· alt id</span>{% endif %}{% if col.empty %} <span class="muted" title="No ACTUAL row for any product in this week">· no rows</span>{% endif %}</th>
                     {% endfor %}
-                    <th class="num">All-channel demand</th>
-                    <th class="num">Harvest supply (~sale units)</th>
+                    <th class="num" title="Planned sale units (PLAN) summed across every channel for this Monday–Sunday window, after rollup de-duplication. When this channel’s product line is empty, the grid can roll up sibling CropSalesFormat rows on the same crop or crop-wide totals (LIVE-3).">All-channel demand</th>
+                    <th class="num" title="Planned harvest for this crop in the same Monday–Sunday window as harvest needs, converted to sale units using this product’s harvest_qty_per_sale_unit (LIVE-4).">Harvest supply (~sale units)</th>
                     <th>Field / availability hint</th>
                     <th class="num">This week plan (channel)</th>
                 </tr>
@@ -133,7 +133,13 @@
                         {% endif %}
                     </td>
                     {% endfor %}
-                    <td class="num">{{ row.demand_all_channels|floatformat:1 }}</td>
+                    <td class="num">{{ row.demand_all_channels|floatformat:1 }}
+                        {% if row.demand_all_channel_note == "sibling_skus" %}
+                        <div class="muted no-print"><small>Includes other SKUs on this crop.</small></div>
+                        {% elif row.demand_all_channel_note == "crop_all_channels" %}
+                        <div class="muted no-print"><small>Includes PLAN on this crop from all channels.</small></div>
+                        {% endif %}
+                    </td>
                     <td class="num">{{ row.supply_sale_units|floatformat:1 }}</td>
                     <td>
                         <small>{{ row.availability_hint }}</small>

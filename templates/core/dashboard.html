@@ -90,9 +90,8 @@
                     <a href="{{ weekly_order_url }}">Open weekly sales order →</a>
                 </p>
                 {% else %}
-                <p class="muted" data-empty-reason="dashboard_no_weekly_order_link">
-                    Weekly sales order link is unavailable because no active channel is configured.
-                </p>
+                {% url 'planning:sales_plan_by_channel' as sales_by_channel_url %}
+                {% include "core/_empty_state_panel.html" with title="Weekly sales order not linked yet" body="Pick a default sales channel (or open the annual plan by channel) so this week’s grid opens from the dashboard and operator path." action_label="Open sales plan by channel" action_url=sales_by_channel_url empty_reason="dashboard_no_weekly_order_link" only %}
                 {% endif %}
             </div>
 
@@ -289,7 +288,8 @@
             </div>
             <a href="{% url 'operations:inventory' %}">Full inventory →</a>
             {% else %}
-            <p class="muted" data-empty-reason="dashboard_no_storage_inventory">No storage crops in inventory.</p>
+            {% url 'operations:inventory' as inventory_url %}
+            {% include "core/_empty_state_panel.html" with title="No storage inventory rows on the dashboard" body="The snapshot here is a short list of storage crops with balances. If nothing appears, either nothing is in storage for this planning context yet, or balances live only on the full inventory screen." action_label="Open full inventory" action_url=inventory_url empty_reason="dashboard_no_storage_inventory" only %}
             {% endif %}
         </div>
     </div>

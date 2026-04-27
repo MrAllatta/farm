@@ -10,7 +10,8 @@
         {% if weekly_order_url %}
         <a href="{{ weekly_order_url }}">Weekly sales order</a>
         {% else %}
-        <span class="muted" title="No default channel — open Sales &amp; orders in the nav">Weekly sales order</span>
+        <a href="{% url 'planning:sales_plan_by_channel' %}">Weekly sales order</a>
+        <span class="muted" title="Choose a default channel under Sales plan by channel">(pick channel)</span>
         {% endif %}
         <span class="muted">·</span>
         <a href="{% url 'sales:market_entry' %}">Market sales entry</a>
@@ -25,13 +26,15 @@
         <span class="muted">·</span>
         <a href="{% url 'operations:pack_prep' %}">Pack prep</a>
         <span class="muted">·</span>
-        <a href="{% url 'reports:harvest_list_print' week_num %}">Print harvest list</a>
+        <a href="{% url 'reports:harvest_list_print' week_num %}">Harvest needs list</a>
         <span class="muted">·</span>
-        <a href="{% url 'reports:pack_list_print' week_num %}">Print market / pack list</a>
+        <a href="{% url 'reports:pack_list_print' week_num %}">Market / pack list</a>
         <span class="muted">·</span>
-        <a href="{% url 'operations:planting_list_print' %}">Print planting list</a>
+        <a href="{% url 'reports:crop_map_print' week_num %}">503 block map</a>
         <span class="muted">·</span>
-        <a href="{% url 'operations:seeding_todo_print' %}">Print seeding list</a>
+        <a href="{% url 'operations:planting_list_print' %}">Planting list</a>
+        <span class="muted">·</span>
+        <a href="{% url 'operations:seeding_todo_print' %}">Seeding list</a>
     </div>
 </nav>
 {% endif %}

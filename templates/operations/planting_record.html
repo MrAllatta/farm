@@ -21,8 +21,12 @@
 <div class="planting-record-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:start;">
     <section class="panel">
         <h2>Plan snapshot</h2>
+        <p class="muted" style="margin:0 0 0.75rem 0; font-size:0.92rem;">
+            This column is the <strong>planned</strong> profile from the crop planner (read-only on this page).
+            The <strong>Status</strong> field under <em>Actuals &amp; adjustments</em> is what you change as the crop moves in the field.
+        </p>
         <dl class="fp-dl">
-            <dt>Status (planning)</dt><dd>{{ planting.get_status_display }}</dd>
+            <dt>Planning status</dt><dd>{{ planting.get_status_display }}</dd>
             <dt>Planned plant date</dt><dd>{{ planting.planned_plant_date }}</dd>
             <dt>Harvest window</dt><dd>{{ planting.planned_first_harvest_date }} → {{ planting.planned_last_harvest_date }}</dd>
             <dt>Planned bedfeet</dt><dd>{{ planting.planned_bedfeet }}</dd>

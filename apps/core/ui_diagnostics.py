@@ -293,6 +293,7 @@ def weekly_order_surface_hints(
     historical_name_fallback: bool = False,
     historical_product_key_fallback: bool = False,
     positive_week_demand_products: int = 0,
+    weekly_demand_visible_count: int = 0,
     weekly_order_products_scope: str = "full_catalog",
     duplicate_channel_name_detected: bool = False,
     prior_year_calendar_years: list[int] | None = None,
@@ -338,17 +339,32 @@ def weekly_order_surface_hints(
             }
         )
     elif plan_visible_week > 0 and positive_week_demand_products == 0:
-        out.append(
-            {
-                "id": "plan_rows_zero_all_channel_demand",
-                "title": "Plan rows exist but all-channel demand is still zero",
-                "detail": (
-                    "After rollup de-duplication, PLAN rows are present for this week but every "
-                    "rolled-up quantity is zero or unset. Enter positive planned quantities on outlet "
-                    "channels, or confirm which channel owns the visible plan slice."
-                ),
-            }
-        )
+        if weekly_demand_visible_count > 0:
+            out.append(
+                {
+                    "id": "all_channel_demand_sibling_crop_rollup",
+                    "title": "All-channel demand uses sibling SKUs or crop-wide PLAN (this week)",
+                    "detail": (
+                        "No PLAN quantity landed on this channel’s product ids in the per-product rollup, "
+                        "but the grid shows demand after rolling up other active `CropSalesFormat` rows on the "
+                        "same crop and/or all-channel crop totals for this ISO week (LIVE-3). Harvest needs "
+                        "uses the same Monday–Sunday window — save outlet lines where you want explicit "
+                        "per-product demand."
+                    ),
+                }
+            )
+        else:
+            out.append(
+                {
+                    "id": "plan_rows_zero_all_channel_demand",
+                    "title": "Plan rows exist but all-channel demand is still zero",
+                    "detail": (
+                        "After rollup de-duplication, PLAN rows are present for this week but every "
+                        "rolled-up quantity is zero or unset. Enter positive planned quantities on outlet "
+                        "channels, or confirm which channel owns the visible plan slice."
+                    ),
+                }
+            )
     out.extend(crop_plan_product_scope_hints(weekly_order_products_scope))
     if (
         weekly_order_products_scope == "crop_plan_week"

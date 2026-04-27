@@ -556,6 +556,69 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, "products with positive all-channel demand")
         self.assertContains(r, "PLAN rows in this ISO week")
 
+    def test_weekly_order_live3_sibling_sku_all_channel_demand_note(self):
+        """LIVE-3: demand rolls from another SKU on the same crop when this product has no PLAN line."""
+        wk = 38
+        mon = Week(2026, wk).monday()
+        other = SalesChannel.objects.create(
+            name="CSA Outlet",
+            days_of_week=["Wednesday"],
+            start_week=1,
+            end_week=52,
+            weekly_target=Decimal("50.00"),
+            is_csa=True,
+            allocation_priority=4,
+        )
+        k2 = CropSalesFormat.objects.create(
+            crop=self.product.crop,
+            product_name="Kale Club",
+            sale_price=Decimal("5.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            sku="KAL-CLUB",
+            is_active=True,
+        )
+        crop_season = CropBySeason.objects.create(
+            crop=self.product.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        Planting.objects.create(
+            planning_year=self.py_2026,
+            crop=self.product.crop,
+            crop_season=crop_season,
+            block=self.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=80,
+            planned_plant_date=mon - timedelta(weeks=2),
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon + timedelta(weeks=2),
+            planned_total_yield=Decimal("80.00"),
+            status="growing",
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.PLAN,
+            planning_year=self.py_2026,
+            channel=other,
+            product=k2,
+            sale_date=mon,
+            planned_quantity=Decimal("6"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Includes other SKUs on this crop")
+        self.assertContains(r, ">6.0<", html=False)
+
     def test_plan_week_iso_counts_reflects_shadowing(self):
         """LIVE-3 helper: rollup plan rows drop when outlet owns the slice."""
         mon = Week(2026, 26).monday()

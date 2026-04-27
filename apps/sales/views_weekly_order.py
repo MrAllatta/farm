@@ -443,12 +443,24 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             # LIVE-3: PLAN rows may key to a different CropSalesFormat than this channel's row
             # while sharing the same crop; sum cohort SKUs first, then fall back to crop-wide demand.
             demand_all = demand_by_product_week.get(product.id, Decimal("0"))
+            demand_all_channel_note = None
             if demand_all == 0 and len(cohort_products) > 1:
-                demand_all = sum(
+                cohort_sum = sum(
                     demand_by_product_week.get(p.id, Decimal("0")) for p in cohort_products
                 )
+                if cohort_sum > 0:
+                    demand_all = cohort_sum
+                    demand_all_channel_note = "sibling_skus"
+                else:
+                    crop_all = demand_by_crop_week.get(product.crop_id, Decimal("0"))
+                    if crop_all > 0:
+                        demand_all = crop_all
+                        demand_all_channel_note = "crop_all_channels"
             elif demand_all == 0 and len(cohort_products) == 1:
-                demand_all = demand_by_crop_week.get(product.crop_id, Decimal("0"))
+                crop_one = demand_by_crop_week.get(product.crop_id, Decimal("0"))
+                if crop_one > 0:
+                    demand_all = crop_one
+                    demand_all_channel_note = "crop_all_channels"
             shortage = demand_all > supply_sale_units + Decimal("0.0001")
             field_note = field_note_by_crop.get(product.crop_id)
             if field_note:
@@ -462,6 +474,11 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 availability_hint = "Harvest events scheduled this week; no field-walk note yet."
             elif demand_all > Decimal("0"):
                 availability_hint = "Demand exists, but no harvest supply is scheduled for this crop/week."
+            elif h_units > Decimal("0") and supply_sale_units == Decimal("0"):
+                availability_hint = (
+                    "Harvest events exist this week for this crop in raw units, but sale units show zero "
+                    "— check this product’s harvest_qty_per_sale_unit vs planned harvest units."
+                )
             else:
                 availability_hint = "No demand or harvest supply scheduled this week."
             hist_cells = []
@@ -503,6 +520,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                     "product": product,
                     "channel_planned_qty": planned_qty,
                     "demand_all_channels": demand_all,
+                    "demand_all_channel_note": demand_all_channel_note,
                     "supply_sale_units": supply_sale_units,
                     "shortage": shortage,
                     "availability_hint": availability_hint,
@@ -519,6 +537,9 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
         shortage_count = sum(1 for row in order_rows if row["shortage"])
         planned_line_count = sum(1 for row in order_rows if row["channel_planned_qty"] > Decimal("0"))
         supply_line_count = sum(1 for row in order_rows if row["supply_sale_units"] > Decimal("0"))
+        weekly_demand_visible_count = sum(
+            1 for row in order_rows if row["demand_all_channels"] > Decimal("0")
+        )
 
         product_crop_ids = {p.crop_id for p in products}
         harvest_supply_reaches_catalog = bool(harvest_crop_ids & product_crop_ids)
@@ -550,6 +571,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 historical_name_fallback=historical_name_fallback,
                 historical_product_key_fallback=historical_product_key_fallback,
                 positive_week_demand_products=weekly_demand_row_count,
+                weekly_demand_visible_count=weekly_demand_visible_count,
                 weekly_order_products_scope=weekly_order_products_scope,
                 duplicate_channel_name_detected=duplicate_channel_name_detected,
                 prior_year_calendar_years=list(prior_year_ints),
