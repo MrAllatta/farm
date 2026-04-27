@@ -272,6 +272,7 @@ class Command(BaseCommand):
         self.block_cache = {}
         self.channel_cache = {}
         self.channel_name_aliases = {}
+        self.product_name_aliases = {}
         self.channel_rollup_map = {}
         self.channel_rollup_required = False
         self.product_cache = {}
@@ -340,6 +341,7 @@ class Command(BaseCommand):
     def _run_import_pipeline(self):
         self._enforce_reference_tier_csv_presence()
         self._load_channel_name_aliases()
+        self._load_product_name_aliases()
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 70))
         self.stdout.write("TIER 1: Reference Data (Independent)\n")
         self.stdout.write("=" * 70)
@@ -521,6 +523,32 @@ class Command(BaseCommand):
                 self.channel_name_aliases[key] = canonical
                 loaded += 1
         self.stdout.write(f"  loaded {loaded} channel name aliases\n")
+
+    def _load_product_name_aliases(self):
+        """Optional reference/product_name_aliases.csv: map imported product labels to CropSalesFormat.product_name."""
+        path = self._resolve_reference_path("product_name_aliases.csv")
+        if not os.path.exists(path):
+            return
+        self.stdout.write("Loading product name aliases...")
+        loaded = 0
+        with open(path, "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                alias = (row.get("Alias") or row.get("alias") or "").strip()
+                canonical = (
+                    (row.get("Product Name") or row.get("product_name") or row.get("Canonical") or "")
+                    .strip()
+                )
+                if not alias or not canonical:
+                    continue
+                key = self._normalize_lookup_value(alias)
+                if key in self.product_name_aliases and self.product_name_aliases[key] != canonical:
+                    raise CommandError(
+                        f"product_name_aliases.csv row {i}: conflicting canonical product for alias '{alias}'"
+                    )
+                self.product_name_aliases[key] = canonical
+                loaded += 1
+        self.stdout.write(f"  loaded {loaded} product name aliases\n")
 
     def _load_channel_rollup_contract(self):
         """Load optional specific-channel -> rollup-group mapping contract."""
@@ -4298,10 +4326,15 @@ class Command(BaseCommand):
         """Get crop sales format by product name."""
         if product_name in self.product_cache:
             return self.product_cache[product_name]
+        lookup_name = product_name
+        if product_name:
+            alias_key = self._normalize_lookup_value(product_name)
+            if alias_key in self.product_name_aliases:
+                lookup_name = self.product_name_aliases[alias_key]
         resolved = self._resolve_fk_by_text(
             CropSalesFormat,
             "product_name",
-            product_name,
+            lookup_name,
             label="product",
         )
         if (

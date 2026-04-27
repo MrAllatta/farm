@@ -8094,3 +8094,125 @@ class BuildReferenceSupersetMergeTests(TestCase):
             row = next(reader)
             self.assertEqual(row[0], "Tomato")
             self.assertEqual(row[1], "base")
+
+
+class HistoricalImportAliasContractTests(TestCase):
+    def _write_text(self, path, contents):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+
+    def _write_minimal_bundle(self, base_dir):
+        self._write_text(
+            base_dir / "reference" / "crop_info.csv",
+            "\n".join(
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Cilantro,Herb,Apiaceae,Fresh,0,false,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,10000",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "sales_channels.csv",
+            "\n".join(
+                [
+                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                    "KFM,Saturday,1,52,1000,false,1",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "crop_sales_formats.csv",
+            "\n".join(
+                [
+                    "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                    "Cilantro,Cilantro - bunch,$3.00,bunch,1.0,CIL-BUNCH,true",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "channel_rollups.csv",
+            "\n".join(
+                [
+                    "Channel Name,Rollup Group",
+                    "KFM,Markets",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "year_2022" / "sales_events.csv",
+            "\n".join(
+                [
+                    "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Entry Kind,Notes",
+                    "DGH,2022-06-01,Cilantro,2,0,0,0,0,actual,alias test row",
+                ]
+            ),
+        )
+
+    def test_alias_contract_maps_channel_and_product_names(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            summary_path = Path(tmp) / "summary.json"
+            self._write_minimal_bundle(data_dir)
+            self._write_text(
+                data_dir / "reference" / "channel_name_aliases.csv",
+                "\n".join(
+                    [
+                        "Alias,Channel Name",
+                        "DGH,KFM",
+                    ]
+                ),
+            )
+            self._write_text(
+                data_dir / "reference" / "product_name_aliases.csv",
+                "\n".join(
+                    [
+                        "Alias,Product Name",
+                        "Cilantro,Cilantro - bunch",
+                    ]
+                ),
+            )
+
+            call_command(
+                "import_historical_data",
+                str(data_dir),
+                "--start-year",
+                "2022",
+                "--end-year",
+                "2022",
+                "--validate-only",
+                "--summary-json",
+                str(summary_path),
+            )
+
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            stale_fk_errors = [
+                row_error
+                for row_error in summary["results"]["row_errors"]
+                if row_error["code"] == "stale_fk"
+            ]
+            self.assertEqual(stale_fk_errors, [])
+
+    def test_product_alias_conflict_raises_command_error(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            self._write_minimal_bundle(data_dir)
+            self._write_text(
+                data_dir / "reference" / "product_name_aliases.csv",
+                "\n".join(
+                    [
+                        "Alias,Product Name",
+                        "Cilantro,Cilantro - bunch",
+                        "Cilantro,Cilantro - lb",
+                    ]
+                ),
+            )
+            with self.assertRaises(CommandError):
+                call_command(
+                    "import_historical_data",
+                    str(data_dir),
+                    "--start-year",
+                    "2022",
+                    "--end-year",
+                    "2022",
+                    "--validate-only",
+                )
