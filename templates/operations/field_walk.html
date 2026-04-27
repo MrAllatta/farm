@@ -6,7 +6,7 @@
     <h1>Field walk</h1>
     <p class="muted">
         Week {{ week_num }} · {{ week_monday|date:"M j" }} – {{ week_sunday|date:"M j" }}.
-        Review each block and record crop condition updates. Yield % scales future planned harvest quantities.
+        Use <strong>ahead of plan</strong> or <strong>behind plan</strong> for timing vs the schedule; use <strong>yield %</strong> when expected harvest should scale up or down. Good / fair / poor / failed still describe crop condition or loss.
     </p>
     <p>Active plantings on route: {{ total_plantings }}</p>
 </section>
@@ -34,7 +34,7 @@
                     <th>Stage</th>
                     <th>Expected harvest</th>
                     <th>Last walk</th>
-                    <th>Condition</th>
+                    <th>Walk status</th>
                     <th>Yield %</th>
                     <th>Adj. 1st harvest (wk)</th>
                     <th>Notes</th>
@@ -65,6 +65,8 @@
                     <td>
                         <select name="condition_{{ p.id }}">
                             <option value="">—</option>
+                            <option value="ahead">Ahead of plan</option>
+                            <option value="behind">Behind plan</option>
                             <option value="good">Good</option>
                             <option value="fair">Fair</option>
                             <option value="poor">Poor</option>

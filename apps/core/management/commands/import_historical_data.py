@@ -2897,11 +2897,16 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Importing field walk notes {year}...")
 
+        # Match CSV "Condition" case-insensitively (see FieldWalkNote.CONDITION_CHOICES)
         condition_map = {
-            "Good": "good",
-            "Fair": "fair",
-            "Poor": "poor",
-            "Failed": "failed",
+            "ahead": "ahead",
+            "ahead of plan": "ahead",
+            "behind": "behind",
+            "behind plan": "behind",
+            "good": "good",
+            "fair": "fair",
+            "poor": "poor",
+            "failed": "failed",
         }
 
         with open(path, "r") as f:
@@ -2922,8 +2927,8 @@ class Command(BaseCommand):
                         self.stats["FieldWalkNote"]["skipped"] += 1
                         continue
 
-                    condition_raw = row.get("Condition", "good").strip()
-                    condition = condition_map.get(condition_raw, "good")
+                    condition_raw = (row.get("Condition") or "good").strip()
+                    condition = condition_map.get(condition_raw.lower(), "good")
 
                     data = {
                         "walk_date": self._parse_date(walk_date_str),

@@ -13,6 +13,8 @@ from planning.models import HarvestEvent
 
 class FieldWalkNote(models.Model):
     CONDITION_CHOICES = [
+        ("ahead", "Ahead of plan"),
+        ("behind", "Behind plan"),
         ("good", "Good"),
         ("fair", "Fair"),
         ("poor", "Poor"),

@@ -20,13 +20,15 @@
 
 <section class="panel">
     <h2>Add Field Walk Note</h2>
-    <p>Each save appends a new note for this planting (same behavior as the batch field-walk form).</p>
+    <p>Each save appends a new note (same as the week field-walk form). Prefer <strong>ahead of plan</strong> / <strong>behind plan</strong> for schedule vs plan; <strong>yield %</strong> scales expected harvest.</p>
     <form method="post">
         {% csrf_token %}
         <p>
-            <label for="id_condition">Condition</label>
+            <label for="id_condition">Walk status</label>
             <select name="condition" id="id_condition" required>
                 <option value="">-</option>
+                <option value="ahead">Ahead of plan</option>
+                <option value="behind">Behind plan</option>
                 <option value="good">Good</option>
                 <option value="fair">Fair</option>
                 <option value="poor">Poor</option>
@@ -53,7 +55,7 @@
 <section class="panel">
     <h2>Latest Note</h2>
     <p>Date: {{ latest_note.walk_date|date:"Y-m-d" }}</p>
-    <p>Condition: {{ latest_note.get_condition_display }}</p>
+    <p>Walk status: {{ latest_note.get_condition_display }}</p>
     <p>Yield adjustment: {{ latest_note.yield_adjust_pct }}%</p>
     <p>{{ latest_note.notes|default:"No note text." }}</p>
 </section>
@@ -67,7 +69,7 @@
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Condition</th>
+                <th>Walk status</th>
                 <th>Yield %</th>
                 <th>Notes</th>
             </tr>
