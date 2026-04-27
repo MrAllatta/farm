@@ -892,6 +892,18 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
             variety_display = planting.variety
         field_notes = list(planting.field_walk_notes.order_by("-walk_date", "-id")[:25])
         today = date.today()
+        planned_wtm_weeks = None
+        weekly_yield_per_bedfoot = None
+        weekly_yield_forecast = None
+        if planting.crop_season:
+            harvest_weeks = planting.crop_season.harvest_weeks or 0
+            if planting.crop_season.dtm_days:
+                planned_wtm_weeks = round(planting.crop_season.dtm_days / 7.0, 1)
+            if harvest_weeks:
+                weekly_yield_per_bedfoot = (
+                    planting.crop_season.total_yield_per_bedfoot / Decimal(harvest_weeks)
+                )
+                weekly_yield_forecast = planting.planned_total_yield / Decimal(harvest_weeks)
         ctx.update(
             {
                 "year": self.year_obj,
@@ -904,6 +916,9 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
                 "schedule_chip_class": planting_schedule_chip_css_class(
                     planting.planned_plant_date, planting.actual_plant_date, today
                 ),
+                "planned_wtm_weeks": planned_wtm_weeks,
+                "weekly_yield_per_bedfoot": weekly_yield_per_bedfoot,
+                "weekly_yield_forecast": weekly_yield_forecast,
             }
         )
         return ctx

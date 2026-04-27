@@ -152,13 +152,16 @@
         "Harvest Weeks",
         "DTM Days To Maturity",
         "Rows Per Bed",
-        "DS Seed Rate (seeds/ rowfoot)",
-        "TP Inrow Spacing (ft)",
+        "Seeds/ft (DS)",
+        "Inrow Spacing Feet (TP)",
         "Seeder Settings",
         "Trellis System",
         "Mulch",
         "Row Cover",
-        "Irrigation"
+        "Irrigation",
+        "Planned WTM",
+        "Actual or Planned Weekly Yield per Bedfoot",
+        "Weekly Yield Forecast"
       ],
       "output_headers": [
         "Crop",
@@ -175,10 +178,15 @@
         "Trellis System",
         "Mulch",
         "Row Cover",
-        "Irrigation"
+        "Irrigation",
+        "Planned WTM",
+        "Actual or Planned Weekly Yield per Bedfoot",
+        "Weekly Yield Forecast"
       ],
       "column_map": {
-        "Total Yield Per Bedfoot": "Plan On Total Yield Per Bedfoot"
+        "Total Yield Per Bedfoot": "Plan On Total Yield Per Bedfoot",
+        "DS Seed Rate (seeds/ rowfoot)": "Seeds/ft (DS)",
+        "TP Inrow Spacing (ft)": "Inrow Spacing Feet (TP)"
       }
     },
     {

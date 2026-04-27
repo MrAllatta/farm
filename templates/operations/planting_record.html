@@ -28,6 +28,14 @@
             <dt>Planned bedfeet</dt><dd>{{ planting.planned_bedfeet }}</dd>
             <dt>Planned total yield</dt><dd>{{ planting.planned_total_yield }} ({{ planting.crop_season.harvest_weeks }} harvest weeks)</dd>
             <dt>Crop season profile</dt><dd>{{ planting.crop_season }} ({{ planting.crop_season.get_block_type_display }})</dd>
+            <dt>Seeds/ft (DS)</dt><dd>{{ planting.crop_season.ds_seed_rate|default:"—" }}</dd>
+            <dt>Inrow Spacing Feet (TP)</dt><dd>{{ planting.crop_season.tp_inrow_spacing|default:"—" }}</dd>
+            <dt>Seeder Settings</dt><dd>{{ planting.crop_season.seeder_settings|default:"—" }}</dd>
+            <dt>Row Cover</dt><dd>{{ planting.crop_season.row_cover|default:"—" }}</dd>
+            <dt>Irrigation</dt><dd>{{ planting.crop_season.irrigation|default:"—" }}</dd>
+            <dt>Planned WTM</dt><dd>{% if planned_wtm_weeks %}{{ planned_wtm_weeks }} weeks{% else %}—{% endif %}</dd>
+            <dt>Actual or Planned Weekly Yield per Bedfoot</dt><dd>{% if weekly_yield_per_bedfoot %}{{ weekly_yield_per_bedfoot|floatformat:2 }}{% else %}—{% endif %}</dd>
+            <dt>Weekly Yield Forecast</dt><dd>{% if weekly_yield_forecast %}{{ weekly_yield_forecast|floatformat:2 }}{% else %}—{% endif %}</dd>
         </dl>
         {% if planting.notes %}
         <h3>Existing notes</h3>
