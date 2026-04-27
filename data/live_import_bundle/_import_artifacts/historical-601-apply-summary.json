@@ -891,7 +891,22 @@
         "row": 418
       }
     ],
-    "row_warnings": [],
+    "row_warnings": [
+      {
+        "code": "import_year_range_skips_disk_year_folder",
+        "field_path": "data_dir/year_2022",
+        "message": "Directory year_2022/ exists under the bundle root but is outside --start-year 2024 --end-year 2026; this tier (including year_<Y>/sales_events.csv) is not processed. Widen the import year range to pick up 601 / historical sales for that season.",
+        "model": "import_historical_data",
+        "row": 1
+      },
+      {
+        "code": "import_year_range_skips_disk_year_folder",
+        "field_path": "data_dir/year_2023",
+        "message": "Directory year_2023/ exists under the bundle root but is outside --start-year 2024 --end-year 2026; this tier (including year_<Y>/sales_events.csv) is not processed. Widen the import year range to pick up 601 / historical sales for that season.",
+        "model": "import_historical_data",
+        "row": 1
+      }
+    ],
     "totals": {
       "created": 9605,
       "error": 0,
@@ -904,10 +919,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/historical-601",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-26T15:19:07.061279Z",
-    "run_id": "20260426T151852723974",
+    "finished_at": "2026-04-27T00:47:54.252309Z",
+    "run_id": "20260427T004740320583",
     "start_year": 2024,
-    "started_at": "2026-04-26T15:18:52.723974Z",
+    "started_at": "2026-04-27T00:47:40.320583Z",
     "validate_only": false,
     "verbose": false
   },

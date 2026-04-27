@@ -23,6 +23,7 @@
         · Greenhouse capacity: {{ greenhouse_capacity }} trays
         · Peak: {{ peak_week.trays }} trays (Week {{ peak_week.week }})
     </div>
+    {% include "planning/partials/nursery_field_week_legend.html" with print_mode=True %}
     
     {# Capacity bar chart (simplified text version) #}
     <div style="margin-bottom: 0.75rem; font-size: 8pt;">

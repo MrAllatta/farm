@@ -1,0 +1,22 @@
+{# N-7: Sam-facing copy for seeding week vs field week + missing tray metadata.
+   Modes: compact (one line), print_mode (print header legend), else full panel. #}
+{% if compact %}
+<p class="muted no-print" style="font-size:0.88rem; line-height:1.4; margin:0.25rem 0 0.75rem 0;" data-nursery-field-week-legend-compact>
+    <strong>Field week pull:</strong> Seeding week = greenhouse ISO week; plant-by = field transplant target — line up pulls with the same <strong>field week</strong> you use outside. Dashes in tray counts/size mean data is missing from the plan — use <a href="{% url 'planning:nursery_records' %}">Nursery records</a> or crop settings.
+</p>
+{% elif print_mode %}
+<div class="nursery-legend-print" style="font-size:8pt; line-height:1.35; color:#444; margin-bottom:0.65rem; padding:0.35rem 0.4rem; border:1px solid #ccc; background:#fafaf8;">
+    <strong>Labels:</strong>
+    SEED WK = ISO week of tray seeding in the greenhouse.
+    PLANT-BY + field wk = target field transplant — pull trays so transplants match <strong>field week</strong> on outdoor lists.
+    TRAYS / SIZE "—" = plan or catalog did not supply a value; confirm against crop profile or log in nursery records before relying on quantities.
+</div>
+{% else %}
+<section class="panel nursery-field-week-legend no-print" aria-label="How to read nursery dates and trays" data-nursery-field-week-legend>
+    <h2 class="nursery-field-week-legend__title" style="margin:0 0 0.5rem 0; font-size:1.02rem;">Greenhouse pull vs field week</h2>
+    <ul class="muted" style="margin:0; padding-left:1.2rem; font-size:0.9rem; line-height:1.45;">
+        <li><strong>Seeding week</strong> (ISO) is when tray work happens; <strong>Plant-by (field)</strong> is when the bed should receive the transplant. Use both to line up <strong>greenhouse pulls with field week</strong> on 501 and planting lists.</li>
+        <li><strong>Trays / tray size</strong> on each card come from the plan. A dash (—) means the event or crop profile did not supply a count or cell size — check <a href="{% url 'planning:nursery_records' %}">Nursery records</a> and crop settings before print.</li>
+    </ul>
+</section>
+{% endif %}

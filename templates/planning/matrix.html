@@ -11,6 +11,7 @@
     No active planning year is configured yet.
 </div>
 {% else %}
+{% include "core/_active_planning_year_context_strip.html" %}
 <form id="csrf-helper" style="display:none;">{% csrf_token %}</form>
 <div class="crop-planner-drag-toolbar" role="toolbar" aria-label="Crop planner drag">
     <div id="drag-warnings" class="drag-warnings" role="status" aria-live="polite"></div>

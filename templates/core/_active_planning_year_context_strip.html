@@ -1,0 +1,21 @@
+{# YP-6: which PlanningYear receives edits when multiple seasons are open (soft overlap). #}
+{% if current_planning_year %}
+<aside
+    class="planning-year-context-strip no-print"
+    role="status"
+    aria-label="Active planning year for this page"
+    data-planning-year-context-strip
+    data-active-planning-year="{{ current_planning_year.year }}"
+>
+    <span class="planning-year-context-strip__chip">Active plan: <strong>{{ current_planning_year.year }}</strong></span>
+    {% if planning_year_scope_choices|length > 1 %}
+    <span class="planning-year-context-strip__hint">
+        Two seasons in scope — use the <strong>Plan</strong> menu in the top bar to choose which year receives new plantings, edits, and most harvest rows.
+    </span>
+    {% else %}
+    <span class="planning-year-context-strip__hint planning-year-context-strip__hint--subtle">
+        Weekly ops and the matrix follow this year unless you switch it in the nav.
+    </span>
+    {% endif %}
+</aside>
+{% endif %}

@@ -16,6 +16,7 @@
         · <a href="{% url 'planning:planting_detail' pk=planting.pk %}">Planning detail</a>
     </p>
 </div>
+{% include "core/_active_planning_year_context_strip.html" %}
 
 <div class="planting-record-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:start;">
     <section class="panel">

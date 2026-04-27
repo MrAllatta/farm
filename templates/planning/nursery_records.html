@@ -2,9 +2,8 @@
 {% block title %}Nursery records{% endblock %}
 {% block content %}
 <h1>Nursery records</h1>
-{% if year %}
-<p class="muted">Planning year context: <strong>{{ year.year }}</strong>.</p>
-{% endif %}
+{% include "core/_active_planning_year_context_strip.html" %}
+{% include "planning/partials/nursery_field_week_legend.html" with compact=True %}
 <p class="muted">Incomplete events with planned date on or before {{ today }} + 14 days.</p>
 {% for ev in events %}
 <div style="border:1px solid #ddd; padding:0.75rem; margin-bottom:0.75rem; border-radius:6px;">

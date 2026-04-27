@@ -2087,3 +2087,34 @@ a.crop-map-chip:hover {
     font-size: 0.78rem;
     margin-top: 0.15rem;
 }
+
+/* YP-6: active planning year / overlap-year clarity (Band 2) */
+.planning-year-context-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.75rem;
+    margin: 0 0 0.75rem 0;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 6px;
+    color: #14532d;
+}
+
+.planning-year-context-strip__chip {
+    white-space: nowrap;
+}
+
+.planning-year-context-strip__hint {
+    font-size: 0.88rem;
+    color: #166534;
+}
+
+.planning-year-context-strip__hint--subtle {
+    color: #15803d;
+    opacity: 0.9;
+    font-size: 0.85rem;
+}

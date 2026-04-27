@@ -19,6 +19,7 @@
         <h1>Dashboard</h1>
         {% endif %}
     </div>
+    {% include "core/_active_planning_year_context_strip.html" %}
     
     {# ── Row 1: Key Metrics ── #}
     <div class="metric-cards">
@@ -166,14 +167,23 @@
                     <a href="{% url 'reports:harvest_list_print' week_num %}" class="btn">
                         🖨 Harvest needs list
                     </a>
+                    <a href="{% url 'reports:pack_list_print' week_num %}" class="btn">
+                        🖨 Market / pack list
+                    </a>
                     <a href="{% url 'reports:weekly_schedule_print' week_num %}" class="btn">
                         🖨 Weekly field schedule
                     </a>
                     <a href="{% url 'reports:crop_map_print' week_num %}" class="btn">
-                        🖨 503 crop map
+                        🖨 503 block map
                     </a>
-                    <a href="{% url 'reports:pack_list_print' week_num %}" class="btn">
-                        🖨 Pack prep list
+                    <a href="{% url 'operations:planting_list_print' %}" class="btn">
+                        🖨 Planting list
+                    </a>
+                    <a href="{% url 'operations:seeding_todo_print' %}" class="btn">
+                        🖨 Seeding list
+                    </a>
+                    <a href="{% url 'operations:seeding_todo_print' %}#tray-labels" class="btn">
+                        🖨 Greenhouse tray pull labels
                     </a>
                     {% endif %}
                 </div>

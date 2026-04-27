@@ -9,7 +9,8 @@
         Week {{ center_week }} focus · Peak bench load {{ peak_week.trays }} trays in week {{ peak_week.week }}
     </div>
 </div>
-<p class="muted">Planning year context: <strong>{{ year.year }}</strong>.</p>
+{% include "core/_active_planning_year_context_strip.html" %}
+{% include "planning/partials/nursery_field_week_legend.html" %}
 
 <div class="nursery-tray-hero" style="margin:1rem 0; padding:1rem; background:#ecfdf5; border-radius:8px; border:1px solid #6ee7b7;">
     <div style="font-size:2rem; font-weight:700; color:#065f46;">{{ tray_highlight_window }}</div>

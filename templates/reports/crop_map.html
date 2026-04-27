@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="report-header">
+    {% include "core/_active_planning_year_context_strip.html" %}
     <h1>503 Crop Map: High-Level Block Map</h1>
     <p class="report-meta">
         Week {{ week_num }} ({{ week_date|date:"M j" }}) · Utilization {{ overall_utilization|floatformat:1 }}%

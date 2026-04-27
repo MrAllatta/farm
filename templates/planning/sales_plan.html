@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1>Sales Plan</h1>
+{% include "core/_active_planning_year_context_strip.html" %}
 {% if plan_mode == "rollup" %}
 <p class="muted">Product-week demand for {{ year.year }}, aligned to workbook rollups (Markets, Orders, CSA) — not individual outlets.</p>
 {% else %}
