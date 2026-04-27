@@ -1,0 +1,69 @@
+{
+  "fatal_error": null,
+  "results": {
+    "escalation_summary": [],
+    "failure_signatures": [],
+    "models": {
+      "NurseryEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "PlanningYear": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 5
+      },
+      "RotationHistory": {
+        "created": 115,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesEvent": {
+        "created": 2086,
+        "error": 0,
+        "skipped": 0,
+        "updated": 574
+      }
+    },
+    "pack_skip_rows": [],
+    "pack_skip_summary": [],
+    "post_repair_planting_events": {
+      "harvest_events_created_plantings": 0,
+      "harvest_planned_dates_filled": 0,
+      "harvest_skipped_invalid_window": 0,
+      "nursery_events_created_plantings": 0,
+      "plantings_scanned": 2085
+    },
+    "row_errors": [],
+    "row_warning_code_totals": {},
+    "row_warning_summary": [],
+    "row_warnings": [],
+    "totals": {
+      "created": 2201,
+      "error": 0,
+      "skipped": 0,
+      "updated": 579
+    }
+  },
+  "run": {
+    "atomic_apply": true,
+    "bundle_disk_year_folder_max": 2026,
+    "bundle_disk_year_folder_min": 2022,
+    "data_dir": "farm/data/live_import_bundle/sales-plan",
+    "dry_run": false,
+    "end_year": 2026,
+    "finished_at": "2026-04-27T19:41:52.319994Z",
+    "run_id": "20260427T194147166921",
+    "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
+    "start_year": 2022,
+    "started_at": "2026-04-27T19:41:47.166921Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.5",
+  "status": "ok"
+}
