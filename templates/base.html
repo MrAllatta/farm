@@ -97,16 +97,17 @@
                 <summary class="nav-group-label">More</summary>
                 <div class="nav-menu">
                     <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.15rem 0 0.25rem 0;">503 map</span>
-                    <a href="{% url 'reports:crop_map' %}">Crop Map</a>
+                    <a href="{% url 'reports:crop_map' %}">503 crop map</a>
                     <a href="{% url 'reports:crop_map_week_by_bed' %}">503 Week by Bed</a>
                     <a href="{% url 'reports:crop_map_week_by_block' %}">503 Week by Block</a>
                     <a href="{% url 'reports:crop_map_successions' %}">503 Successions</a>
                     {% if current_week %}
+                        <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.6rem 0 0.25rem 0;">Print (this week)</span>
                         <a href="{% url 'reports:harvest_list_print' current_week %}">
-                            🖨 Harvest needs list
+                            Harvest needs list (print)
                         </a>
                         <a href="{% url 'reports:weekly_schedule_print' current_week %}">
-                            🖨 Weekly field schedule
+                            Weekly field schedule (print)
                         </a>
                     {% endif %}
                     <a href="{% url 'reports:seed_order' %}">Seed Order</a>
@@ -117,7 +118,7 @@
                     <a href="{% url 'reports:block_utilization' %}">Block Utilization</a>
                     <a href="{% url 'reports:season_summary' %}">Season Summary</a>
                     <span class="nav-menu-heading muted" style="display:block; font-size:0.85rem; margin:0.6rem 0 0.25rem 0;">Data &amp; admin</span>
-                    <a href="{% url 'reports:export_csv' %}">📤 Export</a>
+                    <a href="{% url 'reports:export_csv' %}">Export CSV</a>
                     {% if user.is_staff %}
                     <a href="{% url 'core:runtime_config' %}">⚙ Runtime config</a>
                     {% endif %}
