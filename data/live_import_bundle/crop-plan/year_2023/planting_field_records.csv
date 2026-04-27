@@ -838,9 +838,9 @@ Scallion // Parade,C3,2,2026,15,15,2026-04-10,200,,FALSE
 Arugula // Astro,B1,16,2026,16,16,2026-04-17,100,,FALSE
 Bok Choy // Li Ren Choi,B1,16,2026,16,16,2026-04-14,100,,FALSE
 Bok Choy // Li Ren Choi,B1,17,2026,16,16,2026-04-14,100,,TRUE
-Broccolini // BC1611,E2,1,2026,16,,,,,FALSE
-Broccolini // BC1611,E2,2,2026,16,,,,,FALSE
-Broccolini // BC1611,E2,3,2026,16,,,,,FALSE
+Broccolini // BC1611,E2,1,2026,16,17,2026-04-22,200,,FALSE
+Broccolini // BC1611,E2,2,2026,16,17,2026-04-22,200,,TRUE
+Broccolini // BC1611,E2,3,2026,16,17,2026-04-22,200,,TRUE
 Chard // Bright Lights,D3,1,2026,16,16,2026-04-17,200,,FALSE
 Collards // Flash,D3,5,2026,16,16,2026-04-17,50,,FALSE
 Dandelion // Clio,B2,1,2026,16,16,2026-04-14,175,filled in with fennel,FALSE
@@ -859,20 +859,20 @@ Lettuce Mini Gem // Gatsbi,B2,3,2026,16,16,2026-04-13,15,,FALSE
 Lettuce Mini Gem // Rosaine,B2,3,2026,16,16,2026-04-13,100,,FALSE
 Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,4,2026,16,16,2026-04-13,200,,FALSE
 Parsley // Giant of Italy,C3,4,2026,16,16,2026-04-13,150,,FALSE
-Radicchio Round // Indigo,B2,6,2026,16,,,,delayed til week 17,FALSE
-Radicchio Variegated // Giorgine,B2,7,2026,16,,,,delayed til week 17,FALSE
+Radicchio Round // Indigo,B2,5,2026,16,17,2026-04-24,200,delayed til week 17,FALSE
+Radicchio Variegated // Giorgine,B2,6,2026,16,17,2026-04-24,200,delayed til week 17,FALSE
 Radish French Breakfast // French Breakfast,B1,20,2026,16,16,2026-04-17,100,,FALSE
 Radish Purple // Bacchus,B1,21,2026,16,16,2026-04-17,100,,FALSE
 Radish Red // Sora,B1,22,2026,16,16,2026-04-17,100,,FALSE
-Scallion // Parade,C3,4,2026,16,,,,,FALSE
-Zucchini Green // Noche,C1,1,2026,16,,,,,FALSE
-Zucchini Green // Noche,C1,2,2026,16,,,,,FALSE
+Scallion // Parade,C3,3,2026,16,17,2026-04-24,100,,FALSE
+Zucchini Green // Noche,C1,1,2026,16,17,2026-04-22,200,,FALSE
+Zucchini Green // Noche,C1,2,2026,16,17,2026-04-22,200,,TRUE
 Arugula // Astro,B1,23,2026,17,,,,,FALSE
-Cabbage Chinese // Minuet,E2,4,2026,17,,,,,FALSE
-Cabbage Chinese // Minuet,E2,5,2026,17,,,,,FALSE
-Cabbage Savoy // Alcosa,E2,6,2026,17,,,,,FALSE
-Cauliflower Sprouting // Song,E2,7,2026,17,,,,,FALSE
-Cauliflower Sprouting // Song,E2,8,2026,17,,,,,FALSE
+Cabbage Chinese // Minuet,E2,4,2026,17,17,2026-04-22,200,,FALSE
+Cabbage Chinese // Minuet,E2,5,2026,17,17,2026-04-22,200,,FALSE
+Cabbage Savoy // Alcosa,E2,6,2026,17,17,2026-04-22,200,,FALSE
+Cauliflower Sprouting // Song,E2,7,2026,17,17,2026-04-22,200,,FALSE
+Cauliflower Sprouting // Song,E2,8,2026,17,17,2026-04-22,200,,FALSE
 Frisee // Curlesi,B1,28,2026,17,,,,,FALSE
 Greens Mix Baby Kale // Red Russian Kale,B1,24,2026,17,,,,,FALSE
 Greens Mix Cheap Frills // Cheap Frills,B1,24,2026,17,,,,,FALSE
