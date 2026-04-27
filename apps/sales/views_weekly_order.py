@@ -34,6 +34,32 @@ from reports.mixins import ReportContextMixin
 from .models import SalesEvent
 
 
+def _prior_year_empty_cell_title(calendar_year: int, empty_reason: str) -> str:
+    """LIVE-10: operator-facing hover text for prior-year cells with no ACTUAL (same ISO week)."""
+    y = calendar_year
+    if empty_reason == "prior_year_cell_empty_neighbors_both_weeks":
+        return (
+            f"No ACTUAL this ISO week for this product in {y}; adjacent ISO weeks had sales "
+            "(see W-1 / W+1 quantities below)."
+        )
+    if empty_reason == "prior_year_cell_empty_neighbor_prev_week_only":
+        return (
+            f"No ACTUAL this ISO week for this product in {y}; the prior ISO week (W-1) had sales "
+            "for this product."
+        )
+    if empty_reason == "prior_year_cell_empty_neighbor_next_week_only":
+        return (
+            f"No ACTUAL this ISO week for this product in {y}; the next ISO week (W+1) had sales "
+            "for this product."
+        )
+    if empty_reason == "prior_year_cell_empty_no_neighbor_week_sales":
+        return (
+            f"No ACTUAL for this product in W-1, this week, or W+1 for calendar {y} — often not sold "
+            "in that window, or that year was not imported, or channel/product keys do not match history."
+        )
+    return f"No ACTUAL import for this product in ISO week {y}."
+
+
 def _add_actual_row(by_product: dict[int, SimpleNamespace], product_id: int, row: SalesEvent) -> None:
     """Merge duplicate ACTUAL rows (same product + week window) for LIVE-1."""
     rq = row.actual_quantity
@@ -456,6 +482,11 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                         empty_reason = "prior_year_cell_empty_neighbor_next_week_only"
                     else:
                         empty_reason = "prior_year_cell_empty_no_neighbor_week_sales"
+                empty_cell_title = (
+                    _prior_year_empty_cell_title(y, empty_reason)
+                    if ev is None and empty_reason
+                    else ""
+                )
                 hist_cells.append(
                     {
                         "calendar_year": block["calendar_year"],
@@ -464,6 +495,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                         "neighbor_prev_qty": prev_qty,
                         "neighbor_next_qty": next_qty,
                         "empty_reason": empty_reason,
+                        "empty_cell_title": empty_cell_title,
                     }
                 )
             order_rows.append(

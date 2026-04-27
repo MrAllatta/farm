@@ -87,7 +87,7 @@
     {% endif %}
     {% if not order_rows %}
     {% url 'planning:sales_plan' as sales_plan_url %}
-    {% include "core/_empty_state_panel.html" with title="No active sales products for weekly order" body="Weekly order rows come from active CropSalesFormat products. Import/activate products, then return to this week and channel to set PLAN quantities." cta_label="Open annual sales plan" cta_href=sales_plan_url only %}
+    {% include "core/_empty_state_panel.html" with title="No active sales products for weekly order" body="Weekly order rows come from active CropSalesFormat products. Import/activate products, then return to this week and channel to set PLAN quantities." action_label="Open annual sales plan" action_url=sales_plan_url only %}
     {% endif %}
     <form method="post" class="no-print">
         {% csrf_token %}
@@ -119,7 +119,7 @@
                             {{ cell.actual_qty|floatformat:1 }}
                             {% if cell.actual_revenue %}<div class="muted"><small>${{ cell.actual_revenue|floatformat:0 }}</small></div>{% endif %}
                         {% else %}
-                            <span class="muted" title="No ACTUAL import for this product/week">—</span>
+                            <span class="muted" title="{{ cell.empty_cell_title }}">—</span>
                             {% if cell.neighbor_prev_qty is not None or cell.neighbor_next_qty is not None %}
                             <div class="muted" data-live11-neighbor-snippet="1">
                                 <small>

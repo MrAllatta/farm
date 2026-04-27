@@ -2,6 +2,7 @@
 <details class="panel muted no-print" style="margin-bottom:0.75rem;" data-live11-prior-year-help="1">
     <summary>Why a prior-year cell shows “—” (no number)</summary>
     <ul style="margin:0.5rem 0 0 1.25rem;">
+        <li><strong>Per-cell hover</strong> — rest the pointer on the em dash in a prior-year column for a short reason tied to that calendar year (including whether adjacent ISO weeks had sales for that product).</li>
         <li><strong>Not sold that week</strong> — usual for off-season or low-volume products; imported 601 <code>ACTUAL</code> rows may simply have no line for this ISO week.</li>
         <li><strong>That calendar year was not imported</strong> — <code>year_YYYY</code> sales tiers outside the import run’s year range are skipped (see preflight and operator import-floor notes).</li>
         <li><strong>Channel or product does not line up with history</strong> — rows must share the same <code>SalesChannel</code> and <code>Product</code> keys as 601 data; renames, duplicate channels, or id drift can leave cells empty — use staff diagnostics at the top of this page.</li>

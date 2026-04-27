@@ -716,6 +716,7 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, "W19 2.0")
         self.assertContains(r, "W21 4.0")
         self.assertContains(r, 'data-empty-reason="prior_year_cell_empty_neighbors_both_weeks"')
+        self.assertContains(r, "adjacent ISO weeks had sales")
 
     def test_weekly_order_prior_year_empty_cell_reason_no_neighbor_sales(self):
         """LIVE-11: prior-year column exists but this product has no ACTUAL rows on W−1 / W / W+1."""
@@ -727,6 +728,7 @@ class WeeklyChannelOrderViewTests(TestCase):
         r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'data-empty-reason="prior_year_cell_empty_no_neighbor_week_sales"')
+        self.assertContains(r, "No ACTUAL for this product in W-1, this week, or W+1 for calendar")
 
     def test_weekly_order_historical_matches_when_crop_sales_format_id_drifted(self):
         """LIVE-1: ACTUAL rows use a superseded CropSalesFormat id; same crop + name still fills cells."""
