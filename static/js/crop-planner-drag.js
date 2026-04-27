@@ -318,11 +318,22 @@
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", dragged.plantingId);
       if (dragImageEl) {
-        var w = Math.max(24, Math.floor(bar.getBoundingClientRect().width));
-        dragImageEl.style.width = w + "px";
+        var rect = bar.getBoundingClientRect();
+        var gw = Math.max(24, Math.floor(rect.width));
+        dragImageEl.style.width = gw + "px";
         dragImageEl.textContent = (bar.querySelector(".planting-label") || {}).textContent || "Planting";
+        var gh = dragImageEl.offsetHeight || 26;
+        var hotX = Math.round(e.clientX - rect.left);
+        var hotY = Math.round(e.clientY - rect.top);
+        hotX = Math.max(0, Math.min(hotX, gw - 1));
+        if (rect.height > 0.5) {
+          hotY = Math.round((hotY / rect.height) * gh);
+        } else {
+          hotY = Math.round(gh / 2);
+        }
+        hotY = Math.max(0, Math.min(hotY, gh - 1));
         try {
-          e.dataTransfer.setDragImage(dragImageEl, Math.min(w, e.offsetX || 20), 12);
+          e.dataTransfer.setDragImage(dragImageEl, hotX, hotY);
         } catch (err2) {
           /* ignore */
         }
@@ -483,9 +494,7 @@
 
   dragImageEl = document.createElement("div");
   dragImageEl.className = "crop-planner-drag-ghost";
-  dragImageEl.style.cssText =
-    "position:fixed;left:-9999px;top:0;padding:4px 8px;font-size:12px;" +
-    "background:#2d5a27;color:#fff;border-radius:3px;pointer-events:none;white-space:nowrap;";
+  dragImageEl.setAttribute("aria-hidden", "true");
   document.addEventListener("DOMContentLoaded", function () {
     document.body.appendChild(dragImageEl);
     initCropPlannerDrag();
