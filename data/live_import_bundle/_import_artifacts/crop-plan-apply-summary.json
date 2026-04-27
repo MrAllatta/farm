@@ -31,8 +31,8 @@
       "PlantingFieldActuals": {
         "created": 0,
         "error": 0,
-        "skipped": 14683,
-        "updated": 242
+        "skipped": 14675,
+        "updated": 250
       },
       "RotationHistory": {
         "created": 115,
@@ -21600,8 +21600,8 @@
     "totals": {
       "created": 2237,
       "error": 0,
-      "skipped": 17627,
-      "updated": 426
+      "skipped": 17619,
+      "updated": 434
     }
   },
   "run": {
@@ -21609,10 +21609,10 @@
     "data_dir": "/home/teacher/projects/farm-planning/farm/data/live_import_bundle/crop-plan",
     "dry_run": false,
     "end_year": 2026,
-    "finished_at": "2026-04-27T13:39:02.545623Z",
-    "run_id": "20260427T133844253729",
+    "finished_at": "2026-04-27T14:43:07.053264Z",
+    "run_id": "20260427T144248957478",
     "start_year": 2022,
-    "started_at": "2026-04-27T13:38:44.253729Z",
+    "started_at": "2026-04-27T14:42:48.957478Z",
     "validate_only": false,
     "verbose": false
   },

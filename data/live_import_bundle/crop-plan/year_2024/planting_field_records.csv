@@ -867,28 +867,28 @@ Radish Red // Sora,B1,22,2026,16,16,2026-04-17,100,,FALSE
 Scallion // Parade,C3,3,2026,16,17,2026-04-24,100,,FALSE
 Zucchini Green // Noche,C1,1,2026,16,17,2026-04-22,200,,FALSE
 Zucchini Green // Noche,C1,2,2026,16,17,2026-04-22,200,,TRUE
-Arugula // Astro,B1,23,2026,17,,,,,FALSE
+Arugula // Astro,B1,4,2026,17,17,2026-04-24,100,,FALSE
 Cabbage Chinese // Minuet,E2,4,2026,17,17,2026-04-22,200,,FALSE
 Cabbage Chinese // Minuet,E2,5,2026,17,17,2026-04-22,200,,TRUE
-Cabbage Savoy // Alcosa,E2,6,2026,17,17,2026-04-22,200,,FALSE
+Cabbage Savoy // Alcosa,E2,8,2026,17,17,2026-04-22,200,,FALSE
 Cauliflower Sprouting // Song,E2,7,2026,17,17,2026-04-22,200,,FALSE
-Cauliflower Sprouting // Song,E2,8,2026,17,17,2026-04-22,200,,FALSE
+Cauliflower Sprouting // Song,E2,6,2026,17,17,2026-04-22,200,,TRUE
 Frisee // Curlesi,B1,28,2026,17,,,,,FALSE
-Greens Mix Baby Kale // Red Russian Kale,B1,24,2026,17,,,,,FALSE
-Greens Mix Cheap Frills // Cheap Frills,B1,24,2026,17,,,,,FALSE
-Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,8,2026,17,,,,,FALSE
-Radish French Breakfast // French Breakfast,B1,25,2026,17,,,,,FALSE
-Radish Purple // Bacchus,B1,26,2026,17,,,,,FALSE
-Radish Red // Sora,B1,27,2026,17,,,,,FALSE
-Scallion // Parade,C3,4,2026,17,,,,,FALSE
-Zucchini Green // Noche,C1,3,2026,17,,,,,FALSE
-Zucchini Green // Noche,C1,4,2026,17,,,,,FALSE
-Zucchini Green // Noche,C1,5,2026,17,,,,,FALSE
-Zucchini Green // Noche,C1,6,2026,17,,,,,FALSE
-Zucchini Striped // Pantheon,C1,7,2026,17,,,,,FALSE
-Zucchini Striped // Pantheon,C1,8,2026,17,,,,,FALSE
-Zucchini Yellow // Golden Glory,C1,9,2026,17,,,,,FALSE
-Zucchini Yellow // Golden Glory,C1,10,2026,17,,,,,FALSE
+Greens Mix Baby Kale // Red Russian Kale,B1,5,2026,17,17,2026-04-24,15,,FALSE
+Greens Mix Cheap Frills // Cheap Frills,B1,5,2026,17,17,2026-04-24,85,,FALSE
+Lettuce Mix SN // (Spring/Fall) Prismatic + Butters,B2,7,2026,17,17,2026-04-24,200,,FALSE
+Radish French Breakfast // French Breakfast,B1,6,2026,17,17,2026-04-24,100,,FALSE
+Radish Purple // Bacchus,B1,7,2026,17,17,2026-04-24,100,,FALSE
+Radish Red // Sora,B1,8,2026,17,17,2026-04-24,100,,FALSE
+Scallion // Parade,C3,3,2026,17,17,2026-04-24,100,,FALSE
+Zucchini Green // Noche,C1,3,2026,17,17,2026-04-22,200,,FALSE
+Zucchini Green // Noche,C1,4,2026,17,17,2026-04-22,200,,TRUE
+Zucchini Green // Noche,C1,5,2026,17,17,2026-04-22,200,,TRUE
+Zucchini Green // Noche,C1,6,2026,17,17,2026-04-22,200,,TRUE
+Zucchini Striped // Pantheon,C1,7,2026,17,,,,delayed,FALSE
+Zucchini Striped // Pantheon,C1,8,2026,17,,,,delayed,FALSE
+Zucchini Yellow // Golden Glory,C1,9,2026,17,17,2026-04-22,200,,FALSE
+Zucchini Yellow // Golden Glory,C1,10,2026,17,17,2026-04-22,200,,TRUE
 Arugula // Astro,B1,29,2026,18,,,,,FALSE
 Beets Golden // Yellow Sunrise,D2,1,2026,18,,,,,FALSE
 Beets Golden // Yellow Sunrise,D2,2,2026,18,,,,,FALSE

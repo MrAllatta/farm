@@ -49,8 +49,15 @@
     <div class="sales-order-summary">
         <span><strong>{{ planned_line_count }}</strong> planned lines</span>
         <span><strong>{{ supply_line_count }}</strong> crops with harvest supply</span>
+        <span><strong>{{ weekly_demand_product_count }}</strong> products with positive all-channel demand</span>
         <span{% if shortage_count %} class="negative"{% endif %}><strong>{{ shortage_count }}</strong> shortage hints</span>
     </div>
+    <p class="muted" style="margin:0.5rem 0 0 0; font-size:0.9rem;">
+        PLAN rows in this ISO week: <strong>{{ plan_rows_visible_week }}</strong> visible
+        {% if plan_rows_raw_week != plan_rows_visible_week %}
+        (from {{ plan_rows_raw_week }} raw before rollup de-duplication)
+        {% endif %}.
+    </p>
 </section>
 
 <section class="panel no-print">

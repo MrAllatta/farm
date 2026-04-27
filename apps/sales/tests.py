@@ -469,6 +469,8 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertNotContains(r, "999")
         self.assertContains(r, "4.0")
+        self.assertContains(r, "products with positive all-channel demand")
+        self.assertContains(r, "PLAN rows in this ISO week")
 
     def test_plan_week_iso_counts_reflects_shadowing(self):
         """LIVE-3 helper: rollup plan rows drop when outlet owns the slice."""
