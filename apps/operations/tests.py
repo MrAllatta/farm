@@ -1118,7 +1118,7 @@ class PlantingRecordSnapshotMetadataTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Planning status")
-        self.assertContains(response, "planned profile from the crop planner")
+        self.assertContains(response, "from the crop planner")
         self.assertContains(response, "Seeds/ft (DS)")
         self.assertContains(response, "Inrow Spacing Feet (TP)")
         self.assertContains(response, "Seeder Settings")

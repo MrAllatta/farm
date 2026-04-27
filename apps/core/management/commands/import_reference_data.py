@@ -3,9 +3,13 @@
 import csv
 import os
 from decimal import Decimal, InvalidOperation
-from django.core.management.base import BaseCommand
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, IntegrityError
+
+from core.import_sample_guard import live12_block_message_for_sample_into_dev_sqlite
 from reference.models import (
     Block,
     CropBySeason,
@@ -127,10 +131,32 @@ class Command(BaseCommand):
         parser.add_argument(
             "--dry-run", action="store_true", help="Parse and validate without saving"
         )
+        parser.add_argument(
+            "--allow-sample-into-repo-dev-sqlite",
+            action="store_true",
+            help=(
+                "LIVE-12 escape hatch: allow import_reference_data from committed farm/data/sample_import "
+                "into the default farm/db.sqlite3 when FARM_SQLITE_PATH is unset. Prefer `make import-reference` "
+                "or set FARM_SQLITE_PATH to a sandbox file."
+            ),
+        )
 
     def handle(self, *args, **options):
         data_dir = options["data_dir"]
         dry_run = options["dry_run"]
+
+        _live12_msg = live12_block_message_for_sample_into_dev_sqlite(
+            data_dir=data_dir,
+            validate_only=False,
+            dry_run=dry_run,
+            farm_sqlite_env=os.environ.get("FARM_SQLITE_PATH", ""),
+            db_engine=settings.DATABASES["default"]["ENGINE"],
+            db_name=settings.DATABASES["default"]["NAME"],
+            base_dir=settings.BASE_DIR,
+            allow_escape=bool(options.get("allow_sample_into_repo_dev_sqlite")),
+        )
+        if _live12_msg:
+            raise CommandError(_live12_msg)
 
         if dry_run:
             self.stdout.write("DRY RUN — no data will be saved\n")

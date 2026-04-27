@@ -50,8 +50,9 @@ def live12_block_message_for_sample_into_dev_sqlite(
         return None
 
     return (
-        "Refusing to apply committed farm/data/sample_import into the default farm/db.sqlite3 "
-        "while FARM_SQLITE_PATH is unset (LIVE-12). Use `make import-sample`, set FARM_SQLITE_PATH "
-        "to a sandbox file, or pass --allow-sample-into-repo-dev-sqlite if you intend to write "
-        "sample channels into this database."
+        "Refusing to load committed farm/data/sample_import into the default farm/db.sqlite3 while "
+        "FARM_SQLITE_PATH is unset (LIVE-12). Use `make import-sample` / `make import-reference` "
+        "(sandbox defaults), set FARM_SQLITE_PATH to a throwaway sqlite file, or pass "
+        "--allow-sample-into-repo-dev-sqlite on import_historical_data or import_reference_data if "
+        "you intend to write sample tier rows into this database."
     )

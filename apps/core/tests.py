@@ -250,6 +250,52 @@ class Live12ImportSampleGuardTests(TestCase):
             self.assertIsNone(msg)
 
 
+class Live12ImportReferenceCommandGuardTests(TestCase):
+    def test_import_reference_data_blocks_repo_sample_into_default_sqlite(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            (base / "db.sqlite3").write_bytes(b"")
+            # Makefile importer-gate exports FARM_SQLITE_PATH; guard must see it unset for this scenario.
+            with patch.dict(os.environ, {"FARM_SQLITE_PATH": ""}, clear=False):
+                with override_settings(
+                    BASE_DIR=base,
+                    DATABASES={
+                        "default": {
+                            "ENGINE": "django.db.backends.sqlite3",
+                            "NAME": str(base / "db.sqlite3"),
+                        }
+                    },
+                ):
+                    with self.assertRaises(CommandError) as ctx:
+                        call_command("import_reference_data", str(sample), stdout=StringIO())
+            self.assertIn("LIVE-12", str(ctx.exception))
+
+    def test_import_reference_data_allows_dry_run_repo_sample_into_default_sqlite(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            (base / "db.sqlite3").write_bytes(b"")
+            with patch.dict(os.environ, {"FARM_SQLITE_PATH": ""}, clear=False):
+                with override_settings(
+                    BASE_DIR=base,
+                    DATABASES={
+                        "default": {
+                            "ENGINE": "django.db.backends.sqlite3",
+                            "NAME": str(base / "db.sqlite3"),
+                        }
+                    },
+                ):
+                    call_command(
+                        "import_reference_data",
+                        str(sample),
+                        "--dry-run",
+                        stdout=StringIO(),
+                    )
+
+
 class WeeklyOrderSurfaceHintsLive3RollupTests(TestCase):
     def test_sibling_crop_rollup_hint_when_visible_demand_without_per_product_total(self):
         from core.ui_diagnostics import weekly_order_surface_hints
