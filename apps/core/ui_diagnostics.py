@@ -324,26 +324,45 @@ def inventory_surface_hints(
     *,
     outside_plan_crop_names: list[str],
     planning_year_label: str = "",
+    in_plan_not_field_week_overlap_names: list[str] | None = None,
+    field_week_label: str = "",
 ) -> list[dict[str, str]]:
-    """Inventory dashboard: call out demo or carry-over balances not on the active crop plan (LIVE-7)."""
+    """Inventory dashboard: call out carry-over or demo balances (LIVE-7) and in-plan off–field-week rows."""
     out: list[dict[str, str]] = []
-    if not outside_plan_crop_names or not planning_year_label:
-        return out
-    preview = ", ".join(outside_plan_crop_names[:8])
-    if len(outside_plan_crop_names) > 8:
-        preview += f", +{len(outside_plan_crop_names) - 8} more"
-    out.append(
-        {
-            "id": "inventory_balance_outside_active_crop_plan",
-            "title": "Some inventory crops are not in the active crop plan",
-            "detail": (
-                f"Positive balances for: {preview}. "
-                f"They have no {planning_year_label} planting in planned/growing/harvesting — "
-                "usually prior-season carry-over, a demo product, or a ledger-only crop. "
-                "Balances are still real until you adjust them."
-            ),
-        }
-    )
+    in_plan_not_field_week_overlap_names = in_plan_not_field_week_overlap_names or []
+    if outside_plan_crop_names and planning_year_label:
+        preview = ", ".join(outside_plan_crop_names[:8])
+        if len(outside_plan_crop_names) > 8:
+            preview += f", +{len(outside_plan_crop_names) - 8} more"
+        out.append(
+            {
+                "id": "inventory_balance_outside_active_crop_plan",
+                "title": "Some inventory crops are not in the active crop plan",
+                "detail": (
+                    f"Positive balances for: {preview}. "
+                    f"They have no {planning_year_label} planting in planned/growing/harvesting — "
+                    "usually prior-season carry-over, a demo product, or a ledger-only crop. "
+                    "Balances are still real until you adjust them."
+                ),
+            }
+        )
+    if in_plan_not_field_week_overlap_names and planning_year_label:
+        preview = ", ".join(in_plan_not_field_week_overlap_names[:8])
+        if len(in_plan_not_field_week_overlap_names) > 8:
+            preview += f", +{len(in_plan_not_field_week_overlap_names) - 8} more"
+        wk = field_week_label or "this field ISO week"
+        out.append(
+            {
+                "id": "inventory_in_plan_not_this_field_week",
+                "title": "Some balances are in-plan but not in this week’s harvest window",
+                "detail": (
+                    f"Positive balances for: {preview}. These crops have a {planning_year_label} planting, "
+                    f"but no harvest window overlaps {wk} — same idea as the weekly order hint “Product list is "
+                    "limited to the crop plan, not this ISO week’s harvest window” (off-season or shoulder). "
+                    "Storage, carry-over, and earlier weeks can still show inventory without field harvest this week."
+                ),
+            }
+        )
     return out
 
 

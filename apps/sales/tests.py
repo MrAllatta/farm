@@ -236,6 +236,30 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertNotIn(b"data-historical-empty=", r.content)
         self.assertIn(b"12.0", r.content)
 
+    def test_weekly_order_shows_historical_column_from_actuals_without_planning_year_row(
+        self,
+    ):
+        """LIVE-10: 601 ACTUALs for a year must show even without a PlanningYear row for that year."""
+        wk = 20
+        mon_2023 = Week(2023, wk).monday()
+        self.assertFalse(PlanningYear.objects.filter(year=2023).exists())
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_2023,
+            product=self.product,
+            actual_quantity=Decimal("7"),
+            actual_revenue=Decimal("28.00"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"7.0", r.content)
+        self.assertNotIn(b"data-historical-empty", r.content)
+
     def test_weekly_order_smoke_shows_handoff_and_empty_state_copy(self):
         wk = 21
         url = reverse(

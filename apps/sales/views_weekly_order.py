@@ -10,6 +10,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.db.models import Sum
+from django.db.models.functions import ExtractYear
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -218,9 +219,24 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 field_note_by_crop.setdefault(note.planting.crop_id, note)
 
         historical = []
-        prior_years = list(PlanningYear.objects.filter(year__lt=cal_year).order_by("-year")[:6])
-        for py in prior_years:
-            hm, hs = self.week_window(py.year, week_num)
+        # LIVE-1 / LIVE-10: prior-year columns are driven by planning years, but must also
+        # include any calendar year present in imported ACTUALs (e.g. 2023) even when a
+        # PlanningYear row was never created.
+        in_planning_table = set(
+            PlanningYear.objects.filter(year__lt=cal_year).values_list("year", flat=True)
+        )
+        actual_years = set(
+            SalesEvent.objects.filter(
+                entry_kind=SalesEvent.EntryKind.ACTUAL,
+                sale_date__year__lt=cal_year,
+            )
+            .annotate(sale_year=ExtractYear("sale_date"))
+            .values_list("sale_year", flat=True)
+        )
+        prior_year_set = in_planning_table | actual_years
+        prior_year_ints = sorted(prior_year_set, reverse=True)[:6]
+        for y in prior_year_ints:
+            hm, hs = self.week_window(y, week_num)
             rows_strict = list(
                 SalesEvent.objects.filter(
                     entry_kind=SalesEvent.EntryKind.ACTUAL,
@@ -254,7 +270,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                     used_name_fallback = True
             historical.append(
                 {
-                    "calendar_year": py.year,
+                    "calendar_year": y,
                     "week_monday": hm,
                     "by_product": by_product,
                     "empty": not by_product,
@@ -269,8 +285,8 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             id=channel.id
         ).exists()
         if not has_any_historical:
-            for py in prior_years:
-                hm, hs = self.week_window(py.year, week_num)
+            for y in prior_year_ints:
+                hm, hs = self.week_window(y, week_num)
                 if (
                     SalesEvent.objects.filter(
                         entry_kind=SalesEvent.EntryKind.ACTUAL,

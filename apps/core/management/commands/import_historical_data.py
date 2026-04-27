@@ -3707,6 +3707,7 @@ class Command(BaseCommand):
 
     def _import_sales_and_rotation(self):
         """Import sales events, quick entries, and rotation history."""
+        self._warn_year_folders_outside_import_range()
         self._reconcile_duplicate_sales_channels()
         for year in range(self.start_year, self.end_year + 1):
             year_dir = os.path.join(self.data_dir, f"year_{year}")
@@ -3717,6 +3718,38 @@ class Command(BaseCommand):
             self._import_quick_sales_entries(year, year_dir)
 
         self._import_rotation_history()
+
+    def _warn_year_folders_outside_import_range(self) -> None:
+        """LIVE-10: on-disk ``year_YYYY/`` is skipped entirely when YYYY is outside start/end (e.g. 2023 601)."""
+        try:
+            names = os.listdir(self.data_dir)
+        except OSError:
+            return
+        skipped: list[int] = []
+        for name in names:
+            m = re.match(r"^year_(\d{4})$", name)
+            if not m or not os.path.isdir(os.path.join(self.data_dir, name)):
+                continue
+            y = int(m.group(1))
+            if y < self.start_year or y > self.end_year:
+                skipped.append(y)
+        for y in sorted(skipped):
+            message = (
+                f"Directory year_{y}/ exists under the bundle root but is outside "
+                f"--start-year {self.start_year} --end-year {self.end_year}; "
+                "this tier (including year_<Y>/sales_events.csv) is not processed. "
+                "Widen the import year range to pick up 601 / historical sales for that season."
+            )
+            self.stdout.write(self.style.WARNING(f"  ⚠  {message}"))
+            self.row_warnings.append(
+                {
+                    "model": "import_historical_data",
+                    "row": 1,
+                    "code": "import_year_range_skips_disk_year_folder",
+                    "field_path": f"data_dir/year_{y}",
+                    "message": message,
+                }
+            )
 
     def _reconcile_duplicate_sales_channels(self):
         """Repoint sales/ops channel FKs to one canonical row per normalized channel name.

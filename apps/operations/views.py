@@ -26,7 +26,7 @@ from decimal import Decimal
 
 from operations.services.field_walk_cascade import apply_yield_adjustment_to_future_harvests
 from operations.services import week_ops as week_ops_service
-from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
+from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES, week_bounds_for_planning_year
 from operations.planting_display import (
     format_bed_range_label,
     planting_schedule_chip_css_class,
@@ -542,9 +542,41 @@ class InventoryDashboardView(TemplateView):
             )
             if item["outside_active_crop_plan"]:
                 outside_plan_labels.append(item["crop"].name)
+
+        in_plan_not_this_week_labels: list[str] = []
+        field_week_label = ""
+        if year_for_scope:
+            iso = today.isocalendar()
+            nav_w = max(1, min(52, int(iso[1])))
+            # Same Monday–Sunday window as `WeeklyChannelOrderView` for the live ISO week number.
+            week_monday, week_sunday = week_bounds_for_planning_year(year_for_scope.year, nav_w)
+            field_week_label = (
+                f"W{nav_w} "
+                f"({week_monday.strftime('%b %d')}–{week_sunday.strftime('%b %d, %Y')})"
+            )
+            in_plan_field_week_overlap_ids = set(
+                Planting.objects.filter(planning_year=year_for_scope)
+                .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+                .filter(
+                    planned_first_harvest_date__lte=week_sunday,
+                    planned_last_harvest_date__gte=week_monday,
+                )
+                .values_list("crop_id", flat=True)
+                .distinct()
+            )
+            for item in inventory_items:
+                cid = item["crop"].id
+                if (
+                    in_plan_crop_ids
+                    and cid in in_plan_crop_ids
+                    and cid not in in_plan_field_week_overlap_ids
+                ):
+                    in_plan_not_this_week_labels.append(item["crop"].name)
         inv_hints = inventory_surface_hints(
             outside_plan_crop_names=sorted(set(outside_plan_labels)),
             planning_year_label=str(year_for_scope.year) if year_for_scope else "",
+            in_plan_not_field_week_overlap_names=sorted(set(in_plan_not_this_week_labels)),
+            field_week_label=field_week_label,
         )
 
         fresh_items = [i for i in inventory_items if i["crop"].fresh_or_storage != "storage"]

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from isoweek import Week
 
+from operations import views as operations_views
 from operations.models import FieldWalkNote, InventoryLedger
 from operations.planting_display import (
     format_bed_range_label,
@@ -22,6 +24,15 @@ from operations.services.field_walk_cascade import apply_yield_adjustment_to_fut
 from planning.models import HarvestEvent, PlanningYear, Planting
 from reference.models import Block, CropBySeason, CropInfo, CropSalesFormat, SalesChannel
 from sales.models import SalesEvent
+
+
+def _date_subclass_with_fixed_today(anchor: date) -> type[date]:
+    class _D(date):
+        @classmethod
+        def today(cls) -> date:
+            return anchor
+
+    return _D
 
 
 class FieldWalkCascadeTests(TestCase):
@@ -674,6 +685,74 @@ class InventoryYearCarryoverCopyTests(TestCase):
         self.assertContains(response, "Kale Bunch")
         self.assertContains(response, "returned 3.00")
 
+    def test_inventory_dashboard_flags_in_plan_not_this_field_week(self):
+        """LIVE-7 (wave 5): in-plan storage/carry-over without harvest in the active planning year week."""
+        b = Block.objects.create(
+            name="B2032b",
+            block_type="field",
+            num_beds=2,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=1,
+        )
+        c = CropInfo.objects.create(
+            name="OffWeek Kale",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunch",
+            avg_unit_weight=Decimal("1.0"),
+            nursery_weeks=0,
+        )
+        cbs = CropBySeason.objects.create(
+            crop=c,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        may = date(2032, 5, 1)
+        Planting.objects.create(
+            planning_year=self.year,
+            crop=c,
+            crop_season=cbs,
+            block=b,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=50,
+            planned_plant_date=may,
+            planned_first_harvest_date=may,
+            planned_last_harvest_date=may + timedelta(weeks=4),
+            planned_total_yield=Decimal("10.0"),
+            status="growing",
+        )
+        InventoryLedger.objects.create(
+            crop=c,
+            event_date=date(2032, 4, 1),
+            event_type="adjustment",
+            quantity=Decimal("2"),
+            running_balance=Decimal("2"),
+            notes="test seed",
+        )
+        with patch.object(
+            operations_views,
+            "date",
+            new=_date_subclass_with_fixed_today(date(2032, 3, 10)),
+        ):
+            r = self.client.get(reverse("operations:inventory"))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(
+            b'data-empty-reason="inventory_in_plan_not_this_field_week"',
+            r.content,
+        )
+        self.assertContains(r, "OffWeek Kale")
+        self.assertNotIn(
+            b'inventory_balance_outside_active_crop_plan',
+            r.content,
+        )
+
     def test_inventory_dashboard_flags_balances_outside_active_crop_plan(self):
         """LIVE-7: staff see when a positive balance is for a crop with no in-year planting."""
         b = Block.objects.create(
@@ -734,7 +813,12 @@ class InventoryYearCarryoverCopyTests(TestCase):
                 running_balance=bal,
                 notes="test seed balance",
             )
-        r = self.client.get(reverse("operations:inventory"))
+        with patch.object(
+            operations_views,
+            "date",
+            new=_date_subclass_with_fixed_today(date(2032, 5, 20)),
+        ):
+            r = self.client.get(reverse("operations:inventory"))
         self.assertEqual(r.status_code, 200)
         self.assertIn(
             b'data-empty-reason="inventory_balance_outside_active_crop_plan"',
@@ -744,6 +828,10 @@ class InventoryYearCarryoverCopyTests(TestCase):
         self.assertContains(
             r,
             "not in the active crop plan",
+        )
+        self.assertNotIn(
+            b"inventory_in_plan_not_this_field_week",
+            r.content,
         )
 
 

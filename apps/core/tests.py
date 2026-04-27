@@ -935,6 +935,26 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertIn("2019-04-15", w["message"])
         self.assertIn("2026", w["message"])
 
+    def test_warn_year_folders_outside_range_emits_row_warning(self):
+        from django.core.management.color import no_style
+
+        from core.management.commands import import_historical_data as ihd
+
+        with TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, "year_2023"), exist_ok=True)
+            command = ihd.Command(stdout=StringIO(), stderr=StringIO())
+            command.data_dir = d
+            command.start_year = 2024
+            command.end_year = 2025
+            command.row_warnings = []
+            command.style = no_style()
+            command._warn_year_folders_outside_import_range()
+        self.assertTrue(
+            any(
+                w.get("code") == "import_year_range_skips_disk_year_folder" for w in command.row_warnings
+            )
+        )
+
     def test_failure_signature_unknown_code_uses_fallback_ownership_mapping(self):
         from core.management.commands.import_historical_data import Command
 
