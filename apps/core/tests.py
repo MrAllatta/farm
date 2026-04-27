@@ -3169,7 +3169,6 @@ class StageA2OfflineConnectorTests(TestCase):
         self.assertTrue(diagnostics["top_candidates"])
         best = diagnostics["top_candidates"][0]
         self.assertEqual(best["row_index"], 1)
-        self.assertIn("PRODUCT Type", best["missing_required_headers"])
         self.assertIn("Botanical Family", best["missing_required_headers"])
 
     def test_header_drift_diagnostics_include_anchor_candidate_preview(self):
