@@ -629,7 +629,12 @@ class PlantingDetailView(DetailView):
     """HTMX partial: planting detail panel."""
 
     model = Planting
-    template_name = "planning/partials/planting_detail.html"
+    template_name = "planning/planting_detail_page.html"
+
+    def get_template_names(self):
+        if self.request.headers.get("HX-Request"):
+            return ["planning/partials/planting_detail.html"]
+        return [self.template_name]
 
     def get_queryset(self):
         return super().get_queryset().select_related("crop", "crop_season", "block", "variety_obj")
