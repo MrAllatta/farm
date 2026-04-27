@@ -149,6 +149,16 @@ class Command(BaseCommand):
         },
     }
     CHANNEL_ROLLUP_ALLOWED_VALUES = {"markets", "orders", "wholesale", "csa"}
+    ROW_WARNING_GUIDANCE = {
+        "planting_date_year_mismatch": {
+            "severity": "medium",
+            "operator_action": "Move the row to the correct year_YYYY bundle folder or correct Planned Plant Date in source.",
+        },
+        "import_year_range_skips_disk_year_folder": {
+            "severity": "medium",
+            "operator_action": "Widen --start-year/--end-year (or aligned env defaults) when this disk year should be imported.",
+        },
+    }
     SALES_CATEGORY_PRIORITY = {
         SalesCategory.CategoryName.MARKETS: 10,
         SalesCategory.CategoryName.ORDERS: 20,
@@ -5026,6 +5036,50 @@ class Command(BaseCommand):
             row["rows"] = sorted(set(row["rows"]))
         return summary
 
+    def _warning_guidance_for_code(self, code):
+        configured = self.ROW_WARNING_GUIDANCE.get(code, {})
+        return {
+            "severity": configured.get("severity", "info"),
+            "operator_action": configured.get(
+                "operator_action",
+                "Review warning rows and classify as source correction or expected noise.",
+            ),
+        }
+
+    def _build_row_warning_summary(self):
+        """LIVE-13: group row warnings into deterministic warning taxonomy buckets."""
+        grouped = {}
+        for item in self.row_warnings:
+            key = (
+                item.get("model"),
+                item.get("code"),
+                item.get("field_path"),
+            )
+            if key not in grouped:
+                guidance = self._warning_guidance_for_code(item.get("code"))
+                grouped[key] = {
+                    "model": item.get("model"),
+                    "code": item.get("code"),
+                    "field_path": item.get("field_path"),
+                    "count": 0,
+                    "rows": [],
+                    "severity": guidance["severity"],
+                    "operator_action": guidance["operator_action"],
+                }
+            grouped[key]["count"] += 1
+            grouped[key]["rows"].append(item.get("row"))
+        summary = sorted(
+            grouped.values(),
+            key=lambda row: (
+                row["model"] or "",
+                row["code"] or "",
+                row["field_path"] or "",
+            ),
+        )
+        for row in summary:
+            row["rows"] = sorted(set(row["rows"]))
+        return summary
+
     def _aggregate_import_totals(self):
         """Roll up per-model counters into aggregate totals (canonical summary.totals)."""
         totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
@@ -5094,6 +5148,7 @@ class Command(BaseCommand):
                 "totals": totals,
                 "row_errors": self.row_errors,
                 "row_warnings": self.row_warnings,
+                "row_warning_summary": self._build_row_warning_summary(),
                 "pack_skip_rows": self.skip_reasons,
                 "pack_skip_summary": self._build_pack_skip_summary(),
                 "failure_signatures": failure_signatures,

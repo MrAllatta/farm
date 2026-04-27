@@ -242,6 +242,7 @@
         "row": 1
       }
     ],
+    "row_warning_summary": [],
     "row_warnings": [],
     "totals": {
       "created": 8,
@@ -255,10 +256,10 @@
     "data_dir": "farm/data/import_fixtures/mismatch",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-27T16:03:38.085837Z",
-    "run_id": "20260427T160338052946",
+    "finished_at": "2026-04-27T16:11:44.343888Z",
+    "run_id": "20260427T161144309871",
     "start_year": 2021,
-    "started_at": "2026-04-27T16:03:38.052946Z",
+    "started_at": "2026-04-27T16:11:44.309871Z",
     "validate_only": false,
     "verbose": false
   },

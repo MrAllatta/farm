@@ -195,6 +195,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "totals",
         "row_errors",
         "row_warnings",
+        "row_warning_summary",
         "pack_skip_rows",
         "pack_skip_summary",
         "failure_signatures",
@@ -202,6 +203,15 @@ class ImportHistoricalDataCommandTests(TestCase):
     }
     MODEL_TOTAL_KEYS = {"created", "updated", "skipped", "error"}
     ROW_ERROR_KEYS = {"model", "row", "code", "field_path", "message"}
+    ROW_WARNING_SUMMARY_KEYS = {
+        "model",
+        "code",
+        "field_path",
+        "count",
+        "rows",
+        "severity",
+        "operator_action",
+    }
     PACK_SKIP_SUMMARY_KEYS = {"model", "code", "field_path", "message", "count", "rows"}
     FAILURE_SIGNATURE_KEYS = {
         "signature",
@@ -550,12 +560,14 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertEqual(set(summary["results"]["totals"].keys()), self.MODEL_TOTAL_KEYS)
         self.assertIsInstance(summary["results"]["row_errors"], list)
         self.assertIsInstance(summary["results"]["row_warnings"], list)
+        self.assertIsInstance(summary["results"]["row_warning_summary"], list)
         self.assertIsInstance(summary["results"]["pack_skip_rows"], list)
         self.assertIsInstance(summary["results"]["pack_skip_summary"], list)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
         self.assertIsInstance(summary["results"]["escalation_summary"], list)
         self._assert_row_error_payload_contract(summary["results"]["row_errors"])
         self._assert_row_error_payload_contract(summary["results"]["row_warnings"])
+        self._assert_row_warning_summary_payload_contract(summary["results"]["row_warning_summary"])
         self._assert_row_error_payload_contract(summary["results"]["pack_skip_rows"])
         self._assert_pack_skip_summary_payload_contract(summary["results"]["pack_skip_summary"])
         self._assert_failure_signature_payload_contract(summary["results"]["failure_signatures"])
@@ -650,6 +662,23 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertIsInstance(item["rows"], list)
             self.assertTrue(item["rows"])
             self.assertEqual(item["rows"], sorted(item["rows"]))
+            for row in item["rows"]:
+                self.assertIsInstance(row, int)
+                self.assertGreater(row, 0)
+
+    def _assert_row_warning_summary_payload_contract(self, warning_summary):
+        for item in warning_summary:
+            self.assertEqual(set(item.keys()), self.ROW_WARNING_SUMMARY_KEYS)
+            self.assertTrue(isinstance(item["model"], str) and item["model"])
+            self.assertTrue(isinstance(item["code"], str) and item["code"])
+            self.assertTrue(isinstance(item["field_path"], str) and item["field_path"])
+            self.assertIsInstance(item["count"], int)
+            self.assertGreater(item["count"], 0)
+            self.assertIsInstance(item["rows"], list)
+            self.assertTrue(item["rows"])
+            self.assertEqual(item["rows"], sorted(item["rows"]))
+            self.assertTrue(isinstance(item["severity"], str) and item["severity"])
+            self.assertTrue(isinstance(item["operator_action"], str) and item["operator_action"])
             for row in item["rows"]:
                 self.assertIsInstance(row, int)
                 self.assertGreater(row, 0)
@@ -977,6 +1006,46 @@ class ImportHistoricalDataCommandTests(TestCase):
                 w.get("code") == "import_year_range_skips_disk_year_folder" for w in command.row_warnings
             )
         )
+
+    def test_row_warning_summary_groups_codes_with_operator_guidance(self):
+        from core.management.commands.import_historical_data import Command
+
+        command = Command()
+        command.row_warnings = [
+            {
+                "model": "Planting",
+                "row": 2,
+                "code": "planting_date_year_mismatch",
+                "field_path": "plantings.planned_plant_date",
+                "message": "mismatch one",
+            },
+            {
+                "model": "Planting",
+                "row": 4,
+                "code": "planting_date_year_mismatch",
+                "field_path": "plantings.planned_plant_date",
+                "message": "mismatch two",
+            },
+            {
+                "model": "ImportRun",
+                "row": 1,
+                "code": "unclassified_warning",
+                "field_path": "run",
+                "message": "needs review",
+            },
+        ]
+
+        summary = command._build_row_warning_summary()
+        self._assert_row_warning_summary_payload_contract(summary)
+        self.assertEqual(len(summary), 2)
+        planting = next(item for item in summary if item["code"] == "planting_date_year_mismatch")
+        self.assertEqual(planting["count"], 2)
+        self.assertEqual(planting["rows"], [2, 4])
+        self.assertEqual(planting["severity"], "medium")
+        self.assertIn("year_YYYY bundle folder", planting["operator_action"])
+        fallback = next(item for item in summary if item["code"] == "unclassified_warning")
+        self.assertEqual(fallback["severity"], "info")
+        self.assertIn("classify as source correction or expected noise", fallback["operator_action"])
 
     def test_failure_signature_unknown_code_uses_fallback_ownership_mapping(self):
         from core.management.commands.import_historical_data import Command
