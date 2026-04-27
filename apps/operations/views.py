@@ -317,7 +317,7 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
         )
         planting_count_excl_dead = (
             Planting.objects.filter(planning_year=self.year_obj)
-            .exclude(status__in=["skipped", "failed"])
+            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
             .count()
         )
         missing_harvest = count_plantings_missing_harvest_events(self.year_obj.id)
@@ -342,6 +342,9 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
                     weekly_sales_demand_count=len(wctx["sales_demand_by_crop"]),
                     planning_year_id=self.year_obj.id,
                     planning_calendar_year=self.year_obj.year,
+                    iso_week=week_num,
+                    week_monday=wctx["week_monday"],
+                    week_sunday=wctx["week_sunday"],
                 ),
             }
         )
@@ -1028,7 +1031,7 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
         )
         planting_count_excl_dead = (
             Planting.objects.filter(planning_year=self.year_obj)
-            .exclude(status__in=["skipped", "failed"])
+            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
             .count()
         )
         missing_harvest = count_plantings_missing_harvest_events(self.year_obj.id)
@@ -1053,6 +1056,9 @@ class HarvestNeedsView(OperationsPlanningYearMixin, TemplateView):
                     weekly_sales_demand_count=weekly_sales_demand_count,
                     planning_year_id=self.year_obj.id,
                     planning_calendar_year=self.year_obj.year,
+                    iso_week=week_num,
+                    week_monday=wctx["week_monday"],
+                    week_sunday=wctx["week_sunday"],
                 ),
                 "weekly_order_handoff_url": weekly_order_handoff_url,
                 "weekly_order_handoff_channel_name": first_channel.name if first_channel else "",

@@ -5,6 +5,61 @@ Copy here is stable so route tests can assert on ``id`` keys or short titles.
 
 from __future__ import annotations
 
+from datetime import date
+
+
+def _harvest_staff_week_trace_suffix(
+    *,
+    planning_year_id: int | None,
+    planning_calendar_year: int | None,
+    iso_week: int | None,
+    week_monday: date | None,
+    week_sunday: date | None,
+) -> str:
+    """Concrete week/year identifiers for OP-7 / OP-8 / LIVE-4 (appended to diagnostic copy)."""
+    parts: list[str] = []
+    if planning_year_id is not None and planning_calendar_year is not None:
+        parts.append(
+            f"PlanningYear id {planning_year_id} (calendar year {planning_calendar_year})"
+        )
+    elif planning_year_id is not None:
+        parts.append(f"PlanningYear id {planning_year_id}")
+    elif planning_calendar_year is not None:
+        parts.append(f"calendar year {planning_calendar_year}")
+    if iso_week is not None:
+        parts.append(f"ISO week {iso_week}")
+    if week_monday is not None and week_sunday is not None:
+        parts.append(
+            f"harvest pick dates counted in {week_monday.isoformat()}–{week_sunday.isoformat()} "
+            "(inclusive, Monday–Sunday)"
+        )
+    if not parts:
+        return ""
+    return " Staff trace: " + "; ".join(parts) + "."
+
+
+def _append_week_trace_to_hints(
+    hints: list[dict],
+    *,
+    planning_year_id: int | None,
+    planning_calendar_year: int | None,
+    iso_week: int | None,
+    week_monday: date | None,
+    week_sunday: date | None,
+) -> list[dict[str, str]]:
+    suffix = _harvest_staff_week_trace_suffix(
+        planning_year_id=planning_year_id,
+        planning_calendar_year=planning_calendar_year,
+        iso_week=iso_week,
+        week_monday=week_monday,
+        week_sunday=week_sunday,
+    )
+    if not suffix:
+        return hints
+    for h in hints:
+        h["detail"] = (h.get("detail") or "") + suffix
+    return hints
+
 
 def harvest_surface_hints(
     *,
@@ -15,8 +70,15 @@ def harvest_surface_hints(
     planning_year_id: int | None = None,
     planning_calendar_year: int | None = None,
     harvest_supply_reaches_weekly_catalog: bool = True,
-) -> list[dict[str, str]]:
-    """Harvest needs / weekly harvest entry: explain empty or misleading weeks."""
+    iso_week: int | None = None,
+    week_monday: date | None = None,
+    week_sunday: date | None = None,
+) -> list[dict]:
+    """Harvest needs / weekly harvest entry: explain empty or misleading weeks.
+
+    Dicts are ``{id, title, detail}``; ``missing_generated_harvests`` may include
+    optional ``command`` (shell lines) rendered by ``core/_diagnostic_hints.html``.
+    """
     out: list[dict[str, str]] = []
 
     def _repair_cmd_year() -> str:
@@ -35,12 +97,19 @@ def harvest_surface_hints(
                 "id": "no_plantings",
                 "title": "No plantings for this planning year",
                 "detail": (
-                    "There are no plantings yet (excluding skipped/failed). "
+                    "There are no plantings yet (excluding skipped, failed, or revised). "
                     "Add plantings in the crop planner or switch the planning-year focus in the header."
                 ),
             }
         )
-        return out
+        return _append_week_trace_to_hints(
+            out,
+            planning_year_id=planning_year_id,
+            planning_calendar_year=planning_calendar_year,
+            iso_week=iso_week,
+            week_monday=week_monday,
+            week_sunday=week_sunday,
+        )
     if plantings_missing_harvest_events > 0:
         repair_lines = (
             f"This list is built from generated HarvestEvent rows. After import, from the repo root run "
@@ -48,11 +117,13 @@ def harvest_surface_hints(
             "when several years need repair. The command only adds missing rows; it does not overwrite picks "
             "that already have recorded harvest quantities."
         )
+        cmd_block = "\n".join([_repair_cmd_pyid(), _repair_cmd_year()])
         out.append(
             {
                 "id": "missing_generated_harvests",
                 "title": f"{plantings_missing_harvest_events} planting(s) lack harvest events",
                 "detail": repair_lines,
+                "command": cmd_block,
             }
         )
     if week_harvest_event_count == 0:
@@ -80,14 +151,20 @@ def harvest_surface_hints(
                 }
             )
         if plantings_missing_harvest_events == 0 and planting_count_excl_dead > 0:
+            week_phrase = ""
+            if iso_week is not None and week_monday and week_sunday:
+                week_phrase = (
+                    f"For ISO week {iso_week} ({week_monday.isoformat()}–{week_sunday.isoformat()}), "
+                )
             out.append(
                 {
                     "id": "no_harvest_events_this_iso_week",
                     "title": "No harvest picks fall in this ISO week",
                     "detail": (
-                        "Plantings have harvest events, but none use dates in this week. "
-                        "Confirm the planning year in the header matches the season you imported, "
-                        "then try another ISO week or widen each planting's first/last harvest window."
+                        f"{week_phrase}"
+                        "plantings have harvest events, but none use planned dates in this Monday–Sunday window. "
+                        "If the header planning year does not match the season you imported, switch it; "
+                        "otherwise try another ISO week or widen each planting's first/last harvest window."
                     ),
                 }
             )
@@ -123,7 +200,14 @@ def harvest_surface_hints(
                 ),
             }
         )
-    return out
+    return _append_week_trace_to_hints(
+        out,
+        planning_year_id=planning_year_id,
+        planning_calendar_year=planning_calendar_year,
+        iso_week=iso_week,
+        week_monday=week_monday,
+        week_sunday=week_sunday,
+    )
 
 
 def crop_plan_product_scope_hints(weekly_order_products_scope: str) -> list[dict[str, str]]:
@@ -213,6 +297,7 @@ def weekly_order_surface_hints(
     duplicate_channel_name_detected: bool = False,
     prior_year_calendar_years: list[int] | None = None,
     iso_week_has_prior_actuals_any_channel: bool = False,
+    listed_product_crops_without_harvest_pick: int = 0,
 ) -> list[dict[str, str]]:
     """Weekly channel order: demand rollup, historical joins, supply (pairs with LIVE-1/3/4/LIVE-10)."""
     out: list[dict[str, str]] = []
@@ -265,6 +350,23 @@ def weekly_order_surface_hints(
             }
         )
     out.extend(crop_plan_product_scope_hints(weekly_order_products_scope))
+    if (
+        weekly_order_products_scope == "crop_plan_week"
+        and listed_product_crops_without_harvest_pick > 0
+    ):
+        out.append(
+            {
+                "id": "weekly_order_products_harvest_window_but_no_pick_this_week",
+                "title": "Some listed crops have no harvest pick dated in this ISO week",
+                "detail": (
+                    "Plantings overlap this ISO week on planned harvest dates, but there are no "
+                    "`HarvestEvent` rows dated in this week for one or more of those crops — supply can stay "
+                    "zero while products remain in the grid (early shoulder, or generated picks not dated here yet). "
+                    "This is catalog vs in-week harvest scope (LIVE-7), not import semantics. Compare adjacent ISO "
+                    "weeks or read the LIVE-2 shoulder hint when no planting harvest window matched this week."
+                ),
+            }
+        )
     if not year_cols:
         out.append(
             {

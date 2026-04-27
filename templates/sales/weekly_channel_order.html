@@ -26,11 +26,13 @@
 {% if supply_line_count == 0 and planting_count_excl_dead %}
 <p class="muted" data-weekly-supply-all-zero="1">
     <strong>Harvest supply (~sale units) is zero for every product this week.</strong>
+    Scope: PlanningYear id <strong>{{ year.id }}</strong> (calendar <strong>{{ year.year }}</strong>), ISO week <strong>{{ week_num }}</strong>
+    ({{ week_monday|date:"Y-m-d" }}–{{ week_sunday|date:"Y-m-d" }}, same Monday–Sunday window as harvest needs and PLAN rows).
     {% if plantings_missing_harvest_events %}
     That is expected until generated <code>HarvestEvent</code> rows exist for plantings that have none yet — use <code>repair_planting_events</code> as in the staff diagnostics above (same dependency as
     <a href="{% url 'operations:weekops_needs' week=week_num %}">harvest needs</a>).
     {% elif week_harvest_event_count == 0 %}
-    There are plantings for this planning year, but no harvest picks use dates in this ISO week, so zeros are correct — try another week or adjust first/last harvest windows on plantings.
+    There are plantings for this planning year, but no harvest picks use planned dates in that window, so zeros are correct — try another week or adjust first/last harvest windows on plantings.
     {% elif not harvest_supply_reaches_catalog %}
     Harvest events exist this week, but their crops do not match any active <code>CropSalesFormat</code> crop — add or activate a product for those crops.
     {% else %}

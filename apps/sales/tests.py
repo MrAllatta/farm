@@ -406,6 +406,48 @@ class WeeklyChannelOrderViewTests(TestCase):
         # weekly_yield_per_bedfoot = 1/4; * 40 bedfeet => 10 per pick
         self.assertContains(r, "10.0")
 
+    def test_weekly_order_supply_diagnostics_show_repair_when_plantings_missing_harvest_events(self):
+        """LIVE-4 / OP-7: zero harvest supply with plantings but no generated events — repair CTA in diagnostics."""
+        wk = 31
+        mon = Week(2026, wk).monday()
+        crop_season = CropBySeason.objects.create(
+            crop=self.product.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+        Planting.objects.create(
+            planning_year=self.py_2026,
+            crop=self.product.crop,
+            crop_season=crop_season,
+            block=self.block,
+            bed_start=5,
+            bed_end=5,
+            planned_bedfeet=40,
+            planned_plant_date=mon - timedelta(weeks=2),
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon + timedelta(weeks=2),
+            planned_total_yield=Decimal("40.00"),
+            status="growing",
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'data-empty-reason="missing_generated_harvests"')
+        self.assertContains(
+            r,
+            f'make manage ARGS="repair_planting_events --planning-year-id {self.py_2026.id}"',
+        )
+        self.assertContains(r, "Staff trace:")
+        self.assertIn(b"data-weekly-supply-all-zero=", r.content)
+
     def test_weekly_order_zero_supply_explains_iso_week_when_events_elsewhere(self):
         """LIVE-4: plantings have harvest events, but none in the requested ISO week — honest empty copy."""
         wk_view = 15
@@ -447,7 +489,9 @@ class WeeklyChannelOrderViewTests(TestCase):
         r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"data-weekly-supply-all-zero=", r.content)
-        self.assertContains(r, "no harvest picks use dates in this ISO week")
+        self.assertContains(r, "PlanningYear id")
+        self.assertContains(r, str(self.py_2026.id))
+        self.assertContains(r, "no harvest picks use planned dates in that window")
 
     def test_weekly_order_save_persists_plan_row(self):
         wk = 22

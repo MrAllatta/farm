@@ -12,6 +12,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from django.contrib.auth import get_user_model
+from django.core.management.color import no_style
 from django.test import Client, TestCase
 from django.urls import reverse
 from isoweek import Week
@@ -1030,6 +1031,124 @@ class PlantingImportBedRangeTests(TestCase):
         cmd = self._make_import_command()
         cmd._import_plantings(self.year_int, str(year_dir))
         self.assertEqual(Planting.objects.filter(planning_year=self.planning_year).count(), 2)
+
+
+class PlantingImportFarDateSkipFlagTests(TestCase):
+    """LIVE-17/B: optional skip when planned plant date is >1 calendar year from folder year."""
+
+    def setUp(self):
+        self.folder_year = 2026
+        self.planning_year = PlanningYear.objects.create(year=self.folder_year, status="planning")
+        self.block = Block.objects.create(
+            name="Z9",
+            block_type="field",
+            num_beds=20,
+            bed_width_feet=Decimal("4.0"),
+            bedfeet_per_bed=100,
+            walk_route_order=99,
+        )
+        self.crop = CropInfo.objects.create(
+            name="Zebra Chard",
+            crop_type="Greens",
+            fresh_or_storage="fresh",
+            harvest_unit="bunches",
+            avg_unit_weight=Decimal("1.00"),
+            nursery_weeks=0,
+        )
+        CropBySeason.objects.create(
+            crop=self.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=30,
+            rows_per_bed=4,
+        )
+
+    def _base_cmd(self, skip_flag: bool):
+        from core.management.commands.import_historical_data import Command
+
+        cmd = Command()
+        cmd.stdout = StringIO()
+        cmd.stderr = StringIO()
+        cmd.style = no_style()
+        cmd.row_errors = []
+        cmd.row_warnings = []
+        cmd.skip_reasons = []
+        cmd.stats = defaultdict(
+            lambda: {
+                "created": 0,
+                "updated": 0,
+                "skipped": 0,
+                "error": 0,
+                "processed": 0,
+                "errors": 0,
+            }
+        )
+        cmd.write_disabled = False
+        cmd.validate_only = False
+        cmd.skip_plantings_when_planned_date_over_one_year_from_folder_year = skip_flag
+        cmd.planning_year_cache = {self.folder_year: self.planning_year}
+        cmd.crop_cache = {}
+        cmd.block_cache = {}
+        cmd.planting_cache = {}
+        cmd.crop_season_cache = {}
+        return cmd
+
+    def _write_plantings_csv(self, year_dir: Path, plant_date: str):
+        csv_path = year_dir / "plantings.csv"
+        row = {
+            "Crop": "Zebra Chard",
+            "Variety": "Bright Lights",
+            "Block": "Z9",
+            "Bed Start": "1",
+            "Bed End": "1",
+            "Planned Plant Date": plant_date,
+            "Planned Bedfeet": "100",
+            "Status": "Planned",
+        }
+        with csv_path.open("w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(row.keys()))
+            w.writeheader()
+            w.writerow(row)
+
+    def test_far_plant_date_imports_with_warning_when_flag_off(self):
+        tmp = TemporaryDirectory()
+        year_dir = Path(tmp.name) / f"year_{self.folder_year}"
+        year_dir.mkdir(parents=True)
+        self._write_plantings_csv(year_dir, "2019-04-15")
+        cmd = self._base_cmd(skip_flag=False)
+        cmd._import_plantings(self.folder_year, str(year_dir))
+        self.assertEqual(Planting.objects.filter(planning_year=self.planning_year).count(), 1)
+        self.assertEqual(len(cmd.row_warnings), 1)
+        self.assertEqual(cmd.row_warnings[0]["code"], "planting_date_year_mismatch")
+        self.assertEqual(len(cmd.skip_reasons), 0)
+
+    def test_far_plant_date_skips_with_skip_reason_when_flag_on(self):
+        tmp = TemporaryDirectory()
+        year_dir = Path(tmp.name) / f"year_{self.folder_year}"
+        year_dir.mkdir(parents=True)
+        self._write_plantings_csv(year_dir, "2019-04-15")
+        cmd = self._base_cmd(skip_flag=True)
+        cmd._import_plantings(self.folder_year, str(year_dir))
+        self.assertEqual(Planting.objects.filter(planning_year=self.planning_year).count(), 0)
+        self.assertEqual(len(cmd.row_warnings), 1)
+        self.assertEqual(cmd.row_warnings[0]["code"], "planting_date_year_mismatch")
+        self.assertEqual(len(cmd.skip_reasons), 1)
+        self.assertEqual(cmd.skip_reasons[0]["code"], "planting_skipped_planned_date_far_from_folder_year")
+
+    def test_adjacent_calendar_year_imports_without_warning_even_when_flag_on(self):
+        """|folder_year - plant_date.year| <= 1: no LIVE-8 warning; strict flag does not skip."""
+        tmp = TemporaryDirectory()
+        year_dir = Path(tmp.name) / f"year_{self.folder_year}"
+        year_dir.mkdir(parents=True)
+        self._write_plantings_csv(year_dir, "2025-12-01")
+        cmd = self._base_cmd(skip_flag=True)
+        cmd._import_plantings(self.folder_year, str(year_dir))
+        self.assertEqual(Planting.objects.filter(planning_year=self.planning_year).count(), 1)
+        self.assertEqual(len(cmd.row_warnings), 0)
+        self.assertEqual(len(cmd.skip_reasons), 0)
 
 
 class NurseryParityAndDerivedOnlyTests(TestCase):

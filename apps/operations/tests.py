@@ -522,7 +522,8 @@ class WeekOpsViewTests(TestCase):
             r,
             f'make manage ARGS="repair_planting_events --planning-year-id {self.year.id}"',
         )
-        self.assertContains(r, "Fix blank harvest lists after import")
+        self.assertContains(r, "Staff trace:")
+        self.assertContains(r, "ISO week 18")
 
     def test_harvest_needs_explains_weekly_order_without_supply(self):
         mon = Week(2026, 18).monday()
@@ -567,6 +568,8 @@ class WeekOpsViewTests(TestCase):
         r = self.client.get(reverse("operations:weekops_needs", kwargs={"week": 1}))
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"data-empty-reason=\"no_harvest_events_this_iso_week\"", r.content)
+        self.assertContains(r, "For ISO week 1")
+        self.assertContains(r, "Staff trace:")
 
     def test_harvest_needs_shows_weekly_order_handoff_line_summary(self):
         mon = Week(2026, 18).monday()
@@ -632,6 +635,28 @@ class HarvestSurfaceHintsTests(TestCase):
             "harvest_supply_crop_mismatch_weekly_order",
             [h["id"] for h in hints],
         )
+
+    def test_missing_generated_hint_includes_command_and_staff_trace(self):
+        from datetime import date
+
+        from core.ui_diagnostics import harvest_surface_hints
+
+        hints = harvest_surface_hints(
+            week_harvest_event_count=0,
+            planting_count_excl_dead=2,
+            plantings_missing_harvest_events=1,
+            weekly_sales_demand_count=0,
+            planning_year_id=9,
+            planning_calendar_year=2027,
+            iso_week=22,
+            week_monday=date(2027, 5, 31),
+            week_sunday=date(2027, 6, 6),
+        )
+        miss = next(h for h in hints if h["id"] == "missing_generated_harvests")
+        self.assertIn("command", miss)
+        self.assertIn("repair_planting_events --planning-year-id 9", miss["command"])
+        self.assertIn("Staff trace:", miss["detail"])
+        self.assertIn("ISO week 22", miss["detail"])
 
 
 class InventoryYearCarryoverCopyTests(TestCase):

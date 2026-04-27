@@ -33,19 +33,6 @@
 
 {% include "core/_diagnostic_hints.html" with hints=diagnostic_hints only %}
 
-{% if plantings_missing_harvest_events %}
-<div class="no-print panel" style="margin-bottom:1rem; border-color:#f59e0b; background:#fffbeb;">
-    <h2 style="margin-top:0; font-size:1.05rem;">Fix blank harvest lists after import</h2>
-    <p class="muted" style="margin-bottom:0.5rem;">
-        {{ plantings_missing_harvest_events }} planting(s) in <strong>{{ year.year }}</strong> have a harvest window
-        but no generated <code>HarvestEvent</code> rows yet. Harvest needs, sales-plan supply, and weekly-order harvest columns all read from those events until repair runs.
-    </p>
-    <p class="muted" style="margin-bottom:0.35rem;">From the <strong>farm-planning</strong> repository root (so <code>Makefile</code> loads <code>.env</code>), run:</p>
-    <pre style="margin:0 0 0.5rem 0; padding:0.65rem 0.85rem; background:#1e293b; color:#e2e8f0; border-radius:6px; font-size:0.88rem; overflow-x:auto;">make manage ARGS="repair_planting_events --planning-year-id {{ year.id }}"</pre>
-    <p class="muted" style="margin:0; font-size:0.92rem;">Alternative for several planning years in one calendar year: <code>make manage ARGS="repair_planting_events --year {{ year.year }}"</code></p>
-</div>
-{% endif %}
-
 {% if week_rollup_by_sales_category %}
 <details class="weekops-rollup no-print" style="margin-bottom:1rem;">
     <summary>Planned sales (PLAN) this week by category (Markets / Orders / CSA)</summary>
@@ -74,9 +61,9 @@
 <section class="panel no-print" style="margin-bottom:1rem;">
     {% url 'operations:weekops_walk' week=week_num as hn_walk_url %}
     {% if weekly_order_handoff_url %}
-    {% include "core/_empty_state_panel.html" with title="No harvest picks fall in this ISO week" body="The diagnostic cards above explain the usual causes: wrong week, planning-year header mismatch, plantings without generated HarvestEvent rows after import, or harvest windows that do not include this week. If you already saved a weekly channel order for this week, demand can still show in the rollups while this list stays empty until picks are dated here." action_url=weekly_order_handoff_url action_label="Open weekly channel order" empty_reason="harvest_needs_zero_events_week" only %}
+    {% include "core/_empty_state_panel.html" with title="No harvest picks fall in this ISO week" body="Use the staff diagnostics above first: they distinguish no plantings, missing generated HarvestEvent rows (repair command), demand without supply in this Monday–Sunday window, wrong ISO week vs harvest windows, and crop/product grid mismatch. If you saved a weekly channel order for this week, rollups can still show demand while this list stays empty until picks are dated in the window shown in the trace line." action_url=weekly_order_handoff_url action_label="Open weekly channel order" empty_reason="harvest_needs_zero_events_week" only %}
     {% else %}
-    {% include "core/_empty_state_panel.html" with title="No harvest picks fall in this ISO week" body="The diagnostic cards above explain the usual causes: wrong week, planning-year header mismatch, plantings without generated HarvestEvent rows after import, or harvest windows that do not include this week. Configure a default sales channel to link a weekly order from this panel." action_url=hn_walk_url action_label="Field walk (this week)" empty_reason="harvest_needs_zero_events_week" only %}
+    {% include "core/_empty_state_panel.html" with title="No harvest picks fall in this ISO week" body="Use the staff diagnostics above first: they distinguish no plantings, missing generated HarvestEvent rows (repair command), demand without supply in this Monday–Sunday window, wrong ISO week vs harvest windows, and crop/product grid mismatch. Configure a default sales channel to link a weekly order from this panel." action_url=hn_walk_url action_label="Field walk (this week)" empty_reason="harvest_needs_zero_events_week" only %}
     {% endif %}
 </section>
 {% endif %}

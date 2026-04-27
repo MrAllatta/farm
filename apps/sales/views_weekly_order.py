@@ -522,6 +522,11 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
 
         product_crop_ids = {p.crop_id for p in products}
         harvest_supply_reaches_catalog = bool(harvest_crop_ids & product_crop_ids)
+        listed_product_crops_without_harvest_pick = (
+            len(product_crop_ids - harvest_crop_ids)
+            if weekly_order_products_scope == "crop_plan_week"
+            else 0
+        )
 
         supply_diagnostic_hints = harvest_surface_hints(
             week_harvest_event_count=week_harvest_event_count,
@@ -531,6 +536,9 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             planning_year_id=self.year_obj.id,
             planning_calendar_year=cal_year,
             harvest_supply_reaches_weekly_catalog=harvest_supply_reaches_catalog,
+            iso_week=week_num,
+            week_monday=week_monday,
+            week_sunday=week_sunday,
         )
         supply_diagnostic_hints.extend(
             weekly_order_surface_hints(
@@ -546,6 +554,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 duplicate_channel_name_detected=duplicate_channel_name_detected,
                 prior_year_calendar_years=list(prior_year_ints),
                 iso_week_has_prior_actuals_any_channel=iso_week_has_prior_actuals_any_channel,
+                listed_product_crops_without_harvest_pick=listed_product_crops_without_harvest_pick,
             )
         )
 

@@ -46,7 +46,8 @@ from core.operator_scope import (
     active_crop_info_for_planning_year,
     operator_sales_channels,
 )
-from core.ui_diagnostics import crop_plan_product_scope_hints
+from core.import_sample_guard import live12_block_message_for_sample_into_dev_sqlite
+from core.ui_diagnostics import crop_plan_product_scope_hints, weekly_order_surface_hints
 from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES
 
 
@@ -176,6 +177,109 @@ class LiveNineFrozenCleanBundleTests(TransactionTestCase):
         self.assertEqual(h[0]["id"], "weekly_order_products_not_this_iso_week")
 
 
+class Live12ImportSampleGuardTests(TestCase):
+    def test_blocks_repo_sample_path_into_default_sqlite_without_sqlite_env(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            db_path = base / "db.sqlite3"
+            db_path.write_bytes(b"")
+            msg = live12_block_message_for_sample_into_dev_sqlite(
+                data_dir=str(sample),
+                validate_only=False,
+                dry_run=False,
+                farm_sqlite_env="",
+                db_engine="django.db.backends.sqlite3",
+                db_name=str(db_path),
+                base_dir=base,
+            )
+            self.assertIsNotNone(msg)
+            self.assertIn("LIVE-12", msg)
+
+    def test_allows_validate_only_same_paths(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            db_path = base / "db.sqlite3"
+            msg = live12_block_message_for_sample_into_dev_sqlite(
+                data_dir=str(sample),
+                validate_only=True,
+                dry_run=False,
+                farm_sqlite_env="",
+                db_engine="django.db.backends.sqlite3",
+                db_name=str(db_path),
+                base_dir=base,
+            )
+            self.assertIsNone(msg)
+
+    def test_allows_when_farm_sqlite_path_env_set(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            db_path = base / "db.sqlite3"
+            msg = live12_block_message_for_sample_into_dev_sqlite(
+                data_dir=str(sample),
+                validate_only=False,
+                dry_run=False,
+                farm_sqlite_env="/tmp/other.sqlite3",
+                db_engine="django.db.backends.sqlite3",
+                db_name=str(db_path),
+                base_dir=base,
+            )
+            self.assertIsNone(msg)
+
+    def test_allows_escape_flag(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            db_path = base / "db.sqlite3"
+            msg = live12_block_message_for_sample_into_dev_sqlite(
+                data_dir=str(sample),
+                validate_only=False,
+                dry_run=False,
+                farm_sqlite_env="",
+                db_engine="django.db.backends.sqlite3",
+                db_name=str(db_path),
+                base_dir=base,
+                allow_escape=True,
+            )
+            self.assertIsNone(msg)
+
+
+class Live7WeeklyOrderHarvestScopeHintTests(TestCase):
+    def test_surface_hint_when_listed_crops_miss_harvest_pick(self):
+        hints = weekly_order_surface_hints(
+            plan_raw_week=0,
+            plan_visible_week=0,
+            namesake_actuals_on_other_channel=False,
+            channel_name="Farmers Market",
+            has_any_historical=False,
+            weekly_order_products_scope="crop_plan_week",
+            listed_product_crops_without_harvest_pick=2,
+        )
+        self.assertTrue(
+            any(h["id"] == "weekly_order_products_harvest_window_but_no_pick_this_week" for h in hints)
+        )
+
+    def test_no_harvest_pick_hint_when_scope_not_week_overlap(self):
+        hints = weekly_order_surface_hints(
+            plan_raw_week=0,
+            plan_visible_week=0,
+            namesake_actuals_on_other_channel=False,
+            channel_name="Farmers Market",
+            has_any_historical=False,
+            weekly_order_products_scope="crop_plan_inexact_week",
+            listed_product_crops_without_harvest_pick=3,
+        )
+        self.assertFalse(
+            any(h["id"] == "weekly_order_products_harvest_window_but_no_pick_this_week" for h in hints)
+        )
+
+
 class ImportHistoricalDataCommandTests(TestCase):
     SUMMARY_TOP_LEVEL_KEYS = {"schema_version", "status", "fatal_error", "run", "results"}
     SUMMARY_RUN_KEYS = {
@@ -191,6 +295,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "dry_run",
         "atomic_apply",
         "verbose",
+        "skip_plantings_when_planned_date_over_one_year_from_folder_year",
     }
     SUMMARY_RESULTS_KEYS = {
         "models",

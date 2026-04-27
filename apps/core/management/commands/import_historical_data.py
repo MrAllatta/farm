@@ -21,9 +21,12 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 from django.db import transaction, DatabaseError, IntegrityError
+
+from core.import_sample_guard import live12_block_message_for_sample_into_dev_sqlite
 
 from reference.models import (
     CropInfo,
@@ -241,6 +244,24 @@ class Command(BaseCommand):
             default=None,
             help="Allow apply without Tier-1 reference CSVs when target tables are empty (unsafe for fresh DBs)",
         )
+        parser.add_argument(
+            "--skip-plantings-when-planned-date-over-one-year-from-folder-year",
+            action="store_true",
+            help=(
+                "LIVE-17/B: skip planting CSV rows when Planned Plant Date's calendar year is more than "
+                "one year away from the year_NNNN folder (same threshold as planting_date_year_mismatch). "
+                "Default: off (warn only). Stricter calendar-year==folder rules remain DESIGN_GATE."
+            ),
+        )
+        parser.add_argument(
+            "--allow-sample-into-repo-dev-sqlite",
+            action="store_true",
+            help=(
+                "LIVE-12 escape hatch: allow applying committed farm/data/sample_import into the "
+                "default farm/db.sqlite3 when FARM_SQLITE_PATH is unset. Prefer `make import-sample` "
+                "or set FARM_SQLITE_PATH to a throwaway sqlite file."
+            ),
+        )
 
     def handle(self, *args, **options):
         self.data_dir = options["data_dir"]
@@ -269,6 +290,21 @@ class Command(BaseCommand):
             self.require_reference = self.strict_apply
         else:
             self.require_reference = bool(options["require_reference"])
+        self.skip_plantings_when_planned_date_over_one_year_from_folder_year = bool(
+            options.get("skip_plantings_when_planned_date_over_one_year_from_folder_year")
+        )
+        _live12_msg = live12_block_message_for_sample_into_dev_sqlite(
+            data_dir=self.data_dir,
+            validate_only=self.validate_only,
+            dry_run=self.dry_run,
+            farm_sqlite_env=os.environ.get("FARM_SQLITE_PATH", ""),
+            db_engine=settings.DATABASES["default"]["ENGINE"],
+            db_name=settings.DATABASES["default"]["NAME"],
+            base_dir=settings.BASE_DIR,
+            allow_escape=bool(options.get("allow_sample_into_repo_dev_sqlite")),
+        )
+        if _live12_msg:
+            raise CommandError(_live12_msg)
         requested_summary_path = options.get("summary_json")
         self.run_started_at = datetime.utcnow()
         # Use microsecond precision to avoid artifact path collisions on rapid retries.
@@ -2087,6 +2123,21 @@ class Command(BaseCommand):
         plant_date = self._parse_date(plant_date_str)
         if abs(plant_date.year - year) > 1:
             self._record_planting_date_year_mismatch(year, i, plant_date)
+            if self.skip_plantings_when_planned_date_over_one_year_from_folder_year:
+                self._record_skip_reason(
+                    "Planting",
+                    i,
+                    "planting_skipped_planned_date_far_from_folder_year",
+                    "plantings.planned_plant_date",
+                    (
+                        f"Skipped row: Planned Plant Date {plant_date.isoformat()} is more than one year from "
+                        f"bundle folder year {year} (optional strict mode). Move the row to the correct "
+                        f"year_<Y>/plantings.csv or correct the date, then re-import without this flag or "
+                        f"leave ignored rows out of the bundle."
+                    ),
+                )
+                self.stats["Planting"]["skipped"] += 1
+                return None
         variety_raw = row.get("Variety", "") or ""
         variety_text = self._normalize_planting_variety_text(variety_raw)
         variety_obj = self._resolve_planting_variety_fk(crop, variety_text)
@@ -5182,6 +5233,7 @@ class Command(BaseCommand):
                 "dry_run": self.dry_run,
                 "atomic_apply": self.atomic_apply,
                 "verbose": self.verbose,
+                "skip_plantings_when_planned_date_over_one_year_from_folder_year": self.skip_plantings_when_planned_date_over_one_year_from_folder_year,
             },
             "results": {
                 "models": per_model,
