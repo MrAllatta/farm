@@ -128,6 +128,19 @@ class SalesPlanShortageTests(TestCase):
         self.assertGreater(row["row_total_supply"], Decimal("0"))
         self.assertIsNotNone(row["row_ratio"])
 
+    def test_focus_product_surfaces_yearly_actuals_drilldown_link(self):
+        response = self.client.get(
+            reverse("planning:sales_plan_by_channel"),
+            {"channel": str(self.channel.pk), "focus_product": str(self.product.pk)},
+        )
+        self.assertEqual(response.status_code, 200)
+        url = response.context["yearly_actuals_focus_url"]
+        self.assertIsNotNone(url)
+        self.assertIn("/sales/weekly-order/channel/", url)
+        self.assertIn("/year-summary/", url)
+        self.assertIn("highlight_week=", url)
+        self.assertContains(response, "Open full-year imported ACTUAL weeks")
+
 
 class SalesPlanProductScopeTests(TestCase):
     """LIVE-2: sales plan product grid uses active_crop_sales_formats_for_planning_year."""

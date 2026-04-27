@@ -40,8 +40,15 @@
     <p class="muted" style="margin:0.75rem 0 0 0;">
         Same ISO week prior-year <code>ACTUAL</code> sales (and per-year “no rows” markers) live on the
         weekly channel order grid — use them alongside this annual plan before committing the week’s outlet lines
-        into harvest needs.
+        into harvest needs. The weekly order also links to a <strong>full-year</strong> per-product ACTUAL week list
+        when you need every ISO week that had history for one product.
     </p>
+    {% if yearly_actuals_focus_url %}
+    <p class="muted" style="margin:0.5rem 0 0 0;">
+        <a href="{{ yearly_actuals_focus_url }}">Open full-year imported ACTUAL weeks</a>
+        for the focused product on {{ weekly_order_channel.name }} (current ISO week highlighted).
+    </p>
+    {% endif %}
 </section>
 {% endif %}
 

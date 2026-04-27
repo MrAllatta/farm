@@ -198,6 +198,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "row_errors",
         "row_warnings",
         "row_warning_summary",
+        "row_warning_code_totals",
         "pack_skip_rows",
         "pack_skip_summary",
         "failure_signatures",
@@ -563,6 +564,18 @@ class ImportHistoricalDataCommandTests(TestCase):
         self.assertIsInstance(summary["results"]["row_errors"], list)
         self.assertIsInstance(summary["results"]["row_warnings"], list)
         self.assertIsInstance(summary["results"]["row_warning_summary"], list)
+        code_totals = summary["results"]["row_warning_code_totals"]
+        self.assertIsInstance(code_totals, dict)
+        self.assertEqual(list(code_totals.keys()), sorted(code_totals.keys()))
+        for k, v in code_totals.items():
+            self.assertIsInstance(k, str)
+            self.assertIsInstance(v, int)
+            self.assertGreater(v, 0)
+        self.assertEqual(
+            sum(code_totals.values()),
+            len(summary["results"]["row_warnings"]),
+            msg="row_warning_code_totals must account for every row warning",
+        )
         self.assertIsInstance(summary["results"]["pack_skip_rows"], list)
         self.assertIsInstance(summary["results"]["pack_skip_summary"], list)
         self.assertIsInstance(summary["results"]["failure_signatures"], list)
@@ -1012,6 +1025,21 @@ class ImportHistoricalDataCommandTests(TestCase):
         w0 = next(w for w in command.row_warnings if w.get("code") == "import_year_range_skips_disk_year_folder")
         self.assertIn("On-disk year_* folders span 2022\u20132023", w0["message"])
         self.assertIn("import window 2024\u20132025", w0["message"])
+
+    def test_row_warning_code_totals_aggregates_by_sorted_code(self):
+        from core.management.commands.import_historical_data import Command
+
+        command = Command()
+        command.row_warnings = [
+            {"model": "Planting", "row": 9, "code": "z_code", "field_path": "x", "message": "m"},
+            {"model": "Planting", "row": 2, "code": "a_code", "field_path": "x", "message": "m1"},
+            {"model": "Planting", "row": 4, "code": "a_code", "field_path": "x", "message": "m2"},
+            {"model": "ImportRun", "row": 1, "code": "", "field_path": "run", "message": "no code → unknown"},
+        ]
+        self.assertEqual(
+            command._build_row_warning_code_totals(),
+            {"a_code": 2, "unknown": 1, "z_code": 1},
+        )
 
     def test_row_warning_summary_groups_codes_with_operator_guidance(self):
         from core.management.commands.import_historical_data import Command

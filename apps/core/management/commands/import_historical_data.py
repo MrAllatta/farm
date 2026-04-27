@@ -5095,6 +5095,14 @@ class Command(BaseCommand):
             row["rows"] = sorted(set(row["rows"]))
         return summary
 
+    def _build_row_warning_code_totals(self):
+        """LIVE-11: compact per-warning-code counts for `--summary-json` dashboards."""
+        counts = defaultdict(int)
+        for item in self.row_warnings:
+            code = (item.get("code") or "").strip() or "unknown"
+            counts[code] += 1
+        return {code: counts[code] for code in sorted(counts)}
+
     def _aggregate_import_totals(self):
         """Roll up per-model counters into aggregate totals (canonical summary.totals)."""
         totals = {"created": 0, "updated": 0, "skipped": 0, "error": 0}
@@ -5169,6 +5177,7 @@ class Command(BaseCommand):
                 "row_errors": self.row_errors,
                 "row_warnings": self.row_warnings,
                 "row_warning_summary": self._build_row_warning_summary(),
+                "row_warning_code_totals": self._build_row_warning_code_totals(),
                 "pack_skip_rows": self.skip_reasons,
                 "pack_skip_summary": self._build_pack_skip_summary(),
                 "failure_signatures": failure_signatures,

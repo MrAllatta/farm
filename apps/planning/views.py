@@ -1919,6 +1919,18 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             if weekly_order_channel
             else None
         )
+        yearly_actuals_focus_url = None
+        if weekly_order_channel and sales_plan_focus_product_id:
+            yearly_actuals_focus_url = (
+                reverse(
+                    "sales:product_yearly_actuals_summary",
+                    kwargs={
+                        "channel_id": weekly_order_channel.id,
+                        "product_id": sales_plan_focus_product_id,
+                    },
+                )
+                + f"?highlight_week={weekly_order_week}&from_week={weekly_order_week}"
+            )
 
         ctx.update(
             {
@@ -1940,6 +1952,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "weekly_order_week": weekly_order_week,
                 "weekly_order_url": weekly_order_url,
                 "sales_plan_focus_product_id": sales_plan_focus_product_id,
+                "yearly_actuals_focus_url": yearly_actuals_focus_url,
             }
         )
         return ctx
