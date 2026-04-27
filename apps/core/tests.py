@@ -4208,26 +4208,6 @@ class StageA2OfflineConnectorTests(TestCase):
         )
 
 
-class ImportReferenceDataCommandTests(TestCase):
-    def _write_csv(self, data_dir, name, lines):
-        Path(data_dir, name).write_text("\n".join(lines), encoding="utf-8")
-
-    def test_import_channels_continues_after_malformed_row(self):
-        with TemporaryDirectory() as data_dir:
-            self._write_csv(
-                data_dir,
-                "sales_channels.csv",
-                [
-                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
-                    "Farm Stand,Saturday,1,52,$500,false,1",
-                    "Broken Channel,Friday,1,52,$not-a-number,false,2",
-                    "CSA,Tuesday + Friday,1,40,$250,true,3",
-                ],
-            )
-            call_command("import_reference_data", data_dir)
-            self.assertEqual(SalesChannel.objects.count(), 2)
-
-
 class PrimaryRouteSmokeTests(TestCase):
     REQUIRED_NAMESPACES = {"core", "reference", "planning", "operations", "sales", "reports"}
     MIN_REGISTERED_ROUTES_BY_NAMESPACE = {
@@ -6143,6 +6123,21 @@ class ImportReferenceDataCommandTests(TestCase):
     def _write_csv(self, data_dir, name, lines):
         Path(data_dir, name).write_text("\n".join(lines), encoding="utf-8")
 
+    def test_import_channels_continues_after_malformed_row(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_csv(
+                data_dir,
+                "sales_channels.csv",
+                [
+                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                    "Farm Stand,Saturday,1,52,$500,false,1",
+                    "Broken Channel,Friday,1,52,$not-a-number,false,2",
+                    "CSA,Tuesday + Friday,1,40,$250,true,3",
+                ],
+            )
+            call_command("import_reference_data", data_dir)
+            self.assertEqual(SalesChannel.objects.count(), 2)
+
     def _write_reference_fixture(self, data_dir):
         self._write_csv(
             data_dir,
@@ -6236,6 +6231,11 @@ class ImportReferenceDataCommandTests(TestCase):
             season = CropBySeason.objects.get(crop=crop, block_type="field")
             self.assertEqual(season.dtm_days, 65)
             self.assertEqual(str(season.total_yield_per_bedfoot), "1.20")
+            self.assertEqual(season.sheet_planned_wtm_weeks, Decimal("9.3"))
+            self.assertEqual(
+                season.sheet_actual_or_planned_weekly_yield_per_bedfoot, Decimal("0.2")
+            )
+            self.assertEqual(season.sheet_weekly_yield_forecast, Decimal("12"))
 
             self.assertEqual(SalesChannel.objects.count(), 1)
             channel = SalesChannel.objects.get(name="Farm Stand")

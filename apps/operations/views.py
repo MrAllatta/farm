@@ -899,14 +899,25 @@ class PlantingRecordView(OperationsPlanningYearMixin, TemplateView):
         weekly_yield_per_bedfoot = None
         weekly_yield_forecast = None
         if planting.crop_season:
-            harvest_weeks = planting.crop_season.harvest_weeks or 0
-            if planting.crop_season.dtm_days:
-                planned_wtm_weeks = round(planting.crop_season.dtm_days / 7.0, 1)
+            cs = planting.crop_season
+            harvest_weeks = cs.harvest_weeks or 0
+            if cs.sheet_planned_wtm_weeks is not None:
+                planned_wtm_weeks = float(cs.sheet_planned_wtm_weeks)
+            elif cs.dtm_days:
+                planned_wtm_weeks = round(cs.dtm_days / 7.0, 1)
             if harvest_weeks:
-                weekly_yield_per_bedfoot = (
-                    planting.crop_season.total_yield_per_bedfoot / Decimal(harvest_weeks)
-                )
-                weekly_yield_forecast = planting.planned_total_yield / Decimal(harvest_weeks)
+                if cs.sheet_actual_or_planned_weekly_yield_per_bedfoot is not None:
+                    weekly_yield_per_bedfoot = cs.sheet_actual_or_planned_weekly_yield_per_bedfoot
+                else:
+                    weekly_yield_per_bedfoot = cs.total_yield_per_bedfoot / Decimal(
+                        harvest_weeks
+                    )
+                if cs.sheet_weekly_yield_forecast is not None:
+                    weekly_yield_forecast = cs.sheet_weekly_yield_forecast
+                else:
+                    weekly_yield_forecast = planting.planned_total_yield / Decimal(
+                        harvest_weeks
+                    )
         ctx.update(
             {
                 "year": self.year_obj,

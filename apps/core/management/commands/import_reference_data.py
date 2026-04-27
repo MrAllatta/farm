@@ -384,6 +384,17 @@ class Command(BaseCommand):
                         skipped += 1
                         continue
 
+                    planned_wtm_raw = row.get("Planned WTM", "").strip()
+                    sheet_planned_wtm_weeks = self._dec_or_none(planned_wtm_raw)
+                    weekly_yield_row_raw = row.get(
+                        "Actual or Planned Weekly Yield per Bedfoot", ""
+                    ).strip()
+                    sheet_actual_or_planned_weekly_yield_per_bedfoot = self._dec_or_none(
+                        weekly_yield_row_raw
+                    )
+                    forecast_raw = row.get("Weekly Yield Forecast", "").strip()
+                    sheet_weekly_yield_forecast = self._dec_or_none(forecast_raw)
+
                     data = {
                         "field_week_start": self._int(row.get("Field Week Start", 1)),
                         "field_week_end": self._int(row.get("Field Week End", 52)),
@@ -398,6 +409,11 @@ class Command(BaseCommand):
                         "mulch": row.get("Mulch", "").strip(),
                         "row_cover": row.get("Row Cover", "").strip(),
                         "irrigation": row.get("Irrigation", "").strip(),
+                        "sheet_planned_wtm_weeks": sheet_planned_wtm_weeks,
+                        "sheet_actual_or_planned_weekly_yield_per_bedfoot": (
+                            sheet_actual_or_planned_weekly_yield_per_bedfoot
+                        ),
+                        "sheet_weekly_yield_forecast": sheet_weekly_yield_forecast,
                     }
 
                     if not dry_run:

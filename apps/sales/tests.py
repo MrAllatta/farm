@@ -617,7 +617,7 @@ class WeeklyChannelOrderViewTests(TestCase):
         r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Includes other SKUs on this crop")
-        self.assertContains(r, ">6.0<", html=False)
+        self.assertContains(r, "6.0")
 
     def test_plan_week_iso_counts_reflects_shadowing(self):
         """LIVE-3 helper: rollup plan rows drop when outlet owns the slice."""

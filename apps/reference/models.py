@@ -143,6 +143,19 @@ class CropBySeason(models.Model):
     row_cover = models.CharField(max_length=50, blank=True)
     irrigation = models.CharField(max_length=50, blank=True)
 
+    #: Optional passthrough from reference `crop_by_season` (sheet **Planned WTM**).
+    sheet_planned_wtm_weeks = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True
+    )
+    #: Passthrough **Actual or Planned Weekly Yield per Bedfoot** when present in import.
+    sheet_actual_or_planned_weekly_yield_per_bedfoot = models.DecimalField(
+        max_digits=10, decimal_places=4, null=True, blank=True
+    )
+    #: Passthrough **Weekly Yield Forecast** when present in import.
+    sheet_weekly_yield_forecast = models.DecimalField(
+        max_digits=10, decimal_places=4, null=True, blank=True
+    )
+
     @property
     def wtm_weeks(self):
         return math.ceil(self.dtm_days / 7)

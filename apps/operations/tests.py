@@ -1117,6 +1117,8 @@ class PlantingRecordSnapshotMetadataTests(TestCase):
             reverse("operations:planting_record", kwargs={"pk": self.planting.pk})
         )
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Planning status")
+        self.assertContains(response, "planned profile from the crop planner")
         self.assertContains(response, "Seeds/ft (DS)")
         self.assertContains(response, "Inrow Spacing Feet (TP)")
         self.assertContains(response, "Seeder Settings")
@@ -1128,3 +1130,23 @@ class PlantingRecordSnapshotMetadataTests(TestCase):
         self.assertContains(response, "Jang JP-1")
         self.assertContains(response, "Lightweight")
         self.assertContains(response, "Drip")
+
+    def test_planting_record_prefers_imported_wtm_and_weekly_yield_snapshot(self):
+        """When reference import stored sheet columns, planting record uses them over derived values."""
+        self.crop_season.sheet_planned_wtm_weeks = Decimal("4.25")
+        self.crop_season.sheet_actual_or_planned_weekly_yield_per_bedfoot = Decimal("0.55")
+        self.crop_season.sheet_weekly_yield_forecast = Decimal("19.5")
+        self.crop_season.save(
+            update_fields=[
+                "sheet_planned_wtm_weeks",
+                "sheet_actual_or_planned_weekly_yield_per_bedfoot",
+                "sheet_weekly_yield_forecast",
+            ]
+        )
+        response = self.client.get(
+            reverse("operations:planting_record", kwargs={"pk": self.planting.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "4.25 weeks")
+        self.assertContains(response, "0.55")
+        self.assertContains(response, "19.50")
