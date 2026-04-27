@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from reference.models import CropInfo, CropSalesFormat, SalesChannel
 from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES
-from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES
+from operations.services.week_ops import EXCLUDED_PLANTING_STATUSES, week_bounds_for_planning_year
 from planning.models import Planting
 
 
@@ -30,24 +30,45 @@ def first_operator_sales_channel():
     return operator_sales_channels().order_by("allocation_priority", "id").first()
 
 
-def active_crop_sales_formats_for_planning_year(year_obj):
-    """LIVE-2: products tied to crops with plantings in the active year (when set)."""
+def active_crop_sales_formats_for_planning_year(year_obj, *, iso_week: int | None = None):
+    """LIVE-2: products tied to crops with plantings in the active year (when set).
+
+    When ``iso_week`` is set, prefer crops whose harvest window overlaps that ISO week’s
+    Monday–Sunday window (same rule as weekly order); if none overlap, fall back to all
+    in-year crops (off-season / shoulder week).
+    """
     products = (
         CropSalesFormat.objects.filter(is_active=True)
         .select_related("crop")
-        .order_by("crop__crop_type", "crop__name")
+        .order_by("crop__crop_type", "crop__name", "product_name")
     )
     if not year_obj:
         return products
-    crop_ids = list(
+    year_crop_ids = list(
         Planting.objects.filter(planning_year=year_obj)
         .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
         .values_list("crop_id", flat=True)
         .distinct()
     )
-    if crop_ids:
-        products = products.filter(crop_id__in=crop_ids)
-    return products
+    if not year_crop_ids:
+        return products
+    if iso_week is not None:
+        wn = max(1, min(52, int(iso_week)))
+        week_monday, week_sunday = week_bounds_for_planning_year(year_obj.year, wn)
+        week_overlap_crop_ids = list(
+            Planting.objects.filter(planning_year=year_obj)
+            .exclude(status__in=EXCLUDED_PLANTING_STATUSES)
+            .filter(
+                planned_first_harvest_date__lte=week_sunday,
+                planned_last_harvest_date__gte=week_monday,
+            )
+            .values_list("crop_id", flat=True)
+            .distinct()
+        )
+        if week_overlap_crop_ids:
+            return products.filter(crop_id__in=week_overlap_crop_ids)
+        return products.filter(crop_id__in=year_crop_ids)
+    return products.filter(crop_id__in=year_crop_ids)
 
 
 def active_crop_info_for_planning_year(year_obj):

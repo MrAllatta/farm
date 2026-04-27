@@ -14,6 +14,7 @@ def harvest_surface_hints(
     weekly_sales_demand_count: int = 0,
     planning_year_id: int | None = None,
     planning_calendar_year: int | None = None,
+    harvest_supply_reaches_weekly_catalog: bool = True,
 ) -> list[dict[str, str]]:
     """Harvest needs / weekly harvest entry: explain empty or misleading weeks."""
     out: list[dict[str, str]] = []
@@ -106,6 +107,22 @@ def harvest_surface_hints(
                 ),
             }
         )
+    if (
+        week_harvest_event_count > 0
+        and not harvest_supply_reaches_weekly_catalog
+        and planting_count_excl_dead > 0
+    ):
+        out.append(
+            {
+                "id": "harvest_supply_crop_mismatch_weekly_order",
+                "title": "Harvest picks this week are for crops that do not match this product list",
+                "detail": (
+                    "There are harvest events dated in this ISO week, but their crops are not in the active "
+                    "CropSalesFormat rows for this screen (or those products are inactive). Add/activate a "
+                    "product for those crops, or confirm the planning year and crop plan match the import."
+                ),
+            }
+        )
     return out
 
 
@@ -115,6 +132,18 @@ def crop_plan_product_scope_hints(weekly_order_products_scope: str) -> list[dict
     ``scope`` matches ``WeeklyChannelOrderView._weekly_order_crop_sales_formats``:
     ``full_catalog`` | ``crop_plan_week`` | ``crop_plan_inexact_week``.
     """
+    if weekly_order_products_scope == "full_catalog":
+        return [
+            {
+                "id": "weekly_order_products_full_catalog",
+                "title": "Full product catalog (no crop-plan plantings in this year yet)",
+                "detail": (
+                    "Every active product appears because this planning year has no in-scope plantings. "
+                    "After the crop planner has rows, this list narrows to those crops; off-season ISO weeks "
+                    "then use the shoulder-week scope hint instead of the full catalog."
+                ),
+            }
+        ]
     if weekly_order_products_scope == "crop_plan_inexact_week":
         return [
             {
@@ -178,6 +207,7 @@ def weekly_order_surface_hints(
     channel_name: str,
     has_any_historical: bool,
     historical_name_fallback: bool = False,
+    historical_product_key_fallback: bool = False,
     positive_week_demand_products: int = 0,
     weekly_order_products_scope: str = "full_catalog",
     duplicate_channel_name_detected: bool = False,
@@ -256,6 +286,18 @@ def weekly_order_surface_hints(
                 ),
             }
         )
+    if historical_product_key_fallback:
+        out.append(
+            {
+                "id": "historical_from_product_key_remap",
+                "title": "Prior-year cells matched an older product row (same crop + label)",
+                "detail": (
+                    "Historical ACTUAL rows point at a different CropSalesFormat id than today’s catalog row, "
+                    "so the grid remapped by crop + product name. Prefer a clean reference import so ids stay "
+                    "stable, or keep using this fallback for same-label products."
+                ),
+            }
+        )
     if duplicate_channel_name_detected:
         out.append(
             {
@@ -277,8 +319,21 @@ def dashboard_surface_hints(
     active_planting_count: int,
     plantings_missing_harvest_events: int,
     week_sales_plan_target: float | int,
+    planning_year_id: int | None = None,
+    planning_calendar_year: int | None = None,
 ) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
+
+    def _repair_cmd_year() -> str:
+        if planning_calendar_year is not None:
+            return f'make manage ARGS="repair_planting_events --year {planning_calendar_year}"'
+        return 'make manage ARGS="repair_planting_events --year <calendar year>"'
+
+    def _repair_cmd_pyid() -> str:
+        if planning_year_id is not None:
+            return f'make manage ARGS="repair_planting_events --planning-year-id {planning_year_id}"'
+        return 'make manage ARGS="repair_planting_events --planning-year-id <id>"'
+
     if active_planting_count == 0:
         out.append(
             {
@@ -293,8 +348,9 @@ def dashboard_surface_hints(
                 "id": "dash_missing_harvest_events",
                 "title": f"{plantings_missing_harvest_events} planting(s) still need harvest events",
                 "detail": (
-                    "Run make manage ARGS=\"repair_planting_events --planning-year-id <id>\" after import "
-                    "so this week's harvest counts stay meaningful."
+                    f"From the repo root run {_repair_cmd_pyid()} for this planning year, or {_repair_cmd_year()} "
+                    "when several years need repair. Imported plantings only populate harvest needs after "
+                    "generated HarvestEvent rows exist."
                 ),
             }
         )
@@ -372,8 +428,21 @@ def sales_plan_surface_hints(
     rollup_category_ok: bool,
     harvest_event_year_total: int,
     plantings_missing_harvest_events: int,
+    planning_year_id: int | None = None,
+    planning_calendar_year: int | None = None,
 ) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
+
+    def _repair_cmd_year() -> str:
+        if planning_calendar_year is not None:
+            return f'make manage ARGS="repair_planting_events --year {planning_calendar_year}"'
+        return 'make manage ARGS="repair_planting_events --year <calendar year>"'
+
+    def _repair_cmd_pyid() -> str:
+        if planning_year_id is not None:
+            return f'make manage ARGS="repair_planting_events --planning-year-id {planning_year_id}"'
+        return 'make manage ARGS="repair_planting_events --planning-year-id <id>"'
+
     if not rollup_category_ok:
         out.append(
             {
@@ -396,8 +465,8 @@ def sales_plan_surface_hints(
                 "id": "sales_plan_no_harvest_supply",
                 "title": "No harvest events this year — supply reads as zero",
                 "detail": (
-                    "Shortage marks compare demand to harvest supply. Add plantings with harvest events "
-                    "or run make manage ARGS=\"repair_planting_events --planning-year-id <id>\" after import."
+                    "Shortage marks compare demand to harvest supply. Add plantings with harvest windows, then "
+                    f"run {_repair_cmd_pyid()} (or {_repair_cmd_year()}) after import so weekly picks are generated."
                 ),
             }
         )
@@ -406,7 +475,10 @@ def sales_plan_surface_hints(
             {
                 "id": "sales_plan_partial_supply",
                 "title": f"{plantings_missing_harvest_events} planting(s) lack harvest events",
-                "detail": "Supply columns may under-report until harvest events exist for those plantings.",
+                "detail": (
+                    "Supply columns may under-report until harvest events exist for those plantings — "
+                    f"use {_repair_cmd_pyid()} or {_repair_cmd_year()} from the repo root."
+                ),
             }
         )
     return out

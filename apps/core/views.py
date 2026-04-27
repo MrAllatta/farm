@@ -332,6 +332,8 @@ class DashboardView(TemplateView):
                     active_planting_count=active_plantings,
                     plantings_missing_harvest_events=missing_harvest,
                     week_sales_plan_target=week_target or 0,
+                    planning_year_id=year_obj.id,
+                    planning_calendar_year=year_obj.year,
                 ),
                 # Storage
                 "inventory_summary": inventory_summary[:8],

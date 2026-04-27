@@ -586,6 +586,124 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, "7.0")
         self.assertIn(b"data-empty-reason=\"historical_from_namesake_channel\"", r.content)
 
+    def test_weekly_order_historical_matches_when_crop_sales_format_id_drifted(self):
+        """LIVE-1: ACTUAL rows use a superseded CropSalesFormat id; same crop + name still fills cells."""
+        wk = 22
+        mon_2024 = Week(2024, wk).monday()
+        legacy_product = CropSalesFormat.objects.create(
+            crop=self.product.crop,
+            product_name=self.product.product_name,
+            sale_price=Decimal("4.00"),
+            sale_unit="bunch",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            sku="KAL-LEGACY",
+            is_active=False,
+        )
+        SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=mon_2024,
+            product=legacy_product,
+            actual_quantity=Decimal("15"),
+            actual_revenue=Decimal("60.00"),
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "15.0")
+        self.assertIn(b"data-empty-reason=\"historical_from_product_key_remap\"", r.content)
+
+    def test_weekly_order_shows_harvest_supply_mismatch_diagnostic(self):
+        """LIVE-4: harvest events exist for a crop with no active product row in this grid."""
+        wk = 41
+        mon = Week(2026, wk).monday()
+        self.product.is_active = False
+        self.product.save(update_fields=["is_active"])
+        lettuce = CropInfo.objects.create(
+            name="Lettuce",
+            crop_type="Greens",
+            botanical_family="Asteraceae",
+            fresh_or_storage="fresh",
+            harvest_unit="head",
+            avg_unit_weight=Decimal("0.30"),
+        )
+        lett_prod = CropSalesFormat.objects.create(
+            crop=lettuce,
+            product_name="Lettuce Head",
+            sale_price=Decimal("3.00"),
+            sale_unit="head",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            sku="LET-HEAD",
+            is_active=True,
+        )
+        cs_kale = CropBySeason.objects.create(
+            crop=self.product.crop,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        cs_let = CropBySeason.objects.create(
+            crop=lettuce,
+            block_type="field",
+            field_week_start=1,
+            field_week_end=52,
+            total_yield_per_bedfoot=Decimal("1.00"),
+            harvest_weeks=4,
+            dtm_days=21,
+            rows_per_bed=4,
+        )
+        p_kale = Planting.objects.create(
+            planning_year=self.py_2026,
+            crop=self.product.crop,
+            crop_season=cs_kale,
+            block=self.block,
+            bed_start=1,
+            bed_end=1,
+            planned_bedfeet=40,
+            planned_plant_date=mon - timedelta(weeks=2),
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon + timedelta(weeks=2),
+            planned_total_yield=Decimal("40.00"),
+            status="growing",
+        )
+        Planting.objects.create(
+            planning_year=self.py_2026,
+            crop=lettuce,
+            crop_season=cs_let,
+            block=self.block,
+            bed_start=2,
+            bed_end=2,
+            planned_bedfeet=20,
+            planned_plant_date=mon - timedelta(weeks=1),
+            planned_first_harvest_date=mon,
+            planned_last_harvest_date=mon + timedelta(weeks=2),
+            planned_total_yield=Decimal("20.00"),
+            status="growing",
+        )
+        HarvestEvent.objects.create(
+            planting=p_kale,
+            planned_date=mon,
+            planned_quantity=Decimal("10"),
+            planned_units="bed",
+        )
+        url = reverse(
+            "sales:weekly_channel_order",
+            kwargs={"channel_id": self.channel.id, "week": wk},
+        )
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(
+            b"data-empty-reason=\"harvest_supply_crop_mismatch_weekly_order\"",
+            r.content,
+        )
+
     def test_weekly_order_live3_diagnostic_when_no_plan_rows_for_iso_week(self):
         """LIVE-3: all-channel demand is zero because there are no PLAN rows for this week."""
         wk = 33

@@ -1496,19 +1496,25 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 return redirect(reverse("planning:sales_plan_by_channel"))
 
         if action == "save":
+            focus_q = ""
+            fp_raw = (request.POST.get("focus_product") or "").strip()
+            if fp_raw.isdigit():
+                focus_q = f"&focus_product={int(fp_raw)}"
             if self.sales_plan_mode == "rollup":
                 updated = self._save_plan_rows(request, sales_category=sales_category)
                 messages.success(
                     request,
                     f"Saved {updated} planned product-week rows for {sales_category.name}.",
                 )
-                return redirect(f"{reverse('planning:sales_plan')}?rollup={rollup_slug}")
+                return redirect(f"{reverse('planning:sales_plan')}?rollup={rollup_slug}{focus_q}")
             updated = self._save_plan_rows(request, channel=channel)
             messages.success(
                 request,
                 f"Saved {updated} planned product-week rows for {channel.name}.",
             )
-            return redirect(f"{reverse('planning:sales_plan_by_channel')}?channel={channel.id}")
+            return redirect(
+                f"{reverse('planning:sales_plan_by_channel')}?channel={channel.id}{focus_q}"
+            )
 
         if action == "draft":
             from .services.sales_plan_translation import build_demand_to_supply_draft
@@ -1711,6 +1717,10 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
         products = active_crop_sales_formats_for_planning_year(self.year_obj).order_by(
             "crop__crop_type", "crop__name", "product_name"
         )
+        focus_raw = (self.request.GET.get("focus_product") or "").strip()
+        sales_plan_focus_product_id = None
+        if focus_raw.isdigit() and products.filter(pk=int(focus_raw)).exists():
+            sales_plan_focus_product_id = int(focus_raw)
         has_in_plan_plantings = Planting.objects.filter(planning_year=self.year_obj).exclude(
             status__in=EXCLUDED_PLANTING_STATUSES
         ).exists()
@@ -1888,6 +1898,8 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
             rollup_category_ok=rollup_category_ok,
             harvest_event_year_total=harvest_event_year_total,
             plantings_missing_harvest_events=missing_harvest_ct,
+            planning_year_id=self.year_obj.id,
+            planning_calendar_year=self.year_obj.year,
         )
         sales_plan_product_scope_hints = sales_plan_product_scope_explanations(
             has_in_plan_plantings=has_in_plan_plantings,
@@ -1922,6 +1934,7 @@ class SalesPlanView(ActivePlanningYearMixin, TemplateView):
                 "weekly_order_channel": weekly_order_channel,
                 "weekly_order_week": weekly_order_week,
                 "weekly_order_url": weekly_order_url,
+                "sales_plan_focus_product_id": sales_plan_focus_product_id,
             }
         )
         return ctx

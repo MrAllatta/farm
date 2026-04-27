@@ -340,6 +340,8 @@ class WeeklyHarvestEntryView(OperationsPlanningYearMixin, TemplateView):
                     planting_count_excl_dead=planting_count_excl_dead,
                     plantings_missing_harvest_events=missing_harvest,
                     weekly_sales_demand_count=len(wctx["sales_demand_by_crop"]),
+                    planning_year_id=self.year_obj.id,
+                    planning_calendar_year=self.year_obj.year,
                 ),
             }
         )
@@ -1379,8 +1381,11 @@ class PackBatchRecordView(OperationsPlanningYearMixin, FormView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields["channel"].queryset = operator_sales_channels()
+        initial = self.get_initial()
+        pack_date = initial.get("pack_date") or date.today()
+        iso_week = max(1, min(52, pack_date.isocalendar()[1]))
         form.fields["product"].queryset = active_crop_sales_formats_for_planning_year(
-            self.year_obj
+            self.year_obj, iso_week=iso_week
         ).order_by("crop__name", "product_name")
         return form
 

@@ -90,7 +90,9 @@ class MarketSalesEntryView(TemplateView):
         year_obj = get_effective_planning_year(self.request)
         # If no pack list, get active sales formats (LIVE-2: prefer crops in the active crop plan).
         if not pack_list.exists():
-            products = active_crop_sales_formats_for_planning_year(year_obj)
+            products = active_crop_sales_formats_for_planning_year(
+                year_obj, iso_week=sale_date.isocalendar()[1]
+            )
         else:
             products = None
 
@@ -359,9 +361,9 @@ class MarketListPrintView(ReportContextMixin, TemplateView):
                     }
                 )
         else:
-            products = active_crop_sales_formats_for_planning_year(year_obj).order_by(
-                "crop__crop_type", "crop__name", "product_name"
-            )
+            products = active_crop_sales_formats_for_planning_year(
+                year_obj, iso_week=week_num
+            ).order_by("crop__crop_type", "crop__name", "product_name")
             sections.append(
                 {
                     "pack_date": None,

@@ -616,6 +616,23 @@ class HarvestSurfaceHintsTests(TestCase):
             [h["id"] for h in hints],
         )
 
+    def test_harvest_supply_mismatch_hint_weekly_order_only(self):
+        from core.ui_diagnostics import harvest_surface_hints
+
+        hints = harvest_surface_hints(
+            week_harvest_event_count=2,
+            planting_count_excl_dead=3,
+            plantings_missing_harvest_events=0,
+            weekly_sales_demand_count=1,
+            planning_year_id=1,
+            planning_calendar_year=2026,
+            harvest_supply_reaches_weekly_catalog=False,
+        )
+        self.assertIn(
+            "harvest_supply_crop_mismatch_weekly_order",
+            [h["id"] for h in hints],
+        )
+
 
 class InventoryYearCarryoverCopyTests(TestCase):
     @classmethod

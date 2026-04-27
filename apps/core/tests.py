@@ -1374,6 +1374,17 @@ class ImportHistoricalDataCommandTests(TestCase):
             ).exists()
         )
 
+        # LC-5 / OP-7: full historical apply runs planting_events_repair — no eligible plantings
+        # may remain without harvest events (weekly order / harvest needs depend on it).
+        from planning.services.planting_events_repair import count_plantings_missing_harvest_events
+
+        for year in PlanningYear.objects.all():
+            with self.subTest(planning_year_id=year.id, calendar_year=year.year):
+                self.assertEqual(
+                    count_plantings_missing_harvest_events(year.id),
+                    0,
+                )
+
     def test_repo_mismatch_fixture_pack_apply_matches_manifest_expectations(self):
         fixture_root = Path(__file__).resolve().parents[2] / "data" / "import_fixtures"
         fixture_dir = fixture_root / "mismatch"

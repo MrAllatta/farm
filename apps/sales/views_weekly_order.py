@@ -164,12 +164,17 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             ).select_related("product", "channel", "channel__category", "sales_category")
         )
         demand_by_product_week = defaultdict(Decimal)
+        demand_by_crop_week = defaultdict(Decimal)
         for row in plan_events_without_shadowed_rollups(all_plan):
             if (
                 row.product_id
                 and week_monday <= row.sale_date <= week_sunday
             ):
-                demand_by_product_week[row.product_id] += row.planned_quantity or Decimal("0")
+                q = row.planned_quantity or Decimal("0")
+                demand_by_product_week[row.product_id] += q
+                crop_id = getattr(getattr(row, "product", None), "crop_id", None)
+                if crop_id:
+                    demand_by_crop_week[crop_id] += q
 
         plan_raw_week, plan_visible_week = plan_week_iso_counts(
             all_plan,
@@ -244,7 +249,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                     sale_date__gte=hm,
                     sale_date__lte=hs,
                 )
-                .select_related("product")
+                .select_related("product", "product__crop")
                 .order_by("-sale_date", "-id")
             )
             used_name_fallback = False
@@ -252,8 +257,9 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             for row in rows_strict:
                 if row.product_id:
                     by_product[row.product_id] = row
+            namesake_rows: list[SalesEvent] = []
             if not by_product:
-                for row in (
+                namesake_rows = list(
                     SalesEvent.objects.filter(
                         entry_kind=SalesEvent.EntryKind.ACTUAL,
                         channel__name=channel.name,
@@ -261,13 +267,28 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                         sale_date__lte=hs,
                     )
                     .exclude(channel_id=channel.id)
-                    .select_related("product", "channel")
+                    .select_related("product", "product__crop", "channel")
                     .order_by("-sale_date", "-id")
-                ):
+                )
+                for row in namesake_rows:
                     if row.product_id and row.product_id not in by_product:
                         by_product[row.product_id] = row
-                if by_product:
+                if by_product and namesake_rows:
                     used_name_fallback = True
+            used_product_key_fallback = False
+            # LIVE-1: 601 re-imports may replace CropSalesFormat rows; match ACTUALs by crop + product_name.
+            all_hist_rows = list(rows_strict) + list(namesake_rows)
+            for p in products:
+                if p.id in by_product:
+                    continue
+                for row in all_hist_rows:
+                    if not row.product_id:
+                        continue
+                    op = row.product
+                    if op.crop_id == p.crop_id and (op.product_name or "") == (p.product_name or ""):
+                        by_product[p.id] = row
+                        used_product_key_fallback = True
+                        break
             historical.append(
                 {
                     "calendar_year": y,
@@ -275,11 +296,15 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                     "by_product": by_product,
                     "empty": not by_product,
                     "used_name_fallback": used_name_fallback,
+                    "used_product_key_fallback": used_product_key_fallback,
                 }
             )
 
         has_any_historical = any(not h["empty"] for h in historical)
         historical_name_fallback = any(h.get("used_name_fallback") for h in historical)
+        historical_product_key_fallback = any(
+            h.get("used_product_key_fallback") for h in historical
+        )
         namesake_actuals_on_other_channel = False
         duplicate_channel_name_detected = SalesChannel.objects.filter(name=channel.name).exclude(
             id=channel.id
@@ -302,6 +327,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
 
         order_rows = []
         for product in products:
+            cohort_products = [p for p in products if p.crop_id == product.crop_id]
             planned_rows = SalesEvent.objects.filter(
                 entry_kind=SalesEvent.EntryKind.PLAN,
                 planning_year=self.year_obj,
@@ -316,7 +342,15 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 hq = Decimal("1")
             h_units = harvest_by_crop.get(product.crop_id, Decimal("0"))
             supply_sale_units = (h_units / hq).quantize(Decimal("0.01"))
+            # LIVE-3: PLAN rows may key to a different CropSalesFormat than this channel's row
+            # while sharing the same crop; sum cohort SKUs first, then fall back to crop-wide demand.
             demand_all = demand_by_product_week.get(product.id, Decimal("0"))
+            if demand_all == 0 and len(cohort_products) > 1:
+                demand_all = sum(
+                    demand_by_product_week.get(p.id, Decimal("0")) for p in cohort_products
+                )
+            elif demand_all == 0 and len(cohort_products) == 1:
+                demand_all = demand_by_crop_week.get(product.crop_id, Decimal("0"))
             shortage = demand_all > supply_sale_units + Decimal("0.0001")
             field_note = field_note_by_crop.get(product.crop_id)
             if field_note:
@@ -374,6 +408,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             weekly_sales_demand_count=weekly_demand_row_count,
             planning_year_id=self.year_obj.id,
             planning_calendar_year=cal_year,
+            harvest_supply_reaches_weekly_catalog=harvest_supply_reaches_catalog,
         )
         supply_diagnostic_hints.extend(
             weekly_order_surface_hints(
@@ -383,6 +418,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 channel_name=channel.name,
                 has_any_historical=has_any_historical,
                 historical_name_fallback=historical_name_fallback,
+                historical_product_key_fallback=historical_product_key_fallback,
                 positive_week_demand_products=weekly_demand_row_count,
                 weekly_order_products_scope=weekly_order_products_scope,
                 duplicate_channel_name_detected=duplicate_channel_name_detected,
