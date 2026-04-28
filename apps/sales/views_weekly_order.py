@@ -549,6 +549,9 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
             week_monday=week_monday,
             week_sunday=week_sunday,
         )
+        live16_stub_sales_channels_present = SalesChannel.objects.filter(
+            allocation_priority=900
+        ).exists()
         supply_diagnostic_hints.extend(
             weekly_order_surface_hints(
                 plan_raw_week=plan_raw_week,
@@ -565,6 +568,7 @@ class WeeklyChannelOrderView(ReportContextMixin, TemplateView):
                 prior_year_calendar_years=list(prior_year_ints),
                 iso_week_has_prior_actuals_any_channel=iso_week_has_prior_actuals_any_channel,
                 listed_product_crops_without_harvest_pick=listed_product_crops_without_harvest_pick,
+                live16_stub_sales_channels_present=live16_stub_sales_channels_present,
             )
         )
 

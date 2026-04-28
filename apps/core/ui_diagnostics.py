@@ -301,6 +301,7 @@ def weekly_order_surface_hints(
     prior_year_calendar_years: list[int] | None = None,
     iso_week_has_prior_actuals_any_channel: bool = False,
     listed_product_crops_without_harvest_pick: int = 0,
+    live16_stub_sales_channels_present: bool = False,
 ) -> list[dict[str, str]]:
     """Weekly channel order: demand rollup, historical joins, supply (pairs with LIVE-1/3/4/LIVE-10)."""
     out: list[dict[str, str]] = []
@@ -464,6 +465,19 @@ def weekly_order_surface_hints(
                     "Weekly order joins by this URL channel id first, so duplicate same-name rows can "
                     "split historical cells or saved lines across ids. Reconcile channel ids in import data "
                     "to keep planning and actual history on one canonical channel row."
+                ),
+            }
+        )
+    if live16_stub_sales_channels_present:
+        out.append(
+            {
+                "id": "live16_stub_sales_channels",
+                "title": "LIVE-16: incomplete sales channels from import",
+                "detail": (
+                    "At least one `SalesChannel` was auto-created during historical import "
+                    "(`--stub-missing-sales-channels`, `allocation_priority=900`). Open Django admin → "
+                    "Sales channels, filter or sort by priority 900, and complete category, plan bucket, "
+                    "days, and targets. Re-run import summary `results.live16_canonicalization` lists stub names."
                 ),
             }
         )

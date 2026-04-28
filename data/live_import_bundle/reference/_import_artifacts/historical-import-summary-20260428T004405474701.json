@@ -3,97 +3,115 @@
   "results": {
     "escalation_summary": [],
     "failure_signatures": [],
-    "live16_canonicalization": {
-      "channel_alias_resolutions": 0,
-      "product_alias_resolutions": 0,
-      "stub_sales_channels_created_names": []
-    },
     "models": {
       "Block": {
-        "created": 0,
+        "created": 39,
         "error": 0,
-        "skipped": 1,
+        "skipped": 0,
         "updated": 0
       },
       "CropBySeason": {
-        "created": 0,
+        "created": 150,
         "error": 0,
-        "skipped": 1,
+        "skipped": 0,
         "updated": 0
       },
       "CropInfo": {
-        "created": 0,
+        "created": 149,
         "error": 0,
-        "skipped": 1,
+        "skipped": 0,
         "updated": 0
       },
       "CropSalesFormat": {
+        "created": 318,
+        "error": 0,
+        "skipped": 0,
+        "updated": 250
+      },
+      "NurseryEvent": {
         "created": 0,
         "error": 0,
-        "skipped": 1,
+        "skipped": 0,
         "updated": 0
       },
+      "PlanningYear": {
+        "created": 1,
+        "error": 0,
+        "skipped": 0,
+        "updated": 4
+      },
       "ProductRecipe": {
-        "created": 0,
+        "created": 2,
         "error": 0,
         "skipped": 0,
         "updated": 0
       },
       "ProductRecipeComponent": {
-        "created": 0,
+        "created": 19,
         "error": 0,
-        "skipped": 0,
+        "skipped": 4,
         "updated": 0
       },
       "RotationHistory": {
         "created": 0,
         "error": 0,
-        "skipped": 10,
+        "skipped": 0,
         "updated": 0
       },
       "SalesChannel": {
-        "created": 0,
-        "error": 0,
-        "skipped": 1,
-        "updated": 0
-      },
-      "Variety": {
-        "created": 0,
+        "created": 3,
         "error": 0,
         "skipped": 0,
         "updated": 0
+      },
+      "SeedOrder": {
+        "created": 134,
+        "error": 0,
+        "skipped": 110,
+        "updated": 1
+      },
+      "Variety": {
+        "created": 243,
+        "error": 0,
+        "skipped": 0,
+        "updated": 2
       }
     },
     "pack_skip_rows": [],
     "pack_skip_summary": [],
-    "post_repair_planting_events": null,
+    "post_repair_planting_events": {
+      "harvest_events_created_plantings": 0,
+      "harvest_planned_dates_filled": 0,
+      "harvest_skipped_invalid_window": 0,
+      "nursery_events_created_plantings": 0,
+      "plantings_scanned": 0
+    },
     "row_errors": [],
     "row_warning_code_totals": {},
     "row_warning_summary": [],
     "row_warnings": [],
     "totals": {
-      "created": 0,
+      "created": 1058,
       "error": 0,
-      "skipped": 15,
-      "updated": 0
+      "skipped": 114,
+      "updated": 257
     }
   },
   "run": {
     "atomic_apply": true,
-    "bundle_disk_year_folder_max": null,
-    "bundle_disk_year_folder_min": null,
-    "data_dir": "farm/data/import_fixtures/clean",
+    "bundle_disk_year_folder_max": 2026,
+    "bundle_disk_year_folder_min": 2022,
+    "data_dir": "farm/data/live_import_bundle/reference",
     "dry_run": false,
-    "end_year": 2025,
-    "finished_at": "2026-04-28T01:01:00.591062Z",
+    "end_year": 2026,
+    "finished_at": "2026-04-28T00:44:07.291328Z",
     "plantings_planning_year_from_planned_date": true,
     "plantings_planning_year_from_planned_date_force_past_threshold": true,
-    "run_id": "20260428T010100571293",
+    "run_id": "20260428T004405474701",
     "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
-    "start_year": 2021,
-    "started_at": "2026-04-28T01:01:00.571293Z",
-    "stub_missing_sales_channels": false,
-    "validate_only": true,
+    "start_year": 2022,
+    "started_at": "2026-04-28T00:44:05.474701Z",
+    "validate_only": false,
     "verbose": false
   },
   "schema_version": "1.5",

@@ -3,6 +3,11 @@
   "results": {
     "escalation_summary": [],
     "failure_signatures": [],
+    "live16_canonicalization": {
+      "channel_alias_resolutions": 0,
+      "product_alias_resolutions": 0,
+      "stub_sales_channels_created_names": []
+    },
     "models": {
       "Block": {
         "created": 0,
@@ -177,13 +182,14 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-27T22:21:26.354742Z",
+    "finished_at": "2026-04-28T01:01:02.807237Z",
     "plantings_planning_year_from_planned_date": true,
     "plantings_planning_year_from_planned_date_force_past_threshold": true,
-    "run_id": "20260427T222125643177",
+    "run_id": "20260428T010102101200",
     "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
     "start_year": 2021,
-    "started_at": "2026-04-27T22:21:25.643177Z",
+    "started_at": "2026-04-28T01:01:02.101200Z",
+    "stub_missing_sales_channels": false,
     "validate_only": true,
     "verbose": false
   },

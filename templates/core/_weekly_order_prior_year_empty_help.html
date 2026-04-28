@@ -4,9 +4,11 @@
     <ul style="margin:0.5rem 0 0 1.25rem;">
         <li><strong>Per-cell hover</strong> — rest the pointer on the em dash in a prior-year column for a short reason tied to that calendar year (including whether adjacent ISO weeks had sales for that product).</li>
         <li><strong>Not sold that week</strong> — usual for off-season or low-volume products; imported 601 <code>ACTUAL</code> rows may simply have no line for this ISO week.</li>
-        <li><strong>That calendar year was not imported</strong> — <code>year_YYYY</code> sales tiers outside the import run’s year range are skipped (see preflight and operator import-floor notes).</li>
+        <li><strong>That calendar year was not imported</strong> — <code>year_YYYY</code> sales tiers outside the import run’s year range are skipped (see preflight and operator import-floor notes). On the host that ran apply, open <code>import_historical_data --summary-json</code> (or <code>&lt;data_dir&gt;/_import_artifacts/historical-import-summary-*.json</code>): compare <code>run.start_year</code>/<code>end_year</code> to <code>run.bundle_disk_year_folder_min</code>/<code>max</code>, and scan <code>results.row_warnings</code> for <code>import_year_range_skips_disk_year_folder</code>.</li>
+        <li><strong>Import left rows unresolved</strong> — <code>results.row_errors</code> (channel/product not found) and <code>results.row_warning_code_totals</code> explain hard skips vs warnings; after apply, <code>results.post_repair_planting_events</code> confirms generated harvest rows (LIVE-11 / Tier-1 ops).</li>
         <li><strong>Channel or product does not line up with history</strong> — rows must share the same <code>SalesChannel</code> and <code>Product</code> keys as 601 data; renames, duplicate channels, or id drift can leave cells empty — use staff diagnostics at the top of this page.</li>
         <li><strong>Product id changed but label stayed the same</strong> — reference re-import can replace a <code>CropSalesFormat</code> row; the app can still match older <code>ACTUAL</code> rows by crop + name when the staff panel says so.</li>
+        <li><strong><code>bunch</code> vs <code>bu</code> on the same crop line</strong> — treated as the same sellable step for joins; <strong>12 bu</strong> is a different product and will not merge into bu/bunch.</li>
     </ul>
     {% if week_num and prior_year_help_from_sales_plan %}
     <p class="muted" style="margin:0.75rem 0 0 0;">

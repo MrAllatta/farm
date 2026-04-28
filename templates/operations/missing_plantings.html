@@ -18,6 +18,8 @@
         a misplaced export row, not a screen bug. Check <code>import_historical_data</code> preflight: it emits
         <code>planting_date_year_mismatch</code> in summary <code>row_warnings</code> when the date is more than
         one year from the <code>year_YYYY</code> folder.
+        For a compact inventory across codes, use <code>row_warning_code_totals</code> and
+        <code>row_warning_summary</code> in the same <code>--summary-json</code> artifact (LIVE-13).
     </p>
 </div>
 <p class="muted">Planned plant date on or before {{ today }} but status is still <strong>planned</strong>.</p>

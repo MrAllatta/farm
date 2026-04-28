@@ -492,6 +492,19 @@ class WeeklyOrderSurfaceHintsLive3RollupTests(TestCase):
 
 
 class Live7WeeklyOrderHarvestScopeHintTests(TestCase):
+    def test_live16_stub_sales_channels_staff_hint(self):
+        from core.ui_diagnostics import weekly_order_surface_hints
+
+        hints = weekly_order_surface_hints(
+            plan_raw_week=0,
+            plan_visible_week=0,
+            namesake_actuals_on_other_channel=False,
+            channel_name="KFM",
+            has_any_historical=False,
+            live16_stub_sales_channels_present=True,
+        )
+        self.assertTrue(any(h["id"] == "live16_stub_sales_channels" for h in hints))
+
     def test_surface_hint_when_listed_crops_miss_harvest_pick(self):
         hints = weekly_order_surface_hints(
             plan_raw_week=0,
@@ -626,6 +639,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "skip_plantings_when_planned_date_over_one_year_from_folder_year",
         "plantings_planning_year_from_planned_date",
         "plantings_planning_year_from_planned_date_force_past_threshold",
+        "stub_missing_sales_channels",
     }
     SUMMARY_RESULTS_KEYS = {
         "models",
@@ -639,6 +653,7 @@ class ImportHistoricalDataCommandTests(TestCase):
         "post_repair_planting_events",
         "failure_signatures",
         "escalation_summary",
+        "live16_canonicalization",
     }
     MODEL_TOTAL_KEYS = {"created", "updated", "skipped", "error"}
     ROW_ERROR_KEYS = {"model", "row", "code", "field_path", "message"}
@@ -9431,3 +9446,181 @@ class HistoricalImportAliasContractTests(TestCase):
                     "2022",
                     "--validate-only",
                 )
+
+    def test_channel_alias_conflict_raises_command_error(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            self._write_minimal_bundle(data_dir)
+            self._write_text(
+                data_dir / "reference" / "channel_name_aliases.csv",
+                "\n".join(
+                    [
+                        "Alias,Channel Name",
+                        "DGH,KFM",
+                        "DGH,Wholesale",
+                    ]
+                ),
+            )
+            with self.assertRaises(CommandError):
+                call_command(
+                    "import_historical_data",
+                    str(data_dir),
+                    "--start-year",
+                    "2022",
+                    "--end-year",
+                    "2022",
+                    "--validate-only",
+                )
+
+    def _write_minimal_bundle_no_channel_rollup(self, base_dir):
+        """Like ``_write_minimal_bundle`` but omits ``channel_rollups.csv`` (rollup not required)."""
+        self._write_text(
+            base_dir / "reference" / "blocks.csv",
+            "\n".join(
+                [
+                    "Block,Block Type,# of Beds,Bed Width (feet),Bedfeet per Bed",
+                    "Field 1,Field,10,3,100",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "crop_by_season.csv",
+            "\n".join(
+                [
+                    "Crop,Block Type,Field Week Start,Field Week End,Total Yield Per Bedfoot,Harvest Weeks,DTM Days To Maturity,Rows Per Bed,DS Seed Rate (seeds/ rowfoot),TP Inrow Spacing (ft),Seeder Settings,Trellis System,Mulch,Row Cover,Irrigation",
+                    "Cilantro,Field,10,40,1.2,6,45,3,30,na,,,,,",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "crop_info.csv",
+            "\n".join(
+                [
+                    "Crop,Type,Botanical Family,Fresh or Storage,Storage Weeks,Can Hold In Field,Harvest Units,Average Unit Weight,Units Per Bin,Harvest Bin,Harvest Tools,Harvest Rate (units per hour),Nursery Weeks,Weeks Until Pot Up,Pot Up Tray Size,Seeded Tray Size,Seeds Per Cell,Thinned Plants,Seeds Per Ounce",
+                    "Cilantro,Herb,Apiaceae,Fresh,0,false,bunch,0.25,40,Tote,Knife,30,0,0,,,1,0,10000",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "sales_channels.csv",
+            "\n".join(
+                [
+                    "Channel Name,Days of the Week,Start Week Num,End Week Num,$ Target per week,is_csa,Priority",
+                    "KFM,Saturday,1,52,1000,false,1",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "crop_sales_formats.csv",
+            "\n".join(
+                [
+                    "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                    "Cilantro,Cilantro - bunch,$3.00,bunch,1.0,CIL-BUNCH,true",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "product_recipe_components.csv",
+            "\n".join(
+                [
+                    "Mix Product Name,Mix Crop Name,Component Source Type,"
+                    "Component Crop Name,Component Percent,Recipe Name",
+                ]
+            ),
+        )
+        self._write_text(
+            base_dir / "reference" / "seed_sources.csv",
+            "Crop,Variety,Supplier,Catalog Number,Source URL,Notes\n",
+        )
+
+    def test_misc_kfm_pickup_channel_alias_maps_to_kfm(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            summary_path = Path(tmp) / "summary.json"
+            self._write_minimal_bundle(data_dir)
+            self._write_text(
+                data_dir / "reference" / "channel_name_aliases.csv",
+                "\n".join(
+                    [
+                        "Alias,Channel Name",
+                        "DGH,KFM",
+                        "Misc - KFM Pickup,KFM",
+                    ]
+                ),
+            )
+            self._write_text(
+                data_dir / "reference" / "product_name_aliases.csv",
+                "\n".join(
+                    [
+                        "Alias,Product Name",
+                        "Cilantro,Cilantro - bunch",
+                    ]
+                ),
+            )
+            self._write_text(
+                data_dir / "year_2022" / "sales_events.csv",
+                "\n".join(
+                    [
+                        "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Entry Kind,Notes",
+                        "Misc - KFM Pickup,2022-06-02,Cilantro,1,0,0,0,0,actual,misc pickup alias",
+                    ]
+                ),
+            )
+
+            call_command(
+                "import_historical_data",
+                str(data_dir),
+                "--start-year",
+                "2022",
+                "--end-year",
+                "2022",
+                "--validate-only",
+                "--summary-json",
+                str(summary_path),
+            )
+
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            stale_fk_errors = [
+                row_error
+                for row_error in summary["results"]["row_errors"]
+                if row_error["code"] == "stale_fk"
+            ]
+            self.assertEqual(stale_fk_errors, [])
+            live16 = summary["results"]["live16_canonicalization"]
+            self.assertGreaterEqual(live16["channel_alias_resolutions"], 1)
+
+    def test_stub_missing_sales_channels_creates_channel_and_summary(self):
+        with TemporaryDirectory() as tmp:
+            data_dir = Path(tmp) / "bundle"
+            summary_path = Path(tmp) / "summary-apply.json"
+            self._write_minimal_bundle_no_channel_rollup(data_dir)
+            self._write_text(
+                data_dir / "year_2022" / "sales_events.csv",
+                "\n".join(
+                    [
+                        "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Entry Kind,Notes",
+                        "Island Pop-Up,2022-06-03,Cilantro - bunch,1,3,1,3,3,actual,stub channel test",
+                    ]
+                ),
+            )
+
+            call_command(
+                "import_historical_data",
+                str(data_dir),
+                "--start-year",
+                "2022",
+                "--end-year",
+                "2022",
+                "--summary-json",
+                str(summary_path),
+                "--stub-missing-sales-channels",
+            )
+
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertEqual(summary["results"]["totals"]["error"], 0)
+            self.assertTrue(summary["run"]["stub_missing_sales_channels"])
+            live16 = summary["results"]["live16_canonicalization"]
+            self.assertEqual(live16["stub_sales_channels_created_names"], ["Island Pop-Up"])
+            ch = SalesChannel.objects.get(name="Island Pop-Up")
+            self.assertEqual(ch.allocation_priority, 900)
+            self.assertTrue(SalesEvent.objects.filter(channel=ch).exists())

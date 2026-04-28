@@ -392,6 +392,16 @@ class Command(BaseCommand):
                 "or set FARM_SQLITE_PATH to a throwaway sqlite file."
             ),
         )
+        parser.add_argument(
+            "--stub-missing-sales-channels",
+            action="store_true",
+            help=(
+                "LIVE-16 (default off, run-owner): when a sheet channel name has no reference row and no "
+                "alias, create a minimal SalesChannel (allocation_priority=900) so sales rows bind; "
+                "complete metadata in Django admin. Does not run under --validate-only or --dry-run. "
+                "When channel_rollups.csv is present, stubs register under Markets rollup so tier checks pass."
+            ),
+        )
 
     def handle(self, *args, **options):
         self.data_dir = options["data_dir"]
@@ -448,6 +458,10 @@ class Command(BaseCommand):
         )
         if _live12_msg:
             raise CommandError(_live12_msg)
+        self.stub_missing_sales_channels = bool(options.get("stub_missing_sales_channels"))
+        self.live16_channel_alias_resolutions = 0
+        self.live16_product_alias_resolutions = 0
+        self.live16_stub_sales_channel_names: list[str] = []
         requested_summary_path = options.get("summary_json")
         self.run_started_at = datetime.utcnow()
         # Use microsecond precision to avoid artifact path collisions on rapid retries.
@@ -4797,16 +4811,26 @@ class Command(BaseCommand):
         """Get or cache sales channel by name."""
         if channel_name not in self.channel_cache:
             lookup_name = channel_name
+            alias_mapping_hit = False
             if channel_name:
                 alias_key = self._normalize_lookup_value(channel_name)
                 if alias_key in self.channel_name_aliases:
-                    lookup_name = self.channel_name_aliases[alias_key]
-            self.channel_cache[channel_name] = self._resolve_fk_by_text(
+                    canon = self.channel_name_aliases[alias_key]
+                    if self._normalize_lookup_value(canon) != alias_key:
+                        alias_mapping_hit = True
+                    lookup_name = canon
+            resolved = self._resolve_fk_by_text(
                 SalesChannel,
                 "name",
                 lookup_name,
                 label="sales channel",
             )
+            if resolved is None and self.stub_missing_sales_channels:
+                if channel_name and not self.validate_only and not self.write_disabled:
+                    resolved = self._create_live16_stub_sales_channel(channel_name)
+            if alias_mapping_hit and resolved is not None:
+                self.live16_channel_alias_resolutions += 1
+            self.channel_cache[channel_name] = resolved
         return self.channel_cache[channel_name]
 
     def _upsert_sales_channel_by_name(self, name, defaults):
@@ -4821,6 +4845,59 @@ class Command(BaseCommand):
         obj = SalesChannel.objects.create(name=name, **defaults)
         return obj, True
 
+    def _create_live16_stub_sales_channel(self, sheet_label: str):
+        """LIVE-16 opt-in: minimal ``SalesChannel`` for unknown sheet labels (see ``--stub-missing-sales-channels``).
+
+        ``SalesChannel`` has no ``is_active`` field; stubs use ``allocation_priority=900`` so staff can
+        filter incomplete rows in Django admin and reconcile category/plan bucket metadata.
+        """
+        name = (sheet_label or "").strip()
+        if not name or self.write_disabled or self.validate_only:
+            return None
+        category_name = self._category_for_sales_channel(name, False)
+        category = self._ensure_sales_category(category_name)
+        default_bucket_by_category = {
+            SalesCategory.CategoryName.ORDERS: "Wholesale",
+            SalesCategory.CategoryName.MARKETS: "Markets",
+            SalesCategory.CategoryName.CSA: "CSA",
+        }
+        default_bucket_name = default_bucket_by_category.get(category_name)
+        plan_bucket = SalesPlanBucket.objects.filter(category=category, name=name).first()
+        if plan_bucket is None and default_bucket_name:
+            plan_bucket = SalesPlanBucket.objects.filter(
+                category=category,
+                name=default_bucket_name,
+            ).first()
+        channel_defaults = {
+            "category": category,
+            "plan_bucket": plan_bucket,
+            "days_of_week": [],
+            "start_week": 1,
+            "end_week": 52,
+            "weekly_target": Decimal("0"),
+            "is_csa": category_name == SalesCategory.CategoryName.CSA,
+            "allocation_priority": 900,
+        }
+        try:
+            obj, created = self._upsert_sales_channel_by_name(name, channel_defaults)
+        except (ValueError, ValidationError, IntegrityError, DatabaseError):
+            return None
+        if self.channel_rollup_required:
+            self.channel_rollup_map[name] = category_name
+        self.normalized_lookup_indexes.pop(f"{SalesChannel._meta.label_lower}:name", None)
+        if name not in self.live16_stub_sales_channel_names:
+            self.live16_stub_sales_channel_names.append(name)
+        self.stdout.write(
+            self.style.WARNING(
+                f"   ⚙  LIVE-16: stub SalesChannel '{name}' ({'created' if created else 'updated'}) — "
+                "complete category/plan metadata in admin."
+            )
+        )
+        if not self.write_disabled:
+            key = "created" if created else "processed"
+            self.stats["SalesChannel"][key] += 1
+        return obj
+
     def _get_product_by_name(self, product_name):
         """Get crop sales format by product name."""
         if product_name in self.product_cache:
@@ -4828,10 +4905,14 @@ class Command(BaseCommand):
         resolved = None
         for variant in bunch_bu_product_name_lookup_variants(product_name):
             lookup_name = variant
+            alias_mapping_hit = False
             if variant:
                 alias_key = self._normalize_lookup_value(variant)
                 if alias_key in self.product_name_aliases:
-                    lookup_name = self.product_name_aliases[alias_key]
+                    canon = self.product_name_aliases[alias_key]
+                    if self._normalize_lookup_value(canon) != alias_key:
+                        alias_mapping_hit = True
+                    lookup_name = canon
             resolved = self._resolve_fk_by_text(
                 CropSalesFormat,
                 "product_name",
@@ -4839,6 +4920,8 @@ class Command(BaseCommand):
                 label="product",
             )
             if resolved is not None:
+                if alias_mapping_hit:
+                    self.live16_product_alias_resolutions += 1
                 break
         if (
             resolved is None
@@ -5177,6 +5260,18 @@ class Command(BaseCommand):
             f"\n  TOTALS: created={total_created:3} updated={total_updated:3} "
             f"skipped={total_skipped:3} error={total_error:3}\n"
         )
+        if (
+            self.live16_channel_alias_resolutions
+            or self.live16_product_alias_resolutions
+            or self.live16_stub_sales_channel_names
+        ):
+            self.stdout.write(
+                "  LIVE-16 canonicalization: "
+                f"channel_alias_hits={self.live16_channel_alias_resolutions} "
+                f"product_alias_hits={self.live16_product_alias_resolutions} "
+                f"stub_sales_channels={len(self.live16_stub_sales_channel_names)} "
+                f"(see --summary-json results.live16_canonicalization)\n"
+            )
         if self.row_warnings:
             code_totals = self._build_row_warning_code_totals()
             parts = [f"{code}={n}" for code, n in sorted(code_totals.items())]
@@ -5493,6 +5588,7 @@ class Command(BaseCommand):
                 "skip_plantings_when_planned_date_over_one_year_from_folder_year": self.skip_plantings_when_planned_date_over_one_year_from_folder_year,
                 "plantings_planning_year_from_planned_date": self.plantings_planning_year_from_planned_date,
                 "plantings_planning_year_from_planned_date_force_past_threshold": self.plantings_planning_year_from_planned_date_force_past_threshold,
+                "stub_missing_sales_channels": self.stub_missing_sales_channels,
             },
             "results": {
                 "models": per_model,
@@ -5506,6 +5602,11 @@ class Command(BaseCommand):
                 "post_repair_planting_events": self.post_repair_planting_events,
                 "failure_signatures": failure_signatures,
                 "escalation_summary": self._build_escalation_summary(failure_signatures),
+                "live16_canonicalization": {
+                    "channel_alias_resolutions": self.live16_channel_alias_resolutions,
+                    "product_alias_resolutions": self.live16_product_alias_resolutions,
+                    "stub_sales_channels_created_names": list(self.live16_stub_sales_channel_names),
+                },
             },
         }
 
