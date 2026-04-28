@@ -425,6 +425,53 @@ class Live12ImportReferenceCommandGuardTests(TestCase):
                     )
 
 
+class Live12ImportHistoricalCommandGuardTests(TestCase):
+    def test_import_historical_data_blocks_repo_sample_into_default_sqlite(self):
+        with TemporaryDirectory() as td:
+            base = Path(td).resolve()
+            sample = base / "data" / "sample_import"
+            sample.mkdir(parents=True)
+            (base / "db.sqlite3").write_bytes(b"")
+            with patch.dict(os.environ, {"FARM_SQLITE_PATH": ""}, clear=False):
+                with override_settings(
+                    BASE_DIR=base,
+                    DATABASES={
+                        "default": {
+                            "ENGINE": "django.db.backends.sqlite3",
+                            "NAME": str(base / "db.sqlite3"),
+                        }
+                    },
+                ):
+                    with self.assertRaises(CommandError) as ctx:
+                        call_command("import_historical_data", str(sample), stdout=StringIO())
+            self.assertIn("LIVE-12", str(ctx.exception))
+
+
+class Live12CloudSeedOperatorEchoContractTests(TestCase):
+    """LIVE-12 wave 45: operator shortcuts must stay obviously distinct from local sample_import."""
+
+    def test_makefile_seed_demo_db_cloud_prints_live12_before_cloud_runner(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        makefile = repo_root / "Makefile"
+        self.assertTrue(makefile.is_file(), msg="Expected outer repo Makefile")
+        lines = makefile.read_text(encoding="utf-8").splitlines()
+        for idx, line in enumerate(lines):
+            if line.rstrip() != "seed-demo-db-cloud:":
+                continue
+            block = "\n".join(lines[idx : idx + 8])
+            self.assertIn("LIVE-12", block)
+            self.assertIn("$(LOAD_CLOUD_ENV)", block)
+            self.assertLess(block.index("LIVE-12"), block.index("$(LOAD_CLOUD_ENV)"))
+            return
+        self.fail("Makefile target seed-demo-db-cloud: not found")
+
+    def test_run_import_sh_cloud_historical_actions_document_live12_scope(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        script = repo_root / "scripts" / "run_import.sh"
+        text = script.read_text(encoding="utf-8")
+        self.assertIn("LIVE-12 (cloud historical)", text)
+
+
 class WeeklyOrderSurfaceHintsLive3RollupTests(TestCase):
     def test_sibling_crop_rollup_hint_when_visible_demand_without_per_product_total(self):
         from core.ui_diagnostics import weekly_order_surface_hints
@@ -474,6 +521,93 @@ class Live7WeeklyOrderHarvestScopeHintTests(TestCase):
         )
 
 
+class PlantingPlanningYearRoutingTests(TestCase):
+    """LIVE-17 (C): pure routing table for folder vs Planned Plant Date calendar year."""
+
+    def test_routing_table(self):
+        from core.planting_planning_year_routing import planting_target_planning_calendar_year
+
+        cases = [
+            # folder, D, c_on, force -> (target, decision)
+            (2026, 2026, False, False, (2026, "folder_default")),
+            (2026, 2025, False, False, (2026, "folder_default")),
+            (2026, 2019, False, False, (2026, "folder_default")),
+            (2026, 2025, True, False, (2025, "date_rebind_shoulder")),
+            (2026, 2027, True, False, (2027, "date_rebind_shoulder")),
+            (2026, 2026, True, False, (2026, "date_rebind_same_year")),
+            (2026, 2019, True, False, (2026, "folder_wins_far_without_force")),
+            (2026, 2019, True, True, (2019, "date_rebind_forced_past_threshold")),
+        ]
+        for folder_y, d_y, c_on, force, expected in cases:
+            with self.subTest(folder=folder_y, D=d_y, c=c_on, force=force):
+                self.assertEqual(
+                    planting_target_planning_calendar_year(
+                        folder_year=folder_y,
+                        planned_date_calendar_year=d_y,
+                        planning_year_from_planned_date=c_on,
+                        force_planned_date_past_threshold=force,
+                    ),
+                    expected,
+                )
+
+
+class ReroutePlantingBundleRowsCommandTests(TestCase):
+    """LIVE-17 (A): reroute_planting_bundle_rows copies bundle and moves shoulder rows."""
+
+    def test_dry_run_does_not_mutate_source_tree(self):
+        with TemporaryDirectory() as d:
+            root = Path(d) / "bundle"
+            y2026 = root / "year_2026"
+            y2026.mkdir(parents=True)
+            (y2026 / "plantings.csv").write_text(
+                "ID,Crop,Planned Plant Date\n"
+                "P1,Carrot,2025-06-10\n"
+                "P2,Carrot,2026-01-01\n",
+                encoding="utf-8",
+            )
+            before = (y2026 / "plantings.csv").read_text(encoding="utf-8")
+            mf = Path(d) / "dry_manifest.json"
+            call_command(
+                "reroute_planting_bundle_rows",
+                "--data-dir",
+                str(root),
+                "--out-dir",
+                str(Path(d) / "out_unused"),
+                "--dry-run",
+                "--manifest-json",
+                str(mf),
+            )
+            self.assertTrue(mf.is_file())
+            self.assertEqual((y2026 / "plantings.csv").read_text(encoding="utf-8"), before)
+            self.assertFalse((Path(d) / "out_unused").exists())
+
+    def test_out_dir_moves_shoulder_row(self):
+        with TemporaryDirectory() as d:
+            root = Path(d) / "bundle"
+            y2026 = root / "year_2026"
+            y2026.mkdir(parents=True)
+            (y2026 / "plantings.csv").write_text(
+                "ID,Crop,Planned Plant Date\nP1,Carrot,2025-06-10\n",
+                encoding="utf-8",
+            )
+            out = Path(d) / "out"
+            call_command(
+                "reroute_planting_bundle_rows",
+                "--data-dir",
+                str(root),
+                "--out-dir",
+                str(out),
+            )
+            y2025 = out / "year_2025" / "plantings.csv"
+            self.assertTrue(y2025.is_file())
+            text = y2025.read_text(encoding="utf-8")
+            self.assertIn("P1", text)
+            self.assertIn("2025-06-10", text)
+            src = out / "year_2026" / "plantings.csv"
+            self.assertIn("ID,Crop", src.read_text(encoding="utf-8"))
+            self.assertNotIn("P1", src.read_text(encoding="utf-8"))
+
+
 class ImportHistoricalDataCommandTests(TestCase):
     SUMMARY_TOP_LEVEL_KEYS = {"schema_version", "status", "fatal_error", "run", "results"}
     SUMMARY_RUN_KEYS = {
@@ -490,6 +624,8 @@ class ImportHistoricalDataCommandTests(TestCase):
         "atomic_apply",
         "verbose",
         "skip_plantings_when_planned_date_over_one_year_from_folder_year",
+        "plantings_planning_year_from_planned_date",
+        "plantings_planning_year_from_planned_date_force_past_threshold",
     }
     SUMMARY_RESULTS_KEYS = {
         "models",
@@ -1079,6 +1215,164 @@ class ImportHistoricalDataCommandTests(TestCase):
             self.assertEqual(summary["results"]["models"]["Planting"]["created"], 1)
             self.assertEqual(PlanningYear.objects.count(), 1)
             self.assertEqual(Planting.objects.count(), 1)
+
+    def test_live17c_force_flag_requires_date_bind_flag(self):
+        with TemporaryDirectory() as data_dir:
+            self._write_clean_fixture(data_dir)
+            with self.assertRaises(CommandError):
+                call_command(
+                    "import_historical_data",
+                    str(data_dir),
+                    "--validate-only",
+                    "--plantings-planning-year-from-planned-date-force-past-threshold",
+                )
+
+    def test_live17c_shoulder_rebind_uses_planned_date_planning_year(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "plantings.csv",
+                [
+                    "ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status",
+                    "P1,Carrot,Field 1,Nantes,1,1,100,2020-06-15,Planned",
+                ],
+            )
+            summary_path = Path(output_dir) / "s-live17c-shoulder.json"
+            summary = self._run_import(
+                str(data_dir),
+                summary_path,
+                "--plantings-planning-year-from-planned-date",
+            )
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertTrue(summary["run"]["plantings_planning_year_from_planned_date"])
+            self.assertFalse(summary["run"]["plantings_planning_year_from_planned_date_force_past_threshold"])
+            p = Planting.objects.get()
+            self.assertEqual(p.planning_year.year, 2020)
+            codes = [w["code"] for w in summary["results"]["row_warnings"]]
+            self.assertIn("planting_planning_year_rebound_from_planned_date", codes)
+
+    def test_live17c_default_folder_wins_same_row(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "plantings.csv",
+                [
+                    "ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status",
+                    "P1,Carrot,Field 1,Nantes,1,1,100,2020-06-15,Planned",
+                ],
+            )
+            summary = self._run_import(str(data_dir), Path(output_dir) / "s-live17c-default.json")
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertFalse(summary["run"]["plantings_planning_year_from_planned_date"])
+            p = Planting.objects.get()
+            self.assertEqual(p.planning_year.year, 2021)
+            codes = [w["code"] for w in summary["results"]["row_warnings"]]
+            self.assertNotIn("planting_planning_year_rebound_from_planned_date", codes)
+            self.assertNotIn("planting_date_year_mismatch", codes)
+
+    def test_live15_import_resolves_bunch_label_to_bu_product_row(self):
+        """LIVE-15: 601 / pack strings may say bunch while reference row is bu."""
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            Path(data_dir, "crop_sales_formats.csv").write_text(
+                "\n".join(
+                    [
+                        "Crop Name,Product Name,Sale Price,Sale Unit,Harvest Qty Per Sale Unit,SKU,Is Active",
+                        "Carrot,Carrot - bu,3.50,bunch,1,CAR-BU,true",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            year_dir.joinpath("sales_events.csv").write_text(
+                "\n".join(
+                    [
+                        "Channel Name,Sale Date,Product Name,Planned Quantity,Planned Revenue,Actual Quantity,Actual Revenue,Actual Price,Brought Quantity,Returned Quantity,Notes",
+                        "Farm Stand,2021-06-01,Carrot - bunch,10,35,9,31.5,3.5,10,1,live15",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            year_dir.joinpath("pack_allocations.csv").write_text(
+                "\n".join(
+                    [
+                        "Planting ID,Harvest Date,Channel,Product,Pack Date,Quantity,Notes",
+                        "P1,,Farm Stand,Carrot - bunch,2021-06-02,5,live15",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            summary_path = Path(output_dir) / "live15-bunch-bu.json"
+            summary = self._run_import(str(data_dir), summary_path)
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            se = SalesEvent.objects.filter(entry_kind=SalesEvent.EntryKind.ACTUAL).first()
+            self.assertIsNotNone(se)
+            self.assertEqual(se.product.product_name, "Carrot - bu")
+
+    def test_live17c_far_date_folder_wins_and_skip_b_interaction(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "plantings.csv",
+                [
+                    "ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status",
+                    "P1,Carrot,Field 1,Nantes,1,1,100,2018-06-15,Planned",
+                ],
+            )
+            summary = self._run_import(
+                str(data_dir),
+                Path(output_dir) / "s-live17c-far-skip.json",
+                "--plantings-planning-year-from-planned-date",
+                "--skip-plantings-when-planned-date-over-one-year-from-folder-year",
+            )
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            self.assertEqual(Planting.objects.count(), 0)
+            self.assertTrue(
+                any(w["code"] == "planting_date_year_mismatch" for w in summary["results"]["row_warnings"])
+            )
+            skips = summary["results"]["pack_skip_rows"]
+            self.assertTrue(
+                any(x["code"] == "planting_skipped_planned_date_far_from_folder_year" for x in skips)
+            )
+
+    def test_live17c_force_past_threshold_rebinds_with_high_severity_warning(self):
+        with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
+            self._write_clean_fixture(data_dir)
+            self._write_year_fixture(data_dir, year=2021)
+            year_dir = Path(data_dir) / "year_2021"
+            self._write_csv(
+                year_dir,
+                "plantings.csv",
+                [
+                    "ID,Crop Name,Block Name,Variety,Bed Start,Bed End,Planned Bedfeet,Planned Plant Date,Status",
+                    "P1,Carrot,Field 1,Nantes,1,1,100,2018-06-15,Planned",
+                ],
+            )
+            summary = self._run_import(
+                str(data_dir),
+                Path(output_dir) / "s-live17c-force.json",
+                "--plantings-planning-year-from-planned-date",
+                "--plantings-planning-year-from-planned-date-force-past-threshold",
+            )
+            self._assert_summary_contract(summary, expected_validate_only=False, expected_dry_run=False)
+            p = Planting.objects.get()
+            self.assertEqual(p.planning_year.year, 2018)
+            self.assertTrue(
+                any(
+                    w["code"] == "planting_planning_year_rebound_forced_past_threshold"
+                    for w in summary["results"]["row_warnings"]
+                )
+            )
 
     def test_field_walk_notes_can_resolve_planting_without_planting_id(self):
         with TemporaryDirectory() as data_dir, TemporaryDirectory() as output_dir:
@@ -7743,6 +8037,66 @@ class ComposeCropSalesFormatProductNameTest(TestCase):
         self.assertEqual(
             compose_crop_sales_format_product_name("Cucumber", "Cucumber - lb"),
             "Cucumber - lb",
+        )
+
+
+class Live15BunchBuProductNameTests(TestCase):
+    """LIVE-15 / DG-19: unit suffix aliases for joins; 12 bu stays distinct."""
+
+    def test_lookup_variants_map_bunch_and_bu(self):
+        from core.management.commands.import_historical_data import bunch_bu_product_name_lookup_variants
+
+        v = bunch_bu_product_name_lookup_variants("Arugula - bunch")
+        self.assertIn("Arugula - bu", v)
+        self.assertIn("Arugula - bunch", v)
+        v2 = bunch_bu_product_name_lookup_variants("Arugula - bu")
+        self.assertIn("Arugula - bunch", v2)
+        self.assertIn("Arugula - bu", v2)
+
+    def test_lookup_variants_do_not_alias_twelve_bu(self):
+        from core.management.commands.import_historical_data import bunch_bu_product_name_lookup_variants
+
+        v = bunch_bu_product_name_lookup_variants("Radish French Breakfast - 12 bu")
+        self.assertEqual(v, ["Radish French Breakfast - 12 bu"])
+
+    def test_historical_join_equivalence(self):
+        from core.management.commands.import_historical_data import (
+            crop_sales_format_labels_equivalent_for_historical_join,
+        )
+
+        self.assertTrue(
+            crop_sales_format_labels_equivalent_for_historical_join("Kale - bunch", "Kale - bu")
+        )
+        self.assertFalse(
+            crop_sales_format_labels_equivalent_for_historical_join("Kale - 12 bu", "Kale - bu")
+        )
+        self.assertTrue(
+            crop_sales_format_labels_equivalent_for_historical_join("Kale - 12 bu", "Kale - 12 bu")
+        )
+
+    def test_lookup_variants_map_pint_pt_quart_qt_each_ea(self):
+        from core.management.commands.import_historical_data import bunch_bu_product_name_lookup_variants
+
+        self.assertIn("Basil - pt", bunch_bu_product_name_lookup_variants("Basil - pint"))
+        self.assertIn("Basil - pint", bunch_bu_product_name_lookup_variants("Basil - pt"))
+        self.assertIn("Berries - qt", bunch_bu_product_name_lookup_variants("Berries - quart"))
+        self.assertIn("Berries - quart", bunch_bu_product_name_lookup_variants("Berries - qt"))
+        self.assertIn("Head lettuce - ea", bunch_bu_product_name_lookup_variants("Head lettuce - each"))
+        self.assertIn("Head lettuce - each", bunch_bu_product_name_lookup_variants("Head lettuce - ea"))
+
+    def test_historical_join_equivalence_extended_units(self):
+        from core.management.commands.import_historical_data import (
+            crop_sales_format_labels_equivalent_for_historical_join,
+        )
+
+        self.assertTrue(
+            crop_sales_format_labels_equivalent_for_historical_join("Basil - pint", "Basil - pt")
+        )
+        self.assertTrue(
+            crop_sales_format_labels_equivalent_for_historical_join("Berries - quart", "Berries - qt")
+        )
+        self.assertTrue(
+            crop_sales_format_labels_equivalent_for_historical_join("Lettuce - each", "Lettuce - ea")
         )
 
 

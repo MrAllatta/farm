@@ -735,6 +735,49 @@ class WeeklyChannelOrderViewTests(TestCase):
         self.assertContains(r, "7.0")
         self.assertIn(b"data-empty-reason=\"historical_from_namesake_channel\"", r.content)
 
+    def test_historical_merge_12_bu_actuals_not_attached_to_bu_product_line(self):
+        """LIVE-15 / DG-19: prior-year merge must not treat 12 bu ACTUALs as the bu/bunch line."""
+        from sales.views_weekly_order import historical_by_product_for_window_from_pool
+
+        crop = self.product.crop
+        product_bu = CropSalesFormat.objects.create(
+            crop=crop,
+            product_name="Kale - bu",
+            sale_price=Decimal("4.00"),
+            sale_unit="bu",
+            harvest_qty_per_sale_unit=Decimal("1.00"),
+            sku="KAL-BU",
+            is_active=True,
+        )
+        product_12bu = CropSalesFormat.objects.create(
+            crop=crop,
+            product_name="Kale - 12 bu",
+            sale_price=Decimal("40.00"),
+            sale_unit="bu",
+            harvest_qty_per_sale_unit=Decimal("12.00"),
+            sku="KAL-12BU",
+            is_active=True,
+        )
+        wk = 22
+        w = Week(2024, wk)
+        week_start = w.monday()
+        week_end = week_start + timedelta(days=6)
+        ev = SalesEvent.objects.create(
+            entry_kind=SalesEvent.EntryKind.ACTUAL,
+            channel=self.channel,
+            sale_date=week_start,
+            product=product_12bu,
+            actual_quantity=Decimal("5"),
+        )
+        pool = list(
+            SalesEvent.objects.filter(pk=ev.pk).select_related("product", "product__crop", "channel")
+        )
+        block = historical_by_product_for_window_from_pool(
+            pool, self.channel, [product_bu], week_start, week_end
+        )
+        self.assertTrue(block["empty"])
+        self.assertFalse(block.get("used_product_key_fallback"))
+
     def test_weekly_order_merges_duplicate_actual_rows_same_product_week(self):
         """LIVE-1: multiple ACTUAL rows same channel/product/week window sum in the grid."""
         wk = 25

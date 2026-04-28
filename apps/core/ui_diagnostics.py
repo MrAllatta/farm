@@ -114,8 +114,9 @@ def harvest_surface_hints(
         repair_lines = (
             f"This list is built from generated HarvestEvent rows. After import, from the repo root run "
             f"{_repair_cmd_pyid()} (scoped to this planning year), or {_repair_cmd_year()} "
-            "when several years need repair. The command only adds missing rows; it does not overwrite picks "
-            "that already have recorded harvest quantities."
+            "when several years need repair. Apply-mode imports already attempted repair once "
+            "(check import --summary-json post_repair_planting_events). The command only adds missing rows; "
+            "it does not overwrite picks that already have recorded harvest quantities."
         )
         cmd_block = "\n".join([_repair_cmd_pyid(), _repair_cmd_year()])
         out.append(

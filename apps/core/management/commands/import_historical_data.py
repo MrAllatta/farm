@@ -10,6 +10,10 @@ Usage:
     python manage.py import_historical_data /path/to/data/dir
     python manage.py import_historical_data /path/to/data/dir --start-year 2021 --end-year 2025
     python manage.py import_historical_data /path/to/data/dir --dry-run
+
+Repo ``scripts/run_import.sh`` ``historical-preflight`` / ``historical-apply`` pass ``--start-year`` /
+``--end-year`` from ``LIVE_IMPORT_ARCHIVE_YEAR``–``LIVE_IMPORT_YEAR`` (see that script), not these
+CLI defaults, so local Make import paths include ``year_2026`` when the bundle has it.
 """
 
 import csv
@@ -29,6 +33,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction, DatabaseError, IntegrityError
 
 from core.import_sample_guard import live12_block_message_for_sample_into_dev_sqlite
+from core.planting_planning_year_routing import planting_target_planning_calendar_year
 
 from reference.models import (
     CropInfo,
@@ -91,6 +96,88 @@ def compose_crop_sales_format_product_name(crop_name: str, format_column: str) -
         if not remainder or remainder[0] in " -/|":
             return format_column
     return f"{crop_name} {format_column}".strip()
+
+
+# LIVE-15 / DG-19: sales-unit suffix aliases for FK resolution and weekly-order historical joins.
+# **bunch** ≡ **bu**; **pint** ≡ **pt**; **quart** ≡ **qt**; **each** ≡ **ea**.
+# **12 bu** is a distinct product — never treat it as the bu/bunch pair.
+_LIVE15_12_BU_SUFFIX = re.compile(r"-\s*12\s+bu\s*$", re.IGNORECASE)
+_LIVE15_BUNCH_SUFFIX = re.compile(r"-\s*bunch\s*$", re.IGNORECASE)
+_LIVE15_BU_SUFFIX = re.compile(r"-\s*bu\s*$", re.IGNORECASE)
+_LIVE15_PINT_SUFFIX = re.compile(r"-\s*pint\s*$", re.IGNORECASE)
+_LIVE15_PT_SUFFIX = re.compile(r"-\s*pt\s*$", re.IGNORECASE)
+_LIVE15_QUART_SUFFIX = re.compile(r"-\s*quart\s*$", re.IGNORECASE)
+_LIVE15_QT_SUFFIX = re.compile(r"-\s*qt\s*$", re.IGNORECASE)
+_LIVE15_EACH_SUFFIX = re.compile(r"-\s*each\s*$", re.IGNORECASE)
+_LIVE15_EA_SUFFIX = re.compile(r"-\s*ea\s*$", re.IGNORECASE)
+
+
+def _normalize_live15_product_name_units(name: str) -> str:
+    """Map terminal unit spellings to one form per alias class (join / equivalence)."""
+    s = (name or "").strip()
+    if not s:
+        return s
+    if _LIVE15_12_BU_SUFFIX.search(s):
+        return s
+    t = _LIVE15_BUNCH_SUFFIX.sub("- bu", s)
+    t = _LIVE15_PINT_SUFFIX.sub("- pint", t)
+    t = _LIVE15_PT_SUFFIX.sub("- pint", t)
+    t = _LIVE15_QUART_SUFFIX.sub("- quart", t)
+    t = _LIVE15_QT_SUFFIX.sub("- quart", t)
+    t = _LIVE15_EACH_SUFFIX.sub("- each", t)
+    t = _LIVE15_EA_SUFFIX.sub("- each", t)
+    return t
+
+
+def bunch_bu_product_name_lookup_variants(product_name: str | None) -> list[str]:
+    """Return ordered unique product_name strings to try when resolving ``CropSalesFormat``.
+
+    Terminal unit aliases (LIVE-15): ``bunch``/``bu``, ``pint``/``pt``, ``quart``/``qt``,
+    ``each``/``ea``. ``- 12 bu`` is excluded from bu/bunch pairing.
+    """
+    s = (product_name or "").strip()
+    if not s:
+        return [s]
+    out: list[str] = []
+    seen: set[str] = set()
+
+    def _add(label: str) -> None:
+        if label not in seen:
+            seen.add(label)
+            out.append(label)
+
+    _add(s)
+    if _LIVE15_12_BU_SUFFIX.search(s):
+        return out
+    _add(_normalize_live15_product_name_units(s))
+    if _LIVE15_BU_SUFFIX.search(s) and not _LIVE15_12_BU_SUFFIX.search(s):
+        _add(_LIVE15_BU_SUFFIX.sub("- bunch", s))
+    if _LIVE15_PINT_SUFFIX.search(s):
+        _add(_LIVE15_PINT_SUFFIX.sub("- pt", s))
+    if _LIVE15_PT_SUFFIX.search(s) and not _LIVE15_PINT_SUFFIX.search(s):
+        _add(_LIVE15_PT_SUFFIX.sub("- pint", s))
+    if _LIVE15_QUART_SUFFIX.search(s):
+        _add(_LIVE15_QUART_SUFFIX.sub("- qt", s))
+    if _LIVE15_QT_SUFFIX.search(s) and not _LIVE15_QUART_SUFFIX.search(s):
+        _add(_LIVE15_QT_SUFFIX.sub("- quart", s))
+    if _LIVE15_EACH_SUFFIX.search(s):
+        _add(_LIVE15_EACH_SUFFIX.sub("- ea", s))
+    if _LIVE15_EA_SUFFIX.search(s) and not _LIVE15_EACH_SUFFIX.search(s):
+        _add(_LIVE15_EA_SUFFIX.sub("- each", s))
+    return out
+
+
+def crop_sales_format_labels_equivalent_for_historical_join(a: str | None, b: str | None) -> bool:
+    """LIVE-1 / LIVE-15: True when two ``CropSalesFormat.product_name`` values match for history joins."""
+    aa = (a or "").strip()
+    bb = (b or "").strip()
+    if not aa or not bb:
+        return aa == bb
+    if aa == bb:
+        return True
+    if _LIVE15_12_BU_SUFFIX.search(aa) or _LIVE15_12_BU_SUFFIX.search(bb):
+        return False
+    return _normalize_live15_product_name_units(aa) == _normalize_live15_product_name_units(bb)
 
 
 class Command(BaseCommand):
@@ -158,9 +245,24 @@ class Command(BaseCommand):
         "planting_date_year_mismatch": {
             "severity": "medium",
             "operator_action": (
-                "PlanningYear is always the year_YYYY bundle folder (not the row date). "
-                "Move the row to the correct year_YYYY bundle folder or fix Planned Plant Date in source; "
-                "optional LIVE-17/B: --skip-plantings-when-planned-date-over-one-year-from-folder-year."
+                "Default: PlanningYear is the year_YYYY bundle folder (not the row date). "
+                "Move the row to the correct year_YYYY tree (see LIVE-17/A reroute_planting_bundle_rows), "
+                "fix Planned Plant Date, optional LIVE-17/B skip flag, or opt-in LIVE-17/C date bind flags."
+            ),
+        },
+        "planting_planning_year_rebound_from_planned_date": {
+            "severity": "low",
+            "operator_action": (
+                "LIVE-17/C: row was imported under PlanningYear from Planned Plant Date calendar year "
+                "(within ±1 year of folder) instead of the bundle folder year; audit trail only."
+            ),
+        },
+        "planting_planning_year_rebound_forced_past_threshold": {
+            "severity": "high",
+            "operator_action": (
+                "LIVE-17/C: Planned Plant Date calendar year was more than one year from the folder year "
+                "but import used the date year because --plantings-planning-year-from-planned-date-force-past-threshold "
+                "was set; confirm this is intentional."
             ),
         },
         "import_year_range_skips_disk_year_folder": {
@@ -263,6 +365,25 @@ class Command(BaseCommand):
             ),
         )
         parser.add_argument(
+            "--plantings-planning-year-from-planned-date",
+            action="store_true",
+            help=(
+                "LIVE-17/C (default off): bind Planting.planning_year from Planned Plant Date calendar year "
+                "when |date_year - folder_year| <= 1; otherwise folder wins (with planting_date_year_mismatch "
+                "when >1). Use --plantings-planning-year-from-planned-date-force-past-threshold to also bind "
+                "when the gap exceeds one calendar year."
+            ),
+        )
+        parser.add_argument(
+            "--plantings-planning-year-from-planned-date-force-past-threshold",
+            action="store_true",
+            help=(
+                "LIVE-17/C: only with --plantings-planning-year-from-planned-date; when Planned Plant Date "
+                "year is more than one calendar year from the folder year, still bind PlanningYear to the "
+                "date year (emits planting_planning_year_rebound_forced_past_threshold)."
+            ),
+        )
+        parser.add_argument(
             "--allow-sample-into-repo-dev-sqlite",
             action="store_true",
             help=(
@@ -302,6 +423,19 @@ class Command(BaseCommand):
         self.skip_plantings_when_planned_date_over_one_year_from_folder_year = bool(
             options.get("skip_plantings_when_planned_date_over_one_year_from_folder_year")
         )
+        self.plantings_planning_year_from_planned_date = bool(
+            options.get("plantings_planning_year_from_planned_date")
+        )
+        self.plantings_planning_year_from_planned_date_force_past_threshold = bool(
+            options.get("plantings_planning_year_from_planned_date_force_past_threshold")
+        )
+        if self.plantings_planning_year_from_planned_date_force_past_threshold and not (
+            self.plantings_planning_year_from_planned_date
+        ):
+            raise CommandError(
+                "--plantings-planning-year-from-planned-date-force-past-threshold requires "
+                "--plantings-planning-year-from-planned-date"
+            )
         _live12_msg = live12_block_message_for_sample_into_dev_sqlite(
             data_dir=self.data_dir,
             validate_only=self.validate_only,
@@ -539,6 +673,42 @@ class Command(BaseCommand):
             row_number,
             "planting_date_year_mismatch",
             "plantings.planned_plant_date",
+            message,
+        )
+
+    def _record_planting_planning_year_rebound_shoulder(
+        self, folder_year: int, row_number: int, plant_date: date, target_year: int
+    ) -> None:
+        """LIVE-17/C: date-derived PlanningYear within ±1 year of folder (audit)."""
+        message = (
+            f"LIVE-17/C: Planned Plant Date {plant_date.isoformat()} (year {plant_date.year}) "
+            f"bound this row to PlanningYear {target_year} instead of bundle folder year {folder_year} "
+            f"(shoulder rule |date_year - folder_year| <= 1)."
+        )
+        self.stdout.write(self.style.WARNING(f"    ⚠  row {row_number}: {message}"))
+        self._record_row_warning(
+            "Planting",
+            row_number,
+            "planting_planning_year_rebound_from_planned_date",
+            "plantings.planning_year",
+            message,
+        )
+
+    def _record_planting_planning_year_forced_rebind(
+        self, folder_year: int, row_number: int, plant_date: date, target_year: int
+    ) -> None:
+        """LIVE-17/C: forced date authority past the >1 calendar-year threshold."""
+        message = (
+            f"LIVE-17/C (forced): Planned Plant Date {plant_date.isoformat()} (year {plant_date.year}) "
+            f"is more than one calendar year from folder year {folder_year}; "
+            f"PlanningYear {target_year} was used because --plantings-planning-year-from-planned-date-force-past-threshold was set."
+        )
+        self.stdout.write(self.style.WARNING(f"    ⚠  row {row_number}: {message}"))
+        self._record_row_warning(
+            "Planting",
+            row_number,
+            "planting_planning_year_rebound_forced_past_threshold",
+            "plantings.planning_year",
             message,
         )
 
@@ -795,10 +965,27 @@ class Command(BaseCommand):
             return root_path
         return os.path.join(self.data_dir, "reference", filename)
 
+    def _iter_merged_reference_csv_paths(self, filename):
+        """Paths for Tier-1 CSVs that may exist under both ``reference/`` and bundle root.
+
+        ``reference/<filename>`` is processed first (canonical Stage A2 export). When a distinct
+        root-level file also exists (legacy demo slice), it is processed second; rows whose
+        primary key already exists are skipped so demo names (e.g. ``North Field``) augment
+        the catalog without replacing canonical rows (e.g. ``HT-W`` / ``Bok Choy``).
+        """
+        ref_path = os.path.join(self.data_dir, "reference", filename)
+        root_path = os.path.join(self.data_dir, filename)
+        paths = []
+        if os.path.exists(ref_path):
+            paths.append(ref_path)
+        if os.path.exists(root_path) and root_path not in paths:
+            paths.append(root_path)
+        return paths
+
     def _import_blocks(self):
         """Import block definitions."""
-        path = self._resolve_reference_path("blocks.csv")
-        if not os.path.exists(path):
+        paths = self._iter_merged_reference_csv_paths("blocks.csv")
+        if not paths:
             self.stdout.write(f"  ⊘ blocks.csv not found\n")
             return
 
@@ -811,43 +998,46 @@ class Command(BaseCommand):
             "greenhouse": "greenhouse",
         }
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
-            for i, row in enumerate(reader, 1):
-                try:
-                    name = row["Block"].strip()
-                    if not name:
-                        continue
+        for path in paths:
+            with open(path, "r") as f:
+                reader = csv.DictReader(f)
+                for i, row in enumerate(reader, 1):
+                    try:
+                        name = row["Block"].strip()
+                        if not name:
+                            continue
+                        if name in self.block_cache:
+                            continue
 
-                    block_type_raw = row["Block Type"].strip()
-                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
-                    block_type = type_map.get(normalized_block_type, "field")
+                        block_type_raw = row["Block Type"].strip()
+                        normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                        block_type = type_map.get(normalized_block_type, "field")
 
-                    data = {
-                        "block_type": block_type,
-                        "num_beds": self._int(row["# of Beds"]),
-                        "bed_width_feet": self._dec(row["Bed Width (feet)"] or "0"),
-                        "bedfeet_per_bed": self._int(row["Bedfeet per Bed"] or 0),
-                    }
+                        data = {
+                            "block_type": block_type,
+                            "num_beds": self._int(row["# of Beds"]),
+                            "bed_width_feet": self._dec(row["Bed Width (feet)"] or "0"),
+                            "bedfeet_per_bed": self._int(row["Bedfeet per Bed"] or 0),
+                        }
 
-                    if not self.write_disabled:
-                        obj, created = Block.objects.update_or_create(name=name, defaults=data)
-                        self.stats["Block"]["created" if created else "processed"] += 1
-                        self.block_cache[name] = obj
-                    else:
-                        self.block_cache[name] = name
-                        self.stats["Block"]["processed"] += 1
+                        if not self.write_disabled:
+                            obj, created = Block.objects.update_or_create(name=name, defaults=data)
+                            self.stats["Block"]["created" if created else "processed"] += 1
+                            self.block_cache[name] = obj
+                        else:
+                            self.block_cache[name] = name
+                            self.stats["Block"]["processed"] += 1
 
-                except (
-                    ValueError,
-                    KeyError,
-                    InvalidOperation,
-                    ValidationError,
-                    IntegrityError,
-                    DatabaseError,
-                ) as e:
-                    self.stderr.write(f"    ERROR row {i}: {e}")
-                    self.stats["Block"]["errors"] += 1
+                    except (
+                        ValueError,
+                        KeyError,
+                        InvalidOperation,
+                        ValidationError,
+                        IntegrityError,
+                        DatabaseError,
+                    ) as e:
+                        self.stderr.write(f"    ERROR row {i}: {e}")
+                        self.stats["Block"]["errors"] += 1
 
         self.stdout.write(
             f" {self.stats['Block']['processed']} processed, "
@@ -856,8 +1046,8 @@ class Command(BaseCommand):
 
     def _import_crops(self):
         """Import crop info."""
-        path = self._resolve_reference_path("crop_info.csv")
-        if not os.path.exists(path):
+        paths = self._iter_merged_reference_csv_paths("crop_info.csv")
+        if not paths:
             self.stdout.write(f"  ⊘ crop_info.csv not found\n")
             return
 
@@ -865,80 +1055,81 @@ class Command(BaseCommand):
 
         seen_names = set()
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
-            for i, row in enumerate(reader, 1):
-                try:
-                    name = row["Crop"].strip()
-                    if not name or name in seen_names:
-                        if name in seen_names:
-                            self.stats["CropInfo"]["skipped"] += 1
-                        continue
+        for path_idx, path in enumerate(paths):
+            with open(path, "r") as f:
+                reader = csv.DictReader(f)
+                for i, row in enumerate(reader, 1):
+                    try:
+                        name = row["Crop"].strip()
+                        if not name or name in seen_names:
+                            if name in seen_names and path_idx == 0:
+                                self.stats["CropInfo"]["skipped"] += 1
+                            continue
 
-                    seen_names.add(name)
+                        seen_names.add(name)
 
-                    crop_type = row.get("Type", "").strip() or "Vegetables"
-                    botanical_family = row.get("Botanical Family", "").strip() or ""
+                        crop_type = row.get("Type", "").strip() or "Vegetables"
+                        botanical_family = row.get("Botanical Family", "").strip() or ""
 
-                    # Determine propagation type
-                    propagation_type = "seed"
-                    if name.startswith("Garlic"):
-                        propagation_type = "vegetative_clove"
-                    elif name.startswith("Potato") or name == "Sweet Potatoes":
-                        propagation_type = "vegetative_tuber"
+                        # Determine propagation type
+                        propagation_type = "seed"
+                        if name.startswith("Garlic"):
+                            propagation_type = "vegetative_clove"
+                        elif name.startswith("Potato") or name == "Sweet Potatoes":
+                            propagation_type = "vegetative_tuber"
 
-                    is_perennial = name in ("Asparagus",)
+                        is_perennial = name in ("Asparagus",)
 
-                    storage_weeks = self._int(row.get("Storage Weeks", 0))
-                    can_hold_in_field = self._bool_csv(row.get("Can Hold In Field"))
-                    fresh_or_storage = derive_fresh_or_storage(
-                        storage_weeks=storage_weeks,
-                        can_hold_in_field=can_hold_in_field,
-                    )
+                        storage_weeks = self._int(row.get("Storage Weeks", 0))
+                        can_hold_in_field = self._bool_csv(row.get("Can Hold In Field"))
+                        fresh_or_storage = derive_fresh_or_storage(
+                            storage_weeks=storage_weeks,
+                            can_hold_in_field=can_hold_in_field,
+                        )
 
-                    data = {
-                        "crop_type": crop_type,
-                        "botanical_family": botanical_family,
-                        "propagation_type": propagation_type,
-                        "is_perennial": is_perennial,
-                        "fresh_or_storage": fresh_or_storage,
-                        "storage_weeks": storage_weeks,
-                        "can_hold_in_field": can_hold_in_field,
-                        "harvest_unit": row.get("Harvest Units", "pounds").strip() or "pounds",
-                        "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
-                        "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
-                        "harvest_bin": row.get("Harvest Bin", "").strip(),
-                        "harvest_tools": row.get("Harvest Tools", "").strip(),
-                        "harvest_rate_per_hour": self._int_or_none(
-                            row.get("Harvest Rate (units per hour)")
-                        ),
-                        "nursery_weeks": self._int(row.get("Nursery Weeks", 0)),
-                        "weeks_until_pot_up": self._int(row.get("Weeks Until Pot Up", 0)),
-                        "pot_up_tray_size": self._int_or_none(row.get("Pot Up Tray Size")),
-                        "seeded_tray_size": self._int_or_none(row.get("Seeded Tray Size")),
-                        "seeds_per_cell": self._int(row.get("Seeds Per Cell", 1)) or 1,
-                        "thinned_plants": self._int(row.get("Thinned Plants", 0)),
-                        "seeds_per_ounce": self._dec_or_none(row.get("Seeds Per Ounce")),
-                    }
+                        data = {
+                            "crop_type": crop_type,
+                            "botanical_family": botanical_family,
+                            "propagation_type": propagation_type,
+                            "is_perennial": is_perennial,
+                            "fresh_or_storage": fresh_or_storage,
+                            "storage_weeks": storage_weeks,
+                            "can_hold_in_field": can_hold_in_field,
+                            "harvest_unit": row.get("Harvest Units", "pounds").strip() or "pounds",
+                            "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
+                            "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
+                            "harvest_bin": row.get("Harvest Bin", "").strip(),
+                            "harvest_tools": row.get("Harvest Tools", "").strip(),
+                            "harvest_rate_per_hour": self._int_or_none(
+                                row.get("Harvest Rate (units per hour)")
+                            ),
+                            "nursery_weeks": self._int(row.get("Nursery Weeks", 0)),
+                            "weeks_until_pot_up": self._int(row.get("Weeks Until Pot Up", 0)),
+                            "pot_up_tray_size": self._int_or_none(row.get("Pot Up Tray Size")),
+                            "seeded_tray_size": self._int_or_none(row.get("Seeded Tray Size")),
+                            "seeds_per_cell": self._int(row.get("Seeds Per Cell", 1)) or 1,
+                            "thinned_plants": self._int(row.get("Thinned Plants", 0)),
+                            "seeds_per_ounce": self._dec_or_none(row.get("Seeds Per Ounce")),
+                        }
 
-                    if not self.write_disabled:
-                        obj, created = CropInfo.objects.update_or_create(name=name, defaults=data)
-                        self.stats["CropInfo"]["created" if created else "processed"] += 1
-                        self.crop_cache[name] = obj
-                    else:
-                        self.crop_cache[name] = name
-                        self.stats["CropInfo"]["processed"] += 1
+                        if not self.write_disabled:
+                            obj, created = CropInfo.objects.update_or_create(name=name, defaults=data)
+                            self.stats["CropInfo"]["created" if created else "processed"] += 1
+                            self.crop_cache[name] = obj
+                        else:
+                            self.crop_cache[name] = name
+                            self.stats["CropInfo"]["processed"] += 1
 
-                except (
-                    ValueError,
-                    KeyError,
-                    InvalidOperation,
-                    ValidationError,
-                    IntegrityError,
-                    DatabaseError,
-                ) as e:
-                    self.stderr.write(f"    ERROR row {i}: {e}")
-                    self.stats["CropInfo"]["errors"] += 1
+                    except (
+                        ValueError,
+                        KeyError,
+                        InvalidOperation,
+                        ValidationError,
+                        IntegrityError,
+                        DatabaseError,
+                    ) as e:
+                        self.stderr.write(f"    ERROR row {i}: {e}")
+                        self.stats["CropInfo"]["errors"] += 1
 
         self.stdout.write(
             f" {self.stats['CropInfo']['processed']} processed, "
@@ -962,9 +1153,8 @@ class Command(BaseCommand):
         if self.write_disabled:
             return
 
-        catalog_path = self._resolve_reference_path("crop_info.csv")
         catalog_crop_names = set()
-        if os.path.exists(catalog_path):
+        for catalog_path in self._iter_merged_reference_csv_paths("crop_info.csv"):
             with open(catalog_path, "r", encoding="utf-8") as f:
                 for row in csv.DictReader(f):
                     n = (row.get("Crop") or "").strip()
@@ -1024,8 +1214,8 @@ class Command(BaseCommand):
 
     def _import_crop_by_season(self):
         """Import crop-by-season profiles."""
-        path = self._resolve_reference_path("crop_by_season.csv")
-        if not os.path.exists(path):
+        paths = self._iter_merged_reference_csv_paths("crop_by_season.csv")
+        if not paths:
             self.stdout.write(f"  ⊘ crop_by_season.csv not found\n")
             return
 
@@ -1037,102 +1227,115 @@ class Command(BaseCommand):
             "high tunnel": "high_tunnel",
             "greenhouse": "greenhouse",
         }
+        # (crop_id, block_type) already supplied from an earlier merged file this run.
+        season_keys_done = set()
 
-        with open(path, "r") as f:
-            reader = csv.DictReader(f)
-            for i, row in enumerate(reader, 1):
-                try:
-                    crop_name = row["Crop"].strip()
-                    block_type_raw = row["Block Type"].strip()
+        for path_idx, path in enumerate(paths):
+            with open(path, "r") as f:
+                reader = csv.DictReader(f)
+                for i, row in enumerate(reader, 1):
+                    try:
+                        crop_name = row["Crop"].strip()
+                        block_type_raw = row["Block Type"].strip()
 
-                    if not crop_name:
-                        continue
+                        if not crop_name:
+                            continue
 
-                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
-                    block_type = type_map.get(normalized_block_type)
-                    if not block_type:
-                        message = f"unsupported block type '{block_type_raw}'"
-                        self.stderr.write(f"    ERROR row {i}: {message}")
-                        self._record_row_error(
-                            "CropBySeason",
-                            i,
-                            code="namespace_mismatch",
-                            field_path="crop_by_season.block_type",
-                            message=message,
-                        )
+                        normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                        block_type = type_map.get(normalized_block_type)
+                        if not block_type:
+                            message = f"unsupported block type '{block_type_raw}'"
+                            self.stderr.write(f"    ERROR row {i}: {message}")
+                            self._record_row_error(
+                                "CropBySeason",
+                                i,
+                                code="namespace_mismatch",
+                                field_path="crop_by_season.block_type",
+                                message=message,
+                            )
+                            self.stats["CropBySeason"]["errors"] += 1
+                            continue
+
+                        crop = self._get_crop(crop_name)
+                        if not crop:
+                            message = f"crop not found '{crop_name}'"
+                            self.stderr.write(f"    ERROR row {i}: {message}")
+                            self._record_row_error(
+                                "CropBySeason",
+                                i,
+                                code="stale_fk",
+                                field_path="crop_by_season.crop",
+                                message=message,
+                            )
+                            self.stats["CropBySeason"]["errors"] += 1
+                            continue
+
+                        if hasattr(crop, "pk"):
+                            season_key = (crop.pk, block_type)
+                        else:
+                            season_key = (self._normalize_lookup_value(crop_name), block_type)
+                        if season_key in season_keys_done:
+                            if path_idx == 0:
+                                self.stats["CropBySeason"]["skipped"] += 1
+                            continue
+
+                        # Parse spacing values
+                        tp_spacing_raw = row.get("TP Inrow Spacing (ft)", "").strip()
+                        tp_spacing = None
+                        if tp_spacing_raw and tp_spacing_raw.lower() != "na":
+                            try:
+                                tp_spacing = Decimal(tp_spacing_raw)
+                            except InvalidOperation:
+                                pass
+
+                        ds_rate_raw = row.get("DS Seed Rate (seeds/ rowfoot)", "").strip()
+                        ds_rate = None
+                        if ds_rate_raw and ds_rate_raw.lower() not in ("na", ""):
+                            try:
+                                ds_rate = int(float(ds_rate_raw))
+                            except ValueError:
+                                pass
+
+                        dtm = self._int(row.get("DTM Days To Maturity", 0))
+                        if not dtm:
+                            self.stats["CropBySeason"]["skipped"] += 1
+                            continue
+
+                        data = {
+                            "field_week_start": self._int(row.get("Field Week Start", 1)),
+                            "field_week_end": self._int(row.get("Field Week End", 52)),
+                            "total_yield_per_bedfoot": self._dec(row.get("Total Yield Per Bedfoot", 0)),
+                            "harvest_weeks": self._int(row.get("Harvest Weeks", 1)) or 1,
+                            "dtm_days": dtm,
+                            "rows_per_bed": self._int(row.get("Rows Per Bed", 1)) or 1,
+                            "ds_seed_rate": ds_rate,
+                            "tp_inrow_spacing": tp_spacing,
+                            "seeder_settings": row.get("Seeder Settings", "").strip(),
+                            "trellis_system": row.get("Trellis System", "").strip(),
+                            "mulch": row.get("Mulch", "").strip(),
+                            "row_cover": row.get("Row Cover", "").strip(),
+                            "irrigation": row.get("Irrigation", "").strip(),
+                        }
+
+                        if not self.write_disabled:
+                            obj, created = CropBySeason.objects.update_or_create(
+                                crop=crop, block_type=block_type, defaults=data
+                            )
+                            self.stats["CropBySeason"]["created" if created else "processed"] += 1
+                        else:
+                            self.stats["CropBySeason"]["processed"] += 1
+                        season_keys_done.add(season_key)
+
+                    except (
+                        ValueError,
+                        KeyError,
+                        InvalidOperation,
+                        ValidationError,
+                        IntegrityError,
+                        DatabaseError,
+                    ) as e:
+                        self.stderr.write(f"    ERROR row {i}: {e}")
                         self.stats["CropBySeason"]["errors"] += 1
-                        continue
-
-                    crop = self._get_crop(crop_name)
-                    if not crop:
-                        message = f"crop not found '{crop_name}'"
-                        self.stderr.write(f"    ERROR row {i}: {message}")
-                        self._record_row_error(
-                            "CropBySeason",
-                            i,
-                            code="stale_fk",
-                            field_path="crop_by_season.crop",
-                            message=message,
-                        )
-                        self.stats["CropBySeason"]["errors"] += 1
-                        continue
-
-                    # Parse spacing values
-                    tp_spacing_raw = row.get("TP Inrow Spacing (ft)", "").strip()
-                    tp_spacing = None
-                    if tp_spacing_raw and tp_spacing_raw.lower() != "na":
-                        try:
-                            tp_spacing = Decimal(tp_spacing_raw)
-                        except InvalidOperation:
-                            pass
-
-                    ds_rate_raw = row.get("DS Seed Rate (seeds/ rowfoot)", "").strip()
-                    ds_rate = None
-                    if ds_rate_raw and ds_rate_raw.lower() not in ("na", ""):
-                        try:
-                            ds_rate = int(float(ds_rate_raw))
-                        except ValueError:
-                            pass
-
-                    dtm = self._int(row.get("DTM Days To Maturity", 0))
-                    if not dtm:
-                        self.stats["CropBySeason"]["skipped"] += 1
-                        continue
-
-                    data = {
-                        "field_week_start": self._int(row.get("Field Week Start", 1)),
-                        "field_week_end": self._int(row.get("Field Week End", 52)),
-                        "total_yield_per_bedfoot": self._dec(row.get("Total Yield Per Bedfoot", 0)),
-                        "harvest_weeks": self._int(row.get("Harvest Weeks", 1)) or 1,
-                        "dtm_days": dtm,
-                        "rows_per_bed": self._int(row.get("Rows Per Bed", 1)) or 1,
-                        "ds_seed_rate": ds_rate,
-                        "tp_inrow_spacing": tp_spacing,
-                        "seeder_settings": row.get("Seeder Settings", "").strip(),
-                        "trellis_system": row.get("Trellis System", "").strip(),
-                        "mulch": row.get("Mulch", "").strip(),
-                        "row_cover": row.get("Row Cover", "").strip(),
-                        "irrigation": row.get("Irrigation", "").strip(),
-                    }
-
-                    if not self.write_disabled:
-                        obj, created = CropBySeason.objects.update_or_create(
-                            crop=crop, block_type=block_type, defaults=data
-                        )
-                        self.stats["CropBySeason"]["created" if created else "processed"] += 1
-                    else:
-                        self.stats["CropBySeason"]["processed"] += 1
-
-                except (
-                    ValueError,
-                    KeyError,
-                    InvalidOperation,
-                    ValidationError,
-                    IntegrityError,
-                    DatabaseError,
-                ) as e:
-                    self.stderr.write(f"    ERROR row {i}: {e}")
-                    self.stats["CropBySeason"]["errors"] += 1
 
         self.stdout.write(
             f" {self.stats['CropBySeason']['processed']} processed, "
@@ -2085,19 +2288,10 @@ class Command(BaseCommand):
         if not crop_name or not block_name:
             return None
 
-        planning_year = self._get_planning_year(year)
         crop = self._get_crop(crop_name)
         block = self._get_block(block_name)
 
-        if not planning_year or not crop or not block:
-            if not planning_year:
-                self._record_stale_fk(
-                    "Planting",
-                    i,
-                    "plantings.planning_year",
-                    "planning year",
-                    year,
-                )
+        if not crop or not block:
             if not crop:
                 self._record_stale_fk(
                     "Planting",
@@ -2117,6 +2311,60 @@ class Command(BaseCommand):
             self.stats["Planting"]["errors"] += 1
             return None
 
+        plant_date_str = row.get("Planned Plant Date", "").strip()
+        if not plant_date_str:
+            self.stats["Planting"]["skipped"] += 1
+            return None
+
+        plant_date = self._parse_date(plant_date_str)
+        folder_year = year
+        date_year = plant_date.year
+        target_year, bind_decision = planting_target_planning_calendar_year(
+            folder_year=folder_year,
+            planned_date_calendar_year=date_year,
+            planning_year_from_planned_date=self.plantings_planning_year_from_planned_date,
+            force_planned_date_past_threshold=self.plantings_planning_year_from_planned_date_force_past_threshold,
+        )
+        if bind_decision == "folder_wins_far_without_force" and abs(date_year - folder_year) > 1:
+            self._record_planting_date_year_mismatch(folder_year, i, plant_date)
+            if self.skip_plantings_when_planned_date_over_one_year_from_folder_year:
+                self._record_skip_reason(
+                    "Planting",
+                    i,
+                    "planting_skipped_planned_date_far_from_folder_year",
+                    "plantings.planned_plant_date",
+                    (
+                        f"Skipped row: Planned Plant Date {plant_date.isoformat()} is more than one year from "
+                        f"bundle folder year {folder_year} (optional strict mode). Move the row to the correct "
+                        f"year_<Y>/plantings.csv or correct the date, then re-import without this flag or "
+                        f"leave ignored rows out of the bundle."
+                    ),
+                )
+                self.stats["Planting"]["skipped"] += 1
+                return None
+        if bind_decision == "date_rebind_shoulder":
+            self._record_planting_planning_year_rebound_shoulder(
+                folder_year, i, plant_date, target_year
+            )
+        elif bind_decision == "date_rebind_forced_past_threshold":
+            self._record_planting_planning_year_forced_rebind(folder_year, i, plant_date, target_year)
+
+        if bind_decision in ("date_rebind_shoulder", "date_rebind_forced_past_threshold"):
+            planning_year = self._ensure_planning_year(target_year)
+        else:
+            planning_year = self._get_planning_year(target_year)
+
+        if not planning_year:
+            self._record_stale_fk(
+                "Planting",
+                i,
+                "plantings.planning_year",
+                "planning year",
+                target_year,
+            )
+            self.stats["Planting"]["errors"] += 1
+            return None
+
         crop_season = self._get_crop_season(crop, block.block_type)
         if not crop_season:
             self.stdout.write(
@@ -2126,30 +2374,6 @@ class Command(BaseCommand):
             )
             self.stats["Planting"]["skipped"] += 1
             return None
-
-        plant_date_str = row.get("Planned Plant Date", "").strip()
-        if not plant_date_str:
-            self.stats["Planting"]["skipped"] += 1
-            return None
-
-        plant_date = self._parse_date(plant_date_str)
-        if abs(plant_date.year - year) > 1:
-            self._record_planting_date_year_mismatch(year, i, plant_date)
-            if self.skip_plantings_when_planned_date_over_one_year_from_folder_year:
-                self._record_skip_reason(
-                    "Planting",
-                    i,
-                    "planting_skipped_planned_date_far_from_folder_year",
-                    "plantings.planned_plant_date",
-                    (
-                        f"Skipped row: Planned Plant Date {plant_date.isoformat()} is more than one year from "
-                        f"bundle folder year {year} (optional strict mode). Move the row to the correct "
-                        f"year_<Y>/plantings.csv or correct the date, then re-import without this flag or "
-                        f"leave ignored rows out of the bundle."
-                    ),
-                )
-                self.stats["Planting"]["skipped"] += 1
-                return None
         variety_raw = row.get("Variety", "") or ""
         variety_text = self._normalize_planting_variety_text(variety_raw)
         variety_obj = self._resolve_planting_variety_fk(crop, variety_text)
@@ -4601,17 +4825,21 @@ class Command(BaseCommand):
         """Get crop sales format by product name."""
         if product_name in self.product_cache:
             return self.product_cache[product_name]
-        lookup_name = product_name
-        if product_name:
-            alias_key = self._normalize_lookup_value(product_name)
-            if alias_key in self.product_name_aliases:
-                lookup_name = self.product_name_aliases[alias_key]
-        resolved = self._resolve_fk_by_text(
-            CropSalesFormat,
-            "product_name",
-            lookup_name,
-            label="product",
-        )
+        resolved = None
+        for variant in bunch_bu_product_name_lookup_variants(product_name):
+            lookup_name = variant
+            if variant:
+                alias_key = self._normalize_lookup_value(variant)
+                if alias_key in self.product_name_aliases:
+                    lookup_name = self.product_name_aliases[alias_key]
+            resolved = self._resolve_fk_by_text(
+                CropSalesFormat,
+                "product_name",
+                lookup_name,
+                label="product",
+            )
+            if resolved is not None:
+                break
         if (
             resolved is None
             and product_name
@@ -4949,6 +5177,20 @@ class Command(BaseCommand):
             f"\n  TOTALS: created={total_created:3} updated={total_updated:3} "
             f"skipped={total_skipped:3} error={total_error:3}\n"
         )
+        if self.row_warnings:
+            code_totals = self._build_row_warning_code_totals()
+            parts = [f"{code}={n}" for code, n in sorted(code_totals.items())]
+            self.stdout.write("  Row warnings (LIVE-13): " + ", ".join(parts) + "\n")
+            warn_buckets = self._build_row_warning_summary()
+            for bucket in warn_buckets[:12]:
+                self.stdout.write(
+                    f"    · {bucket.get('code') or '?'} ×{bucket['count']} "
+                    f"({bucket.get('model') or '?'}) — {bucket.get('severity') or 'info'}\n"
+                )
+            extra = len(warn_buckets) - 12
+            if extra > 0:
+                self.stdout.write(f"    · … {extra} more warning bucket(s); see --summary-json\n")
+
         if total_error > 0:
             # Print deterministic owner/escalation routing so operators can triage
             # directly from terminal output without opening JSON artifacts first.
@@ -5205,8 +5447,11 @@ class Command(BaseCommand):
         )
         missing = []
         for filename, table_nonempty in checks:
-            path = self._resolve_reference_path(filename)
-            if os.path.exists(path) or table_nonempty():
+            if filename in ("blocks.csv", "crop_info.csv", "crop_by_season.csv"):
+                path_ok = bool(self._iter_merged_reference_csv_paths(filename))
+            else:
+                path_ok = os.path.exists(self._resolve_reference_path(filename))
+            if path_ok or table_nonempty():
                 continue
             missing.append(filename)
         if missing:
@@ -5246,6 +5491,8 @@ class Command(BaseCommand):
                 "atomic_apply": self.atomic_apply,
                 "verbose": self.verbose,
                 "skip_plantings_when_planned_date_over_one_year_from_folder_year": self.skip_plantings_when_planned_date_over_one_year_from_folder_year,
+                "plantings_planning_year_from_planned_date": self.plantings_planning_year_from_planned_date,
+                "plantings_planning_year_from_planned_date_force_past_threshold": self.plantings_planning_year_from_planned_date_force_past_threshold,
             },
             "results": {
                 "models": per_model,

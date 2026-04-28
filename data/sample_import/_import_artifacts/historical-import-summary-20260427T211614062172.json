@@ -1,0 +1,542 @@
+{
+  "fatal_error": null,
+  "results": {
+    "escalation_summary": [],
+    "failure_signatures": [],
+    "models": {
+      "Block": {
+        "created": 39,
+        "error": 0,
+        "skipped": 0,
+        "updated": 4
+      },
+      "CropBySeason": {
+        "created": 143,
+        "error": 0,
+        "skipped": 7,
+        "updated": 21
+      },
+      "CropInfo": {
+        "created": 116,
+        "error": 0,
+        "skipped": 6,
+        "updated": 12
+      },
+      "CropSalesFormat": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 20
+      },
+      "FieldWalkNote": {
+        "created": 30,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "HarvestEvent": {
+        "created": 106,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "InventoryLedger": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 138
+      },
+      "NurseryEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "PlanningYear": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 3
+      },
+      "Planting": {
+        "created": 439,
+        "error": 0,
+        "skipped": 0,
+        "updated": 35
+      },
+      "ProductRecipe": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "ProductRecipeComponent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "QuickSalesEntry": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 9
+      },
+      "RotationHistory": {
+        "created": 38,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      },
+      "SalesChannel": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 6
+      },
+      "SalesEvent": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 33
+      },
+      "Variety": {
+        "created": 0,
+        "error": 0,
+        "skipped": 0,
+        "updated": 0
+      }
+    },
+    "pack_skip_rows": [],
+    "pack_skip_summary": [],
+    "post_repair_planting_events": {
+      "harvest_events_created_plantings": 429,
+      "harvest_planned_dates_filled": 0,
+      "harvest_skipped_invalid_window": 0,
+      "nursery_events_created_plantings": 273,
+      "plantings_scanned": 441
+    },
+    "row_errors": [],
+    "row_warning_code_totals": {
+      "planting_planning_year_rebound_forced_past_threshold": 44,
+      "planting_planning_year_rebound_from_planned_date": 2
+    },
+    "row_warning_summary": [
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "count": 44,
+        "field_path": "plantings.planning_year",
+        "model": "Planting",
+        "operator_action": "LIVE-17/C: Planned Plant Date calendar year was more than one year from the folder year but import used the date year because --plantings-planning-year-from-planned-date-force-past-threshold was set; confirm this is intentional.",
+        "rows": [
+          295,
+          296,
+          297,
+          301,
+          302,
+          303,
+          312,
+          313,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          515,
+          516,
+          518,
+          519,
+          520,
+          524,
+          525,
+          526,
+          544,
+          545,
+          546,
+          547,
+          552,
+          553,
+          558,
+          559,
+          560,
+          561,
+          576,
+          577,
+          578,
+          584,
+          585,
+          586,
+          590,
+          591,
+          592,
+          617
+        ],
+        "severity": "high"
+      },
+      {
+        "code": "planting_planning_year_rebound_from_planned_date",
+        "count": 2,
+        "field_path": "plantings.planning_year",
+        "model": "Planting",
+        "operator_action": "LIVE-17/C: row was imported under PlanningYear from Planned Plant Date calendar year (within \u00b11 year of folder) instead of the bundle folder year; audit trail only.",
+        "rows": [
+          9,
+          11
+        ],
+        "severity": "low"
+      }
+    ],
+    "row_warnings": [
+      {
+        "code": "planting_planning_year_rebound_from_planned_date",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C: Planned Plant Date 2022-10-20 (year 2022) bound this row to PlanningYear 2022 instead of bundle folder year 2023 (shoulder rule |date_year - folder_year| <= 1).",
+        "model": "Planting",
+        "row": 11
+      },
+      {
+        "code": "planting_planning_year_rebound_from_planned_date",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C: Planned Plant Date 2023-10-15 (year 2023) bound this row to PlanningYear 2023 instead of bundle folder year 2024 (shoulder rule |date_year - folder_year| <= 1).",
+        "model": "Planting",
+        "row": 9
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-09 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 295
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-09 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 296
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 297
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 301
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-23 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 302
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-10-14 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 303
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 312
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 313
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 502
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 503
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 504
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 505
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 506
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 507
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 508
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-02 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 509
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-09 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 515
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-09 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 516
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 518
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 519
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 520
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-30 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 524
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-30 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 525
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-30 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 526
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 544
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 545
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 546
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 547
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 552
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 553
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 558
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 559
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-11-11 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 560
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-11-11 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 561
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 576
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 577
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 578
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-23 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 584
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-23 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 585
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-23 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 586
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-10-21 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 590
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-10-21 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 591
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-10-21 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 592
+      },
+      {
+        "code": "planting_planning_year_rebound_forced_past_threshold",
+        "field_path": "plantings.planning_year",
+        "message": "LIVE-17/C (forced): Planned Plant Date 2024-09-16 (year 2024) is more than one calendar year from folder year 2026; PlanningYear 2024 was used because --plantings-planning-year-from-planned-date-force-past-threshold was set.",
+        "model": "Planting",
+        "row": 617
+      }
+    ],
+    "totals": {
+      "created": 911,
+      "error": 0,
+      "skipped": 13,
+      "updated": 281
+    }
+  },
+  "run": {
+    "atomic_apply": true,
+    "bundle_disk_year_folder_max": 2026,
+    "bundle_disk_year_folder_min": 2023,
+    "data_dir": "farm/data/sample_import",
+    "dry_run": false,
+    "end_year": 2026,
+    "finished_at": "2026-04-27T21:16:17.594213Z",
+    "plantings_planning_year_from_planned_date": true,
+    "plantings_planning_year_from_planned_date_force_past_threshold": true,
+    "run_id": "20260427T211614062172",
+    "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
+    "start_year": 2022,
+    "started_at": "2026-04-27T21:16:14.062172Z",
+    "validate_only": false,
+    "verbose": false
+  },
+  "schema_version": "1.5",
+  "status": "ok"
+}

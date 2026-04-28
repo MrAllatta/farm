@@ -5,45 +5,45 @@
     "failure_signatures": [],
     "models": {
       "Block": {
-        "created": 0,
+        "created": 4,
         "error": 0,
-        "skipped": 43,
+        "skipped": 0,
         "updated": 0
       },
       "CropBySeason": {
-        "created": 0,
+        "created": 21,
         "error": 0,
-        "skipped": 164,
+        "skipped": 0,
         "updated": 0
       },
       "CropInfo": {
-        "created": 0,
+        "created": 12,
         "error": 0,
-        "skipped": 128,
+        "skipped": 0,
         "updated": 0
       },
       "CropSalesFormat": {
-        "created": 0,
+        "created": 20,
         "error": 0,
-        "skipped": 20,
+        "skipped": 0,
         "updated": 0
       },
       "FieldWalkNote": {
-        "created": 0,
+        "created": 30,
         "error": 0,
-        "skipped": 30,
+        "skipped": 0,
         "updated": 0
       },
       "HarvestEvent": {
-        "created": 0,
+        "created": 106,
         "error": 0,
-        "skipped": 106,
+        "skipped": 0,
         "updated": 0
       },
       "InventoryLedger": {
-        "created": 0,
+        "created": 138,
         "error": 0,
-        "skipped": 138,
+        "skipped": 0,
         "updated": 0
       },
       "NurseryEvent": {
@@ -53,15 +53,15 @@
         "updated": 0
       },
       "PlanningYear": {
-        "created": 0,
+        "created": 2,
         "error": 0,
-        "skipped": 2,
+        "skipped": 0,
         "updated": 0
       },
       "Planting": {
-        "created": 0,
+        "created": 22,
         "error": 0,
-        "skipped": 22,
+        "skipped": 0,
         "updated": 0
       },
       "ProductRecipe": {
@@ -77,27 +77,27 @@
         "updated": 0
       },
       "QuickSalesEntry": {
-        "created": 0,
+        "created": 9,
         "error": 0,
-        "skipped": 9,
+        "skipped": 0,
         "updated": 0
       },
       "RotationHistory": {
-        "created": 0,
+        "created": 8,
         "error": 0,
-        "skipped": 10,
+        "skipped": 0,
         "updated": 0
       },
       "SalesChannel": {
-        "created": 0,
+        "created": 6,
         "error": 0,
-        "skipped": 6,
+        "skipped": 0,
         "updated": 0
       },
       "SalesEvent": {
-        "created": 0,
+        "created": 33,
         "error": 0,
-        "skipped": 33,
+        "skipped": 0,
         "updated": 0
       },
       "Variety": {
@@ -109,25 +109,18 @@
     },
     "pack_skip_rows": [],
     "pack_skip_summary": [],
-    "post_repair_planting_events": null,
+    "post_repair_planting_events": {
+      "harvest_events_created_plantings": 12,
+      "harvest_planned_dates_filled": 0,
+      "harvest_skipped_invalid_window": 0,
+      "nursery_events_created_plantings": 16,
+      "plantings_scanned": 22
+    },
     "row_errors": [],
     "row_warning_code_totals": {
-      "import_year_range_skips_disk_year_folder": 1,
-      "planting_planning_year_rebound_from_planned_date": 2
+      "import_year_range_skips_disk_year_folder": 1
     },
     "row_warning_summary": [
-      {
-        "code": "planting_planning_year_rebound_from_planned_date",
-        "count": 2,
-        "field_path": "plantings.planning_year",
-        "model": "Planting",
-        "operator_action": "LIVE-17/C: row was imported under PlanningYear from Planned Plant Date calendar year (within \u00b11 year of folder) instead of the bundle folder year; audit trail only.",
-        "rows": [
-          9,
-          11
-        ],
-        "severity": "low"
-      },
       {
         "code": "import_year_range_skips_disk_year_folder",
         "count": 1,
@@ -142,20 +135,6 @@
     ],
     "row_warnings": [
       {
-        "code": "planting_planning_year_rebound_from_planned_date",
-        "field_path": "plantings.planning_year",
-        "message": "LIVE-17/C: Planned Plant Date 2022-10-20 (year 2022) bound this row to PlanningYear 2022 instead of bundle folder year 2023 (shoulder rule |date_year - folder_year| <= 1).",
-        "model": "Planting",
-        "row": 11
-      },
-      {
-        "code": "planting_planning_year_rebound_from_planned_date",
-        "field_path": "plantings.planning_year",
-        "message": "LIVE-17/C: Planned Plant Date 2023-10-15 (year 2023) bound this row to PlanningYear 2023 instead of bundle folder year 2024 (shoulder rule |date_year - folder_year| <= 1).",
-        "model": "Planting",
-        "row": 9
-      },
-      {
         "code": "import_year_range_skips_disk_year_folder",
         "field_path": "data_dir/year_2026",
         "message": "Directory year_2026/ exists under the bundle root but is outside --start-year 2021 --end-year 2025; this tier (including year_<Y>/sales_events.csv) is not processed. Widen the import year range to pick up 601 / historical sales for that season. On-disk year_* folders span 2023\u20132026 (import window 2021\u20132025).",
@@ -164,9 +143,9 @@
       }
     ],
     "totals": {
-      "created": 0,
+      "created": 411,
       "error": 0,
-      "skipped": 711,
+      "skipped": 0,
       "updated": 0
     }
   },
@@ -177,14 +156,14 @@
     "data_dir": "farm/data/sample_import",
     "dry_run": false,
     "end_year": 2025,
-    "finished_at": "2026-04-27T22:21:26.354742Z",
-    "plantings_planning_year_from_planned_date": true,
-    "plantings_planning_year_from_planned_date_force_past_threshold": true,
-    "run_id": "20260427T222125643177",
+    "finished_at": "2026-04-27T21:09:43.719750Z",
+    "plantings_planning_year_from_planned_date": false,
+    "plantings_planning_year_from_planned_date_force_past_threshold": false,
+    "run_id": "20260427T210943141332",
     "skip_plantings_when_planned_date_over_one_year_from_folder_year": false,
     "start_year": 2021,
-    "started_at": "2026-04-27T22:21:25.643177Z",
-    "validate_only": true,
+    "started_at": "2026-04-27T21:09:43.141332Z",
+    "validate_only": false,
     "verbose": false
   },
   "schema_version": "1.5",

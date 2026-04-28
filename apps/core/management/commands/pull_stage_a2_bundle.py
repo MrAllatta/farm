@@ -105,18 +105,45 @@ def _years_from_config(config):
     return None
 
 
+def _apply_config_lane_year_cap(years, config):
+    """Narrow CLI/import-window years to those declared on the config lane.
+
+    ``scripts/run_import.sh`` always passes ``--start-year``/``--end-year`` from
+    ``LIVE_IMPORT_ARCHIVE_YEAR``–``LIVE_IMPORT_YEAR`` (default 2022–2026). Configs
+    such as ``historical-601.json`` only list workbooks for a shorter span
+    (e.g. 2023–2025); without this cap, the pull requests non-existent years first
+    and fails Drive name resolution.
+    """
+    cap = _years_from_config(config)
+    if cap is None or years == [None]:
+        return years
+    cap_set = set(cap)
+    out = sorted({y for y in years if y in cap_set})
+    if not out:
+        req = sorted(set(years))
+        cap_sorted = sorted(cap_set)
+        raise CommandError(
+            "No years overlap between the requested pull window "
+            f"{req} and this config's lane years {cap_sorted}. "
+            "Adjust LIVE_IMPORT_ARCHIVE_YEAR / LIVE_IMPORT_YEAR or config start_year/end_year."
+        )
+    return out
+
+
 def _resolve_year_list(cli_years_str, cli_start, cli_end, config, config_needs_years):
     years = _parse_cli_years(cli_years_str)
-    if years is not None:
-        return years
-    if cli_start is not None or cli_end is not None:
+    if years is None and (cli_start is not None or cli_end is not None):
         if cli_start is None or cli_end is None:
             raise CommandError("Use both --start-year and --end-year together")
         if not isinstance(cli_start, int) or not isinstance(cli_end, int):
             raise CommandError("--start-year and --end-year must be integers")
         if cli_start > cli_end:
             raise CommandError("--start-year must be <= --end-year")
-        return list(range(cli_start, cli_end + 1))
+        years = list(range(cli_start, cli_end + 1))
+
+    if years is not None:
+        return _apply_config_lane_year_cap(years, config)
+
     cfg_years = _years_from_config(config)
     if cfg_years is not None:
         return cfg_years

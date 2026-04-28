@@ -173,11 +173,22 @@ class Command(BaseCommand):
             return root_path
         return os.path.join(data_dir, "reference", filename)
 
+    @staticmethod
+    def _iter_merged_reference_csv_paths(data_dir, filename):
+        ref_path = os.path.join(data_dir, "reference", filename)
+        root_path = os.path.join(data_dir, filename)
+        paths = []
+        if os.path.exists(ref_path):
+            paths.append(ref_path)
+        if os.path.exists(root_path) and root_path not in paths:
+            paths.append(root_path)
+        return paths
+
     def _import_blocks(self, data_dir, dry_run):
         filename = "blocks.csv"
-        path = self._resolve_reference_path(data_dir, filename)
-        if not os.path.exists(path):
-            self.stdout.write(f"  Skipping blocks — {path} not found\n")
+        paths = self._iter_merged_reference_csv_paths(data_dir, filename)
+        if not paths:
+            self.stdout.write(f"  Skipping blocks — no blocks.csv under {data_dir!r}\n")
             return
 
         self.stdout.write("Importing blocks...\n")
@@ -191,42 +202,47 @@ class Command(BaseCommand):
 
         count = 0
         errors = 0
+        imported_block_names = set()
 
-        with open(path, "r", encoding="utf-8-sig", newline="") as f:
-            reader = self._build_contract_reader(f, filename)
-            for row in reader:
-                try:
-                    name = row["Block"].strip()
-                    if not name:
-                        continue
+        for path in paths:
+            with open(path, "r", encoding="utf-8-sig", newline="") as f:
+                reader = self._build_contract_reader(f, filename)
+                for row in reader:
+                    try:
+                        name = row["Block"].strip()
+                        if not name:
+                            continue
+                        if name in imported_block_names:
+                            continue
 
-                    block_type_raw = row["Block Type"].strip()
-                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
-                    block_type = type_map.get(normalized_block_type, "field")
+                        block_type_raw = row["Block Type"].strip()
+                        normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                        block_type = type_map.get(normalized_block_type, "field")
 
-                    data = {
-                        "block_type": block_type,
-                        "num_beds": int(row["# of Beds"]),
-                        "bed_width_feet": Decimal(row["Bed Width (feet)"] or "0"),
-                        "bedfeet_per_bed": int(row["Bedfeet per Bed"] or 0),
-                    }
+                        data = {
+                            "block_type": block_type,
+                            "num_beds": int(row["# of Beds"]),
+                            "bed_width_feet": Decimal(row["Bed Width (feet)"] or "0"),
+                            "bedfeet_per_bed": int(row["Bedfeet per Bed"] or 0),
+                        }
 
-                    if not dry_run:
-                        Block.objects.update_or_create(name=name, defaults=data)
+                        if not dry_run:
+                            Block.objects.update_or_create(name=name, defaults=data)
 
-                    count += 1
+                        imported_block_names.add(name)
+                        count += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
-                    self.stderr.write(f"  Error on row {row}: {e}\n")
-                    errors += 1
+                    except (ValueError, KeyError, InvalidOperation) as e:
+                        self.stderr.write(f"  Error on row {row}: {e}\n")
+                        errors += 1
 
         self.stdout.write(f"  Blocks: {count} processed, {errors} errors\n")
 
     def _import_crops(self, data_dir, dry_run):
         filename = "crop_info.csv"
-        path = self._resolve_reference_path(data_dir, filename)
-        if not os.path.exists(path):
-            self.stdout.write(f"  Skipping crops — {path} not found\n")
+        paths = self._iter_merged_reference_csv_paths(data_dir, filename)
+        if not paths:
+            self.stdout.write(f"  Skipping crops — no crop_info.csv under {data_dir!r}\n")
             return
 
         self.stdout.write("Importing crop info...\n")
@@ -245,89 +261,92 @@ class Command(BaseCommand):
         errors = 0
         skipped = 0
 
-        with open(path, "r", encoding="utf-8-sig", newline="") as f:
-            reader = self._build_contract_reader(f, filename)
-            for row in reader:
-                try:
-                    name = row["Crop"].strip()
-                    if not name:
-                        continue
+        for path in paths:
+            with open(path, "r", encoding="utf-8-sig", newline="") as f:
+                reader = self._build_contract_reader(f, filename)
+                for row in reader:
+                    try:
+                        name = row["Crop"].strip()
+                        if not name:
+                            continue
 
-                    # Skip duplicates (keep first occurrence)
-                    if name in seen_names:
-                        self.stderr.write(f"  DUPLICATE: '{name}' — skipping second occurrence\n")
-                        skipped += 1
-                        continue
-                    seen_names.add(name)
+                        # Skip duplicates (keep first occurrence; reference/ wins over root when merged)
+                        if name in seen_names:
+                            self.stderr.write(
+                                f"  DUPLICATE: '{name}' — skipping second occurrence\n"
+                            )
+                            skipped += 1
+                            continue
+                        seen_names.add(name)
 
-                    # Apply known fixes
-                    crop_type = row.get("Type", "").strip()
-                    botanical_family = row.get("Botanical Family", "").strip()
+                        # Apply known fixes
+                        crop_type = row.get("Type", "").strip()
+                        botanical_family = row.get("Botanical Family", "").strip()
 
-                    if name in type_fixes:
-                        crop_type = type_fixes[name][0]
-                        self.stdout.write(f"  FIX: {name} type → {crop_type}\n")
-                    if name in family_fixes:
-                        botanical_family = family_fixes[name][0]
-                        self.stdout.write(f"  FIX: {name} family → {botanical_family}\n")
+                        if name in type_fixes:
+                            crop_type = type_fixes[name][0]
+                            self.stdout.write(f"  FIX: {name} type → {crop_type}\n")
+                        if name in family_fixes:
+                            botanical_family = family_fixes[name][0]
+                            self.stdout.write(f"  FIX: {name} family → {botanical_family}\n")
 
-                    # Standardize harvest units
-                    harvest_unit = row.get("Harvest Units", "").strip()
-                    if harvest_unit == "eaches":
-                        harvest_unit = "each"
+                        # Standardize harvest units
+                        harvest_unit = row.get("Harvest Units", "").strip()
+                        if harvest_unit == "eaches":
+                            harvest_unit = "each"
 
-                    # Determine propagation type
-                    propagation_type = "seed"
-                    if name.startswith("Garlic"):
-                        propagation_type = "vegetative_clove"
-                    elif name.startswith("Potato") or name == "Sweet Potatoes":
-                        propagation_type = "vegetative_tuber"
+                        # Determine propagation type
+                        propagation_type = "seed"
+                        if name.startswith("Garlic"):
+                            propagation_type = "vegetative_clove"
+                        elif name.startswith("Potato") or name == "Sweet Potatoes":
+                            propagation_type = "vegetative_tuber"
 
-                    # Determine perennial
-                    is_perennial = name in ("Asparagus",)
+                        # Determine perennial
+                        is_perennial = name in ("Asparagus",)
 
-                    # Legacy "Fresh or Storage" column remains in CSV contracts; persisted
-                    # category is DG-14–derived from Storage Weeks + Can Hold In Field.
-                    storage_weeks = self._int(row.get("Storage Weeks", 0))
-                    can_hold_in_field = self._bool_csv(row.get("Can Hold In Field"))
-                    fresh_or_storage = derive_fresh_or_storage(
-                        storage_weeks=storage_weeks,
-                        can_hold_in_field=can_hold_in_field,
-                    )
+                        # Legacy "Fresh or Storage" column remains in CSV contracts; persisted
+                        # category is DG-14–derived from Storage Weeks + Can Hold In Field.
+                        storage_weeks = self._int(row.get("Storage Weeks", 0))
+                        can_hold_in_field = self._bool_csv(row.get("Can Hold In Field"))
+                        fresh_or_storage = derive_fresh_or_storage(
+                            storage_weeks=storage_weeks,
+                            can_hold_in_field=can_hold_in_field,
+                        )
 
-                    data = {
-                        "crop_type": crop_type,
-                        "botanical_family": botanical_family,
-                        "propagation_type": propagation_type,
-                        "is_perennial": is_perennial,
-                        "fresh_or_storage": fresh_or_storage,
-                        "storage_weeks": storage_weeks,
-                        "can_hold_in_field": can_hold_in_field,
-                        "harvest_unit": harvest_unit,
-                        "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
-                        "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
-                        "harvest_bin": row.get("Harvest Bin", "").strip(),
-                        "harvest_tools": row.get("Harvest Tools", "").strip(),
-                        "harvest_rate_per_hour": self._int_or_none(
-                            row.get("Harvest Rate (units per hour)")
-                        ),
-                        "nursery_weeks": self._int(row.get("Nursery Weeks", 0)),
-                        "weeks_until_pot_up": self._int(row.get("Weeks Until Pot Up", 0)),
-                        "pot_up_tray_size": self._int_or_none(row.get("Pot Up Tray Size")),
-                        "seeded_tray_size": self._int_or_none(row.get("Seeded Tray Size")),
-                        "seeds_per_cell": self._int(row.get("Seeds Per Cell", 1)) or 1,
-                        "thinned_plants": self._int(row.get("Thinned Plants", 0)),
-                        "seeds_per_ounce": self._dec_or_none(row.get("Seeds Per Ounce")),
-                    }
+                        data = {
+                            "crop_type": crop_type,
+                            "botanical_family": botanical_family,
+                            "propagation_type": propagation_type,
+                            "is_perennial": is_perennial,
+                            "fresh_or_storage": fresh_or_storage,
+                            "storage_weeks": storage_weeks,
+                            "can_hold_in_field": can_hold_in_field,
+                            "harvest_unit": harvest_unit,
+                            "avg_unit_weight": self._dec(row.get("Average Unit Weight", 1)),
+                            "units_per_bin": self._int_or_none(row.get("Units Per Bin")),
+                            "harvest_bin": row.get("Harvest Bin", "").strip(),
+                            "harvest_tools": row.get("Harvest Tools", "").strip(),
+                            "harvest_rate_per_hour": self._int_or_none(
+                                row.get("Harvest Rate (units per hour)")
+                            ),
+                            "nursery_weeks": self._int(row.get("Nursery Weeks", 0)),
+                            "weeks_until_pot_up": self._int(row.get("Weeks Until Pot Up", 0)),
+                            "pot_up_tray_size": self._int_or_none(row.get("Pot Up Tray Size")),
+                            "seeded_tray_size": self._int_or_none(row.get("Seeded Tray Size")),
+                            "seeds_per_cell": self._int(row.get("Seeds Per Cell", 1)) or 1,
+                            "thinned_plants": self._int(row.get("Thinned Plants", 0)),
+                            "seeds_per_ounce": self._dec_or_none(row.get("Seeds Per Ounce")),
+                        }
 
-                    if not dry_run:
-                        CropInfo.objects.update_or_create(name=name, defaults=data)
+                        if not dry_run:
+                            CropInfo.objects.update_or_create(name=name, defaults=data)
 
-                    count += 1
+                        count += 1
 
-                except (ValueError, KeyError, InvalidOperation) as e:
-                    self.stderr.write(f"  Error on '{row.get('Crop', '?')}': {e}\n")
-                    errors += 1
+                    except (ValueError, KeyError, InvalidOperation) as e:
+                        self.stderr.write(f"  Error on '{row.get('Crop', '?')}': {e}\n")
+                        errors += 1
 
         self.stdout.write(
             f"  Crops: {count} imported, {skipped} duplicates skipped, " f"{errors} errors\n"
@@ -335,9 +354,9 @@ class Command(BaseCommand):
 
     def _import_crop_by_season(self, data_dir, dry_run):
         filename = "crop_by_season.csv"
-        path = self._resolve_reference_path(data_dir, filename)
-        if not os.path.exists(path):
-            self.stdout.write(f"  Skipping crop_by_season — {path} not found\n")
+        paths = self._iter_merged_reference_csv_paths(data_dir, filename)
+        if not paths:
+            self.stdout.write(f"  Skipping crop_by_season — no crop_by_season.csv under {data_dir!r}\n")
             return
 
         self.stdout.write("Importing crop by season...\n")
@@ -351,112 +370,122 @@ class Command(BaseCommand):
         count = 0
         errors = 0
         skipped = 0
+        season_keys_done = set()
 
-        with open(path, "r", encoding="utf-8-sig", newline="") as f:
-            reader = self._build_contract_reader(f, filename)
-            for row in reader:
-                try:
-                    crop_name = row["Crop"].strip()
-                    block_type_raw = row["Block Type"].strip()
-
-                    # Skip template rows
-                    if not crop_name or crop_name == "choose crop":
-                        skipped += 1
-                        continue
-
-                    normalized_block_type = " ".join(block_type_raw.split()).casefold()
-                    block_type = type_map.get(normalized_block_type)
-                    if not block_type:
-                        self.stderr.write(
-                            f"  Unknown block type '{block_type_raw}' " f"for {crop_name}\n"
-                        )
-                        errors += 1
-                        continue
-
-                    # Find the crop
+        for path in paths:
+            with open(path, "r", encoding="utf-8-sig", newline="") as f:
+                reader = self._build_contract_reader(f, filename)
+                for row in reader:
                     try:
-                        crop = CropInfo.objects.get(name=crop_name)
-                    except CropInfo.DoesNotExist:
+                        crop_name = row["Crop"].strip()
+                        block_type_raw = row["Block Type"].strip()
+
+                        # Skip template rows
+                        if not crop_name or crop_name == "choose crop":
+                            skipped += 1
+                            continue
+
+                        normalized_block_type = " ".join(block_type_raw.split()).casefold()
+                        block_type = type_map.get(normalized_block_type)
+                        if not block_type:
+                            self.stderr.write(
+                                f"  Unknown block type '{block_type_raw}' " f"for {crop_name}\n"
+                            )
+                            errors += 1
+                            continue
+
+                        # Find the crop
+                        try:
+                            crop = CropInfo.objects.get(name=crop_name)
+                        except CropInfo.DoesNotExist:
+                            self.stderr.write(
+                                f"  Crop not found: '{crop_name}' — " f"skipping season profile\n"
+                            )
+                            errors += 1
+                            continue
+
+                        season_key = (crop.pk, block_type)
+                        if season_key in season_keys_done:
+                            skipped += 1
+                            continue
+
+                        # Parse TP spacing — handle "na" values
+                        tp_spacing_raw = row.get("TP Inrow Spacing (ft)", "").strip()
+                        tp_spacing = None
+                        if tp_spacing_raw and tp_spacing_raw.lower() != "na":
+                            try:
+                                tp_spacing = Decimal(tp_spacing_raw)
+                            except InvalidOperation:
+                                pass
+
+                        # Parse DS seed rate
+                        ds_rate_raw = row.get("DS Seed Rate (seeds/ rowfoot)", "").strip()
+                        ds_rate = None
+                        if ds_rate_raw and ds_rate_raw.lower() not in ("na", ""):
+                            try:
+                                ds_rate = int(float(ds_rate_raw))
+                            except ValueError:
+                                pass
+
+                        # Validate DTM
+                        dtm = self._int(row.get("DTM Days To Maturity", 0))
+                        if not dtm:
+                            self.stderr.write(
+                                f"  WARNING: {crop_name}/{block_type_raw} " f"has no DTM — skipping\n"
+                            )
+                            skipped += 1
+                            continue
+
+                        planned_wtm_raw = row.get("Planned WTM", "").strip()
+                        sheet_planned_wtm_weeks = self._dec_or_none(planned_wtm_raw)
+                        weekly_yield_row_raw = row.get(
+                            "Actual or Planned Weekly Yield per Bedfoot", ""
+                        ).strip()
+                        sheet_actual_or_planned_weekly_yield_per_bedfoot = self._dec_or_none(
+                            weekly_yield_row_raw
+                        )
+                        forecast_raw = row.get("Weekly Yield Forecast", "").strip()
+                        sheet_weekly_yield_forecast = self._dec_or_none(forecast_raw)
+
+                        data = {
+                            "field_week_start": self._int(row.get("Field Week Start", 1)),
+                            "field_week_end": self._int(row.get("Field Week End", 52)),
+                            "total_yield_per_bedfoot": self._dec(
+                                row.get("Total Yield Per Bedfoot", 0)
+                            ),
+                            "harvest_weeks": self._int(row.get("Harvest Weeks", 1)) or 1,
+                            "dtm_days": dtm,
+                            "rows_per_bed": self._int(row.get("Rows Per Bed", 1)) or 1,
+                            "ds_seed_rate": ds_rate,
+                            "tp_inrow_spacing": tp_spacing,
+                            "seeder_settings": row.get("Seeder Settings", "").strip(),
+                            "trellis_system": row.get("Trellis System", "").strip(),
+                            "mulch": row.get("Mulch", "").strip(),
+                            "row_cover": row.get("Row Cover", "").strip(),
+                            "irrigation": row.get("Irrigation", "").strip(),
+                            "sheet_planned_wtm_weeks": sheet_planned_wtm_weeks,
+                            "sheet_actual_or_planned_weekly_yield_per_bedfoot": (
+                                sheet_actual_or_planned_weekly_yield_per_bedfoot
+                            ),
+                            "sheet_weekly_yield_forecast": sheet_weekly_yield_forecast,
+                        }
+
+                        if not dry_run:
+                            CropBySeason.objects.update_or_create(
+                                crop=crop,
+                                block_type=block_type,
+                                defaults=data,
+                            )
+
+                        count += 1
+                        season_keys_done.add(season_key)
+
+                    except (ValueError, KeyError, InvalidOperation) as e:
                         self.stderr.write(
-                            f"  Crop not found: '{crop_name}' — " f"skipping season profile\n"
+                            f"  Error on '{row.get('Crop', '?')}' / "
+                            f"'{row.get('Block Type', '?')}': {e}\n"
                         )
                         errors += 1
-                        continue
-
-                    # Parse TP spacing — handle "na" values
-                    tp_spacing_raw = row.get("TP Inrow Spacing (ft)", "").strip()
-                    tp_spacing = None
-                    if tp_spacing_raw and tp_spacing_raw.lower() != "na":
-                        try:
-                            tp_spacing = Decimal(tp_spacing_raw)
-                        except InvalidOperation:
-                            pass
-
-                    # Parse DS seed rate
-                    ds_rate_raw = row.get("DS Seed Rate (seeds/ rowfoot)", "").strip()
-                    ds_rate = None
-                    if ds_rate_raw and ds_rate_raw.lower() not in ("na", ""):
-                        try:
-                            ds_rate = int(float(ds_rate_raw))
-                        except ValueError:
-                            pass
-
-                    # Validate DTM
-                    dtm = self._int(row.get("DTM Days To Maturity", 0))
-                    if not dtm:
-                        self.stderr.write(
-                            f"  WARNING: {crop_name}/{block_type_raw} " f"has no DTM — skipping\n"
-                        )
-                        skipped += 1
-                        continue
-
-                    planned_wtm_raw = row.get("Planned WTM", "").strip()
-                    sheet_planned_wtm_weeks = self._dec_or_none(planned_wtm_raw)
-                    weekly_yield_row_raw = row.get(
-                        "Actual or Planned Weekly Yield per Bedfoot", ""
-                    ).strip()
-                    sheet_actual_or_planned_weekly_yield_per_bedfoot = self._dec_or_none(
-                        weekly_yield_row_raw
-                    )
-                    forecast_raw = row.get("Weekly Yield Forecast", "").strip()
-                    sheet_weekly_yield_forecast = self._dec_or_none(forecast_raw)
-
-                    data = {
-                        "field_week_start": self._int(row.get("Field Week Start", 1)),
-                        "field_week_end": self._int(row.get("Field Week End", 52)),
-                        "total_yield_per_bedfoot": self._dec(row.get("Total Yield Per Bedfoot", 0)),
-                        "harvest_weeks": self._int(row.get("Harvest Weeks", 1)) or 1,
-                        "dtm_days": dtm,
-                        "rows_per_bed": self._int(row.get("Rows Per Bed", 1)) or 1,
-                        "ds_seed_rate": ds_rate,
-                        "tp_inrow_spacing": tp_spacing,
-                        "seeder_settings": row.get("Seeder Settings", "").strip(),
-                        "trellis_system": row.get("Trellis System", "").strip(),
-                        "mulch": row.get("Mulch", "").strip(),
-                        "row_cover": row.get("Row Cover", "").strip(),
-                        "irrigation": row.get("Irrigation", "").strip(),
-                        "sheet_planned_wtm_weeks": sheet_planned_wtm_weeks,
-                        "sheet_actual_or_planned_weekly_yield_per_bedfoot": (
-                            sheet_actual_or_planned_weekly_yield_per_bedfoot
-                        ),
-                        "sheet_weekly_yield_forecast": sheet_weekly_yield_forecast,
-                    }
-
-                    if not dry_run:
-                        CropBySeason.objects.update_or_create(
-                            crop=crop,
-                            block_type=block_type,
-                            defaults=data,
-                        )
-
-                    count += 1
-
-                except (ValueError, KeyError, InvalidOperation) as e:
-                    self.stderr.write(
-                        f"  Error on '{row.get('Crop', '?')}' / "
-                        f"'{row.get('Block Type', '?')}': {e}\n"
-                    )
-                    errors += 1
 
         self.stdout.write(
             f"  Crop by Season: {count} imported, {skipped} skipped, " f"{errors} errors\n"

@@ -11,7 +11,8 @@ class Command(BaseCommand):
         "Create missing HarvestEvent and NurseryEvent rows for plantings that have none. "
         "Idempotent: does not modify existing events. "
         "After a successful import_historical_data apply (not --validate-only / --dry-run), "
-        "the importer already runs this repair for --start-year..--end-year; rerun this command "
+        "the importer already runs this repair for --start-year..--end-year (see results.post_repair_planting_events "
+        "in --summary-json); rerun this command "
         "when you used validate-only, repaired reference CSVs, or need a narrower "
         "--planning-year-id / --year scope."
     )

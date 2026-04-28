@@ -203,9 +203,9 @@
         "planning year not found '2022'"
       ],
       "totals": {
-        "created": 5,
+        "created": 6,
         "updated": 0,
-        "skipped": 1,
+        "skipped": 0,
         "error": 15
       },
       "models": {
@@ -216,9 +216,9 @@
           "error": 0
         },
         "CropBySeason": {
-          "created": 0,
+          "created": 1,
           "updated": 0,
-          "skipped": 1,
+          "skipped": 0,
           "error": 6
         },
         "CropSalesFormat": {

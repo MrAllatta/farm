@@ -36,6 +36,10 @@ from reference.models import CropSalesFormat, SalesChannel
 from reference.sales_rollups import ROLLUP_PLAN_CHANNEL_NAMES, plan_events_without_shadowed_rollups, plan_week_iso_counts
 from reports.mixins import ReportContextMixin
 
+from core.management.commands.import_historical_data import (
+    crop_sales_format_labels_equivalent_for_historical_join,
+)
+
 from .models import SalesEvent
 
 
@@ -60,7 +64,9 @@ def _prior_year_empty_cell_title(calendar_year: int, empty_reason: str) -> str:
     if empty_reason == "prior_year_cell_empty_no_neighbor_week_sales":
         return (
             f"No ACTUAL for this product in W-1, this week, or W+1 for calendar {y} — often not sold "
-            "in that window, or that year was not imported, or channel/product keys do not match history."
+            "in that window, or that year was not imported, or channel/product keys do not match history. "
+            "601 labels that differ only by bunch vs bu should still match the same crop line; "
+            "12 bu stays a separate product."
         )
     return f"No ACTUAL import for this product in ISO week {y}."
 
@@ -110,7 +116,9 @@ def _merge_historical_from_strict_and_namesake(
             if not row.product_id:
                 continue
             op = row.product
-            if op.crop_id == p.crop_id and (op.product_name or "") == (p.product_name or ""):
+            if op.crop_id == p.crop_id and crop_sales_format_labels_equivalent_for_historical_join(
+                op.product_name, p.product_name
+            ):
                 _add_actual_row(by_product, p.id, row)
                 matched = True
         if matched:
